@@ -1,0 +1,76 @@
+﻿@using ERPIndia.Models;
+@using ERPIndia.Class.Helper;
+@{
+
+    var name = CommonLogic.GetSessionValue(StringConstants.SchoolName);
+}
+<style>
+
+    .sidebar .sidebar-menu > ul > li ul li a span {
+        font-size: 14px;
+        font-weight: 400;
+        white-space: nowrap;
+        color: white;
+        margin-left: 10px;
+    }
+    .sidebar .sidebar-menu > ul > li ul li a:hover span {
+        color: white;
+    }
+    .sidebar .sidebar-menu > ul li .submenu > a.subdrop {
+        background: #042954;
+    }
+    .sidebar .sidebar-menu > ul li .submenu > ul li a {
+        padding-left: 40px;
+        font-size: 14px;
+        color: white;
+        position: relative;
+    }
+</style>
+<div class="sidebar" id="sidebar" style="background-color:#042954;">
+    <div class="sidebar-inner slimscroll">
+        <div id="sidebar-menu" class="sidebar-menu">
+            <ul>
+                <li>
+                    <ul>
+                        @if (ViewBag.MenuList != null && ViewBag.MenuList.Count > 0)
+                        {
+                            List<SiteMenuModel> siteMenuList = ViewBag.MenuList;
+                            List<SiteMenuModel> mainMenuList = siteMenuList.FindAll(m => m.ParentMenuId == 0);
+                            if (mainMenuList != null && mainMenuList.Count > 0)
+                            {
+                                for (int i = 0; i < mainMenuList.Count; i++)
+                                {
+                                    List<SiteMenuModel> subMenuList = siteMenuList.FindAll(sm => sm.ParentMenuId == mainMenuList[i].MenuId);
+                                    if (subMenuList != null && subMenuList.Count > 0)
+                                    {
+                                        <li class="submenu" id="@mainMenuList[i].MenuPageName.ToLower()">
+                                            <a href="javascript:void(0);">
+                                                <i class="ti @mainMenuList[i].MenuImageName"></i><span>@mainMenuList[i].MenuName</span><span class="menu-arrow"></span>
+                                            </a>
+                                            <ul>
+                                                @for (int j = 0; j < subMenuList.Count; j++)
+                                                {
+                                                    <li id="@subMenuList[j].MenuPageName">
+                                                        <a href="@Url.Action("", subMenuList[j].MenuPageName)">@subMenuList[j].MenuName</a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li id="@mainMenuList[i].MenuPageName.ToLower()">
+                                            <a href="@Url.Action("", mainMenuList[i].MenuPageName)">
+                                                <i class="ti @mainMenuList[i].MenuImageName"></i><span>@mainMenuList[i].MenuName</span>
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                            }
+                        }
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

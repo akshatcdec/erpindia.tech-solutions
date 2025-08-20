@@ -1,0 +1,2430 @@
+﻿@model ERPIndia.StudentManagement.Models.StudentViewModel
+@{
+    ViewBag.Title = "Add New Student";
+}
+
+<link href="/Content/model.css" rel="stylesheet" />
+<style>
+    /* 1. Help Video: Navy Blue color */
+    .student-link-red {
+        color: #1e3a8a;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    /* 2. Download Form: Green color with download icon */
+    .student-link-excel {
+        color: green;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .student-link-excel-fa::before {
+        font-family: "Font Awesome 5 Free";
+        content: "\f019";
+        font-weight: 900;
+        margin-right: 5px;
+    }
+
+    /* 3. Separator line: Black color */
+    .student-link-word {
+        color: #000000;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    /* 4. View List: SMS Balance color */
+    .student-link-viewlist {
+        color: #ff6b35;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    /* Enhanced Student Search Styles */
+    .student-search-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 0 15px 0;
+        position: relative;
+    }
+
+    .search-box {
+        display: flex;
+        width: 100%;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .search-input {
+        flex-grow: 1;
+        padding: 10px 12px;
+        border: none;
+        outline: none;
+        font-size: 14px;
+    }
+
+    .toggle-btn {
+        background-color: #4a86e8;
+        color: white;
+        border: none;
+        padding: 0 15px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .toggle-btn:hover {
+        background-color: #3a76d8;
+    }
+
+    .results-container {
+        position: absolute;
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        z-index: 100;
+        display: none;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .results-container.active {
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    .results-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .results-table th {
+        background-color: #f8fafc;
+        position: sticky;
+        top: 0;
+        text-align: left;
+        padding: 10px;
+        font-size: 13px;
+        border-bottom: 1px solid #e2e8f0;
+        color: #475569;
+    }
+
+    .results-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+    }
+
+    .results-table tr:hover {
+        background-color: #f8fafc;
+        cursor: pointer;
+    }
+
+    .results-table tr:active {
+        background-color: #e2e8f0;
+    }
+
+    .message {
+        padding: 15px;
+        text-align: center;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    /* Sibling section styles */
+    .sibling-section {
+        background-color: #f8fafc;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .sibling-section h5 {
+        color: #334155;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .sibling-details {
+        background-color: #ffffff;
+        border-radius: 4px;
+        padding: 15px 10px 5px 10px;
+        margin-top: 10px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .remove-sibling {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+
+    /* Animation for results */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Required field indicator */
+    .required:after {
+        content: " *";
+        color: red;
+    }
+
+    .card {
+        margin-bottom: 20px;
+    }
+
+    .bootstrap-tagsinput {
+        width: 100%;
+    }
+
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+
+    /* New styles for better alignment */
+    .form-control, .form-select {
+        height: 38px;
+        font-size: 14px;
+    }
+
+    small.text-muted {
+        font-size: 12px;
+        display: block;
+        margin-top: 2px;
+    }
+
+    h5.text-primary {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #4a86e8 !important;
+    }
+
+    .row > [class*="col-"] {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    .profile-upload {
+        flex: 1;
+    }
+
+    .border-bottom {
+        border-color: #e2e8f0 !important;
+    }
+
+    .form-check-label {
+        margin-left: 0.5rem;
+        font-size: 14px;
+    }
+</style>
+
+<!-- Single webcam modal for all photo types -->
+<div class="modal fade" id="webcamModal" tabindex="-1" aria-labelledby="webcamModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="webcamModalLabel">Capture Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="camera-selection mb-3 text-center" style="display: none;">
+                    <div class="btn-group" role="group" aria-label="Camera Selection">
+                        <button type="button" class="btn btn-outline-primary" id="frontCameraBtn">Front Camera</button>
+                        <button type="button" class="btn btn-outline-primary" id="backCameraBtn">Back Camera</button>
+                    </div>
+                </div>
+                <div class="webcam-container">
+                    <video id="webcam" autoplay playsinline width="100%" height="auto"></video>
+                    <canvas id="webcamCanvas" style="display: none;"></canvas>
+                    <img id="capturedImage" style="display: none; width: 100%;" alt="Captured photo" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="captureBtn" class="btn btn-primary">Capture</button>
+                <button type="button" id="recaptureBtn" class="btn btn-outline-primary" style="display: none;">Recapture</button>
+                <button type="button" id="saveImageBtn" class="btn btn-success" style="display: none;">Use Photo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                            <i class="ti ti-user-plus fs-16"></i>
+                        </span>
+                        <h4 class="text-dark mb-0">Add New Student</h4>
+                    </div>
+                    <div>
+                        <a href="javascript:void(0)" class="student-link-excel"
+                           onclick="openModal('', '@Url.Action("Generate", "StudentAdmissionForm")', 'Student', 'admission')">
+                            <i class="fa fa-download"></i> Dwnld. Form
+                        </a>
+                        <strong class="student-link-word">|</strong>
+                        <a href="@Url.Action("Index")" class="student-link-viewlist">
+                            View List
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @using (Html.BeginForm("Create", "Student", FormMethod.Post, new { enctype = "multipart/form-data", id = "studentForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <div id="validation-summary" class="alert alert-danger mb-4" style="display: @(ViewData.ModelState.IsValid ? "none" : "block")">
+                        @Html.ValidationSummary(false, "Please fix the following issues:", new { @class = "mb-0" })
+                    </div>
+
+                    <!-- Personal Information Section - Reorganized -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                        <i class="ti ti-info-square-rounded fs-16"></i>
+                                    </span>
+                                    <h5 class="text-dark">Personal Information</h5>
+                                </div>
+                                <div>
+                                    <a href="#" class="student-link-red">
+                                        <i class="fa fa-play-circle" style="font-size: 17px; color: orangered"></i> Help Video
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body pb-1">
+                            <!-- Photo Upload Section -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="d-flex align-items-center flex-wrap row-gap-3 mb-3" id="studentPhotoContainer">
+                                        <div class="d-flex align-items-center justify-content-center avatar avatar-xxl border border-dashed me-2 flex-shrink-0 text-dark frames">
+                                            <i class="ti ti-photo-plus fs-16"></i>
+                                        </div>
+                                        <div class="profile-upload">
+                                            <div class="profile-uploader d-flex align-items-center">
+                                                <div class="drag-upload-btn mb-3 me-2">
+                                                    Upload
+                                                    <input type="file" name="photoFile" id="studentPhotoFile" class="form-control image-sign" accept="image/*">
+                                                </div>
+                                                <button type="button" class="btn btn-secondary mb-3 take-photo-btn" data-photo-type="student" data-title="Capture Student Photo">
+                                                    <i class="ti ti-camera"></i> Use Camera
+                                                </button>
+                                            </div>
+                                            <p class="fs-12">Upload image size less then 100KB Format JPG or PNG or use camera</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- First Row: Admission Details -->
+                            <div class="row">
+                                <div class="col-lg-2 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.AdmsnNo, new { @class = "form-label required" })
+                                        @Html.TextBoxFor(m => m.Basic.AdmsnNo, new { @class = "form-control", maxlength = "10", onkeypress = "return isNumber(event);" })
+                                        @Html.ValidationMessageFor(m => m.Basic.AdmsnNo, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.SrNo, new { @class = "form-label required" })
+                                        @Html.TextBoxFor(m => m.Basic.SrNo, new { @class = "form-control", maxlength = "10", onkeypress = "return isNumber(event);" })
+                                        @Html.ValidationMessageFor(m => m.Basic.SrNo, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.RollNo, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.RollNo, new { @class = "form-control", maxlength = "10", onkeypress = "return isAlphaNumericWithUnderscoreHyphen(event);" })
+                                        @Html.ValidationMessageFor(m => m.Basic.RollNo, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.BatchId, new { @class = "form-label required" })
+                                        @Html.DropDownListFor(x => x.Basic.BatchId, Model.Basic.BasicBatchList, "Select a Batch", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.BatchId, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.AdmsnDate, new { @class = "form-label required" })
+                                        <div class="input-icon position-relative">
+                                            <span class="input-icon-addon">
+                                                <i class="ti ti-calendar"></i>
+                                            </span>
+                                            @Html.TextBoxFor(m => m.Basic.AdmsnDate, new { @class = "form-control datepicker" })
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.Basic.AdmsnDate, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.DOB, new { @class = "form-label" })
+                                        <div class="input-icon position-relative">
+                                            <span class="input-icon-addon">
+                                                <i class="ti ti-calendar"></i>
+                                            </span>
+                                            @Html.TextBoxFor(m => m.Basic.DOB, new { @class = "form-control datepicker" })
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.Basic.DOB, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Second Row: Class Details -->
+                            <div class="row">
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Class, new { @class = "form-label required" })
+                                        @Html.DropDownListFor(x => x.Basic.Class, Model.Basic.BasicClassList, "Select a class", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Class, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Section, new { @class = "form-label required" })
+                                        @Html.DropDownListFor(x => x.Basic.Section, Model.Basic.BasicSectionList, "Select a Section", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Section, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.FeeCategory, new { @class = "form-label required" })
+                                        @Html.DropDownListFor(x => x.Basic.FeeCategory, Model.Basic.BasicFeeList, "Select a Fee", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.FeeCategory, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.DiscountCategory, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Basic.DiscountCategory, Model.Basic.BasicDiscountList, "Select a Discount", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.DiscountCategory, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Third Row: Student Name Fields (English and Hindi together) -->
+                            <div class="row">
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.FirstName, "Student Name (English)", new { @class = "form-label required" })
+                                        @Html.TextBoxFor(m => m.Basic.FirstName, new { @class = "form-control", maxlength = "30", onkeypress = "return isAlphabet(event);", placeholder = "Enter student name in English" })
+                                        @Html.ValidationMessageFor(m => m.Basic.FirstName, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.StudentNameHindi, "Student Name (Hindi)", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.StudentNameHindi, new { @class = "form-control", maxlength = "50", placeholder = "छात्र का नाम हिंदी में" })
+                                        <small class="text-muted">Auto-transliterates from English name</small>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.LastName, "Other Name", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.LastName, new { @class = "form-control", maxlength = "50", placeholder = "enter other name" })
+                                        @Html.ValidationMessageFor(m => m.Basic.LastName, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fourth Row: Personal Details -->
+                            <div class="row">
+                                <div class="col-lg-2 col-md-3 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Gender, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Basic.Gender, Model.Basic.BasicGenderList, "Select", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Gender, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.BloodGroup, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Basic.BloodGroup, Model.Basic.BasicBloodGroupList, "Select", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.BloodGroup, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.House, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Basic.House, Model.Basic.BasicHouseList, "Select", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.House, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Religion, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Basic.Religion, Model.Basic.BasicReligionList, "Select", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Religion, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Category, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Basic.Category, Model.Basic.BasicCategoryList, "Select", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Category, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.MotherTongue, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Basic.MotherTongue, Model.Basic.BasicMotherList, "Select", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.MotherTongue, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fifth Row: Contact Information -->
+                            <div class="row">
+                                <div class="col-lg-2 col-md-2 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Mobile, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.Mobile, new { @class = "form-control", maxlength = "10", onkeypress = "return isNumber(event);", placeholder = "10-digit mobile number" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Mobile, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.WhatsAppNum, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.WhatsAppNum, new { @class = "form-control", maxlength = "10", onkeypress = "return isNumber(event);", placeholder = "WhatsApp number" })
+                                        @Html.ValidationMessageFor(m => m.Basic.WhatsAppNum, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Email, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.Email, new { @class = "form-control", maxlength = "50", type = "email", placeholder = "student@example.com" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Email, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.AadharNo, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.AadharNo, new { @class = "form-control", maxlength = "15", onkeypress = "return isNumber(event);", placeholder = "12-digit Aadhar number" })
+                                        @Html.ValidationMessageFor(m => m.Basic.AadharNo, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Caste, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.Caste, new { @class = "form-control", maxlength = "20", onkeypress = "return isAlphabet(event);" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Caste, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                               
+                            </div>
+
+                            <!-- Sixth Row: Additional Details -->
+                            <div class="row">
+                                <div class="col-lg-2 col-md-2 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.LanguagesKnown, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.LanguagesKnown, new { @class = "form-control tag-input", maxlength = "20", placeholder = "Languages (comma-separated)" })
+                                        @Html.ValidationMessageFor(m => m.Basic.LanguagesKnown, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Height, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.Height, new { @class = "form-control", maxlength = "6", onkeypress = "return isNumberOrDecimal(event);", placeholder = "Height in cm" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Height, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Weight, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.Weight, new { @class = "form-control", maxlength = "6", onkeypress = "return isNumberOrDecimal(event);", placeholder = "Weight in kg" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Weight, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.ABCID, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.ABCID, new { @class = "form-control", maxlength = "30", placeholder = "ABC ID" })
+                                        @Html.ValidationMessageFor(m => m.Basic.ABCID, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.APARID, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.APARID, new { @class = "form-control", maxlength = "30", placeholder = "APAR ID" })
+                                        @Html.ValidationMessageFor(m => m.Basic.APARID, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.LivingHere, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.LivingHere, new { @class = "form-control", maxlength = "30", placeholder = "Living Since" })
+                                        @Html.ValidationMessageFor(m => m.Basic.LivingHere, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subject Information -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-books fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Subject Selection</h5>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="subjectSelectionSwitch"
+                                       name="subjectSelectionEnabled" value="true" />
+                                <input type="hidden" name="subjectSelectionEnabled" value="false" />
+                            </div>
+                        </div>
+                        <div class="card-body pb-1" id="subjectSelectionFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-12">
+                                        <div class="row">
+                                            @if (Model.Basic.Subjects != null && Model.Basic.Subjects.Any())
+                                            {
+                                                foreach (var subject in Model.Basic.Subjects)
+                                                {
+                                                    <div class="col-md-4 mb-2">
+                                                        <div class="form-check">
+                                                            <input type="checkbox"
+                                                                   class="form-check-input subject-checkbox"
+                                                                   id="subject_@subject.SubjectId"
+                                                                   name="selectedSubjects"
+                                                                   value="@subject.KeyValue"
+                                                                   @(subject.IsSelected ? "checked" : "") />
+                                                            <label class="form-check-label" for="subject_@subject.SubjectId">
+                                                                @subject.Name
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <div class="col-12">
+                                                    <p class="text-muted">No subjects available.</p>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parents & Guardian Information - Reorganized -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-user-shield fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Parents & Guardian Information</h5>
+                            </div>
+                        </div>
+                        <div class="card-body pb-0">
+
+                            <!-- Father's Information -->
+                            <div class="border-bottom mb-3 pb-3">
+                                <h5 class="mb-3 text-primary">
+                                    <i class="ti ti-user-check"></i> Father's Information
+                                </h5>
+
+                                <!-- Father's Photo Section -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="d-flex align-items-center flex-wrap row-gap-3 mb-3" id="fatherPhotoContainer">
+                                            <div class="d-flex align-items-center justify-content-center avatar avatar-xxl border border-dashed me-2 flex-shrink-0 text-dark frames">
+                                                <i class="ti ti-photo-plus fs-16"></i>
+                                            </div>
+                                            <div class="profile-upload">
+                                                <div class="profile-uploader d-flex align-items-center">
+                                                    <div class="drag-upload-btn mb-3 me-2">
+                                                        Upload
+                                                        <input type="file" name="fatherPhotoFile" id="fatherPhotoFile" class="form-control image-sign" accept="image/*">
+                                                    </div>
+                                                    <button type="button" class="btn btn-secondary mb-3 take-photo-btn" data-photo-type="father" data-title="Capture Father's Photo">
+                                                        <i class="ti ti-camera"></i> Use Camera
+                                                    </button>
+                                                </div>
+                                                <p class="fs-12">Upload image size less then 100KB Format JPG or PNG or use camera</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Father's Details Fields -->
+                                <div class="row">
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.FName, "Father's Name", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.FName, new { @class = "form-control", maxlength = "50", onkeypress = "return isAlphabet(event);", placeholder = "Enter father's full name" })
+                                            @Html.ValidationMessageFor(m => m.Family.FName, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Basic.FatherNameHindi, "Father's Name (Hindi)", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Basic.FatherNameHindi, new { @class = "form-control", maxlength = "50", placeholder = "पिता का नाम हिंदी में" })
+                                            <small class="text-muted">Auto-transliterates from English name</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.FPhone, "Mobile Number", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.FPhone, new { @class = "form-control", maxlength = "10", onkeypress = "return isNumber(event);", placeholder = "10-digit mobile number" })
+                                            @Html.ValidationMessageFor(m => m.Family.FPhone, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.FEmail, "Email Address", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.FEmail, new { @class = "form-control", maxlength = "50", type = "email", placeholder = "father@example.com" })
+                                            @Html.ValidationMessageFor(m => m.Family.FEmail, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.FOccupation, "Occupation", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.FOccupation, new { @class = "form-control", maxlength = "20", onkeypress = "return isAlphabet(event);", placeholder = "Occupation" })
+                                            @Html.ValidationMessageFor(m => m.Family.FOccupation, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.FEducation, "Education", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.FEducation, new { @class = "form-control", maxlength = "20", placeholder = "Highest qualification" })
+                                            @Html.ValidationMessageFor(m => m.Family.FEducation, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.FAadhar, "Aadhar Number", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.FAadhar, new { @class = "form-control", maxlength = "15", onkeypress = "return isNumber(event);", placeholder = "12-digit Aadhar" })
+                                            @Html.ValidationMessageFor(m => m.Family.FAadhar, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.FNote, "Additional Notes", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.FNote, new { @class = "form-control", maxlength = "50", placeholder = "Any additional information about father" })
+                                            @Html.ValidationMessageFor(m => m.Family.FNote, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mother's Information -->
+                            <div class="border-bottom mb-3 pb-3">
+                                <h5 class="mb-3 text-primary">
+                                    <i class="ti ti-user-check"></i> Mother's Information
+                                </h5>
+
+                                <!-- Mother's Photo Section -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="d-flex align-items-center flex-wrap row-gap-3 mb-3" id="motherPhotoContainer">
+                                            <div class="d-flex align-items-center justify-content-center avatar avatar-xxl border border-dashed me-2 flex-shrink-0 text-dark frames">
+                                                <i class="ti ti-photo-plus fs-16"></i>
+                                            </div>
+                                            <div class="profile-upload">
+                                                <div class="profile-uploader d-flex align-items-center">
+                                                    <div class="drag-upload-btn mb-3 me-2">
+                                                        Upload
+                                                        <input type="file" name="motherPhotoFile" id="motherPhotoFile" class="form-control image-sign" accept="image/*">
+                                                    </div>
+                                                    <button type="button" class="btn btn-secondary mb-3 take-photo-btn" data-photo-type="mother" data-title="Capture Mother's Photo">
+                                                        <i class="ti ti-camera"></i> Use Camera
+                                                    </button>
+                                                </div>
+                                                <p class="fs-12">Upload image size less then 100KB Format JPG or PNG or use camera</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mother's Details Fields -->
+                                <div class="row">
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.MName, "Mother's Name", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.MName, new { @class = "form-control", maxlength = "50", onkeypress = "return isAlphabet(event);", placeholder = "Enter mother's full name" })
+                                            @Html.ValidationMessageFor(m => m.Family.MName, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Basic.MotherNameHindi, "Mother's Name (Hindi)", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Basic.MotherNameHindi, new { @class = "form-control", maxlength = "50", placeholder = "माता का नाम हिंदी में" })
+                                            <small class="text-muted">Auto-transliterates from English name</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.MPhone, "Mobile Number", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.MPhone, new { @class = "form-control", maxlength = "10", onkeypress = "return isNumber(event);", placeholder = "10-digit mobile number" })
+                                            @Html.ValidationMessageFor(m => m.Family.MPhone, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.MEmail, "Email Address", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.MEmail, new { @class = "form-control", maxlength = "50", type = "email", placeholder = "mother@example.com" })
+                                            @Html.ValidationMessageFor(m => m.Family.MEmail, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.MOccupation, "Occupation", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.MOccupation, new { @class = "form-control", maxlength = "20", onkeypress = "return isAlphabet(event);", placeholder = "Occupation" })
+                                            @Html.ValidationMessageFor(m => m.Family.MOccupation, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.MEducation, "Education", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.MEducation, new { @class = "form-control", maxlength = "20", placeholder = "Highest qualification" })
+                                            @Html.ValidationMessageFor(m => m.Family.MEducation, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.MAadhar, "Aadhar Number", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.MAadhar, new { @class = "form-control", maxlength = "15", onkeypress = "return isNumber(event);", placeholder = "12-digit Aadhar" })
+                                            @Html.ValidationMessageFor(m => m.Family.MAadhar, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.MNote, "Additional Notes", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.MNote, new { @class = "form-control", maxlength = "50", placeholder = "Any additional information about mother" })
+                                            @Html.ValidationMessageFor(m => m.Family.MNote, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Guardian's Information -->
+                            <div class="pb-3">
+                                <h5 class="mb-3 text-primary">
+                                    <i class="ti ti-user-shield"></i> Guardian's Information
+                                </h5>
+
+                                <!-- Guardian's Photo Section -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="d-flex align-items-center flex-wrap row-gap-3 mb-3" id="guardianPhotoContainer">
+                                            <div class="d-flex align-items-center justify-content-center avatar avatar-xxl border border-dashed me-2 flex-shrink-0 text-dark frames">
+                                                <i class="ti ti-photo-plus fs-16"></i>
+                                            </div>
+                                            <div class="profile-upload">
+                                                <div class="profile-uploader d-flex align-items-center">
+                                                    <div class="drag-upload-btn mb-3 me-2">
+                                                        Upload
+                                                        <input type="file" name="guardianPhotoFile" id="guardianPhotoFile" class="form-control image-sign" accept="image/*">
+                                                    </div>
+                                                    <button type="button" class="btn btn-secondary mb-3 take-photo-btn" data-photo-type="guardian" data-title="Capture Guardian's Photo">
+                                                        <i class="ti ti-camera"></i> Use Camera
+                                                    </button>
+                                                </div>
+                                                <p class="fs-12">Upload image size less then 100KB Format JPG or PNG or use camera</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Guardian's Details Fields -->
+                                <div class="row">
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.GName, "Guardian's Name", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.GName, new { @class = "form-control", maxlength = "50", onkeypress = "return isAlphabet(event);", placeholder = "Enter guardian's full name" })
+                                            @Html.ValidationMessageFor(m => m.Family.GName, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Basic.GuardianNameHindi, "Guardian's Name (Hindi)", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Basic.GuardianNameHindi, new { @class = "form-control", maxlength = "50", placeholder = "अभिभावक का नाम हिंदी में" })
+                                            <small class="text-muted">Auto-transliterates from English name</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.GRelation, "Relationship", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.GRelation, new { @class = "form-control", maxlength = "50", onkeypress = "return isAlphabet(event);", placeholder = "Relationship with student" })
+                                            @Html.ValidationMessageFor(m => m.Family.GRelation, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.GPhone, "Mobile Number", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.GPhone, new { @class = "form-control", maxlength = "10", onkeypress = "return isNumber(event);", placeholder = "10-digit mobile number" })
+                                            @Html.ValidationMessageFor(m => m.Family.GPhone, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.GEmail, "Email Address", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.GEmail, new { @class = "form-control", type = "email", maxlength = "50", placeholder = "guardian@example.com" })
+                                            @Html.ValidationMessageFor(m => m.Family.GEmail, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.GOccupation, "Occupation", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.GOccupation, new { @class = "form-control", maxlength = "20", onkeypress = "return isAlphabet(event);", placeholder = "Occupation" })
+                                            @Html.ValidationMessageFor(m => m.Family.GOccupation, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.GEducation, "Education", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.GEducation, new { @class = "form-control", maxlength = "20", placeholder = "Highest qualification" })
+                                            @Html.ValidationMessageFor(m => m.Family.GEducation, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.GAddress, "Guardian's Address", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.GAddress, new { @class = "form-control", maxlength = "50", placeholder = "Complete address" })
+                                            @Html.ValidationMessageFor(m => m.Family.GAddress, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Family.GRemark, "Remarks", new { @class = "form-label" })
+                                            @Html.TextBoxFor(m => m.Family.GRemark, new { @class = "form-control", maxlength = "50", placeholder = "Any additional remarks" })
+                                            @Html.ValidationMessageFor(m => m.Family.GRemark, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-map fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Address</h5>
+                            </div>
+                        </div>
+                        <div class="card-body pb-1">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Family.StCurrentAddress, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Family.StCurrentAddress, new { @class = "form-control", rows = "3", maxlength = "100" })
+                                        @Html.ValidationMessageFor(m => m.Family.StCurrentAddress, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Family.StPermanentAddress, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Family.StPermanentAddress, Model.Basic.BasicTownList, "Select ", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Family.StPermanentAddress, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Siblings Section -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-users fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Siblings</h5>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="hasSiblings" name="Family.IsSiblingInSameSchool" value="true" />
+                                <label class="form-check-label" for="hasSiblings"><strong> Has siblings in same school</strong></label>
+                                <input type="hidden" name="Family.IsSiblingInSameSchool" value="false" />
+                            </div>
+                        </div>
+                        <div class="card-body" id="siblingsContainer" style="display: none;">
+                            <!-- First sibling section -->
+                            <div class="sibling-section mb-4" id="sibling-section-0">
+                                <h5>Sibling 1</h5>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Search Sibling</label>
+                                            <div class="student-search-container" id="search-container-0">
+                                                <div class="search-box">
+                                                    <input type="text" class="search-input sibling-search" autocomplete="off" id="siblingSearchInput-0"
+                                                           data-index="0" placeholder="Search by name, class, father, roll no...">
+                                                    <button type="button" class="toggle-btn" id="dropdownToggle-0" data-index="0">▼</button>
+                                                </div>
+                                                <div class="results-container" id="resultsContainer-0">
+                                                    <table class="results-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Name</th>
+                                                                <th>Class</th>
+                                                                <th>Father Name</th>
+                                                                <th>Father Aadhar</th>
+                                                                <th>Roll No</th>
+                                                                <th>SR</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="resultsTableBody-0">
+                                                            <!-- Results will be populated here -->
+                                                        </tbody>
+                                                    </table>
+                                                    <div id="noResultsMessage-0" class="message hidden">No students found</div>
+                                                    <div id="loadingMessage-0" class="message hidden">Loading...</div>
+                                                    <div id="errorMessage-0" class="message hidden">Error loading students</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row sibling-details" id="siblingDetails-0" style="display: none;">
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Sibling Name</label>
+                                            <input type="text" class="form-control sibling-name" id="siblingName-0" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Roll No</label>
+                                            <input type="text" class="form-control sibling-rollno" id="siblingRollNo-0" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Admission No</label>
+                                            <input type="text" class="form-control sibling-admno" id="siblingAdmNo-0" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Class</label>
+                                            <input type="text" class="form-control sibling-class" id="siblingClass-0" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Father Name</label>
+                                            <input type="text" class="form-control sibling-fathername" id="siblingFatherName-0" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Father AadharNo</label>
+                                            <input type="text" class="form-control sibling-fatheraadhar" id="siblingFatherAadharNo-0" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 sibling-hidden-fields">
+                                        <input type="hidden" name="Family.Siblings[0].SiblingId" id="siblingId-0" class="sibling-id-hidden" />
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Button to add more siblings -->
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <button type="button" id="addSiblingBtn" class="btn btn-outline-primary">
+                                        <i class="ti ti-plus"></i> Add Another Sibling
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transport Information -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-bus-stop fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Transport Information</h5>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="transportSwitch"
+                                       @(Model.Family.TransportNeeded == true ? "checked" : "")
+                                       onchange="toggleTransport()" name="Family.TransportNeeded" value="true" />
+                                <input type="hidden" name="Family.TransportNeeded" value="false" />
+                            </div>
+                        </div>
+                        <div class="card-body pb-1" id="transportFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Family.Route, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Family.Route, Model.Basic.BasicRouteList, "Select a Route", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Family.Route, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.PickupPoint, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Basic.PickupPoint, Model.Basic.BasicPickUpList, "Select a PickUp Point", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Basic.PickupPoint, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Family.VehicleNumber, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Family.VehicleNumber, Model.Basic.BasicVehiclesList, "Select a Vehicle", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Family.VehicleNumber, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hostel Information -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-building-fortress fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Hostel Information</h5>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="hostelSwitch"
+                                       @(Model.Family.HostelNeeded == true ? "checked" : "")
+                                       onchange="toggleHostel()" name="Family.HostelNeeded" value="true" />
+                                <input type="hidden" name="Family.HostelNeeded" value="false" />
+                            </div>
+                        </div>
+                        <div class="card-body pb-1" id="hostelFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Family.HostelDetail, new { @class = "form-label" })
+                                        @Html.DropDownListFor(x => x.Family.HostelDetail, Model.Basic.BasicHostelList, "Select a Hostel", new { @class = "form-select" })
+                                        @Html.ValidationMessageFor(m => m.Family.HostelDetail, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Family.HostelNo, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Family.HostelNo, new { @class = "form-control", maxlength = "50" })
+                                        @Html.ValidationMessageFor(m => m.Family.HostelNo, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Information -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-file fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Documents</h5>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="documentsSwitch" value="true" />
+                                <input type="hidden" value="false" />
+                            </div>
+                        </div>
+                        <div class="card-body pb-1" id="documentsFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="mb-2">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Other.UploadTitle1, "Document 1", new { @class = "form-label mb-1" })
+                                            <p>Upload image size of 4MB, Accepted Format PDF</p>
+                                        </div>
+                                        <div class="d-flex align-items-center flex-wrap">
+                                            <div class="mb-3">
+                                                @Html.TextBoxFor(m => m.Other.UploadTitle1, new { @class = "form-control", placeholder = "Document Title", maxlength = "20" })
+                                            </div>
+                                            <div class="btn btn-primary drag-upload-btn mb-2 ms-2">
+                                                <i class="ti ti-file-upload me-1"></i>Upload Document
+                                                <input type="file" name="documentFiles" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-2">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Other.UploadTitle2, "Document 2", new { @class = "form-label mb-1" })
+                                            <p>Upload image size of 4MB, Accepted Format PDF</p>
+                                        </div>
+                                        <div class="d-flex align-items-center flex-wrap">
+                                            <div class="mb-3">
+                                                @Html.TextBoxFor(m => m.Other.UploadTitle2, new { @class = "form-control", placeholder = "Document Title", maxlength = "20" })
+                                            </div>
+                                            <div class="btn btn-primary drag-upload-btn mb-2 ms-2">
+                                                <i class="ti ti-file-upload me-1"></i>Upload Document
+                                                <input type="file" name="documentFiles" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-2">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Other.UploadTitle3, "Document 3", new { @class = "form-label mb-1" })
+                                            <p>Upload image size of 4MB, Accepted Format PDF</p>
+                                        </div>
+                                        <div class="d-flex align-items-center flex-wrap">
+                                            <div class="mb-3">
+                                                @Html.TextBoxFor(m => m.Other.UploadTitle3, new { @class = "form-control", placeholder = "Document Title", maxlength = "20" })
+                                            </div>
+                                            <div class="btn btn-primary drag-upload-btn mb-2 ms-2">
+                                                <i class="ti ti-file-upload me-1"></i>Upload Document
+                                                <input type="file" name="documentFiles" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="mb-2">
+                                        <div class="mb-3">
+                                            @Html.LabelFor(m => m.Other.UploadTitle4, "Document 4", new { @class = "form-label mb-1" })
+                                            <p>Upload image size of 4MB, Accepted Format PDF</p>
+                                        </div>
+                                        <div class="d-flex align-items-center flex-wrap">
+                                            <div class="mb-3">
+                                                @Html.TextBoxFor(m => m.Other.UploadTitle4, new { @class = "form-control", placeholder = "Document Title", maxlength = "20" })
+                                            </div>
+                                            <div class="btn btn-primary drag-upload-btn mb-2 ms-2">
+                                                <i class="ti ti-file-upload me-1"></i>Upload Document
+                                                <input type="file" name="documentFiles" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical History -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-medical-cross fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Medical History</h5>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="medicalSwitch" value="true" />
+                                <input type="hidden" value="false" />
+                            </div>
+                        </div>
+                        <div class="card-body pb-1" id="medicalFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.Allergies, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.Allergies, new { @class = "form-control tag-input", maxlength = "100", data_role = "tagsinput", placeholder = "Add allergies..." })
+                                        @Html.ValidationMessageFor(m => m.Other.Allergies, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.Medications, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.Medications, new { @class = "form-control tag-input", maxlength = "100", data_role = "tagsinput", placeholder = "Add medications..." })
+                                        @Html.ValidationMessageFor(m => m.Other.Medications, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Previous School details -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-building-bank fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Previous School Details</h5>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="previousSchoolSwitch" value="true" />
+                                <input type="hidden" value="false" />
+                            </div>
+                        </div>
+                        <div class="card-body pb-1" id="previousSchoolFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.PreviousSchoolDtl, "School Name", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.PreviousSchoolDtl, new { @class = "form-control", maxlength = "80" })
+                                        @Html.ValidationMessageFor(m => m.Other.PreviousSchoolDtl, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.PreviousSchoolAddress, "Address", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.PreviousSchoolAddress, new { @class = "form-control", maxlength = "100" })
+                                        @Html.ValidationMessageFor(m => m.Other.PreviousSchoolAddress, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.UdiseCode, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.UdiseCode, new { @class = "form-control", maxlength = "30" })
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.SchoolNote, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.SchoolNote, new { @class = "form-control", maxlength = "100" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Education Details -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-school fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Educational Details</h5>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="educationalDetailsSwitch"
+                                       @(Model.Other.EducationDetails != null && Model.Other.EducationDetails.Any() ? "checked" : "")
+                                       onchange="toggleEducationDetails()" value="true" />
+                                <input type="hidden" name="educationalDetailsEnabled" value="false" />
+                            </div>
+                        </div>
+                        <div class="card-body pb-1" id="educationalDetailsFields"
+                             style="display: @(Model.Other.EducationDetails != null && Model.Other.EducationDetails.Any() ? "block" : "none");">
+
+                            <!-- Container for multiple education details -->
+                            <div id="education-details-container">
+                                @if (Model.Other.EducationDetails != null && Model.Other.EducationDetails.Any())
+                                {
+                                    for (int i = 0; i < Model.Other.EducationDetails.Count; i++)
+                                    {
+                                        <div class="education-detail-section mb-4 border-bottom pb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="mb-0">Education Record #@(i + 1)</h6>
+                                                @if (i > 0)
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-outline-danger remove-education-btn">
+                                                        <i class="ti ti-trash"></i> Remove
+                                                    </button>
+                                                }
+                                            </div>
+
+                                            @Html.HiddenFor(m => m.Other.EducationDetails[i].EducationId)
+
+                                            <div class="row">
+                                                <div class="col-md-2">
+                                                    <div class="mb-2">
+                                                        <label class="form-label">Class</label>
+                                                        @Html.TextBoxFor(m => m.Other.EducationDetails[i].Class, new { @class = "form-control", maxlength = "20" })
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="mb-2">
+                                                        <label class="form-label">Roll No</label>
+                                                        @Html.TextBoxFor(m => m.Other.EducationDetails[i].RollNo, new { @class = "form-control", maxlength = "15" })
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="mb-2">
+                                                        <label class="form-label">Maximum Marks</label>
+                                                        @Html.TextBoxFor(m => m.Other.EducationDetails[i].MaximumMarks, new { @class = "form-control", maxlength = "6", onkeypress = "return isNumber(event);" })
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="mb-2">
+                                                        <label class="form-label">Obtained Marks</label>
+                                                        @Html.TextBoxFor(m => m.Other.EducationDetails[i].ObtainedMarks, new { @class = "form-control", maxlength = "6", onkeypress = "return isNumber(event);" })
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="mb-2">
+                                                        <label class="form-label">Percentage</label>
+                                                        @Html.TextBoxFor(m => m.Other.EducationDetails[i].Percentage, new { @class = "form-control" })
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <div class="mb-2">
+                                                        <label class="form-label">Board</label>
+                                                        @Html.TextBoxFor(m => m.Other.EducationDetails[i].Board, new { @class = "form-control", maxlength = "20", onkeypress = "return isAlphabet(event);" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-2">
+                                                    <div class="mb-2">
+                                                        <label class="form-label">Passing Year</label>
+                                                        @Html.TextBoxFor(m => m.Other.EducationDetails[i].PassingYear, new { @class = "form-control", maxlength = "4", onkeypress = "return isNumber(event);" })
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Subjects</label>
+                                                        @Html.TextBoxFor(m => m.Other.EducationDetails[i].Subjects, new { @class = "form-control", maxlength = "100" })
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Others</label>
+                                                        @Html.TextBoxFor(m => m.Other.EducationDetails[i].Others, new { @class = "form-control", maxlength = "100" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <!-- Template for the first education detail record -->
+                                    <div class="education-detail-section mb-4 border-bottom pb-3">
+                                        <h6 class="mb-3">Education Record #1</h6>
+                                        <input type="hidden" name="Other.EducationDetails[0].EducationId" value="0" />
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <div class="mb-2">
+                                                    <label class="form-label">Class</label>
+                                                    <input type="text" name="Other.EducationDetails[0].Class" maxlength="20" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="mb-2">
+                                                    <label class="form-label">Roll No</label>
+                                                    <input type="text" name="Other.EducationDetails[0].RollNo" maxlength="15" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="mb-2">
+                                                    <label class="form-label">Maximum Marks</label>
+                                                    <input type="text" name="Other.EducationDetails[0].MaximumMarks" maxlength="6" onkeypress="return isNumber(event);" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="mb-2">
+                                                    <label class="form-label">Obtained Marks</label>
+                                                    <input type="text" name="Other.EducationDetails[0].ObtainedMarks" maxlength="6" onkeypress="return isNumber(event);" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="mb-2">
+                                                    <label class="form-label">Percentage</label>
+                                                    <input type="text" name="Other.EducationDetails[0].Percentage" readonly class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="mb-2">
+                                                    <label class="form-label">Board</label>
+                                                    <input type="text" name="Other.EducationDetails[0].Board" maxlength="20" onkeypress="return isAlphabet(event);" class="form-control" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <div class="mb-2">
+                                                    <label class="form-label">Passing Year</label>
+                                                    <input type="text" name="Other.EducationDetails[0].PassingYear" onkeypress="return isNumber(event);" maxlength="4" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Subjects</label>
+                                                    <input type="text" name="Other.EducationDetails[0].Subjects" maxlength="100" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Others</label>
+                                                    <input type="text" name="Other.EducationDetails[0].Others" maxlength="100" class="form-control" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Button to add more education details -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <button type="button" id="add-education-btn" class="btn btn-outline-primary">
+                                        <i class="ti ti-plus"></i> Add Another Education Record
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Details -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-building-bank fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Banking & Other Details</h5>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" role="switch" id="bankingDetailsSwitch" value="true" />
+                                <input type="hidden" value="false" />
+                            </div>
+                        </div>
+                        <div class="card-body pb-1" id="bankingDetailsFields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.BankName, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.BankName, new { @class = "form-control", maxlength = "100", onkeypress = "return isAlphabet(event);" })
+                                        @Html.ValidationMessageFor(m => m.Other.BankName, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.BankBranch, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.BankBranch, new { @class = "form-control", maxlength = "100", onkeypress = "return isAlphabet(event);" })
+                                        @Html.ValidationMessageFor(m => m.Other.BankBranch, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.BankAcNo, "Account Number", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.BankAcNo, new { @class = "form-control", maxlength = "25", onkeypress = "return isNumber(event);" })
+                                        @Html.ValidationMessageFor(m => m.Other.BankAcNo, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.IfscCode, "IFSC Code", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.IfscCode, new { @class = "form-control", maxlength = "15", onkeypress = "return isAlphaNumericWithOutUnderscoreHyphen(event);" })
+                                        @Html.ValidationMessageFor(m => m.Other.IfscCode, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.NADID, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.NADID, new { @class = "form-control", maxlength = "30" })
+                                        @Html.ValidationMessageFor(m => m.Other.NADID, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.IDentityLocal, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.IDentityLocal, new { @class = "form-control", maxlength = "30" })
+                                        @Html.ValidationMessageFor(m => m.Other.IDentityLocal, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.IdentityOther, "Identity Other", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.IdentityOther, new { @class = "form-control", maxlength = "30" })
+                                        @Html.ValidationMessageFor(m => m.Other.IdentityOther, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Other.OtherInformation, "Additional Information", new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Other.OtherInformation, new { @class = "form-control", maxlength = "100", placeholder = "Enter any additional information here..." })
+                                        @Html.ValidationMessageFor(m => m.Other.OtherInformation, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Miscellaneous Details Section - Updated -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-asterisk fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Miscellaneous Details</h5>
+                            </div>
+                        </div>
+                        <div class="card-body pb-1">
+                            <!-- First Row: Additional Identifiers -->
+                            <div class="row">
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.PENNo, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.PENNo, new { @class = "form-control", maxlength = "50", placeholder = "PEN Number" })
+                                        @Html.ValidationMessageFor(m => m.Basic.PENNo, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.OldBalance, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.OldBalance, new { @class = "form-control", maxlength = "6", onkeypress = "return isNumber(event);", placeholder = "Previous balance if any" })
+                                        @Html.ValidationMessageFor(m => m.Basic.OldBalance, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.LoginId, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.LoginId, new { @class = "form-control", disabled = "disabled", placeholder = "Auto-generated" })
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        @Html.LabelFor(m => m.Basic.Password, new { @class = "form-label" })
+                                        @Html.TextBoxFor(m => m.Basic.Password, new { @class = "form-control", maxlength = "4", placeholder = "4-digit PIN" })
+                                        @Html.ValidationMessageFor(m => m.Basic.Password, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Second Row: Settings/Toggles -->
+                            <div class="row">
+                                <div class="col-lg-4 col-md-4 col-sm-6">
+                                    <div class="mb-3">
+                                        <div class="d-flex gap-4">
+                                            <div class="form-check form-switch">
+                                                @Html.CheckBoxFor(m => m.Basic.SendSMS, new { @class = "form-check-input" })
+                                                <label class="form-check-label" for="Basic_SendSMS">SMS</label>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                @Html.CheckBoxFor(m => m.Basic.IsLateFee, new { @class = "form-check-input" })
+                                                <label class="form-check-label" for="Basic_IsLateFee">Late Fee</label>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                @Html.CheckBoxFor(m => m.Basic.IsActive, new { @class = "form-check-input" })
+                                                <label class="form-check-label" for="Basic_IsActive">Active</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="text-end mt-4 mb-4">
+                        <a href="@Url.Action("Index")" class="btn btn-light me-3">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Student</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/template/assets/js/student/webcamstudent.js?t=@DateTime.Now.ToLongTimeString()"></script>
+<script src="~/template/assets/js/student/sibling.js?t=@DateTime.Now.ToLongTimeString()"></script>
+<script src="~/template/assets/js/student/studentform.js?t=@DateTime.Now.ToLongTimeString()"></script>
+<script src="~/template/assets/js/student/toogle.js?t=@DateTime.Now.ToLongTimeString()"></script
+
+<!-- Include all your existing JavaScript here -->
+
+<script>
+    // Update the hidden field value when the switch changes
+    $('#subjectSelectionSwitch').on('change', function () {
+        $('#subjectSelectionEnabled').val($(this).is(':checked'));
+    });
+
+    $(document).ready(function () {
+        // This will ensure the Hindi field is updated when user leaves the English field
+        // even if the API didn't respond in time
+        $('#Basic_FirstName').on('blur', function () {
+            // Trigger an input event to force transliteration
+            enableHindiTransliteration('Basic_FirstName', 'Basic_StudentNameHindi');
+        });
+        $('#Family_FName').on('blur', function () {
+            // Trigger an input event to force transliteration
+            enableHindiTransliteration('Family_FName', 'Basic_FatherNameHindi');
+        });
+        $('#Family_MName').on('blur', function () {
+            // Trigger an input event to force transliteration
+            enableHindiTransliteration('Family_MName', 'Basic_MotherNameHindi');
+        });
+        $('#Family_GName').on('blur', function () {
+            // Trigger an input event to force transliteration
+            enableHindiTransliteration('Family_GName', 'Basic_GuardianNameHindi');
+        });
+    });
+</script>
+<script>
+    // Function to calculate percentage and validate obtained marks
+    function calculatePercentage(maximumField, obtainedField, percentageField) {
+        const maxMarks = parseFloat(maximumField.val()) || 0;
+        const obtainedMarks = parseFloat(obtainedField.val()) || 0;
+
+        // Reset error state
+        obtainedField.removeClass('is-invalid');
+        removeErrorMessage(obtainedField);
+
+        // Validate: obtained marks cannot be greater than maximum marks
+        if (obtainedMarks > maxMarks) {
+            obtainedField.addClass('is-invalid');
+            showErrorMessage(obtainedField, 'Obtained marks cannot exceed maximum marks');
+            percentageField.val('');
+            return false;
+        }
+
+        // Calculate percentage if max marks is greater than zero
+        if (maxMarks > 0) {
+            const percentage = (obtainedMarks / maxMarks * 100).toFixed(2);
+            percentageField.val(percentage);
+        } else {
+            percentageField.val('');
+        }
+
+        return true;
+    }
+    function validateEducationRecord(section) {
+        let isValid = true;
+        const requiredFields = [
+            "Class",
+            "RollNo",
+            "MaximumMarks",
+            "ObtainedMarks",
+            "Board",
+            "PassingYear",
+            "Subjects"
+        ];
+
+        // Find all required fields in this section and validate them
+        requiredFields.forEach(fieldName => {
+            const field = section.find(`input[name$="].${fieldName}"]`);
+            if (!field.val().trim()) {
+                field.addClass('is-invalid');
+                showErrorMessage(field, `${fieldName} is required`);
+                isValid = false;
+            } else {
+                field.removeClass('is-invalid');
+                removeErrorMessage(field);
+            }
+        });
+
+        // Also validate that obtained marks don't exceed maximum marks
+        const maxField = section.find('input[name$="].MaximumMarks"]');
+        const obtainedField = section.find('input[name$="].ObtainedMarks"]');
+
+        if (maxField.val() && obtainedField.val()) {
+            const maxMarks = parseFloat(maxField.val()) || 0;
+            const obtainedMarks = parseFloat(obtainedField.val()) || 0;
+
+            if (obtainedMarks > maxMarks) {
+                obtainedField.addClass('is-invalid');
+                showErrorMessage(obtainedField, 'Obtained marks cannot exceed maximum marks');
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+    // Function to set up percentage calculation for an education detail section
+    function setupPercentageCalculation(index) {
+        const maxField = $(`input[name="Other.EducationDetails[${index}].MaximumMarks"]`);
+        const obtainedField = $(`input[name="Other.EducationDetails[${index}].ObtainedMarks"]`);
+        const percentageField = $(`input[name="Other.EducationDetails[${index}].Percentage"]`);
+
+        // Calculate on change of either field
+        maxField.on('input', function () {
+            calculatePercentage(maxField, obtainedField, percentageField);
+        });
+
+        obtainedField.on('input', function () {
+            calculatePercentage(maxField, obtainedField, percentageField);
+        });
+
+        // Initial calculation if values exist
+        if (maxField.val() || obtainedField.val()) {
+            calculatePercentage(maxField, obtainedField, percentageField);
+        }
+    }
+    // Function to show error message next to a field
+    function showErrorMessage(field, message) {
+        // Look for existing error message
+        let errorElement = field.next('.validation-error');
+
+        // If no error element exists, create one
+        if (errorElement.length === 0) {
+            errorElement = $('<div class="validation-error text-danger" style="font-size: 0.875rem;"></div>');
+            field.after(errorElement);
+        }
+
+        // Update message
+        errorElement.text(message);
+    }
+
+    // Function to remove error message
+    function removeErrorMessage(field) {
+        field.next('.validation-error').remove();
+    }
+    // Add this function to your JavaScript
+    function validateSubjects() {
+        // Only validate if subject selection is enabled
+        if ($('#subjectSelectionSwitch').is(':checked')) {
+            // Check if at least one subject is selected
+            var selectedSubjects = $('#subjectSelectionFields input[name="selectedSubjects"]:checked');
+
+            if (selectedSubjects.length === 0) {
+                console.log('Validation failed: No subjects selected');
+
+                // Add visual error indication
+                $('#subjectSelectionFields').addClass('border border-danger');
+
+                // Add error message
+                if ($('#subjectError').length === 0) {
+                    $('#subjectSelectionFields').prepend(
+                        '<div id="subjectError" class="alert alert-danger my-2">Please select at least one subject</div>'
+                    );
+                }
+
+                return false;
+            } else {
+                // Clear any error indicators if validation passes
+                $('#subjectSelectionFields').removeClass('border border-danger');
+                $('#subjectError').remove();
+
+                console.log('Subject validation passed. Selected subjects: ' + selectedSubjects.length);
+                return true;
+            }
+        }
+
+        // If subject selection is not enabled, validation passes
+        return true;
+    }
+    function toggleEducationDetails() {
+        if ($('#educationalDetailsSwitch').is(':checked')) {
+            $('#educationalDetailsFields').show();
+
+            // If no education details exist, add the first one
+            if ($('.education-detail-section').length === 0) {
+                addEducationDetail();
+            }
+        } else {
+            $('#educationalDetailsFields').hide();
+        }
+    }
+
+    $(document).ready(function () {
+        // Toggle education details section
+        console.log("Subjects loaded: " + $('.subject-checkbox').length);
+        $('#Family_FAadhar').on('change', validateFatherAadharOnChange);
+
+        // Validate Aadhar match when a sibling is selected
+        $(document).on('click', '.results-table tr', function () {
+            // Allow a moment for the sibling data to be populated
+            setTimeout(validateFatherAadharMatchesSibling, 500);
+        });
+
+        // Validate on remove sibling button click
+        $(document).on('click', '.remove-sibling-btn', function () {
+            // Allow a moment for the sibling to be removed
+            setTimeout(validateFatherAadharMatchesSibling, 500);
+        });
+
+        $('#add-education-btn').click(function () {
+            // Validate the last education record before adding a new one
+            const lastRecord = $('.education-detail-section').last();
+            if (lastRecord.length && !validateEducationRecord(lastRecord)) {
+                // If validation fails, focus on the first invalid field
+                lastRecord.find('.is-invalid:first').focus();
+
+                // Show a message at the top of the section
+                if (lastRecord.find('.record-validation-error').length === 0) {
+                    lastRecord.prepend(
+                        '<div class="alert alert-danger record-validation-error mb-3">' +
+                        'Please complete all required fields in this record before adding a new one.' +
+                        '</div>'
+                    );
+
+                    // Auto-scroll to the validation message
+                    $('html, body').animate({
+                        scrollTop: lastRecord.find('.record-validation-error').offset().top - 100
+                    }, 500);
+                }
+
+                return false;
+            } else {
+                // Remove any existing validation messages
+                $('.record-validation-error').remove();
+
+                // If validation passes, add the new record
+                addEducationDetail();
+            }
+        });
+
+        // Also handle the case when a field's value changes to remove the error
+        $(document).on('input', '.education-detail-section input', function () {
+            const field = $(this);
+            if (field.val().trim()) {
+                field.removeClass('is-invalid');
+                removeErrorMessage(field);
+
+                // Remove the overall validation message if it exists
+                $(this).closest('.education-detail-section').find('.record-validation-error').remove();
+            }
+        });
+        // Using event delegation to handle input events on dynamically added fields
+        $(document).on('input', 'input[name$="].MaximumMarks"]', function () {
+            const index = $(this).attr('name').match(/\[(\d+)\]/)[1];
+            const maxField = $(this);
+            const obtainedField = $(`input[name="Other.EducationDetails[${index}].ObtainedMarks"]`);
+            const percentageField = $(`input[name="Other.EducationDetails[${index}].Percentage"]`);
+
+            calculatePercentage(maxField, obtainedField, percentageField);
+        });
+
+        $(document).on('input', 'input[name$="].ObtainedMarks"]', function () {
+            const index = $(this).attr('name').match(/\[(\d+)\]/)[1];
+            const obtainedField = $(this);
+            const maxField = $(`input[name="Other.EducationDetails[${index}].MaximumMarks"]`);
+            const percentageField = $(`input[name="Other.EducationDetails[${index}].Percentage"]`);
+
+            calculatePercentage(maxField, obtainedField, percentageField);
+        });
+
+        // Calculate percentages for existing education details on page load
+        $('.education-detail-section').each(function () {
+            const index = $(this).index('.education-detail-section');
+            const maxField = $(`input[name="Other.EducationDetails[${index}].MaximumMarks"]`);
+            const obtainedField = $(`input[name="Other.EducationDetails[${index}].ObtainedMarks"]`);
+            const percentageField = $(`input[name="Other.EducationDetails[${index}].Percentage"]`);
+
+            // Calculate initial percentage if values exist
+            if (maxField.val() || obtainedField.val()) {
+                calculatePercentage(maxField, obtainedField, percentageField);
+            }
+        });
+
+
+        $('#Basic_Mobile, #Basic_WhatsAppNum, #Family_FPhone, #Family_MPhone, #Family_GPhone').on('blur', function () {
+            const field = $(this);
+            const value = field.val();
+            const result = validateMobileNumber(value);
+
+            if (!result.isValid) {
+                field.addClass('is-invalid');
+                showErrorMessage(field, result.message);
+            } else {
+                field.removeClass('is-invalid');
+                removeErrorMessage(field);
+            }
+        });
+
+        // Email field validation
+        $('#Basic_Email, #Family_FEmail, #Family_MEmail, #Family_GEmail').on('blur', function () {
+            const field = $(this);
+            const value = field.val();
+            const result = validateEmail(value);
+
+            if (!result.isValid) {
+                field.addClass('is-invalid');
+                showErrorMessage(field, result.message);
+            } else {
+                field.removeClass('is-invalid');
+                removeErrorMessage(field);
+            }
+        });
+
+        // Toggle subject selection section
+        $('#subjectSelectionSwitch').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#subjectSelectionFields').show();
+                console.log("Subject selection enabled");
+            } else {
+                $('#subjectSelectionFields').hide();
+                console.log("Subject selection disabled");
+            }
+        });
+
+        // Initialize the section based on existing state
+        if ($('#subjectSelectionSwitch').is(':checked')) {
+            $('#subjectSelectionFields').show();
+            console.log("Subject selection is initially enabled");
+        }
+
+        // Log selections for debugging
+        $(document).on('change', '.subject-checkbox', function () {
+            console.log("Selected subjects: " + $('.subject-checkbox:checked').length);
+            console.log("Checkbox values: " + $('.subject-checkbox:checked').map(function () {
+                return $(this).val();
+            }).get().join(', '));
+        });
+
+        // Initialize on page load
+        toggleEducationDetails();
+
+        // Bind change event
+        $('#educationalDetailsSwitch').on('change', toggleEducationDetails);
+
+
+        // Remove education detail (delegate to handle dynamically added elements)
+        $(document).on('click', '.remove-education-btn', function () {
+            $(this).closest('.education-detail-section').remove();
+
+            // Renumber the remaining education sections
+            $('.education-detail-section').each(function (index) {
+                $(this).find('h6').text('Education Record #' + (index + 1));
+
+                // Update all input names and ids to maintain proper indexing
+                $(this).find('input, select, textarea').each(function () {
+                    var name = $(this).attr('name');
+                    if (name) {
+                        var newName = name.replace(/EducationDetails\[\d+\]/g, 'EducationDetails[' + index + ']');
+                        $(this).attr('name', newName);
+                    }
+
+                    var id = $(this).attr('id');
+                    if (id) {
+                        var newId = id.replace(/EducationDetails_\d+_/g, 'EducationDetails_' + index + '_');
+                        $(this).attr('id', newId);
+                    }
+                });
+            });
+        });
+
+        // Function to add new education detail
+        function addEducationDetail() {
+            var index = $('.education-detail-section').length;
+            var template = `
+    <div class="education-detail-section mb-4 border-bottom pb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Education Record #${index + 1}</h6>
+            <button type="button" class="btn btn-sm btn-outline-danger remove-education-btn">
+                <i class="ti ti-trash"></i> Remove
+            </button>
+        </div>
+        <input type="hidden" name="Other.EducationDetails[${index}].EducationId" value="0" />
+        <div class="row">
+            <div class="col-md-2">
+                <div class="mb-2">
+                    <label class="form-label">Class</label>
+                    <input type="text" name="Other.EducationDetails[${index}].Class" maxlength = "20"  class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="mb-2">
+                    <label class="form-label">Roll No</label>
+                    <input type="text" name="Other.EducationDetails[${index}].RollNo" maxlength = "15" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="mb-2">
+                    <label class="form-label">Maximum Marks</label>
+                    <input type="text" name="Other.EducationDetails[${index}].MaximumMarks" maxlength = "6"  onkeypress = "return isNumber(event);" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="mb-2">
+                    <label class="form-label">Obtained Marks</label>
+                    <input type="text" name="Other.EducationDetails[${index}].ObtainedMarks" maxlength = "6"  onkeypress = "return isNumber(event);" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="mb-2">
+                    <label class="form-label">Percentage</label>
+                    <input type="text" name="Other.EducationDetails[${index}].Percentage" readonly class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="mb-2">
+                    <label class="form-label">Board</label>
+                    <input type="text" name="Other.EducationDetails[${index}].Board" maxlength = "20" onkeypress = "return isAlphabet(event);"  class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-2">
+                <div class="mb-2">
+                    <label class="form-label">Passing Year</label>
+                    <input type="text" name="Other.EducationDetails[${index}].PassingYear"  onkeypress = "return isNumber(event);"  maxlength = "4"  class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="mb-3">
+                    <label class="form-label">Subjects</label>
+                    <input type="text" name="Other.EducationDetails[${index}].Subjects" maxlength = "100"  class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="mb-3">
+                    <label class="form-label">Others</label>
+                    <input type="text" name="Other.EducationDetails[${index}].Others"  maxlength = "100"  class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+`;
+
+            $('#education-details-container').append(template);
+        }
+    });
+
+    function displayValidationErrors() {
+        // Get all error messages from validation summary and validation message elements
+        var errors = [];
+
+        // Process validation message elements
+        $('.text-danger:not(:empty)').each(function () {
+            var field = $(this).closest('.mb-3').find('.form-label').text().trim();
+            var message = $(this).text().trim();
+
+            if (message) {
+                errors.push({
+                    field: field || 'Unknown field',
+                    message: message
+                });
+
+                // Highlight the field
+                var input = $(this).closest('.mb-3').find('input, select, textarea');
+                input.addClass('is-invalid');
+
+                // Find and expand the section containing this field
+                var section = $(this).closest('.card-body');
+                if (section.length > 0 && section.css('display') === 'none') {
+                    var sectionId = section.attr('id');
+                    if (sectionId) {
+                        var switchId = sectionId.replace('Fields', 'Switch');
+                        $('#' + switchId).prop('checked', true).change();
+                    }
+                }
+            }
+        });
+
+        // If we have errors, create and show a summary
+        if (errors.length > 0) {
+            // Create error summary container if it doesn't exist
+            var summaryContainer = $('#validation-summary');
+            if (summaryContainer.length === 0) {
+                summaryContainer = $('<div id="validation-summary" class="alert alert-danger mb-4"></div>');
+                $('#studentForm').prepend(summaryContainer);
+            }
+
+            // Build the error summary content
+            var content = '<h5>Please fix the following issues:</h5><ul>';
+
+            errors.forEach(function (error) {
+                content += '<li><strong>' + error.field + ':</strong> ' + error.message + '</li>';
+            });
+
+            content += '</ul>';
+            summaryContainer.html(content);
+
+            // Scroll to the top to see the summary
+            $('html, body').animate({
+                scrollTop: summaryContainer.offset().top - 20
+            }, 500);
+
+            // Add visual indicators to sections with errors
+            $('.card-body').each(function () {
+                if ($(this).find('.text-danger:not(:empty)').length > 0) {
+                    $(this).prev('.card-header').addClass('has-errors');
+                }
+            });
+
+            return true; // Errors found
+        }
+
+        return false; // No errors found
+    }
+    // Fix form submission for hidden fields
+    $(document).ready(function () {
+        displayValidationErrors();
+        // Handle form submission
+        $('#studentForm').on('submit', function (e) {
+
+            debugSiblingData();
+
+            // Validate siblings if checkbox is checked
+            if ($('#hasSiblings').is(':checked')) {
+                if (!validateSiblingsOnSubmit()) {
+                    console.log('Sibling validation failed');
+                    e.preventDefault();
+                    const firstError = $('.sibling-error:visible').first();
+                    if (firstError.length) {
+                        $('html, body').animate({
+                            scrollTop: firstError.offset().top - 100
+                        }, 500);
+                    }
+
+                    return false;
+                }
+                if (!validateFatherAadharMatchesSibling()) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            var isValid = true;
+            $('#Basic_Mobile, #Basic_WhatsAppNum, #Family_FPhone, #Family_MPhone, #Family_GPhone').each(function () {
+                const field = $(this);
+                const value = field.val();
+                const result = validateMobileNumber(value);
+
+                if (!result.isValid) {
+                    field.addClass('is-invalid');
+                    showErrorMessage(field, result.message);
+                    isFormValid = false;
+                }
+            });
+
+            // Validate all email addresses
+            $('#Basic_Email, #Family_FEmail, #Family_MEmail, #Family_GEmail').each(function () {
+                const field = $(this);
+                const value = field.val();
+                const result = validateEmail(value);
+
+                if (!result.isValid) {
+                    field.addClass('is-invalid');
+                    showErrorMessage(field, result.message);
+                    isFormValid = false;
+                }
+            });
+            if (!isValid) {
+                e.preventDefault();
+                $('html, body').animate({
+                    scrollTop: $('.is-invalid:first').offset().top - 100
+                }, 500);
+
+                return false;
+            }
+            let educationValid = true;
+            $('.education-detail-section').each(function () {
+                const index = $(this).index('.education-detail-section');
+                const maxField = $(`input[name="Other.EducationDetails[${index}].MaximumMarks"]`);
+                const obtainedField = $(`input[name="Other.EducationDetails[${index}].ObtainedMarks"]`);
+                const percentageField = $(`input[name="Other.EducationDetails[${index}].Percentage"]`);
+
+                if (maxField.val() && obtainedField.val()) {
+                    const isValid = calculatePercentage(maxField, obtainedField, percentageField);
+                    educationValid = educationValid && isValid;
+                }
+            });
+
+            if (!educationValid) {
+                e.preventDefault();
+                return false;
+            }
+            // Prevent default form submission initially
+            e.preventDefault();
+            console.log('Form submission started, validating subjects...');
+
+            // Show all hidden sections to include their fields in validation
+            $('.card-body[style*="display: none"]').each(function () {
+                $(this).attr('data-original-display', $(this).css('display'));
+                $(this).css('display', 'block');
+            });
+            if ($('#subjectSelectionSwitch').is(':checked')) {
+                console.log("Form submitting with subject selection enabled");
+
+                // Log selected subjects
+                var selectedSubjects = $('.subject-checkbox:checked').map(function () {
+                    return $(this).val();
+                }).get();
+
+                console.log("Selected subjects to submit: " + selectedSubjects.join(", "));
+            } else {
+                console.log("Form submitting with subject selection disabled");
+            }
+            // Make sure all required fields are valid
+
+            $('.required').each(function () {
+                var field = $(this).closest('.mb-3').find('input, select').first();
+                if (field.length && !field.val()) {
+                    field.addClass('is-invalid');
+                    isValid = false;
+                    console.log('Required field missing:', $(this).text().trim());
+                }
+            });
+
+            // Also check jQuery validation if it's available
+            if ($.validator && $(this).valid) {
+                isValid = isValid && $(this).valid();
+            }
+
+            if (!isValid) {
+                // If validation fails, display the errors
+                displayValidationErrors();
+
+                // Hide sections again that were originally hidden
+                $('.card-body[data-original-display]').each(function () {
+                    $(this).css('display', $(this).attr('data-original-display'));
+                    $(this).removeAttr('data-original-display');
+                });
+
+                // Scroll to first error
+                $('html, body').animate({
+                    scrollTop: $('.is-invalid:first').offset().top - 100
+                }, 500);
+
+                return false;
+            }
+
+            // If validation passes, proceed with submission
+            console.log('Form validation passed, submitting form');
+
+            // Keep all sections visible for form submission
+            // Submit the form programmatically to avoid infinite loop
+            setTimeout(function () {
+                // Remove the submit event handler to prevent recursion
+                $('#studentForm').off('submit');
+                $('#studentForm').submit();
+            }, 100);
+        });
+    });
+    $(window).on('load', function () {
+        //$('#Family_Route').select2();
+        //$('#Basic_PickupPoint').select2();
+        //$('#Family_VehicleNumber').select2();
+        $("#Basic_AdmsnDate").datepicker({
+            dateFormat: "dd/mm/yy"
+        });
+        var today = new Date(); // Get the current date
+        $("#Basic_AdmsnDate").datepicker({
+            dateFormat: "dd/mm/yy",
+            defaultDate: today,
+            changeMonth: true,
+            changeYear: true
+        });
+        $("#Basic_DOB").datepicker({
+            dateFormat: "dd/mm/yy"
+        });
+        // Format the date value to 'dd/mm/yy' and set it as the input's value
+        $("#Basic_AdmsnDate").val($.datepicker.formatDate("dd/mm/yy", today));
+    });
+</script>
+<script>
+
+    $(document).ready(function () {
+        $('#Family_Route').on('change', function () {
+            var selectedRouteId = $(this).val();
+
+            if (selectedRouteId) {
+                // Show loading indicator
+                $('#Basic_PickupPoint').html('<option value="">Loading...</option>').prop('disabled', true);
+
+                // Make an AJAX call to fetch pickup points for the selected route
+                $.ajax({
+                    url: '/DropDown/GetPickupPointsByRoute', // Adjust the controller and action name as needed
+                    type: 'GET',
+                    data: { routeId: selectedRouteId },
+                    dataType: 'json',
+                    success: function (response) {
+                        // Clear the dropdown
+                        $('#Basic_PickupPoint').empty();
+                        // Add a default option
+                        $('#Basic_PickupPoint').append('<option value="">Select Pickup Point</option>');
+
+                        // Access data from the nested structure
+                        if (response.success && response.data && response.data.length > 0) {
+                            $.each(response.data, function (index, item) {
+                                $('#Basic_PickupPoint').append('<option value="' + item.Id + '">' + item.Name + '</option>');
+                            });
+                        } else {
+                            $('#Basic_PickupPoint').append('<option value="">No pickup points available for this route</option>');
+                        }
+
+                        // Re-enable the dropdown
+                        $('#Basic_PickupPoint').prop('disabled', false);
+                        // Refresh Select2 to update the UI
+                        $('#Basic_PickupPoint').trigger('change');
+                    },
+                    error: function () {
+                        // Handle error
+                        $('#Basic_PickupPoint').html('<option value="">Error loading pickup points</option>');
+                        $('#Basic_PickupPoint').prop('disabled', false);
+                    }
+                });
+
+                // Optionally, you might also want to update the vehicle dropdown based on the route
+            } else {
+                // If no route is selected, clear and disable the pickup points dropdown
+                $('#Basic_PickupPoint').html('<option value="">Select a route first</option>').prop('disabled', true);
+                $('#Basic_PickupPoint').trigger('change');
+            }
+        });
+
+        // Enable transport fields if transport is checked on page load
+        if ($('#transportSwitch').is(':checked')) {
+            $('#transportFields').show();
+        }
+
+        // Also trigger route change if a value is already selected when page loads
+        // This is useful when editing an existing student
+        var initialRouteId = $('#Family_Route').val();
+        if (initialRouteId) {
+            $('#Family_Route').trigger('change');
+        }
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        // Initialize transliteration on page load for all fields
+        // This ensures the transliteration is ready when user starts typing
+
+        // Student Name transliteration
+        enableHindiTransliteration('Basic_FirstName', 'Basic_StudentNameHindi');
+
+        // Father's Name transliteration
+        enableHindiTransliteration('Family_FName', 'Basic_FatherNameHindi');
+
+        // Mother's Name transliteration
+        enableHindiTransliteration('Family_MName', 'Basic_MotherNameHindi');
+
+        // Guardian's Name transliteration
+        enableHindiTransliteration('Family_GName', 'Basic_GuardianNameHindi');
+    });
+</script>

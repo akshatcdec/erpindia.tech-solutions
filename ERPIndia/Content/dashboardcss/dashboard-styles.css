@@ -1,0 +1,944 @@
+﻿/* Dashboard Styles - dashboard-styles.css */
+/* Complete CSS for both card types without conflicts */
+
+/* ========================================
+   CONTAINER ADJUSTMENTS FOR MOBILE
+   ======================================== */
+@media (max-width: 768px) {
+    .container-fluid,
+    .container {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+}
+
+/* ========================================
+   GENERAL DASHBOARD STYLES
+   ======================================== */
+
+.dashboard-stats {
+    background: #2c3e50;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+    /* ========================================
+   ORIGINAL FINANCIAL CARDS STYLES
+   (Collection, Fees, Students, Attendance)
+   ======================================== */
+
+.stat-card {
+    background: white;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15), /* Right-side shadow */
+                0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle bottom shadow */
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+
+   .stat-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+   .stat-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+   .stat-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+   .stat-main-value {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 8px 0;
+        color: #2c3e50;
+    }
+
+   .stat-details {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+        flex: 1;
+        align-items: flex-start;
+    }
+
+   .stat-detail-item {
+        flex: 1;
+        text-align: center;
+    }
+
+   .stat-detail-value {
+        font-size: 16px;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+   .stat-detail-label {
+        font-size: 12px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+
+   .stat-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+        font-size: 11px;
+        gap: 8px;
+    }
+
+   .stat-footer-item {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 500;
+        flex: 1;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    /* Financial Cards Color Themes */
+   .stat-card.collection {
+        border-left: 4px solid #17a2b8;
+    }
+
+       .stat-card.collection .stat-main-value {
+            color: #28a745;
+        }
+
+       .stat-card.collection .stat-detail-value.cash {
+            color: #007bff;
+        }
+
+       .stat-card.collection .stat-detail-value.bank {
+            color: #17a2b8;
+        }
+
+   .stat-card.fees {
+        border-left: 4px solid #007bff;
+    }
+
+       .stat-card.fees .stat-main-value {
+            color: #007bff;
+        }
+
+       .stat-card.fees .stat-detail-value.received {
+            color: #28a745;
+        }
+
+       .stat-card.fees .stat-detail-value.dues {
+            color: #dc3545;
+        }
+
+   .stat-card.students {
+        border-left: 4px solid red;
+    }
+
+       .stat-card.students .stat-main-value {
+            color: #17a2b8;
+        }
+
+       .stat-card.students .stat-detail-value.male {
+            color: #6f42c1;
+        }
+
+       .stat-card.students .stat-detail-value.female {
+            color: #e83e8c;
+        }
+
+   .stat-card.attendance {
+        border-left: 4px solid #28a745;
+    }
+
+       .stat-card.attendance .stat-main-value {
+            color: #28a745;
+        }
+
+       .stat-card.attendance .stat-detail-value.absent {
+            color: #dc3545;
+        }
+
+       .stat-card.attendance .stat-detail-value.leave {
+            color: #ffc107;
+        }
+
+/* Footer Button Styles */
+.today-rept {
+    background-color: #007bff;
+    color: white;
+}
+
+.delete-rept {
+    background-color: #dc3545;
+    color: white;
+}
+
+.view-fees {
+    background-color: #007bff;
+    color: white;
+}
+
+.due-reminder {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.student-list {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.add-student {
+    background-color: #28a745;
+    color: white;
+}
+
+.mark-attendance {
+    background-color: #28a745;
+    color: white;
+}
+
+.attendance-report {
+    background-color: #6c757d;
+    color: white;
+}
+
+.stat-footer-item:hover {
+    opacity: 0.8;
+    cursor: pointer;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+/* ========================================
+   NEW MODERN CARDS STYLES
+   (Enquiry, Student, Staff, Payment)
+   ======================================== */
+
+/* Modern Card Base Styles - Applied to specific classes */
+.stat-card.enquiry,
+.stat-card.student,
+.stat-card.staff,
+.stat-card.payment {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 24px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+    height: 100% !important;
+    margin-bottom: 20px !important;
+    min-height: auto !important;
+    display: block !important;
+}
+
+/* Force spacing on mobile WITHOUT hover */
+@media (max-width: 768px) {
+    .stat-card.enquiry,
+    .stat-card.student,
+    .stat-card.staff,
+    .stat-card.payment {
+        padding: 20px !important;
+        margin-bottom: 15px !important;
+        min-height: auto !important;
+        transform: translateY(0) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+    }
+}
+
+.stat-card.enquiry:hover,
+.stat-card.student:hover,
+.stat-card.staff:hover,
+.stat-card.payment:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+}
+
+/* Modern Card Background Overlays */
+.stat-card.enquiry::before,
+.stat-card.student::before,
+.stat-card.staff::before,
+.stat-card.payment::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    opacity: 0.05 !important;
+    z-index: 0 !important;
+}
+
+.stat-card.enquiry::before {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.stat-card.student::before {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
+}
+
+.stat-card.staff::before {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%) !important;
+}
+
+.stat-card.payment::before {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+}
+
+/* Modern Card Content Layout - More specific */
+.stat-card.enquiry .stat-content,
+.stat-card.student .stat-content,
+.stat-card.staff .stat-content,
+.stat-card.payment .stat-content {
+    position: relative !important;
+    z-index: 1 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 15px !important;
+}
+
+/* Icon Wrapper for Modern Cards - More specific */
+.stat-card.enquiry .icon-wrapper,
+.stat-card.student .icon-wrapper,
+.stat-card.staff .icon-wrapper,
+.stat-card.payment .icon-wrapper {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 24px !important;
+    color: white !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+.stat-card.enquiry .icon-wrapper {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.stat-card.student .icon-wrapper {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
+}
+
+.stat-card.staff .icon-wrapper {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%) !important;
+}
+
+.stat-card.payment .icon-wrapper {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+}
+
+/* Modern Card Stat Details - More specific */
+.stat-card.enquiry .stat-details,
+.stat-card.student .stat-details,
+.stat-card.staff .stat-details,
+.stat-card.payment .stat-details {
+    flex: 1 !important;
+}
+
+.stat-card.enquiry .stat-row,
+.stat-card.student .stat-row,
+.stat-card.staff .stat-row,
+.stat-card.payment .stat-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 8px !important;
+}
+
+    .stat-card.enquiry .stat-row:last-child,
+    .stat-card.student .stat-row:last-child,
+    .stat-card.staff .stat-row:last-child,
+    .stat-card.payment .stat-row:last-child {
+        margin-bottom: 0 !important;
+    }
+
+.stat-card.enquiry .stat-label,
+.stat-card.student .stat-label,
+.stat-card.staff .stat-label,
+.stat-card.payment .stat-label {
+    font-size: 14px !important;
+    color: #718096 !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.025em !important;
+}
+
+.stat-card.enquiry .stat-value,
+.stat-card.student .stat-value,
+.stat-card.staff .stat-value,
+.stat-card.payment .stat-value {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    margin-left: 10px !important;
+}
+
+    /* Color Classes for Modern Card Values */
+    .stat-card.enquiry .stat-value.primary,
+    .stat-card.student .stat-value.primary,
+    .stat-card.staff .stat-value.primary,
+    .stat-card.payment .stat-value.primary {
+        color: #667eea !important;
+    }
+
+    .stat-card.enquiry .stat-value.success,
+    .stat-card.student .stat-value.success,
+    .stat-card.staff .stat-value.success,
+    .stat-card.payment .stat-value.success {
+        color: #48bb78 !important;
+    }
+
+    .stat-card.enquiry .stat-value.info,
+    .stat-card.student .stat-value.info,
+    .stat-card.staff .stat-value.info,
+    .stat-card.payment .stat-value.info {
+        color: #4299e1 !important;
+    }
+
+    .stat-card.enquiry .stat-value.danger,
+    .stat-card.student .stat-value.danger,
+    .stat-card.staff .stat-value.danger,
+    .stat-card.payment .stat-value.danger {
+        color: #fc8181 !important;
+    }
+
+/* Modern Card Background Overlays */
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.05;
+    z-index: 0;
+}
+
+.stat-card.enquiry::before {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-card.student::before {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.stat-card.staff::before {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.stat-card.payment::before {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Modern Card Content Layout */
+.stat-card .stat-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+/* Icon Wrapper for Modern Cards */
+.stat-card .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.enquiry .icon-wrapper {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.student .icon-wrapper {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.staff .icon-wrapper {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.payment .icon-wrapper {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+/* Modern Card Stat Details */
+.stat-content .stat-details {
+    flex: 1;
+}
+
+.stat-content .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+    .stat-content .stat-row:last-child {
+        margin-bottom: 0;
+    }
+
+.stat-content .stat-label {
+    font-size: 14px;
+    color: #718096;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+}
+
+.stat-content .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    margin-left: 10px;
+}
+
+/* Color Classes for Modern Card Values */
+.stat-value.primary {
+    color: #667eea;
+}
+
+.stat-value.success {
+    color: #48bb78;
+}
+
+.stat-value.info {
+    color: #4299e1;
+}
+
+.stat-value.warning {
+    color: #ed8936;
+}
+
+.stat-value.danger {
+    color: #fc8181;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Tablet Styles */
+@media (max-width: 1200px) {
+    .row > .col-lg-3 > .stat-card:not(.collection):not(.fees):not(.students):not(.attendance) {
+        padding: 20px !important;
+    }
+
+    .stat-card .icon-wrapper {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 20px !important;
+    }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    /* Original Cards Mobile Styles */
+   .stat-card {
+        min-height: 180px;
+        margin: 8px 0;
+    }
+
+   .stat-details {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+   .stat-detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 4px;
+    }
+
+   .stat-detail-label {
+        justify-content: flex-start;
+    }
+
+   .stat-footer {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+   .stat-footer-item {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+   .stat-main-value {
+        font-size: 20px;
+    }
+
+   .stat-title {
+        font-size: 13px;
+    }
+
+    /* Modern Cards Mobile Styles - ENHANCED */
+    .stat-card.enquiry,
+    .stat-card.student,
+    .stat-card.staff,
+    .stat-card.payment {
+        padding: 20px !important;
+        margin-bottom: 15px !important;
+        min-height: auto !important;
+    }
+
+        /* Mobile Content Layout */
+        .stat-card.enquiry .stat-content,
+        .stat-card.student .stat-content,
+        .stat-card.staff .stat-content,
+        .stat-card.payment .stat-content {
+            gap: 20px !important;
+        }
+
+        /* Mobile Icon Wrapper */
+        .stat-card.enquiry .icon-wrapper,
+        .stat-card.student .icon-wrapper,
+        .stat-card.staff .icon-wrapper,
+        .stat-card.payment .icon-wrapper {
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 20px !important;
+            border-radius: 12px !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* Mobile Stat Details */
+        .stat-card.enquiry .stat-details,
+        .stat-card.student .stat-details,
+        .stat-card.staff .stat-details,
+        .stat-card.payment .stat-details {
+            flex: 1 !important;
+            min-width: 0 !important;
+        }
+
+        /* Mobile Stat Row */
+        .stat-card.enquiry .stat-row,
+        .stat-card.student .stat-row,
+        .stat-card.staff .stat-row,
+        .stat-card.payment .stat-row {
+            margin-bottom: 12px !important;
+            align-items: baseline !important;
+            gap: 10px !important;
+        }
+
+        /* Mobile Labels and Values */
+        .stat-card.enquiry .stat-label,
+        .stat-card.student .stat-label,
+        .stat-card.staff .stat-label,
+        .stat-card.payment .stat-label {
+            font-size: 14px !important;
+            color: #718096 !important;
+            white-space: nowrap !important;
+            min-width: 0 !important;
+            flex: 1 !important;
+        }
+
+        .stat-card.enquiry .stat-value,
+        .stat-card.student .stat-value,
+        .stat-card.staff .stat-value,
+        .stat-card.payment .stat-value {
+            font-size: 22px !important;
+            font-weight: 700 !important;
+            margin-left: auto !important;
+            text-align: right !important;
+            white-space: nowrap !important;
+        }
+
+        /* Special handling for large numbers */
+        .stat-card.payment .stat-value {
+            font-size: 28px !important;
+        }
+
+        /* Fix for "Students Not Paid" label */
+        .stat-card.payment .stat-label {
+            white-space: normal !important;
+            line-height: 1.3 !important;
+        }
+}
+
+/* Extra Small Devices */
+@media (max-width: 576px) {
+   {
+        padding: 10px;
+    }
+
+       .stat-card {
+            margin: 5px 0;
+            padding: 12px;
+        }
+
+       .stat-footer-item {
+            font-size: 10px;
+            padding: 5px 6px;
+        }
+
+    /* Extra small modern cards */
+    .stat-card.enquiry,
+    .stat-card.student,
+    .stat-card.staff,
+    .stat-card.payment {
+        padding: 16px !important;
+    }
+
+        .stat-card.enquiry .stat-content,
+        .stat-card.student .stat-content,
+        .stat-card.staff .stat-content,
+        .stat-card.payment .stat-content {
+            gap: 16px !important;
+        }
+
+        .stat-card.enquiry .icon-wrapper,
+        .stat-card.student .icon-wrapper,
+        .stat-card.staff .icon-wrapper,
+        .stat-card.payment .icon-wrapper {
+            width: 44px !important;
+            height: 44px !important;
+            font-size: 18px !important;
+        }
+
+        .stat-card.enquiry .stat-value,
+        .stat-card.student .stat-value,
+        .stat-card.staff .stat-value,
+        .stat-card.payment .stat-value {
+            font-size: 20px !important;
+        }
+
+        .stat-card.payment .stat-value {
+            font-size: 26px !important;
+        }
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Fade In Animation */
+.stat-card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* SVG Hover Effect */
+.stat-card .stat-content svg {
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-content svg {
+    transform: scale(1.1);
+}
+
+/* ========================================
+   BOOTSTRAP COLUMN FIXES
+   ======================================== */
+
+.dashboard-stats .col-lg-3,
+.dashboard-stats .col-md-6,
+.dashboard-stats .col-12,
+.row > .col-lg-3,
+.row > .col-md-6,
+.row > .col-12 {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.dashboard-stats .row,
+.row {
+    margin-left: -10px;
+    margin-right: -10px;
+}
+
+/* ========================================
+   TROUBLESHOOTING & DEBUGGING
+   ======================================== */
+
+/* Force proper display on mobile without hover */
+@media (max-width: 768px) {
+    /* Reset any inherited styles that might be hiding content */
+    .stat-card.enquiry,
+    .stat-card.student,
+    .stat-card.staff,
+    .stat-card.payment {
+        visibility: visible !important;
+        opacity: 1 !important;
+        display: block !important;
+        position: relative !important;
+        padding: 20px !important;
+        margin: 10px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+        /* Ensure content is always visible */
+        .stat-card.enquiry .stat-content,
+        .stat-card.student .stat-content,
+        .stat-card.staff .stat-content,
+        .stat-card.payment .stat-content {
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: flex !important;
+            gap: 20px !important;
+            align-items: flex-start !important;
+            width: 100% !important;
+        }
+
+        /* Ensure all child elements are visible */
+        .stat-card.enquiry *,
+        .stat-card.student *,
+        .stat-card.staff *,
+        .stat-card.payment * {
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        /* Remove any hover-only styles on mobile */
+        .stat-card.enquiry:not(:hover),
+        .stat-card.student:not(:hover),
+        .stat-card.staff:not(:hover),
+        .stat-card.payment:not(:hover) {
+            padding: 20px !important;
+            margin-bottom: 15px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+            transform: none !important;
+        }
+}
+
+/* Force gradient backgrounds to show */
+.row:not(.dashboard-stats .row) .stat-card.enquiry,
+.row:not(.dashboard-stats .row) .stat-card.student,
+.row:not(.dashboard-stats .row) .stat-card.staff,
+.row:not(.dashboard-stats .row) .stat-card.payment {
+    background: white !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Ensure SVG icons are visible and white */
+.stat-card.enquiry svg,
+.stat-card.student svg,
+.stat-card.staff svg,
+.stat-card.payment svg {
+    color: white !important;
+    stroke: white !important;
+    width: 24px !important;
+    height: 24px !important;
+}
+
+/* Mobile SVG sizing */
+@media (max-width: 768px) {
+    .stat-card.enquiry svg,
+    .stat-card.student svg,
+    .stat-card.staff svg,
+    .stat-card.payment svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-card.enquiry svg,
+    .stat-card.student svg,
+    .stat-card.staff svg,
+    .stat-card.payment svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+}
+
+/* Debug: Add visible border to check if CSS is loading */
+.stat-card.enquiry {
+    border-left: 4px solid #667eea !important;
+}
+
+.stat-card.student {
+    border-left: 4px solid #48bb78 !important;
+}
+
+.stat-card.staff {
+    border-left: 4px solid #f6d365 !important;
+}
+
+.stat-card.payment {
+    border-left: 4px solid #fa709a !important;
+}
+
+/* Mobile specific border adjustments */
+@media (max-width: 768px) {
+    .stat-card.enquiry,
+    .stat-card.student,
+    .stat-card.staff,
+    .stat-card.payment {
+        border-left-width: 5px !important;
+        border-radius: 8px !important;
+    }
+}
+
+/* Special styles for payment card with single row */
+.stat-card.payment .stat-row {
+    align-items: center !important;
+}
+
+.stat-card.payment .stat-label {
+    line-height: 1.2 !important;
+}
+
+@media (max-width: 768px) {
+    .stat-card.payment .stat-content {
+        align-items: center !important;
+    }
+
+    .stat-card.payment .stat-row {
+        margin-bottom: 0 !important;
+        gap: 15px !important;
+    }
+
+    .stat-card.payment .stat-details {
+        display: flex !important;
+        align-items: center !important;
+    }
+}

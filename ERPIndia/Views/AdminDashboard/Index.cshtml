@@ -1,0 +1,1610 @@
+﻿@model DashboardModels.DashboardDto
+@using DashboardModels
+@using Newtonsoft.Json
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    var headerInfo = DashboardDataFactory.LoadHeaderInfo();
+}
+<title>
+    :: Welcome to Admin DashBoard | Best ERP Software | Simplify Management, Amplify School ! ::
+</title>
+<link href="~/Content/dashboardcss/dashboard-styles.css?t=@DateTime.Now.ToLongTimeString()" rel="stylesheet" />
+<script src="/template/assets/plugins/apexchart/apexcharts.min.js"></script>
+<script src="/template/assets/plugins/fullcalendar/calendar.js"></script>
+
+<style>
+    /* Card Header Dark Theme Styles */
+    .card-header-dark {
+        color: white !important;
+        border-bottom: 2px solid rgba(0,0,0,0.2) !important;
+    }
+
+        .card-header-dark h4,
+        .card-header-dark h5,
+        .card-header-dark strong {
+            color: white !important;
+        }
+
+        .card-header-dark a {
+            color: white !important;
+            text-decoration: none;
+        }
+
+            .card-header-dark a:hover {
+                color: white !important;
+                text-decoration: underline;
+            }
+    #classwiseChart {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<div class="row">
+    <!-- Today Collection Card -->
+    <div class="col-lg-3 col-md-6 col-12">
+        <div class="stat-card" style="background-color: #f0f9ff; border: 1px solid gray">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-rupee-sign text-primary"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Today Coll.</span>
+                    </div>
+                    <span class="fw-bold text-primary fs-4">: ₹@Model.TodayCollection.TotalCollection.ToString("F0")</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-money-bill-wave text-success"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Cash</span>
+                    </div>
+                    <span class="fw-bold text-success fs-4">: ₹@Model.TodayCollection.CashCollection.ToString("F0")</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-university" style="color:#0288A0"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Bank</span>
+                    </div>
+                    <span class="fw-bold fs-4" style="color:#0288A0">: ₹@Model.TodayCollection.BankCollection.ToString("F0")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Fees Card -->
+    <div class="col-lg-3 col-md-6 col-12">
+        <div class="stat-card" style="background-color: #fff7e6; border: 1px solid gray">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-wallet text-warning"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">T. Fees</span>
+                    </div>
+                    <span class="fw-bold text-warning fs-4">: ₹@Model.FeeSummary.TotalFees.ToString("F0")</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-hand-holding-usd text-success"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">T. Rcvd.</span>
+                    </div>
+                    <span class="fw-bold text-success fs-4">: ₹@Model.FeeSummary.TotalReceived.ToString("F0")</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-invoice-dollar text-danger"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">T. Dues</span>
+                    </div>
+                    <span class="fw-bold text-danger fs-4">: ₹@Model.FeeSummary.TotalDues.ToString("F0")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Students Card -->
+    <div class="col-lg-3 col-md-6 col-12">
+        <div class="stat-card" style="background-color: #e6ffe6; border: 1px solid gray">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-users text-primary"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Total Students</span>
+                    </div>
+                    <span class="fw-bold text-dark fs-4">: @Model.StudentSummary.TotalStudents</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-male text-info"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Total Male</span>
+                    </div>
+                    <span class="fw-bold text-info fs-4">: @Model.StudentSummary.TotalMale</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-female text-danger"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Total Female</span>
+                    </div>
+                    <span class="fw-bold text-danger fs-4">: @Model.StudentSummary.TotalFemale</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today Attendance Card -->
+    <div class="col-lg-3 col-md-6 col-12">
+        <div class="stat-card" style="background-color: #fce4ec; border: 1px solid gray">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-check text-success"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Today Present</span>
+                    </div>
+                    <span class="fw-bold text-success fs-4">: @Model.AttendanceSummary.TodayPresent</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-times text-danger"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Today Absent</span>
+                    </div>
+                    <span class="fw-bold text-danger fs-4">: @Model.AttendanceSummary.TodayAbsent</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-clock text-warning"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Today Leave</span>
+                    </div>
+                    <span class="fw-bold text-warning fs-4">: @Model.AttendanceSummary.TodayLeave</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<!-- Second Row -->
+<div class="row">
+    <!-- Enquiry Card -->
+    <div class="col-lg-3 col-md-6 col-12">
+        <div class="stat-card" style="background-color: #f3e5f5; border: 1px solid gray">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-alt text-primary"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Today Enquiry</span>
+                    </div>
+                    <span class="fw-bold text-primary fs-4">: @Model.EnquirySummary.TodayEnquiry</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-archive text-info"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Total Enquiry</span>
+                    </div>
+                    <span class="fw-bold text-info fs-4">: @Model.EnquirySummary.TotalEnquiry</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-clipboard-check text-success"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Pending</span>
+                    </div>
+                    <span class="fw-bold text-warning fs-4">: @Model.EnquirySummary.PendingEnquiry</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Card -->
+    <div class="col-lg-3 col-md-6 col-12">
+        <div class="stat-card" style="background-color: #e8f5e9; border: 1px solid gray">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-plus text-success"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">New Student</span>
+                    </div>
+                    <span class="fw-bold text-success fs-4">: @Model.StudentSummary.NewStudents</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-graduate text-danger"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Old Student</span>
+                    </div>
+                    <span class="fw-bold text-danger fs-4">: @Model.StudentSummary.OldStudents</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-graduation-cap text-info"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Active</span>
+                    </div>
+                    <span class="fw-bold text-primary fs-4">: @Model.StudentSummary.ActiveStudents</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Card -->
+    <div class="col-lg-3 col-md-6 col-12">
+        <div class="stat-card" style="background-color: #e0f2f1; border: 1px solid gray">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-users-cog text-warning"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Total Staff</span>
+                    </div>
+                    <span class="fw-bold text-dark fs-4">: @Model.StaffSummary.TotalStaff</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-chalkboard-teacher text-info"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Teachers</span>
+                    </div>
+                    <span class="fw-bold text-info fs-4">: @Model.StaffSummary.Teachers</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-tie text-success"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Admin Staff</span>
+                    </div>
+                    <span class="fw-bold text-success fs-4">: @Model.StaffSummary.AdminStaff</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Status Card -->
+    <div class="col-lg-3 col-md-6 col-12">
+        <div class="stat-card" style="background-color: #f5f5f5; border: 1px solid gray">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-circle text-danger"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Not Paid</span>
+                    </div>
+                    <span class="fw-bold text-danger fs-4">: @Model.PaymentStatus.NotPaid</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-clock text-warning"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Full Paid</span>
+                    </div>
+                    <span class="fw-bold text-warning fs-4">: @Model.PaymentStatus.Overdue</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-bell text-info"></i>&nbsp;
+                        <span style="color:black; font-weight:bold;">Reminder Send</span>
+                    </div>
+                    <span class="fw-bold text-info fs-4">: @Model.PaymentStatus.ReminderSent</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+
+<div class="row h-100">
+    <!-- Classwise Collection -->
+    <div class="col-xxl-7 col-xl-6 d-flex flex-column">
+        <div class="card flex-fill d-flex flex-column">
+            <div class="card-header d-flex align-items-center justify-content-between"
+                 style="background: linear-gradient(to bottom, #00ABF7, #007FBA); color: white;">
+                <strong>Classwise Collection</strong>
+                <a href="javascript:void(0);" class="text-white">View All</a>
+            </div>
+            <div class="card-body flex-grow-1 d-flex flex-column p-3" style="background-color:#f5f5f5;">
+                <div id="classwiseCollectionChart" style="flex-grow: 1; width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classwise Students -->
+    <div class="col-xxl-5 col-xl-6 d-flex flex-column">
+        <div class="card flex-fill d-flex flex-column">
+            <div class="card-header d-flex align-items-center justify-content-between"
+                 style="background: linear-gradient(to bottom, #F33F3E, #CB2A35); color: white;">
+                <strong>Classwise Students</strong>
+                <a href="javascript:void(0);" class="text-white">View All</a>
+            </div>
+
+            <div class="card-body d-flex flex-column p-2" style="background-color:#f3e5f5;">
+                <div id="classwiseChart" class="flex-grow-1" style="width: 100%; height: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- ApexCharts Scripts -->
+<script>
+    // Classwise Collection Chart
+    var classwiseoptions = {
+        chart: {
+            type: 'bar',
+            foreColor: '#000',
+            stacked: false
+        },
+        dataLabels: { enabled: false },
+        series: [
+            {
+                name: 'Total',
+                data: [@string.Join(",", Model.ClasswiseCollection.Select(x => x.TotalAmount))]
+            },
+            {
+                name: 'Paid',
+                data: [@string.Join(",", Model.ClasswiseCollection.Select(x => x.PaidAmount))]
+            },
+            {
+                name: 'Due',
+                data: [@string.Join(",", Model.ClasswiseCollection.Select(x => x.DueAmount))]
+            }
+        ],
+        xaxis: {
+            categories: [@Html.Raw(string.Join(",", Model.ClasswiseCollection.Select(x => string.Format("'{0}'", x.ClassName))))]
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '55%',
+                endingShape: 'rounded'
+            }
+        },
+        colors: ['#3B82F6', '#10B981', '#F59E0B'],
+        tooltip: {
+            shared: true,
+            intersect: false
+        }
+    };
+
+    var chartclasswise = new ApexCharts(document.querySelector("#classwiseCollectionChart"), classwiseoptions);
+    chartclasswise.render();
+
+
+    // Classwise Students Chart
+    const classLabels = [@Html.Raw(string.Join(",", Model.ClasswiseStudents.Select(x => string.Format("'{0}'", x.ClassName))))];
+    const studentData = [@string.Join(",", Model.ClasswiseStudents.Select(x => x.StudentCount))];
+    const colors = [@Html.Raw(string.Join(",", Model.ClasswiseStudents.Select(x => string.Format("'{0}'", x.Color))))];
+
+    const options = {
+        chart: {
+            type: 'bar',
+            toolbar: { show: false }
+        },
+        plotOptions: {
+            bar: {
+                distributed: true,
+                borderRadius: 5,
+                dataLabels: {
+                    position: 'top'
+                }
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        title: {
+            text: 'Students Per Class',
+            align: 'center',
+            style: {
+                fontSize: '16px',
+                fontWeight: 'bold'
+            }
+        },
+        xaxis: {
+            categories: classLabels,
+            labels: {
+                style: { fontSize: '12px' }
+            },
+            axisBorder: { show: true },
+            axisTicks: { show: true },
+            title: { text: 'Class' }
+        },
+        yaxis: {
+            title: { text: 'Students' },
+            min: 0
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return val + '';
+                }
+            }
+        },
+        series: [{
+            name: "Students",
+            data: studentData
+        }],
+        colors: colors
+    };
+
+    const chart = new ApexCharts(document.querySelector("#classwiseChart"), options);
+    chart.render();
+</script>
+
+
+
+<!-- Quick Links -->
+<div class="row">
+    <!-- Teachers Present Today -->
+    <div class="col-xl-3 col-md-6 d-flex">
+        <a href="/attendance" class="card bg-primary-transparent border border-5 border-white animate-card flex-fill">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <span class="avatar avatar-lg bg-success rounded flex-shrink-0 me-2">
+                            <i class="ti ti-users fs-24"></i>
+                        </span>
+                        <div class="overflow-hidden">
+                            <h6>Teachers Present Today</h6>
+                        </div>
+                    </div>
+                    <div style="background: #657ef8; color: white; font-weight: bold; padding: 4px 8px; border-radius: 6px; font-size: 18px;">
+                        @Model.TeacherStaffAttendance.TeachersPresentToday
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Teachers Absent Today -->
+    <div class="col-xl-3 col-md-6 d-flex">
+        <a href="/events" class="card bg-secondary-transparent border border-5 border-white animate-card flex-fill">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <span class="avatar avatar-lg bg-danger rounded flex-shrink-0 me-2">
+                            <i class="ti ti-user-x fs-24"></i>
+                        </span>
+                        <div class="overflow-hidden">
+                            <h6>Teachers Absent Today</h6>
+                        </div>
+                    </div>
+                    <div style="background: #5cd1e0; color: white; font-weight: bold; padding: 4px 8px; border-radius: 6px; font-size: 18px;">
+                        @Model.TeacherStaffAttendance.TeachersAbsentToday
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Staff Present Today -->
+    <div class="col-xl-3 col-md-6 d-flex">
+        <a href="/membership" class="card bg-warning-transparent border border-5 border-white animate-card flex-fill">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <span class="avatar avatar-lg bg-success rounded flex-shrink-0 me-2">
+                            <i class="ti ti-id-badge fs-24"></i>
+                        </span>
+                        <div class="overflow-hidden">
+                            <h6>Staff Present Today</h6>
+                        </div>
+                    </div>
+                    <div style="background: #b38f43; color: white; font-weight: bold; padding: 4px 8px; border-radius: 6px; font-size: 18px;">
+                        @Model.TeacherStaffAttendance.StaffPresentToday
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Staff Absent Today -->
+    <div class="col-xl-3 col-md-6 d-flex">
+        <a href="/finance" class="card bg-success-transparent border border-5 border-white animate-card flex-fill">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <span class="avatar avatar-lg bg-danger rounded flex-shrink-0 me-2">
+                            <i class="ti ti-user-off fs-24"></i>
+                        </span>
+                        <div class="overflow-hidden">
+                            <h6>Staff Absent Today</h6>
+                        </div>
+                    </div>
+                    <div style="background: #2cb66b; color: white; font-weight: bold; padding: 4px 8px; border-radius: 6px; font-size: 18px;">
+                        @Model.TeacherStaffAttendance.StaffAbsentToday
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<style>
+    .staff-birthday-scroll {
+        max-height: 420px;
+        overflow-y: auto;
+    }
+
+    .role-badge.Teacher {
+        background-color: #e8f0fe;
+        color: #1a73e8;
+    }
+
+    .role-badge.Accountant {
+        background-color: #fff4e5;
+        color: #f57c00;
+    }
+
+    .role-badge.Admin {
+        background-color: #e6f4ea;
+        color: #34a853;
+    }
+
+    .role-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+</style>
+
+<div class="row">
+    <!-- Staff Birthday -->
+    <div class="col-xxl-6 col-xl-6 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark" style="background: linear-gradient(to bottom, #FFAC26, #C78400);">
+                <strong>Staff Birthday</strong>
+                <div class="dropdown">
+                    <a href="javascript:void(0);">View All</a>
+                </div>
+            </div>
+            <div class="card-body staff-birthday-scroll" style="background-color: #FEF8EA">
+                @if (Model.StaffBirthdays != null && Model.StaffBirthdays.Any())
+                {
+                    foreach (var staff in Model.StaffBirthdays)
+                    {
+                        var statusText = staff.IsActive ? "Active" : "Inactive";
+                        var statusColor = staff.IsActive ? "success" : "danger";
+                        var statusIcon = staff.IsActive
+                            ? "<i class='ti ti-check'></i>"
+                            : "<i class='ti ti-ban'></i>";
+
+                        <div class="card mb-3 bg-light">
+                            <div class="card-body p-3" style="background-color: #E8F9E8;">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center overflow-hidden me-2">
+                                        <a href="javascript:void(0);" class="avatar avatar-lg flex-shrink-0 me-3">
+                                            <img src="@staff.PhotoUrl" onerror="this.onerror=null; this.src='/template/assets/img/user.png';" alt="employee" class="rounded-circle" />
+                                        </a>
+                                        <div class="overflow-hidden">
+                                            <h6 class="fw-semibold mb-1">@staff.Name</h6>
+                                            <span class="badge bg-@(staff.Role == "TEACHER" ? "primary" : "success")">@staff.Role</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="avatar avatar-sm p-0 rounded-circle btn btn-@statusColor">
+                                            @Html.Raw(statusIcon)
+                                        </span><br />
+                                        <small class="text-@statusColor fw-bold">@statusText</small>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between border-top pt-3">
+                                    <div>
+                                        <i class="ti ti-calendar-event me-1"></i>
+                                        <strong>Birthday on:</strong> @staff.Birthday.ToString("dd MMM yyyy")
+                                    </div>
+                                    <div>
+                                        <i class="ti ti-clock-hour-4 me-1"></i>
+                                        <span class="badge bg-light text-primary fw-bold">@staff.RemainingDays DAYS</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Estimated Fee Collection -->
+    <div class="col-xxl-6 col-xl-6 d-flex flex-column">
+        <div class="card flex-fill">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark" style="background: linear-gradient(to bottom, #00C18A, #009B6F);">
+                <strong>Estimated Fee Collection</strong>
+                <div class="dropdown">
+                    <a href="javascript:void(0);">View All</a>
+                </div>
+            </div>
+            <div class="card-body" style="background-color: #E8FCFF">
+                <div id="estimatedfeechart"></div>
+            </div>
+        </div>
+        <script>
+            var estoptions = {
+                chart: {
+                    type: 'bar',
+                    height: 250,
+                    stacked: false
+                },
+                series: [{
+                    name: 'Expected',
+                    data: [@string.Join(",", Model.EstimatedFeeCollection.MonthlyData.Select(x => x.Expected))]
+                }, {
+                    name: 'Received',
+                    data: [@string.Join(",", Model.EstimatedFeeCollection.MonthlyData.Select(x => x.Received))]
+                }, {
+                    name: 'Due',
+                    data: [@string.Join(",", Model.EstimatedFeeCollection.MonthlyData.Select(x => x.Due))]
+                }],
+                xaxis: {
+                    categories: [@Html.Raw(string.Join(",", Model.EstimatedFeeCollection.MonthlyData.Select(x => string.Format("'{0}'", x.Month))))]
+                },
+                colors: ['#f8bbd0', '#4caf50', '#ffb74d'],
+                legend: {
+                    position: 'top'
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '55%',
+                        endingShape: 'rounded'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                }
+            };
+
+            var estchart = new ApexCharts(document.querySelector("#estimatedfeechart"), estoptions);
+            estchart.render();
+        </script>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Total Earnings -->
+    <div class="col-xxl-4 col-xl-4 d-flex flex-column">
+        <div class="card flex-fill">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark"
+                 style="background: linear-gradient(to bottom, #2E52DE, #000080);">
+               <h5>Total Earning: <span style="color: white; font-size: 22px;">₹&nbsp;@Model.FinancialTrends.Earnings.Total.ToString("N0")</span></h5>
+            </div>
+            <div id="dvearning" style="min-height: 90px; background-color: #F2F5FF;"></div>
+        </div>
+    </div>
+    <script>
+        var earningoptions = {
+            chart: {
+                type: 'line',
+                toolbar: {
+                    show: true
+                },
+            },
+            series: [{
+                name: 'Earnings',
+                data: [@string.Join(",", Model.FinancialTrends.Earnings.MonthlyData.Select(x => x.Amount))]
+            }],
+            xaxis: {
+                categories: [@Html.Raw(string.Join(",", Model.FinancialTrends.Earnings.MonthlyData.Select(x => string.Format("'{0}'", x.Month))))]
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: function (val) {
+                    return "₹" + val;
+                },
+                style: {
+                    fontSize: '12px',
+                    colors: ["#304758"]
+                }
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1,
+                    stops: [0, 90, 100]
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return "₹" + val;
+                    }
+                }
+            }
+        };
+
+        var earningchart = new ApexCharts(document.querySelector("#dvearning"), earningoptions);
+        earningchart.render();
+    </script>
+
+    <!-- Total Expenses -->
+    <div class="col-xxl-4 col-xl-4 d-flex flex-column">
+        <div class="card flex-fill">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark"
+                 style="background: linear-gradient(to bottom, #F33F3E, #CB2A35);">
+                <h5>Total Expenses: <span style="color: white; font-size: 22px;">₹&nbsp;@Model.FinancialTrends.Expenses.Total.ToString("N0")</span></h5>
+            </div>
+            <div id="dvexp" style="min-height: 90px; background-color: #E8FCFF "></div>
+        </div>
+    </div>
+
+    <!-- Total Profit -->
+    <div class="col-xxl-4 col-xl-4 d-flex flex-column">
+        <div class="card flex-fill">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark"
+                 style="background: linear-gradient(to bottom, #75B81D, #68A000);">
+                <h5>Total Profit: <span style="color: white; font-size: 22px;">₹&nbsp;@Model.FinancialTrends.Profit.Total.ToString("N0")</span></h5>
+            </div>
+            <div id="dvprofit" style="min-height: 90px; background-color: #FEF8EA;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var expoptions = {
+        chart: {
+            type: 'line',
+            toolbar: {
+                show: true
+            }
+        },
+        series: [{
+            name: 'Expenses',
+            data: [@string.Join(",", Model.FinancialTrends.Expenses.MonthlyData.Select(x => x.Amount))]
+        }],
+        xaxis: {
+            categories: [@Html.Raw(string.Join(",", Model.FinancialTrends.Expenses.MonthlyData.Select(x => string.Format("'{0}'", x.Month))))]
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val) {
+                return "₹" + val;
+            },
+            style: {
+                fontSize: '12px',
+                colors: ["#304758"]
+            }
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 3
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.4,
+                opacityTo: 0.1,
+                stops: [0, 90, 100]
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return "₹" + val;
+                }
+            }
+        }
+    };
+
+    var expchart = new ApexCharts(document.querySelector("#dvexp"), expoptions);
+    expchart.render();
+</script>
+
+<script>
+    var profitoptions = {
+        chart: {
+            type: 'line',
+            toolbar: {
+                show: true
+            }
+        },
+        series: [{
+            name: 'Profit',
+            data: [@string.Join(",", Model.FinancialTrends.Profit.MonthlyData.Select(x => x.Amount))]
+        }],
+        xaxis: {
+            categories: [@Html.Raw(string.Join(",", Model.FinancialTrends.Profit.MonthlyData.Select(x => string.Format("'{0}'", x.Month))))]
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val) {
+                return "₹" + val;
+            },
+            style: {
+                fontSize: '12px',
+                colors: ["#304758"]
+            }
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 3
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.4,
+                opacityTo: 0.1,
+                stops: [0, 90, 100]
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return "₹" + val;
+                }
+            }
+        }
+    };
+
+    var profitchart = new ApexCharts(document.querySelector("#dvprofit"), profitoptions);
+    profitchart.render();
+</script>
+
+<div class="row h-100">
+    <!-- Income Expense Chart -->
+    <div class="col-xxl-8 col-xl-6 d-flex flex-column h-100">
+        <div class="card flex-fill h-100">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark"
+                 style="background: linear-gradient(to bottom, #E06300, #8D3700);">
+                <h5 class="fw-bold text-center">Income Expense</h5>
+                <a href="#" class="text-decoration-none">View All</a>
+            </div>
+            <div class="card-body flex-grow-1" style="background-color: #f0fff4;">
+                <div id="incomeExpensesChart" style="height:100%; min-height: 400px;"></div>
+                <script>
+                    var ieoptions = {
+                        chart: {
+                            type: 'bar',
+                            height: 400
+                        },
+                        series: [{
+                            name: 'Income',
+                            data: [@string.Join(",", Model.IncomeExpenseChart.MonthlyData.Select(x => x.Income))]
+                        }, {
+                            name: 'Expenses',
+                            data: [@string.Join(",", Model.IncomeExpenseChart.MonthlyData.Select(x => x.Expenses))]
+                        }],
+                        xaxis: {
+                            categories: [@Html.Raw(string.Join(",", Model.IncomeExpenseChart.MonthlyData.Select(x => string.Format("'{0}'", x.Month))))]
+                        },
+                        colors: ['#1e40af', '#cbd5e1'],
+                        legend: {
+                            position: 'bottom'
+                        },
+                        plotOptions: {
+                            bar: {
+                                columnWidth: '45%',
+                                endingShape: 'rounded'
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
+                        }
+                    };
+
+                    var iechart = new ApexCharts(document.querySelector("#incomeExpensesChart"), ieoptions);
+                    iechart.render();
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Details -->
+    <div class="col-xxl-4 col-xl-6 d-flex flex-column h-100">
+        <div class="card flex-fill h-100">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark"
+                 style="background: linear-gradient(to bottom, #A261FF, #6E1FC5);">
+                <h5 class="fw-bold text-center">Quick Details</h5>
+            </div>
+            <div class="card-body flex-grow-1 overflow-auto" style="background-color:#f0f8ff;">
+
+                <!-- Total User -->
+                <div class="card mb-3" style="background-color: #fff7e6; border: 2px solid #ffc107;">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center me-2">
+                                <span class="avatar avatar-lg flex-shrink-0 me-3 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ti ti-users fs-4"></i>
+                                </span>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Total User</h5>
+                                    <div>
+                                        <span class="text-success fw-bold">Active: @Model.QuickDetails.UserSummary.ActiveUsers</span> |
+                                        <span class="text-danger fw-bold">Inactive: @Model.QuickDetails.UserSummary.InactiveUsers</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-danger" style="font-size:22px">@Model.QuickDetails.UserSummary.TotalUsers</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today Receipts -->
+                <div class="card mb-3" style="background-color: #f0fff4; border: 2px solid #28a745;">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center me-2">
+                                <span class="avatar avatar-lg flex-shrink-0 me-3 bg-success text-white rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ti ti-cash fs-4"></i>
+                                </span>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Today Receipts</h5>
+                                    <div>
+                                        <span class="text-primary fw-bold">Total: @Model.QuickDetails.ReceiptSummary.TotalReceipts</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success" style="font-size:22px">@Model.QuickDetails.ReceiptSummary.TodayReceipts.ToString("N0")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today Delete Receipt (Red Box) -->
+                <div class="card mb-3" style="background-color: #ffe6e6; border: 2px solid #e60000;">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center me-2">
+                                <span class="avatar avatar-lg flex-shrink-0 me-3 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ti ti-trash fs-4"></i>
+                                </span>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Today Delete Receipt</h5>
+                                    <div>
+                                        <span class="text-danger fw-bold">Total: @Model.QuickDetails.DeleteReceiptSummary.TotalDeleted</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-danger" style="font-size:22px">@Model.QuickDetails.DeleteReceiptSummary.TodayDeleted</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Self Students (Yellow Box) -->
+                <div class="card mb-3" style="background-color: #fff7e6; border: 2px solid #ffc107;">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center me-2">
+                                <span class="avatar avatar-lg flex-shrink-0 me-3 bg-warning text-white rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="ti ti-user-x fs-4"></i>
+                                </span>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Self Students</h5>
+                                    <div>
+                                        <span class="text-danger fw-bold">Transport: @Model.QuickDetails.SelfStudentsSummary.TransportStudents</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-warning text-dark" style="font-size:22px">@Model.QuickDetails.SelfStudentsSummary.TotalSelfStudents</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+   
+    .apexcharts-text {
+        shape-rendering: geometricPrecision;
+    }
+    .apexcharts-text {
+        font-family: 'Arial', sans-serif;
+        font-weight: 600;
+    }
+
+    .three-dot-btn {
+        font-size: 22px;
+        color: white;
+        cursor: pointer;
+    }
+
+    .row.align-items-stretch .card {
+        min-height: 500px;
+    }
+
+    .card-body.h-100 {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #attendanceChart {
+        flex: 1;
+        min-height: 470px;
+    }
+
+    #eventCalendar {
+        flex: 1;
+        min-height: 470px;
+    }
+
+    .fc {
+        background-color: #f0fff4;
+        height: 100% !important;
+    }
+
+    .fc-event {
+        font-size: 11px;
+        border-radius: 3px;
+        border: none;
+        padding: 2px 4px;
+    }
+
+    .fc-daygrid-event {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .fc-header-toolbar {
+        margin-bottom: 1rem;
+    }
+
+    .fc-toolbar-title {
+        font-size: 1rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .fc-button {
+        background-color: #3498db;
+        border-color: #3498db;
+        font-size: 0.8rem;
+    }
+
+        .fc-button:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+
+    .event-exam {
+        background-color: #dc3545 !important;
+        color: white;
+    }
+
+    .event-holiday {
+        background-color: #28a745 !important;
+        color: white;
+    }
+
+    .event-meeting {
+        background-color: #007bff !important;
+        color: white;
+    }
+
+    .event-sports {
+        background-color: #ffc107 !important;
+        color: #000;
+    }
+
+    .event-cultural {
+        background-color: #6f42c1 !important;
+        color: white;
+    }
+
+    .event-workshop {
+        background-color: #20c997 !important;
+        color: white;
+    }
+
+    .fc-daygrid-day-number {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .fc-col-header-cell {
+        background-color: #ecf0f1;
+        font-weight: 600;
+    }
+
+    .card-header {
+        background-color: #ffffff;
+        border-bottom: 1px solid #dee2e6;
+        padding: 1rem 1.25rem;
+    }
+
+        .card-header h5 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+</style>
+
+<div class="row align-items-stretch">
+    <!-- Attendance Chart -->
+    <div class="col-xxl-6 col-xl-6 d-flex flex-column">
+        <div class="card flex-fill h-100">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark"
+                 style="background: linear-gradient(to bottom, #5708AA, #2674CC);">
+                <h5 class="fw-bold text-center">Today Class Wise Attendance</h5>
+            </div>
+            <div class="card-body h-100" style="background-color: #F2F5FF;">
+                <div id="attendanceChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Calendar -->
+    <div class="col-xxl-6 col-xl-6 d-flex flex-column">
+        <div class="card flex-fill h-100">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark"
+                 style="background: linear-gradient(to bottom, #E03A7A, #673BB7);">
+                <h5 class="fw-bold text-center">Event Calendar</h5>
+            </div>
+            <div class="card-body h-100 d-flex flex-column" style="background-color: #f0fff4;">
+                <div id="eventCalendar"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let calendar;
+
+        // School events from Model
+        const schoolEvents = [
+            @{
+                var eventIndex = 0;
+                foreach(var evt in Model.Events)
+                {
+                    if(eventIndex > 0) { <text>,</text> }
+                    <text>
+                    {
+                        id: '@evt.Id',
+                        title: '@evt.Title',
+                        start: '@evt.StartDate.ToString("yyyy-MM-dd")',</text>
+                    if(evt.EndDate.HasValue)
+                    {
+                        <text>
+                        end: '@evt.EndDate.Value.ToString("yyyy-MM-dd")',</text>
+                    }
+                    <text>
+                        className: '@evt.ClassName'
+                    }</text>
+                    eventIndex++;
+                }
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize Attendance Chart
+            var attendanceOptions = {
+                chart: {
+                    type: 'bar',
+                    height: '100%',
+                    toolbar: {
+                        show: false
+                    }
+                },
+                series: [
+                    {
+                        name: "Total Present",
+                        data: [@string.Join(",", Model.ClasswiseAttendance.Select(x => x.TotalPresent))],
+                        color: '#28a745'
+                    },
+                    {
+                        name: "Total Strength",
+                        data: [@string.Join(",", Model.ClasswiseAttendance.Select(x => x.TotalStrength))],
+                        color: '#007bff'
+                    }
+                ],
+                xaxis: {
+                    categories: [@Html.Raw(string.Join(",", Model.ClasswiseAttendance.Select(x => string.Format("'{0}'", x.ClassName))))],
+                    labels: {
+                        rotate: -45,
+                        style: {
+                            fontSize: '10px'
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Number of Students'
+                    }
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + ' Students';
+                        }
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: '60%',
+                        distributed: false,
+                        borderRadius: 2
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'center'
+                },
+                grid: {
+                    borderColor: '#e7e7e7',
+                    row: {
+                        colors: ['#f3f3f3', 'transparent'],
+                        opacity: 0.5
+                    }
+                },
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        legend: {
+                            position: 'bottom',
+                            offsetX: -10,
+                            offsetY: 0
+                        }
+                    }
+                }]
+            };
+
+            var attendanceChart = new ApexCharts(document.querySelector("#attendanceChart"), attendanceOptions);
+            attendanceChart.render();
+
+            // Initialize Calendar
+            const calendarEl = document.getElementById('eventCalendar');
+
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                height: '100%',
+                events: schoolEvents,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek'
+                },
+                eventDisplay: 'block',
+                dayMaxEvents: 2,
+                moreLinkClick: 'popover',
+                eventClick: function (info) {
+                    alert('Event: ' + info.event.title + '\nDate: ' + info.event.start.toLocaleDateString());
+                },
+                dateClick: function (info) {
+                    console.log('Date clicked: ' + info.dateStr);
+                },
+                eventMouseEnter: function (info) {
+                    info.el.style.opacity = '0.8';
+                },
+                eventMouseLeave: function (info) {
+                    info.el.style.opacity = '1';
+                }
+            });
+
+            calendar.render();
+
+            // Ensure calendar resizes properly
+            window.addEventListener('resize', function () {
+                calendar.updateSize();
+            });
+        });
+    </script>
+</div>
+
+<style>
+    /* Override dropdown item color */
+    /* Income Dropdown */
+    .dropdown-menu.chart-dropdown-menu {
+        background: linear-gradient(to bottom, #8D008B, #5A005E);
+        color: white;
+    }
+
+        .dropdown-menu.chart-dropdown-menu .dropdown-item {
+            color: white;
+        }
+
+            .dropdown-menu.chart-dropdown-menu .dropdown-item:hover,
+            .dropdown-menu.chart-dropdown-menu .dropdown-item:focus {
+                background-color: rgba(255, 255, 255, 0.2);
+                color: white;
+            }
+
+    /* Expense Dropdown */
+    .dropdown-menu.chart-dropdown-menu-exp {
+        background: linear-gradient(to bottom, #1ED5BB, #00826A);
+        color: white;
+    }
+
+        .dropdown-menu.chart-dropdown-menu-exp .dropdown-item {
+            color: white;
+        }
+
+            .dropdown-menu.chart-dropdown-menu-exp .dropdown-item:hover,
+            .dropdown-menu.chart-dropdown-menu-exp .dropdown-item:focus {
+                background-color: rgba(255, 255, 255, 0.2);
+                color: white;
+            }
+
+    .chart-card-body {
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        position: relative;
+    }
+
+    .chart-dropdown {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+    }
+
+    .dropdown-toggle::after {
+        display: none;
+    }
+
+    .three-dot-btn {
+        border: none;
+        background: transparent;
+        font-size: 24px;
+        line-height: 1;
+        padding: 0;
+    }
+</style>
+
+<div class="row">
+    <!-- Income Chart -->
+    <div class="col-xxl-6 col-xl-6 d-flex flex-column">
+        <div class="card flex-fill">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark"
+                 style="background: linear-gradient(to bottom, #8D008B, #5A005E); color: white;">
+                <h5 class="fw-bold text-center mb-0">Income Chart</h5>
+                <div class="dropdown chart-dropdown">
+                    <button class="three-dot-btn btn text-white" data-bs-toggle="dropdown" style="border: none; background: transparent; font-size: 24px;">
+                        &#x22EE; <!-- Vertical Ellipsis -->
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end chart-dropdown-menu">
+                        <li><a class="dropdown-item" href="#">June 2024</a></li>
+                        <li><a class="dropdown-item" href="#">May 2024</a></li>
+                        <li><a class="dropdown-item" href="#">April 2024</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card-body" style="background-color: #F2F5FF;">
+                <div id="incomeChart" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Chart -->
+    <div class="col-xxl-6 col-xl-6 d-flex flex-column">
+        <div class="card flex-fill">
+            <div class="card-header d-flex align-items-center justify-content-between card-header-dark"
+                 style="background: linear-gradient(to bottom, #1ED5BB, #00826A); color: white;">
+                <h5 class="fw-bold text-center mb-0">Expense Chart</h5>
+                <div class="dropdown chart-dropdown">
+                    <button class="three-dot-btn btn text-white" data-bs-toggle="dropdown" style="border: none; background: transparent; font-size: 24px;">
+                        &#x22EE;
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end chart-dropdown-menu-exp">
+                        <li><a class="dropdown-item" href="#">June 2024</a></li>
+                        <li><a class="dropdown-item" href="#">May 2024</a></li>
+                        <li><a class="dropdown-item" href="#">April 2024</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card-body" style="background-color: #FEF8EA;">
+                <div id="expenseChart" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Income Chart
+    var incomeOptions = {
+    chart: {
+        type: 'donut'
+    },
+    title: {
+        text: '@Model.IncomeBreakdown.Period Income Summary',
+        align: 'center',
+        style: {
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: '#263238'
+        }
+    },
+    series: [@string.Join(",", Model.IncomeBreakdown.Items.Select(x => x.Amount))],
+    labels: [@Html.Raw(string.Join(",", Model.IncomeBreakdown.Items.Select(x => string.Format("'{0}'", x.Category))))],
+    colors: [@Html.Raw(string.Join(",", Model.IncomeBreakdown.Items.Select(x => string.Format("'{0}'", x.Color))))],
+    dataLabels: {
+        enabled: true,
+        formatter: function (val, opts) {
+            const amount = opts.w.config.series[opts.seriesIndex];
+            return '₹ ' + amount.toLocaleString();
+        },
+        style: {
+            fontSize: '12px',
+            colors: ['#000'] // Set label text color to black
+        }
+    },
+    legend: {
+        position: 'bottom'
+    },
+    plotOptions: {
+        pie: {
+            donut: {
+                size: '60%',
+                labels: {
+                    show: true,
+                    total: {
+                        show: true,
+                        label: '', // Hide the label "Total"
+                        fontSize: '18px',
+                        fontWeight: 600,
+                        color: '#000',
+                        formatter: function (w) {
+                            let total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                            return '₹ ' + total.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    },
+    tooltip: {
+        y: {
+            formatter: function(val) {
+                return '₹ ' + val.toLocaleString();
+            }
+        }
+    }
+};
+
+
+    // Expense Chart
+   var expenseOptions = {
+    chart: {
+        type: 'donut'
+    },
+    title: {
+        text: '@Model.ExpenseBreakdown.Period Expense Summary',
+        align: 'center',
+        style: {
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: '#263238'
+        }
+    },
+    series: [@string.Join(",", Model.ExpenseBreakdown.Items.Select(x => x.Amount))],
+    labels: [@Html.Raw(string.Join(",", Model.ExpenseBreakdown.Items.Select(x => string.Format("'{0}'", x.Category))))],
+    colors: [@Html.Raw(string.Join(",", Model.ExpenseBreakdown.Items.Select(x => string.Format("'{0}'", x.Color))))],
+    dataLabels: {
+        enabled: true,
+        formatter: function (val, opts) {
+            const amount = opts.w.config.series[opts.seriesIndex];
+            return '₹ ' + amount.toLocaleString();
+        },
+        style: {
+            fontSize: '12px',
+            colors: ['#000'] // Set label text color to black
+        }
+    },
+    legend: {
+        position: 'bottom'
+    },
+    plotOptions: {
+        pie: {
+            donut: {
+                size: '60%',
+                labels: {
+                    show: true,
+                    total: {
+                        show: true,
+                        label: '', // Hides the text 'Total'
+                        fontSize: '18px',
+                        fontWeight: 600,
+                        color: '#000',
+                        formatter: function (w) {
+                            let total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                            return '₹ ' + total.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    },
+    tooltip: {
+        y: {
+            formatter: function(val) {
+                return '₹ ' + val.toLocaleString();
+            }
+        }
+    }
+};
+
+
+    var incomeChart = new ApexCharts(document.querySelector("#incomeChart"), incomeOptions);
+    var expenseChart = new ApexCharts(document.querySelector("#expenseChart"), expenseOptions);
+
+    incomeChart.render();
+    expenseChart.render();
+</script>
+
+@{
+    Func<int, string> GetDaysLabel = days =>
+        days == 0 ? "Today" : days.ToString() + " Days";
+}
+
+<style>
+    .birthday-scroll {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+</style>
+
+<!-- Students Birthday -->
+<div class="col-12 d-flex">
+    <div class="card flex-fill">
+        <div class="card-header d-flex align-items-center justify-content-between card-header-dark"
+             style="background: linear-gradient(to bottom, #6463B1, #2F2B81);">
+            <h4 class="card-title">Students Birthday</h4>
+            <a href="/students/birthday-list" class="fw-medium">View All</a>
+        </div>
+
+        <div class="card-body birthday-scroll" style="background-color: #f0fff4">
+            <div class="notice-widget">
+                @if (Model.BirthdayList != null && Model.BirthdayList.Any())
+                {
+                    foreach (var student in Model.BirthdayList)
+                    {
+                        string avatarClass = student.Gender == "Male" ? "bg-primary" : "bg-danger";
+                        string initials ="";
+                        string daysLabel = GetDaysLabel(student.DaysRemaining);
+
+                        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                            <div class="d-flex align-items-center overflow-hidden me-2 mb-2 mb-sm-0">
+                                <span class="@avatarClass text-white avatar avatar-md me-2 rounded-circle flex-shrink-0">
+                                    <img src="@student.ImageUrl" alt="profile" class="avatar avatar-md rounded-circle object-fit-cover" onerror="this.onerror=null;this.src='/template/assets/img/user.png';" />
+                                </span>
+                                <div class="overflow-hidden">
+                                    <h6 class="text-truncate mb-1">@student.Name #@student.RollNo</h6>
+                                    <p class="mb-0"><i class="ti ti-gift me-2"></i>Birthday : @student.Birthday.ToString("dd MMM yyyy")</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-light text-dark me-2">
+                                    <i class="ti ti-clock me-1"></i>@daysLabel
+                                </span>
+                                <a href="@Url.Action("SendBirthdaySMS", "Students", new { id = student.Id })" class="btn btn-sm bg-success">
+                                    <i class="ti ti-message"></i> Send SMS
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-center text-muted">No upcoming birthdays</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

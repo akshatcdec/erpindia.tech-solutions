@@ -1,0 +1,106 @@
+﻿@model ERPIndia.FeeSummary.DTO.FeeSummaryViewModel
+@using CrystalDecisions.CrystalReports.Engine
+@using CrystalDecisions.Shared
+@using System.IO
+@using System.Data
+@using ERPIndia
+@using ERPIndia.Class.Helper
+@{
+    // Crystal Report settings
+    string reportPath = Server.MapPath("~/Reports/CrystalReport/0/idcard.rpt");
+    ReportDocument reportDocument = new ReportDocument();
+    try
+    {
+        // Load the report
+        reportDocument.Load(reportPath);
+
+        // Set data source directly
+        if (Model.StudentSummaries != null && Model.StudentSummaries.Count > 0)
+        {
+            // Convert data to DataTable if needed
+            var dataTable = ERPIndia.Utils.ConvertToDataTable(Model.StudentSummaries);
+
+            // Create image path
+            string code = CommonLogic.GetSessionValue(StringConstants.TenantCode);
+            string img = CommonLogic.GetSessionValue(StringConstants.ICardNameBannerImg);
+            string fimg = CommonLogic.GetSessionValue(StringConstants.ICardAddressBannerImg);
+            string Pimg = CommonLogic.GetSessionValue(StringConstants.PrincipalSignImg);
+            string logoPath = Server.MapPath(ERPIndia.Class.Helper.AppLogic.GetLogoImage(code, img));
+            string pPath = Server.MapPath(ERPIndia.Class.Helper.AppLogic.GetLogoImage(code, Pimg));
+            string FPath = Server.MapPath(ERPIndia.Class.Helper.AppLogic.GetLogoImage(code, fimg));
+            // Check if the "Photo" column exists in the DataTable
+            if (dataTable.Columns.Contains("Photo"))
+            {
+                // Update all rows with the same image path
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    string physicalPath = Server.MapPath(row["Photo"].ToString());
+                    if (!File.Exists(physicalPath))
+                    {
+                        row["Photo"] = Server.MapPath("/img/default.jpg");
+                    }
+                    else
+                    {
+                        row["Photo"] = Server.MapPath(row["Photo"].ToString());
+                    }
+                }
+            }
+
+            // Pass your data to the report
+            reportDocument.SetDataSource(dataTable);
+            reportDocument.SetParameterValue("fmlogo", logoPath);
+            reportDocument.SetParameterValue("psign", pPath);
+            reportDocument.SetParameterValue("session", "2025-26");
+            reportDocument.SetParameterValue("frmBottom", FPath);
+            // Generate a unique identifier for the report
+            string reportId = "IdCard_" + DateTime.Now.ToString("yyyyMMddHHmmss");
+
+            // Store the report document in session for later retrieval
+            Session[reportId] = reportDocument;
+
+            // Display the report using an iframe that calls an action to stream the PDF
+            <div class="text-center">
+                <iframe src="@Url.Action("StreamReport", "Student", new { id = reportId })"
+                        class="w-100" style="height: 600px; border: none;"></iframe>
+            </div>
+            <script>
+                $(window).on('beforeunload', function() {
+                    // Get the report ID from the iframe src
+                    var iframeSrc = $('iframe').attr('src');
+                    if (iframeSrc) {
+                        var reportId = iframeSrc.split('id=')[1];
+                        if (reportId) {
+                            // Make an async call to clean up the report
+                            $.ajax({
+                                url: '@Url.Action("CleanupReport", "Student")',
+                                data: { id: reportId },
+                                async: false
+                            });
+                        }
+                    }
+                });
+            </script>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                <strong>No data available:</strong> There are no records to display in the report.
+            </div>
+            // Clean up if no data
+            reportDocument.Close();
+            reportDocument.Dispose();
+        }
+    }
+    catch (Exception ex)
+    {
+        <div class="alert alert-danger">
+            <strong>Error loading report:</strong> @ex.Message
+        </div>
+        // Clean up on error
+        if (reportDocument != null)
+        {
+            reportDocument.Close();
+            reportDocument.Dispose();
+        }
+    }
+}

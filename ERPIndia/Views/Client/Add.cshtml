@@ -1,0 +1,340 @@
+@model ERPIndia.ViewModel.ClientViewModel
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+}
+<!-- Breadcubs Area Start Here -->
+<div class="breadcrumbs-area">
+    <h3>Client Details</h3>
+    <ul>
+        <li>
+            <a href="index.html">Home</a>
+        </li>
+        <li>Client</li>
+    </ul>
+</div>
+<div class="card height-auto">
+    @using (Ajax.BeginForm("Add", null, new AjaxOptions() { HttpMethod = "POST", OnBegin = "onBeginSubmit", UpdateTargetId = "dashboard-content-one", OnSuccess = "onSuccess" }, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="card-body">
+            <div class="heading-layout1">
+                <div class="item-title">
+                    <h3>General Details</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <strong>
+                        @Html.LabelFor(model => model.ClientModel.ClientName)<span class="field-validation-error">*</span>
+                    </strong>
+                    @Html.TextBoxFor(model => model.ClientModel.ClientName, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.ClientName)
+                    @Html.HiddenFor(model => model.ClientModel.ClientId)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.Username)
+                    @Html.TextBoxFor(model => model.ClientModel.Username, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Username)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.Password)
+                    @Html.TextBoxFor(model => model.ClientModel.Password, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Password)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.ClientCode)
+                    @Html.TextBoxFor(model => model.ClientModel.ClientCode, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.ClientCode)
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="card-body">
+            <div class="heading-layout1">
+                <div class="item-title">
+                    <h3>Address Details</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <strong> @Html.LabelFor(model => model.ClientModel.Address1) &nbsp;<span class="field-validation-error">*</span></strong>
+                    @Html.TextBoxFor(model => model.ClientModel.Address1, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Address1)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.Address2)
+                    @Html.TextBoxFor(model => model.ClientModel.Address2, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Address2)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <strong>
+                        @Html.LabelFor(model => model.ClientModel.State)&nbsp;<span class="field-validation-error">*</span>
+                    </strong>
+                    @Html.DropDownListFor(model => model.ClientModel.State, new SelectList(Model.States, "AlphaCode", "StateName"), "-- Select State Name --", new { style = "", @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.State)
+
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <strong>
+                        @Html.LabelFor(model => model.ClientModel.City)&nbsp;<span class="field-validation-error">*</span>
+                    </strong>
+                    @Html.DropDownListFor(model => model.ClientModel.City, new SelectList(Model.States, "AlphaCode", "StateName"), "-- Select State Name --", new { style = "", @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.City)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.ZipCode)
+                    @Html.TextBoxFor(model => model.ClientModel.ZipCode, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.ZipCode)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.Fax)
+                    @Html.TextBoxFor(model => model.ClientModel.Fax, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Fax)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <strong> @Html.LabelFor(model => model.ClientModel.Phone)&nbsp;<span class="field-validation-error">*</span></strong>
+                    @Html.TextBoxFor(model => model.ClientModel.Phone, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Phone)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <strong>
+                        @Html.LabelFor(model => model.ClientModel.Whatsapp)&nbsp;<span class="field-validation-error">*</span>
+                    </strong>
+                    @Html.TextBoxFor(model => model.ClientModel.Whatsapp, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Whatsapp)
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="card-body">
+            <div class="heading-layout1">
+                <div class="item-title">
+                    <h3>GST Details</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.GSTCategory)
+                    @Html.DropDownListFor(model => model.ClientModel.GSTCategory, new List<SelectListItem>
+                                                   {
+                                                       new SelectListItem{ Text="Unregister", Value = "Unregister" },
+                                                       new SelectListItem{ Text="Register", Value = "Register" }
+
+                                               }, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.GSTCategory)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.GSTNo)
+                    @Html.TextBoxFor(model => model.ClientModel.GSTNo, new { @class = "form-control", @ReadOnly = "True" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.GSTNo)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.PANNo)
+                    @Html.TextBoxFor(model => model.ClientModel.PANNo, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.PANNo)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.WebSite)
+                    @Html.TextBoxFor(model => model.ClientModel.WebSite, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.WebSite)
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="card-body">
+            <div class="heading-layout1">
+                <div class="item-title">
+                    <h3>Contact Details</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.PrincipalName)
+                    @Html.TextBoxFor(model => model.ClientModel.PrincipalName, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.PrincipalName)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.PrincipalNumber)
+                    @Html.TextBoxFor(model => model.ClientModel.PrincipalNumber, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.PrincipalNumber)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.PrincipalPhoto)
+                    @Html.TextBoxFor(model => model.ClientModel.PrincipalPhoto, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.PrincipalPhoto)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <strong>
+                        @Html.LabelFor(model => model.ClientModel.ManagerName) &nbsp;<span class="field-validation-error">*</span>
+                    </strong>
+                        @Html.TextBoxFor(model => model.ClientModel.ManagerName, new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.ClientModel.ManagerName)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.ManagerNumber)
+                    @Html.TextBoxFor(model => model.ClientModel.ManagerNumber, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.ManagerNumber)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.ManagerPhoto)
+                    @Html.TextBoxFor(model => model.ClientModel.ManagerPhoto, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.ManagerPhoto)
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="card-body">
+            <div class="heading-layout1">
+                <div class="item-title">
+                    <h3>Social Details</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.FacebookAccountLink)
+                    @Html.TextBoxFor(model => model.ClientModel.FacebookAccountLink, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.FacebookAccountLink)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.TwitterLink)
+                    @Html.TextBoxFor(model => model.ClientModel.TwitterLink, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.TwitterLink)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.OtherLink)
+                    @Html.TextBoxFor(model => model.ClientModel.OtherLink, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.OtherLink)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.SchoolLogo)
+                    @Html.TextBoxFor(model => model.ClientModel.SchoolLogo, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.SchoolLogo)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.IsActive)
+                    <br />
+                    @Html.EditorFor(model => model.ClientModel.IsActive)
+                </div>
+
+            </div>
+        </div>
+        <hr />
+        <div class="card-body">
+            <div class="heading-layout1">
+                <div class="item-title">
+                    <h3>SMS Details</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.SMSId)
+                    @Html.TextBoxFor(model => model.ClientModel.SMSId, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.SMSId)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.SMSPassword)
+                    @Html.TextBoxFor(model => model.ClientModel.SMSPassword, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.SMSPassword)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.SMSLoginCode)
+                    @Html.TextBoxFor(model => model.ClientModel.SMSLoginCode, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.SMSLoginCode)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.LoginLink)
+                    @Html.TextBoxFor(model => model.ClientModel.LoginLink, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.LoginLink)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.AMC)
+                    @Html.TextBoxFor(model => model.ClientModel.AMC, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.AMC)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.StudentLimit)
+                    @Html.TextBoxFor(model => model.ClientModel.StudentLimit, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.StudentLimit)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.Email)
+                    @Html.TextBoxFor(model => model.ClientModel.Email, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Email)
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.Sesssion)
+                    @Html.DropDownListFor(model => model.ClientModel.Sesssion, new List<SelectListItem>
+                                                  {
+                                                      new SelectListItem{ Text="--Choose Session--", Value = "0" },
+                                                      new SelectListItem{ Text="2022-23", Value = "2022-23" },
+                                                      new SelectListItem{ Text="2023-24", Value = "2023-24" },
+                                                      new SelectListItem{ Text="2024-25", Value = "2024-25" }
+
+                                              }, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Sesssion)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.Note1)
+                    @Html.TextBoxFor(model => model.ClientModel.Note1, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Note1)
+                </div>
+                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.Note2)
+                    @Html.TextBoxFor(model => model.ClientModel.Note2, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Note2)
+                </div>
+                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.Note3)
+                    @Html.TextBoxFor(model => model.ClientModel.Note3, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Note3)
+                </div>
+                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                    @Html.LabelFor(model => model.ClientModel.Note4)
+                    @Html.TextBoxFor(model => model.ClientModel.Note4, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.ClientModel.Note4)
+                </div>
+            </div>
+        </div>
+        <div class="col-12 form-group mg-t-8">
+            <button type="submit" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark">Save</button>
+            <button type="reset" class="btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="$(this).resetValidation()">Reset</button>
+        </div>
+    }
+</div>
+<script type="text/javascript">
+        $(this.document).ready(function () {
+        $("#ClientModel_GSTNo").prop("readonly", true);
+        if ('@ViewBag.ErrorMsg' != null && '@ViewBag.ErrorMsg' != '') {
+            notificationMessage('@ViewBag.ErrorMsg', 'danger')
+            HRN.hideLoader();
+        }
+        $("#ClientModel_GSTCategory").change(function () {
+
+            if ($(this).val() == 'Register') {
+                $("#ClientModel_GSTNo").val('');
+                $("#ClientModel_GSTNo").prop("readonly", false);
+            } else {
+                $("#ClientModel_GSTNo").val('');
+                $("#ClientModel_GSTNo").prop("readonly", true);
+            }
+        });
+    });
+
+    var onBeginSubmit = function () {
+        HRN.showLoader();
+    };
+
+    function onSuccess() {
+        if ('@ViewBag.ErrorMsg' == null || '@ViewBag.ErrorMsg' == '') {
+            HRN.hideLoader();
+            window.location.href = '@Url.Action("Index")?status=s';
+        }
+    }
+
+</script>

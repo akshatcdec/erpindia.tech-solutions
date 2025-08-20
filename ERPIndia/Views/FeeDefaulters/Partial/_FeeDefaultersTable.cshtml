@@ -1,0 +1,159 @@
+﻿@model IEnumerable<ERPIndia.FeeDefaultersModels.FeeDefaultersDto>
+
+@if (Model != null && Model.Any())
+{
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="card-title mb-0">Fee Defaulters List</h5>
+                </div>
+                <div class="col-auto">
+                    <button id="exportBtn" class="btn btn-success btn-sm">
+                        <i class="fas fa-file-export me-1"></i>Export
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="feeDefaultersTable" class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th width="5px">cls</th>
+                            <th width="5%">sec</th>
+                            <th width="5%">roll no</th>
+                            <th>Name</th>
+                            <th>Total Fees</th>
+                            <th>Tranport Fee</th>
+                            <th>Dis Amt</th>
+                            <th>Net Fees</th>
+                            <th>Paid Amt</th>
+                            <th>Due Amt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var defaulter in Model)
+                        {
+                            <tr>
+                                <td>@defaulter.ClassName</td>
+                                <td>@defaulter.SectionName</td>
+                                <td>@defaulter.RollNo</td>
+                                <td>@defaulter.StudentName</td>
+                                <td>₹@defaulter.TotalFees.ToString("N0")</td>
+                                <td>₹@defaulter.TransportFee.ToString("N0")</td>
+                                <td>₹@defaulter.DiscountAmount.ToString("N0")</td>
+                                <td>₹@defaulter.NetFees.ToString("N0")</td>
+                                <td>₹@defaulter.PaidAmount.ToString("N0")</td>
+                                <td>₹@defaulter.DueAmount.ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+         $(document).ready(function() {
+                    // Export button handler
+                    $('#exportBtn').on('click', function() {
+                // Disable export button and show loading
+                var $exportBtn = $(this);
+                var originalBtnHtml = $exportBtn.html();
+
+                // Show loading state
+                $exportBtn.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Exporting...');
+                $exportBtn.prop('disabled', true);
+
+                // Gather search parameters from the form
+                var formData = $('#searchForm').serialize();
+
+                // Send AJAX request to export endpoint
+                $.ajax({
+                    url: '@Url.Action("ExportFeeDefaulters", "FeeDefaulters")',
+                    type: 'POST',
+                    data: formData,
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function(data, status, xhr) {
+                        // Get filename from Content-Disposition header
+                        var disposition = xhr.getResponseHeader('Content-Disposition');
+                        var filename = disposition.split('filename=')[1].trim();
+
+                        // Create a link and trigger download
+                        var type = xhr.getResponseHeader('Content-Type');
+                        var blob = new Blob([data], { type: type });
+
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    },
+                    error: function(xhr, status, error) {
+                        // Show error toast or alert
+                        toastr.error('Export failed: ' + error);
+                    },
+                    complete: function() {
+                        // Restore button state
+                        $exportBtn.html(originalBtnHtml);
+                        $exportBtn.prop('disabled', false);
+                    }
+                });
+            });
+        });
+               
+
+        $(document).ready(function () {
+            // Initialize DataTable
+            $('#feeDefaultersTable').DataTable({
+                responsive: true,
+                dom: 'Bfrtip',
+                buttons: [
+                    'copy', 'csv', 'excel', 'pdf', 'print'
+                ],
+                language: {
+                    emptyTable: "No fee defaulters found"
+                }
+            });
+
+            // Export button handler
+            $('#exportBtn').on('click', function () {
+                // Trigger DataTable export
+                $('#feeDefaultersTable').DataTable().button('.buttons-excel').trigger();
+            });
+        });
+
+        // Student details view function
+        function viewStudentDetails(rollNo) {
+            // Implement navigation or modal to show student details
+            window.location.href = '/Students/Details/' + rollNo;
+        }
+
+        // Reminder notification function
+        function sendReminderNotification(rollNo) {
+            $.ajax({
+                url: '/Notifications/SendFeeReminder',
+                type: 'POST',
+                data: { rollNo: rollNo },
+                success: function (response) {
+                    toastr.success('Reminder sent successfully');
+                },
+                error: function () {
+                    toastr.error('Failed to send reminder');
+                }
+            });
+        }
+    </script>
+
+}
+else
+{
+    <div class="alert alert-info text-center" role="alert">
+        No fee defaulters found matching the search criteria.
+    </div>
+}

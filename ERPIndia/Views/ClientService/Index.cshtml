@@ -1,0 +1,93 @@
+@model List<ERPIndia.Models.InvoiceModel>
+
+<div class="breadcrumbs-area">
+    <h3>Invoice</h3>
+    <ul>
+        <li>
+            <a href="@Url.Action("", "SiteMap")">Home</a>
+        </li>
+        <li>Invoices</li>
+    </ul>
+</div>
+<div class="card height-auto">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12 col-sm-12 datagrid">
+                <table cellspacing="1" cellpadding="2" style="width: 100%;" id="dgList" class="table table-striped table-hover table-bordered table-hd">
+                        <thead>
+                            <tr class="gridheader">
+                                <td valign="middle" align="center" style="width: 2%;">
+                                    <input id="chkAll" onclick="javascript: checkAll();" type="checkbox" name="chkAll" />
+                                </td>
+                                <td class="search_field" search_field_value="ClientName">Client Name</td>
+                                <td class="search_field" search_field_value="InvoiceDate">Invoice Date</td>
+                                <td class="search_field" search_field_value="DueDate">Due Date</td>
+                                <td>Tax Percent</td>
+                                <td class="search_field" search_field_value="ServiceTotal">Amount</td>
+                                <td>Tax Amount</td>
+                                <td>Total Amount</td>
+                                <td style="width: 5%;" class="text-center">Status</td>
+                                <td style="width: 5%;" class="text-center">Edit</td>
+                                <td style="width: 5%;" class="text-center">Delete</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Count > 0)
+                            {
+                                for (int i = 0; i < Model.Count; i++)
+                                {
+                                    <tr>
+                                        <td valign="middle" align="center" style="width: 2%;">
+                                            <input id="chkBox" name="chkBox" type="checkbox" onclick="javascript: checkManual();" value="@Model[i].InvoiceId" />
+                                        </td>
+                                        <td>@Model[i].ClientName</td>
+                                        <td>@(Model[i].InvoiceDate.HasValue ? Model[i].InvoiceDate.Value.ToString("dd-MMM-yyyy") : "") </td>
+                                        <td>@(Model[i].DueDate.HasValue ? Model[i].DueDate.Value.ToString("dd-MMM-yyyy") : "") </td>
+                                        <td>@Model[i].TaxPercent</td>
+                                        <td>@Model[i].ServiceTotal</td>
+                                        <td>@Model[i].TaxAmount</td>
+                                        <td>@Model[i].InvoiceTotal</td>
+                                        <td style="width: 5%;" class="text-center">
+                                            @{
+                                                switch (Model[i].InvoiceStatus)
+                                                {
+                                                    case "P":
+                                                        <span>Pending</span>
+                                                        break;
+                                                    case "R":
+                                                        <span>Pending</span>
+                                                        break;
+                                                    default:
+                                                        <span>N/A</span>
+                                                        break;
+
+
+                                                }
+
+                                            }
+                                        </td>
+                                        <td style="width: 5%;" class="text-center">
+                                            <a href="@Url.Action("Add", "ClientService", routeValues: new { id = @Model[i].InvoiceId })" title="Click here to edit"><i class="fa fa-edit"></i></a>
+                                        </td>
+                                        <td style="width: 5%;" class="text-center">
+                                            <a onclick="return SetActiveInactive(this);" class="SetStatusClick" name="imgDelete" title="Click here to delete" id="imgDelete" style="text-decoration: none" href="javascript:void(0)"><i class="fa fa-trash-o"></i></a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    @if (Model == null || Model.Count == 0)
+                    {
+                        @Html.Partial("_UCNoRecordsMsg")
+                    }
+            </div>
+        </div>
+
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        hideFilterControls(false, false, true, true);
+    });
+</script>

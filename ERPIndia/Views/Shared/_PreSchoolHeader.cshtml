@@ -1,0 +1,408 @@
+﻿@using ERPIndia.Class.Helper
+@{
+    string sessionId = CommonLogic.GetSessionValue(StringConstants.ActiveSessionPrint);
+    string name = CommonLogic.GetSessionValue(StringConstants.TopBarName);
+    string address = CommonLogic.GetSessionValue(StringConstants.TopBarAddress);
+    string code = CommonLogic.GetSessionValue(StringConstants.TenantCode);
+    string img = CommonLogic.GetSessionValue(StringConstants.ActiveHeaderImg);
+    string logoPath = ERPIndia.Class.Helper.AppLogic.GetHeaderImage(code, img);
+}
+@functions{
+    public string TruncateSchoolName(string schoolName, int maxLength = 45)
+    {
+        if (string.IsNullOrEmpty(schoolName))
+            return string.Empty;
+
+        if (schoolName.Length <= maxLength)
+            return schoolName;
+
+        return schoolName.Substring(0, maxLength) + "...";
+    }
+}
+
+<!-- Add custom styles for logout button -->
+<style>
+    .logout-link:hover {
+        background-color: #F1DEE3 !important;
+        color: #AC032D !important;
+    }
+
+        .logout-link:hover i {
+            color: #AC032D !important;
+        }
+
+    /* Custom modal styles */
+    .logout-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+
+    .logout-modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 400px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .logout-modal-buttons {
+        margin-top: 20px;
+    }
+
+        .logout-modal-buttons button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+    .btn-confirm-logout {
+        background-color: #dc3545;
+        color: white;
+    }
+
+        .btn-confirm-logout:hover {
+            background-color: #AC032D;
+        }
+
+    .btn-cancel-logout {
+        background-color: #6c757d;
+        color: white;
+    }
+
+        .btn-cancel-logout:hover {
+            background-color: #5a6268;
+        }
+</style>
+
+<!-- Custom Logout Confirmation Modal -->
+<div id="logoutModal" class="logout-modal">
+    <div class="logout-modal-content">
+        <h4 style="margin-bottom: 15px;">Confirm Logout</h4>
+        <p>Are you sure you want to logout?</p>
+        <div class="logout-modal-buttons">
+            <button class="btn-cancel-logout" onclick="cancelLogout()">Cancel</button>
+            <button class="btn-confirm-logout" onclick="confirmLogout()">Logout</button>
+        </div>
+    </div>
+</div>
+
+<div class="header">
+
+    <!-- Logo -->
+    <div class="header-left active" style="background-color:orange">
+
+        <a href="@Url.Action("index", "Dashboard")" class="logo logo-normal">
+            <img src="@Url.Content(logoPath)" alt="Logo">
+        </a>
+        <a href="@Url.Action("index", "Dashboard")" class="logo-small">
+            <img src="@Url.Content(logoPath)" alt="Logo">
+        </a>
+        <a href="@Url.Action("index", "Dashboard")" class="dark-logo">
+            <img src="@Url.Content(logoPath)" alt="Logo">
+        </a>
+        <a id="toggle_btn" href="javascript:void(0);">
+            <i class="ti ti-menu-deep"></i>
+        </a>
+    </div>
+    <!-- /Logo -->
+
+    <a id="mobile_btn" class="mobile_btn" href="#sidebar">
+        <span class="bar-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    </a>
+
+    <div class="header-user">
+        <div class="nav user-menu">
+
+            <!-- Search -->
+            <div class="nav-item nav-search-inputs me-auto">
+                <div class="top-nav-search">
+                    <a href="javascript:void(0);" class="responsive-search">
+                        <i class="fa fa-search"></i>
+                    </a>
+                    <table>
+                        <tr>
+                            <td>
+                                <form action="#" class="dropdown">
+                                    <div class="searchinputs" id="dropdownMenuClickable">
+                                        <input type="text" style="width:auto" placeholder="Search">
+                                        <div class="search-addon">
+                                            <button type="submit"><i class="ti ti-command"></i></button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </td>
+                            <td>
+
+                                <div class="dropdown me-2" style="margin-left:20px;">
+                                    <div>
+                                        <table>
+                                            <tr>
+                                                <td> <i class="school-logo fas fa-school"></i></td>
+                                                <td> <span><b>Welcome:</b></span></td>
+                                                <td>  <span style="color: #006655;font-weight:bold;">@TruncateSchoolName(name)</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>   <i class="location-icon fas fa-map-marker-alt"></i></td>
+                                                <td> &nbsp;<span><b>Address:</b></span></td>
+                                                <td>  <span style="color: #cc5500; font-weight: bold;">@TruncateSchoolName(address)</span></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+
+
+                </div>
+
+
+            </div>
+            <!-- /Search -->
+
+            <div class="d-flex align-items-center">
+                <div class="header-info-items d-flex align-items-center ms-1">
+                    <!-- Download Invoice Icon -->
+                    <!-- Notification Icon -->
+                    <div class="pe-1" id="notification_item">
+                        <a href="#" class="btn btn-outline-light bg-white btn-icon position-relative me-1" id="notification_popup">
+                            <i class="fas fa-bell" style="font-size: 15px; color: #555;"></i>
+                            <span class="notification-status-dot"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end notification-dropdown p-4">
+                            <div class="d-flex align-items-center justify-content-between border-bottom p-0 pb-3 mb-3">
+                                <h4 class="notification-title">Notifications (2)</h4>
+                                <div class="d-flex align-items-center">
+                                    <a href="#" class="text-primary fs-15 me-3 lh-1">Mark all as read</a>
+                                    <div class="dropdown">
+                                        <a href="javascript:void(0);" class="bg-white dropdown-toggle" data-bs-toggle="dropdown">
+                                            <i class="ti ti-calendar-due me-1"></i>Today
+                                        </a>
+                                        <ul class="dropdown-menu mt-2 p-3">
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">
+                                                    This Week
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">
+                                                    Last Week
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item rounded-1">
+                                                    Last Week
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="noti-content">
+                                <div class="d-flex flex-column">
+                                    <div class="border-bottom mb-3 pb-3">
+                                        <a href="activities.html">
+                                            <div class="d-flex">
+                                                <span class="avatar avatar-lg me-2 flex-shrink-0">
+                                                    <img src="template/assets/img/profiles/avatar-27.jpg" alt="Profile">
+                                                </span>
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-1">
+                                                        <span class="text-dark fw-semibold">Shawn</span>
+                                                        performance in Math is
+                                                        below the threshold.
+                                                    </p>
+                                                    <span>Just Now</span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="border-bottom mb-3 pb-3">
+                                        <a href="activities.html" class="pb-0">
+                                            <div class="d-flex">
+                                                <span class="avatar avatar-lg me-2 flex-shrink-0">
+                                                    <img src="template/assets/img/profiles/avatar-23.jpg" alt="Profile">
+                                                </span>
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-1">
+                                                        <span class="text-dark fw-semibold">Sylvia</span> added
+                                                        appointment on
+                                                        02:00 PM
+                                                    </p>
+                                                    <span>10 mins ago</span>
+                                                    <div class="d-flex justify-content-start align-items-center mt-1">
+                                                        <span class="btn btn-light btn-sm me-2">Deny</span>
+                                                        <span class="btn btn-primary btn-sm">Approve</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="border-bottom mb-3 pb-3">
+                                        <a href="activities.html">
+                                            <div class="d-flex">
+                                                <span class="avatar avatar-lg me-2 flex-shrink-0">
+                                                    <img src="template/assets/img/profiles/avatar-25.jpg" alt="Profile">
+                                                </span>
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-1">
+                                                        New student record <span class="text-dark fw-semibold"> George</span> is
+                                                        created by <span class="text-dark fw-semibold">
+                                                            Teressa
+                                                        </span>
+                                                    </p>
+                                                    <span>2 hrs ago</span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="border-0 mb-3 pb-0">
+                                        <a href="activities.html">
+                                            <div class="d-flex">
+                                                <span class="avatar avatar-lg me-2 flex-shrink-0">
+                                                    <img src="template/assets/img/profiles/avatar-01.jpg" alt="Profile">
+                                                </span>
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-1">
+                                                        A new teacher record for <span class="text-dark fw-semibold">Elisa</span>
+                                                    </p>
+                                                    <span>09:45 AM</span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex p-0">
+                                <a href="#" class="btn btn-light w-100 me-2">Cancel</a>
+                                <a href="activities.html" class="btn btn-primary w-100">View All</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sms-balance me-1">
+                        <span class="badge" style="height: 40px; padding-top: 7px; background-color: hsl(215.45deg 72.64% 91.37%) ">
+                            <span style="color: hsl(199.84deg 93.58% 30.3%); font-weight: bold ">SMS Bal:</span> <br />
+                            <span style="color: black; font-weight: bold ">
+                                0
+                            </span>
+                        </span>
+                    </div>
+
+                    <div class="validity-date me-1">
+                        <span class="badge" style="height: 40px; padding-top: 7px; background-color: hsl(37.5deg 57.13% 86.23%) ">
+                            <span style="color: red; font-weight: bold "> Valid till:</span> <br />
+                            <span style="color: black; font-weight: bold ">
+                                31-03-2026
+                            </span>
+                        </span>
+                    </div>
+
+                    <div class="dropdown">
+                        <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="badge" style="height: 40px; padding-top: 7px; background-color: hsl(304.62deg 86.67% 94.12%) ">
+                                <span style="color: deeppink; font-weight: bold ">Session:</span> <br />
+                                <span style="color: black; font-weight: bold ">
+                                    @sessionId
+                                </span>
+                            </span>
+                        </a>
+                        <div class="dropdown-menu" style=" background-color: hsl(304.62deg 86.67% 94.12%) ">
+                            <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center">
+                                2026- 27
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown ms-1">
+                    <a href="javascript:void(0);" class="dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
+                        <span class="avatar avatar-md rounded">
+                            <img src="@Url.Content(AppLogic.GetProfilePicture())" alt="Img" class="img-fluid">
+                        </span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="d-block">
+                            <div class="d-flex align-items-center p-2">
+                                <span class="avatar avatar-md me-2 online avatar-rounded">
+                                    <img src="@Url.Content(AppLogic.GetProfilePicture())" alt="img">
+                                </span>
+                                <div>
+
+                                    <h6 class="">@CommonLogic.GetSessionValue(StringConstants.FullName)</h6>
+                                    <p class="text-primary mb-0">@CommonLogic.GetSessionValue(StringConstants.RoleName)</p>
+                                </div>
+                            </div>
+                            <hr class="m-0">
+                            <a class="dropdown-item d-inline-flex align-items-center p-2" href="@Url.Action("","EditProfile")">
+                                <i class="ti ti-user-cog me-2"></i> User Profile
+                            </a>
+                            <a class="dropdown-item d-inline-flex align-items-center p-2" href="@Url.Action("","SchoolProfile")">
+                                <i class="ti ti-building me-2"></i>School Profile
+                            </a>
+                            <hr class="m-0">
+                            <a class="dropdown-item d-inline-flex align-items-center p-2 logout-link" href="javascript:void(0);" onclick="showLogoutModal()">
+                                <i class="ti ti-login me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="dropdown mobile-user-menu">
+        <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
+        <div class="dropdown-menu dropdown-menu-end">
+            <a class="dropdown-item" href="@Url.Action("","EditProfile")">User Profile</a>
+            <a class="dropdown-item" href="@Url.Action("","SchoolProfile")">School Profile</a>
+            <a class="dropdown-item logout-link" href="javascript:void(0);" onclick="showLogoutModal()">Logout</a>
+        </div>
+    </div>
+    <!-- /Mobile Menu -->
+
+</div>
+
+<!-- JavaScript for logout confirmation -->
+<script>
+    var logoutUrl = '@Url.Action("Logout", "Account")';
+
+    function showLogoutModal() {
+        document.getElementById('logoutModal').style.display = 'block';
+    }
+
+    function cancelLogout() {
+        document.getElementById('logoutModal').style.display = 'none';
+    }
+
+    function confirmLogout() {
+        window.location.href = logoutUrl;
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        var modal = document.getElementById('logoutModal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>

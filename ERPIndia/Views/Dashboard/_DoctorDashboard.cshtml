@@ -1,0 +1,106 @@
+﻿@model ERPIndia.ViewModel.DashboardViewModel
+
+<div class="row">
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-aqua"><i class="fa fa-user-md"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Doctors</span>
+                <span class="info-box-number">@Model.DoctorCount</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-red"><i class="fa fa-female"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Nurse</span>
+                <span class="info-box-number">@Model.NurseCount</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <!-- fix for small devices only -->
+    <div class="clearfix visible-sm-block"></div>
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-green"><i class="fa fa-medkit"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Pharmacist</span>
+                <span class="info-box-number">@Model.PharmacistCount</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-yellow"><i class="fa fa-flask"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Laboratorist</span>
+                <span class="info-box-number">@Model.LaboratoristCount</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+</div>
+<div class="row">
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-light-blue"><i class="fa fa-dollar"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Accountant</span>
+                <span class="info-box-number">@Model.AccountantCount</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-yellow"><i class="fa fa-wheelchair-alt"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Patient</span>
+                <span class="info-box-number">@Model.PatientCount</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <!-- fix for small devices only -->
+    <div class="clearfix visible-sm-block"></div>
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-olive"><i class="ion ion-ios-medkit-outline"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Medicines</span>
+                <span class="info-box-number">@Model.MedicineCount</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-blue"><i class="fa fa-bed"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Beds</span>
+                <span class="info-box-number">@Model.BedCount</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+</div>

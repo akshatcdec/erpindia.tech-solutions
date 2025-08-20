@@ -1,0 +1,759 @@
+﻿@model ERPIndia.DTOs.Receipt.FeeReceiptDto
+@{
+    ViewData["Title"] = "School Fee Receipt";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Fee Receipt</title>
+    <style>
+        /* Include all the CSS styles from your original HTML file here */
+        @@page {
+            size: A4;
+            margin: 0.1in;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 9px;
+            box-sizing: border-box;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+        .school-logo {
+            text-align: center;
+            padding: 5px 0;
+        }
+
+            .school-logo img {
+                height: 40px;
+                width: auto;
+            }
+
+
+
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .receipt {
+            width: 50%;
+            height: 50%;
+            padding: 1px;
+            position: relative;
+        }
+
+        .receipt-inner {
+            border: 2px solid black;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .receipt-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .school-header {
+            text-align: left;
+            border-bottom: 1px solid black;
+            padding: 3px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .school-logo {
+            width: 60px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .school-logo img {
+                max-width: 100%;
+                max-height: 50px;
+            }
+
+        .school-info {
+            flex: 1;
+        }
+
+        .school-name {
+            font-size: 11px;
+            font-weight: bold;
+            margin: 0;
+            text-align: center;
+        }
+
+        .school-address {
+            font-size: 8px;
+            margin: 2px 0;
+            text-align: center;
+        }
+
+        .school-phone {
+            font-size: 8px;
+            margin: 0;
+            text-align: center;
+        }
+
+        .receipt-title {
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 3px 0;
+        }
+
+        .receipt-details {
+            width: 100%;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+        }
+
+            .details-table td {
+                border: 1px solid black;
+                padding: 2px 3px;
+                font-size: 8px;
+            }
+
+            .details-table tr:first-child td {
+                font-weight: bold;
+            }
+
+        .fees-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .fees-table td, .fees-table th {
+                border: 1px solid black;
+                padding: 1px 3px;
+                font-size: 8px;
+            }
+
+        .fees-header td {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .gray-bg {
+            background-color: #cccccc;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .transport-section {
+            display: flex;
+            width: 100%;
+            border-top: 1px solid black;
+        }
+
+        .transport-left {
+            width: 15%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid black;
+        }
+
+        .black-dot {
+            width: 10px;
+            height: 10px;
+            background-color: black;
+            border-radius: 50%;
+        }
+
+        .transport-middle {
+            width: 50%;
+            border-right: 1px solid black;
+            padding: 2px 5px;
+        }
+
+        .transport-info {
+            font-size: 8px;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .transport-right {
+            width: 35%;
+            padding: 0;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .summary-table td {
+                padding: 1px 3px;
+                font-size: 8px;
+                border: none;
+            }
+
+                .summary-table td:first-child {
+                    font-weight: bold;
+                    width: 60%;
+                }
+
+                .summary-table td:nth-child(2) {
+                    text-align: center;
+                    width: 5%;
+                    font-weight: bold;
+                }
+
+                .summary-table td:last-child {
+                    text-align: right;
+                    width: 35%;
+                    font-weight: bold;
+                }
+
+        .received-section {
+            display: flex;
+            width: 100%;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+        }
+
+        .received-left {
+            display: flex;
+            width: 28%;
+            flex-direction: column;
+        }
+
+        .received-header {
+            padding: 2px;
+            border-right: 1px solid black;
+            font-weight: bold;
+            text-align: center;
+            font-size: 9px;
+            border-bottom: 1px solid black;
+        }
+
+        .received-amount {
+            display: flex;
+            height: 30px;
+        }
+
+        .rupee-symbol {
+            width: 20%;
+            border-right: 1px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .amount-value {
+            width: 80%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .received-right {
+            width: 72%;
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Add this to center horizontally */
+            text-align: center; /* Add this to center the text */
+            font-size: 9px;
+            font-weight: bold;
+            padding-left: 0; /* Remove left padding */
+        }
+
+        .amount-words {
+            padding: 3px 5px;
+            font-size: 9px;
+            font-weight: bold;
+            border-bottom: 1px solid black;
+        }
+
+        .footer {
+            display: flex;
+            padding: 3px 0;
+            flex-grow: 1;
+            font-size: 7px;
+        }
+
+        .footer-left {
+            width: 70%;
+            padding-left: 5px;
+        }
+
+        .footer-right {
+            width: 30%;
+            text-align: right;
+            padding-right: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .signature-line {
+            border-top: 1px dashed black;
+            margin-top: 20px;
+            padding-top: 2px;
+            font-weight: bold;
+        }
+
+        .receipt-number {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: red;
+            color: white;
+            font-weight: bold;
+            width: 18px;
+            height: 18px;
+            text-align: center;
+            line-height: 18px;
+            border-radius: 50%;
+            font-size: 11px;
+            z-index: 100;
+        }
+
+        /* Print controls */
+        .print-controls {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .print-button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        /* Hide controls when printing */
+        @@media print {
+            .print-controls {
+                display: none;
+            }
+
+            .page {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-controls">
+        <button class="print-button" onclick="printPage()">Print Receipts</button>
+    </div>
+
+    <div class="page">
+        <!-- Receipt 1 (Student Copy) -->
+        <div class="receipt">
+            <div class="receipt-inner">
+
+                <div class="receipt-content">
+                    <div class="school-header">
+                        <div class="school-logo">
+                            @if (!string.IsNullOrEmpty(Model.SchoolInfo.LOGOImg) && System.IO.File.Exists(Server.MapPath(Model.SchoolInfo.LOGOImg)))
+                            {
+                                <div class="school-logo">
+                                    <img src="@Model.SchoolInfo.LOGOImg" alt="School Logo">
+                                </div>
+                            }
+                        </div>
+                        <div class="school-info">
+                            <p class="school-name">@Model.SchoolInfo.Name</p>
+                            <p class="school-address">@Model.SchoolInfo.Address</p>
+                            <p class="school-phone">@Model.SchoolInfo.Phone</p>
+                        </div>
+                    </div>
+
+                    <div class="receipt-title">FEES RECEIPT  [Student Copy]</div>
+
+                    <div class="receipt-details">
+                        <table class="details-table">
+                            <tr>
+                                <td width="20%">Receipt No.</td>
+                                <td width="30%">@Model.ReceiptNumber</td>
+                                <td colspan="2">Date: @Model.FormattedReceiptDate</td>
+                            </tr>
+                            <tr>
+                                <td width="20%">Adm No</td>
+                                <td width="30%">@Model.RegistrationNumber</td>
+                                <td colspan="2">Session: (@Model.Session)</td>
+                            </tr>
+                            <tr>
+                                <td>Student name</td>
+                                <td colspan="3">@Model.StudentName</td>
+                            </tr>
+                            <tr>
+                                <td>Father's Name</td>
+                                <td colspan="3">@Model.FatherName</td>
+                            </tr>
+                            <tr>
+                                <td>Class / Standard</td>
+                                <td>@Model.ClassStandard</td>
+                                <td>Section : @Model.Section</td>
+                                <td>Old Balance : @Model.FinancialSummary.OldBalance.ToString("0.00")</td>
+                            </tr>
+                            <tr>
+                                <td width="10%">Month </td>
+                                <td colspan="3">@Model.Months</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <table class="fees-table">
+                        <tr class="fees-header">
+                            <td width="65%">Student's Fees Details</td>
+                            <td width="35%">Amount</td>
+                        </tr>
+                        @foreach (var feeItem in Model.FeeItems)
+                        {
+                            <tr @(feeItem.IsHighlighted ? "class=\"gray-bg\"" : "")>
+                                <td>@feeItem.FeeName</td>
+                                <td class="text-right">@feeItem.Amount</td>
+                            </tr>
+                        }
+                    </table>
+
+                    <div class="transport-section">
+                        <div class="transport-left">
+                            <div class="black-dot"></div>
+                        </div>
+                        <div class="transport-middle">
+                            <div class="transport-info">
+                                @if (!string.IsNullOrWhiteSpace(Model.TransportRoutes))
+                                {
+                                    @:Transport : @Model.TransportRoutes<br />
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.TransportMonth))
+                                {
+                                    @: Month :  @Model.TransportMonth<br />
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.TransportAmount))
+                                {
+                                    @: Amount :  @Model.TransportAmount<br />
+                                }
+                            </div>
+                        </div>
+                        <div class="transport-right">
+                            <table class="summary-table">
+
+                                <tr>
+                                    <td>Concession</td>
+                                    <td>:</td>
+                                    <td>@Model.FinancialSummary.Concession.ToString("0.00")</td>
+                                </tr>
+                                <tr>
+                                    <td>Other Charge</td>
+                                    <td>:</td>
+                                    <td>@Model.FinancialSummary.OtherCharge.ToString("0.00")</td>
+                                </tr>
+                                <tr>
+                                    <td>Total</td>
+                                    <td>:</td>
+                                    <td>@Model.FinancialSummary.TotalAmount.ToString("0.00")</td>
+                                </tr>
+                                <tr>
+                                    <td>Received</td>
+                                    <td>:</td>
+                                    <td>@Model.ReceivedAmount.ToString("0.00")</td>
+                                </tr>
+                                <tr>
+                                    <td>Remain</td>
+                                    <td>:</td>
+                                    <td>@Model.FinancialSummary.RemainingAmount.ToString("0.00")</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="received-section">
+                        <div class="received-left">
+                            <div class="received-header">RECEIVED AMOUNT</div>
+                            <div class="received-amount">
+                                <div class="rupee-symbol">₹</div>
+                                <div class="amount-value">@Model.ReceivedAmount</div>
+                            </div>
+                        </div>
+                        <div class="received-right">
+                            @Model.PrintedByDateTime
+                        </div>
+                    </div>
+
+                    <div class="amount-words">
+                        Amount Received : @Model.ReceivedAmountInWords
+                    </div>
+
+                    <div class="footer">
+                        <div class="footer-left">
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.FeeNote1))
+                            {
+                                @:* @Model.SchoolInfo.FeeNote1<br />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.FeeNote2))
+                            {
+                                @:* @Model.SchoolInfo.FeeNote2<br />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.FeeNote3))
+                            {
+                                @:* @Model.SchoolInfo.FeeNote3<br />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.FeeNote4))
+                            {
+                                @:* @Model.SchoolInfo.FeeNote4<br />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.FeeNote5))
+                            {
+                                @:* @Model.SchoolInfo.FeeNote5<br />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.Website))
+                            {
+                                <span> @Model.SchoolInfo.Website | </span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.Email))
+                            {
+                                <span>@Model.SchoolInfo.Email</span>
+                            }
+                        </div>
+                        <div class="footer-right">
+                            Received by
+                            <div class="signature-line">Signature with Stamp</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Receipt 2 (School Copy) -->
+        <div class="receipt">
+            <div class="receipt-inner">
+
+                <div class="receipt-content">
+                    <div class="school-header">
+                        <div class="school-logo">
+                            @if (!string.IsNullOrEmpty(Model.SchoolInfo.LOGOImg) && System.IO.File.Exists(Server.MapPath(Model.SchoolInfo.LOGOImg)))
+                            {
+                                <div class="school-logo">
+                                    <img src="@Model.SchoolInfo.LOGOImg" alt="School Logo">
+                                </div>
+                            }
+                        </div>
+                        <div class="school-info">
+                            <p class="school-name">@Model.SchoolInfo.Name</p>
+                            <p class="school-address">@Model.SchoolInfo.Address</p>
+                            <p class="school-phone">@Model.SchoolInfo.Phone</p>
+                        </div>
+                    </div>
+
+                    <div class="receipt-title">FEES RECEIPT  [School Copy]</div>
+
+                    <div class="receipt-details">
+                        <table class="details-table">
+                            <tr>
+                                <td width="20%">Receipt No.</td>
+                                <td width="30%">@Model.ReceiptNumber</td>
+                                <td colspan="2">Date: @Model.FormattedReceiptDate</td>
+                            </tr>
+                            <tr>
+                                <td width="20%">Adm No</td>
+                                <td width="30%">@Model.RegistrationNumber</td>
+                                <td colspan="2">Session: (@Model.Session)</td>
+                            </tr>
+                            <tr>
+                                <td>Student name</td>
+                                <td colspan="3">@Model.StudentName</td>
+                            </tr>
+                            <tr>
+                                <td>Father's Name</td>
+                                <td colspan="3">@Model.FatherName</td>
+                            </tr>
+                            <tr>
+                                <td>Class / Standard</td>
+                                <td>@Model.ClassStandard</td>
+                                <td>Section : @Model.Section</td>
+                                <td>Old Balance :  @Model.FinancialSummary.OldBalance.ToString("0.00")</td>
+                            </tr>
+                            <tr>
+                                <td width="10%">Month </td>
+                                <td colspan="3">@Model.Months</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <table class="fees-table">
+                        <tr class="fees-header">
+                            <td width="65%">Student's Fees Details</td>
+                            <td width="35%">Amount</td>
+                        </tr>
+                        @foreach (var feeItem in Model.FeeItems)
+                        {
+                            <tr @(feeItem.IsHighlighted ? "class=\"gray-bg\"" : "")>
+                                <td>@feeItem.FeeName</td>
+                                <td class="text-right">@feeItem.Amount</td>
+                            </tr>
+                        }
+                    </table>
+
+                    <div class="transport-section">
+                        <div class="transport-left">
+                            <div class="black-dot"></div>
+                        </div>
+                        <div class="transport-middle">
+                            <div class="transport-info">
+                                @if (!string.IsNullOrWhiteSpace(Model.TransportRoutes))
+                                {
+                                    @:Transport : @Model.TransportRoutes<br />
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.TransportMonth))
+                                {
+                                    @: Month :  @Model.TransportMonth<br />
+                                }
+                                @if (!string.IsNullOrWhiteSpace(Model.TransportAmount))
+                                {
+                                    @: Amount :  @Model.TransportAmount<br />
+                                }
+                            </div>
+                        </div>
+                        <div class="transport-right">
+                            <table class="summary-table">
+                                <tr>
+                                    <td>Concession</td>
+                                    <td>:</td>
+                                    <td>@Model.FinancialSummary.Concession.ToString("0.00")</td>
+                                </tr>
+                                <tr>
+                                    <td>Other Charge</td>
+                                    <td>:</td>
+                                    <td>@Model.FinancialSummary.OtherCharge.ToString("0.00")</td>
+                                </tr>
+                                <tr>
+                                    <td>Total</td>
+                                    <td>:</td>
+                                    <td>@Model.FinancialSummary.TotalAmount.ToString("0.00")</td>
+                                </tr>
+                                <tr>
+                                    <td>Received</td>
+                                    <td>:</td>
+                                    <td>@Model.ReceivedAmount.ToString("0.00")</td>
+                                </tr>
+                                <tr>
+                                    <td>Remain</td>
+                                    <td>:</td>
+                                    <td>@Model.FinancialSummary.RemainingAmount.ToString("0.00")</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="received-section">
+                        <div class="received-left">
+                            <div class="received-header">RECEIVED AMOUNT</div>
+                            <div class="received-amount">
+                                <div class="rupee-symbol">₹</div>
+                                <div class="amount-value">@Model.ReceivedAmount</div>
+                            </div>
+                        </div>
+                        <div class="received-right">
+                            @Model.PrintedByDateTime
+                        </div>
+                    </div>
+
+                    <div class="amount-words">
+                        Amount Received : @Model.ReceivedAmountInWords
+                    </div>
+
+                    <div class="footer">
+                        <div class="footer-left">
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.FeeNote1))
+                            {
+                                @:* @Model.SchoolInfo.FeeNote1<br />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.FeeNote2))
+                            {
+                                @:* @Model.SchoolInfo.FeeNote2<br />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.FeeNote3))
+                            {
+                                @:* @Model.SchoolInfo.FeeNote3<br />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.FeeNote4))
+                            {
+                                @:* @Model.SchoolInfo.FeeNote4<br />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.FeeNote5))
+                            {
+                                @:* @Model.SchoolInfo.FeeNote5<br />
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.Website))
+                            {
+                                <span> @Model.SchoolInfo.Website | </span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.SchoolInfo.Email))
+                            {
+                                <span>@Model.SchoolInfo.Email</span>
+                            }
+                        </div>
+                        <div class="footer-right">
+                            Received by
+                            <div class="signature-line">Signature with Stamp</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function printPage() {
+            window.print();
+        }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Get all logo images
+            var logoImages = document.querySelectorAll('.school-logo img');
+
+            // Add error handler to each logo image
+            logoImages.forEach(function (img) {
+                img.onerror = function () {
+                    // If image fails to load, hide the logo container
+                    this.parentElement.style.display = 'none';
+                };
+            });
+        });
+    </script>
+</body>
+</html>

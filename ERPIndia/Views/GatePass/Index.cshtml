@@ -1,0 +1,853 @@
+﻿@model ERPK12Models.ViewModel.GatePass.GatePassListViewModel
+@{
+    ViewBag.Title = "Gate Pass Register";
+}
+<style>
+    .submit-button {
+        background: linear-gradient(to right, #FF6A00, #D64500);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .submit-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+</style>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="fas fa-id-card fs-16"></i>
+                            </span>
+                            <h4 class="text-dark mb-0">
+                                Gate Pass Register
+                            </h4>
+                        </div>
+                        <div>
+                            <a class="submit-button" href="javascript:void(0)" onclick="openCreateModal()">
+                                <i class="fas fa-plus me-1"></i>
+                                New Gate Pass
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Search Criteria</h5>
+
+                    <div id="validationMessage" class="alert alert-warning d-none">
+                        Please fill in at least one search criteria before searching.
+                    </div>
+
+                    <!-- AJAX Search Form -->
+                    @using (Html.BeginForm("Search", "GatePass", FormMethod.Post, new { id = "searchForm", @class = "needs-validation", novalidate = "novalidate" }))
+                    {
+                        <div class="row g-2">
+                            <div class="col-md-2">
+                                <label class="form-label">From Date</label>
+                                @Html.TextBoxFor(m => m.Filters.FromDate, new { @class = "form-control form-control-sm", @type = "date" })
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">To Date</label>
+                                @Html.TextBoxFor(m => m.Filters.EndDate, new { @class = "form-control form-control-sm", @type = "date" })
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Student Name</label>
+                                @Html.TextBoxFor(m => m.Filters.StudentName, new { @class = "form-control form-control-sm", placeholder = "Enter student name" })
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Class</label>
+                                @Html.DropDownListFor(m => m.Filters.SelectedClass, Model.Filters.ClassList, new { @class = "form-control form-control-sm" })
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Pass No.</label>
+                                @Html.TextBoxFor(m => m.Filters.PassNo, new { @class = "form-control form-control-sm", placeholder = "GP-2025-0001" })
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-secondary btn-sm w-100" onclick="clearFilters()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="alertContainer">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show mt-3">
+                @TempData["SuccessMessage"]
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mt-3">
+                @TempData["ErrorMessage"]
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        }
+    </div>
+
+    <!-- Search Results Container -->
+    <div id="searchResultContainer" class="mt-4">
+        @if (Model.GatePasses != null && Model.GatePasses.Any())
+        {
+            @Html.Partial("_GatePassSearchResults", Model)
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Use the search criteria above to find gate passes</h5>
+                    <p class="text-muted">Today's gate passes will be shown by default when you search</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Gate Pass Create/Edit Modal (Bootstrap Modal) -->
+<div class="modal fade" id="gatePassModal" tabindex="-1" role="dialog" aria-labelledby="gatePassModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="display:none">
+                <h5 class="modal-title" id="gatePassModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="modalContent">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gate Pass Print Modal (Custom Modal) -->
+<div id="GatePassPrintModal" class="gp-modal" style="display: none;">
+    <div class="gp-modal-dialog">
+        <div class="gp-modal-content">
+            <div class="gp-modal-header">
+                <h5 class="gp-modal-title" id="gpModalTitle">Gate Pass Print Preview</h5>
+                <button type="button" class="gp-modal-close" onclick="closeGatePassPrintModal()">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="gp-modal-body">
+                <div id="gpLoadingIndicator" class="gp-loading-container">
+                    <div class="gp-spinner"></div>
+                    <div class="gp-loading-text">Loading Gate Pass...</div>
+                </div>
+                <iframe id="gpContentIframe" class="gp-modal-iframe" style="display:none;"></iframe>
+            </div>
+            <div class="gp-modal-footer" style="display:none">
+                <button type="button" class="btn btn-secondary" onclick="closeGatePassPrintModal()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+                <button type="button" class="btn btn-primary" onclick="printGatePassDocument()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button type="button" class="btn btn-info" onclick="downloadGatePass()">
+                    <i class="fas fa-download"></i> Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gate Pass Print Modal Styles -->
+<style>
+    /* Gate Pass Modal Specific Styles */
+    .gp-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2000;
+        background-color: rgba(0, 0, 0, 0.7);
+        overflow: hidden;
+    }
+
+    .gp-modal-dialog {
+        width: 95%;
+        max-width: 1100px;
+        margin: 20px auto;
+        position: relative;
+        pointer-events: all;
+        height: calc(100% - 40px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gp-modal-content {
+        position: relative;
+        background-color: #fff;
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        background-clip: padding-box;
+        outline: 0;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gp-modal-header {
+        padding: 15px;
+        border-bottom: 1px solid #e5e5e5;
+        background-color: #f8f9fa;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+
+    .gp-modal-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .gp-modal-body {
+        position: relative;
+        padding: 0;
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gp-modal-footer {
+        padding: 15px;
+        text-align: right;
+        border-top: 1px solid #e5e5e5;
+        background-color: #f8f9fa;
+        border-bottom-left-radius: 6px;
+        border-bottom-right-radius: 6px;
+        flex-shrink: 0;
+    }
+
+    .gp-modal-close {
+        float: right;
+        font-size: 24px;
+        font-weight: bold;
+        line-height: 1;
+        color: #000;
+        text-shadow: 0 1px 0 #fff;
+        opacity: 0.5;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+    }
+
+        .gp-modal-close:hover {
+            opacity: 0.8;
+        }
+
+    .gp-modal-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        flex-grow: 1;
+    }
+
+    /* Loading Indicator Styles */
+    .gp-loading-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.9);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 2;
+    }
+
+    .gp-spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: gp-spin 1s linear infinite;
+        margin-bottom: 15px;
+    }
+
+    .gp-loading-text {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+    }
+
+    @@keyframes gp-spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Disable background when modal is open */
+    body.gp-modal-open {
+        overflow: hidden;
+    }
+
+    /* Fade animation */
+    .gp-modal.show {
+        display: block !important;
+        animation: gpFadeIn 0.3s ease-in-out;
+    }
+
+    @@keyframes gpFadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .gp-modal-dialog {
+            width: 98%;
+            margin: 10px auto;
+            height: calc(100% - 20px);
+        }
+
+        .gp-modal-footer {
+            padding: 10px;
+        }
+
+            .gp-modal-footer button {
+                margin: 2px;
+                font-size: 14px;
+            }
+    }
+
+    /* Print-specific styles */
+    @@media print {
+        .gp-modal-header,
+        .gp-modal-footer {
+            display: none !important;
+        }
+
+        .gp-modal-body {
+            padding: 0 !important;
+        }
+    }
+</style>
+
+<!-- JavaScript Section -->
+<script>
+    var currentHistoryStudentId = null;
+// Gate Pass specific modal variables
+var gpModalInstance = {
+    isOpen: false,
+    currentGatePassId: null,
+    loadTimeout: null
+};
+
+// Open Gate Pass Print Modal
+function openGatePassPrintModal(gatePassId, passNo) {
+    console.log('Opening gate pass print modal for ID:', gatePassId);
+
+    // Set current gate pass ID
+    gpModalInstance.currentGatePassId = gatePassId;
+
+    // Update modal title
+    $('#gpModalTitle').text('Gate Pass - ' + (passNo || 'Print Preview'));
+
+    // Show loading
+    $('#gpLoadingIndicator').show();
+    $('#gpContentIframe').hide();
+
+    // Clear previous iframe content
+    $('#gpContentIframe').attr('src', '');
+
+    // Show modal
+    $('#GatePassPrintModal').addClass('show').fadeIn(300);
+    $('body').addClass('gp-modal-open');
+    gpModalInstance.isOpen = true;
+
+    // Build URL
+    var printUrl = '@Url.Action("PrintGatePass", "GatePass")' + '?Id=' + gatePassId;
+
+    // Set up load handlers
+    var loaded = false;
+    $('#gpContentIframe')
+        .off('load error')
+        .on('load', function() {
+            console.log('Gate pass document loaded');
+            loaded = true;
+            clearTimeout(gpModalInstance.loadTimeout);
+
+            // Hide loading, show content
+            $('#gpLoadingIndicator').fadeOut(200, function() {
+                $('#gpContentIframe').fadeIn(200);
+            });
+        })
+        .on('error', function() {
+            console.error('Error loading gate pass document');
+            loaded = true;
+            clearTimeout(gpModalInstance.loadTimeout);
+            showGatePassError('Failed to load gate pass document.');
+        });
+
+    // Set timeout
+    gpModalInstance.loadTimeout = setTimeout(function() {
+        if (!loaded) {
+            showGatePassError('The document is taking too long to load. Please try again.');
+        }
+    }, 20000); // 20 second timeout
+
+    // Load the document
+    $('#gpContentIframe').attr('src', printUrl);
+}
+
+// Close Gate Pass Print Modal
+function closeGatePassPrintModal() {
+    console.log('Closing gate pass print modal');
+
+    // Clear timeout
+    if (gpModalInstance.loadTimeout) {
+        clearTimeout(gpModalInstance.loadTimeout);
+    }
+
+    // Clear iframe
+    $('#gpContentIframe').attr('src', '');
+
+    // Hide modal with animation
+    $('#GatePassPrintModal').removeClass('show').fadeOut(300, function() {
+        // Reset state
+        $('body').removeClass('gp-modal-open');
+        gpModalInstance.isOpen = false;
+        gpModalInstance.currentGatePassId = null;
+
+        // Reset loading indicator
+        $('#gpLoadingIndicator').html(
+            '<div class="gp-spinner"></div>' +
+            '<div class="gp-loading-text">Loading Gate Pass...</div>'
+        );
+    });
+}
+
+// Print Gate Pass Document
+function printGatePassDocument() {
+    try {
+        var iframe = document.getElementById('gpContentIframe');
+        if (iframe && iframe.contentWindow) {
+            // Try to access iframe content
+            try {
+                var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                if (iframeDoc && iframeDoc.body && iframeDoc.body.innerHTML.trim() !== '') {
+                    iframe.contentWindow.print();
+                } else {
+                    alert('Document is empty. Please wait for it to load completely.');
+                }
+            } catch (e) {
+                // Cross-origin, try to print anyway
+                iframe.contentWindow.print();
+            }
+        }
+    } catch (error) {
+        console.error('Print error:', error);
+        alert('Unable to print. Please try downloading the document instead.');
+    }
+}
+
+// Download Gate Pass
+function downloadGatePass() {
+    if (gpModalInstance.currentGatePassId) {
+        var downloadUrl = '@Url.Action("DownloadGatePass", "GatePass")' + '?Id=' + gpModalInstance.currentGatePassId;
+        window.open(downloadUrl, '_blank');
+    } else {
+        alert('No gate pass selected for download.');
+    }
+}
+
+// Show error in modal
+function showGatePassError(message) {
+    $('#gpLoadingIndicator').html(
+        '<div style="text-align: center; padding: 20px;">' +
+        '<i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #dc3545; margin-bottom: 20px;"></i>' +
+        '<h4 style="color: #dc3545;">Error</h4>' +
+        '<p>' + message + '</p>' +
+        '<button class="btn btn-secondary" onclick="retryGatePassLoad()">Retry</button> ' +
+        '<button class="btn btn-primary" onclick="closeGatePassPrintModal()">Close</button>' +
+        '</div>'
+    );
+}
+
+// Retry loading
+function retryGatePassLoad() {
+    if (gpModalInstance.currentGatePassId) {
+        $('#gpLoadingIndicator').html(
+            '<div class="gp-spinner"></div>' +
+            '<div class="gp-loading-text">Loading Gate Pass...</div>'
+        ).show();
+        $('#gpContentIframe').hide();
+
+        var printUrl = '@Url.Action("PrintGatePass", "GatePass")' + '?Id=' + gpModalInstance.currentGatePassId;
+        $('#gpContentIframe').attr('src', printUrl);
+    }
+}
+
+// Main print gate pass function (called from table actions) - CORRECTED VERSION
+function printGatePass(id) {
+    console.log('Print gate pass requested for ID:', id);
+
+    if (!id) {
+        showAlert('Invalid gate pass ID', 'error');
+        return;
+    }
+
+    // Get pass number if available
+    var passNo = '';
+    var row = $('button[onclick*="' + id + '"]').closest('tr');
+    if (row.length) {
+        passNo = row.find('.pass-number').text();
+    }
+
+    // Open the new dedicated modal
+    openGatePassPrintModal(id, passNo);
+}
+
+// Alternative direct window print
+function directPrintGatePass(id) {
+    var printUrl = '@Url.Action("PrintGatePass", "GatePass")' + '?Id=' + id;
+    var printWindow = window.open(printUrl, 'GatePassPrint', 'width=800,height=600,scrollbars=yes,resizable=yes');
+
+    if (printWindow) {
+        printWindow.onload = function() {
+            setTimeout(function() {
+                printWindow.print();
+            }, 500);
+        };
+    } else {
+        alert('Please allow popups to print the gate pass.');
+    }
+}
+
+// Keyboard shortcuts
+$(document).on('keydown', function(e) {
+    if (gpModalInstance.isOpen) {
+        if (e.key === 'Escape') {
+            closeGatePassPrintModal();
+        } else if (e.ctrlKey && e.key === 'p') {
+            e.preventDefault();
+            printGatePassDocument();
+        }
+    }
+});
+
+// Document ready
+$(document).ready(function() {
+    console.log('Gate Pass Print Modal system initialized');
+
+    // AJAX Form submission
+    $('#searchForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: '@Url.Action("Search", "GatePass")',
+            type: 'POST',
+            data: $(this).serialize(),
+            beforeSend: function() {
+                $('#searchResultContainer').html(
+                    '<div class="card"><div class="card-body text-center py-5">' +
+                    '<div class="spinner-border text-primary" role="status">' +
+                    '<span class="visually-hidden">Loading...</span></div>' +
+                    '<h5 class="text-muted mt-3">Searching gate passes...</h5></div></div>'
+                );
+            },
+            success: function(result) {
+                $('#searchResultContainer').html(result);
+                bindTableActions();
+            },
+            error: function() {
+                $('#searchResultContainer').html(
+                    '<div class="alert alert-danger">An error occurred while searching gate passes.</div>'
+                );
+            }
+        });
+    });
+
+    // Handle modal cleanup
+    $('#gatePassModal').on('hidden.bs.modal', function () {
+        $(this).find('#modalContent').html('');
+        $('body').removeClass('modal-open');
+        $('.modal-backdrop').remove();
+        $('body').css('padding-right', '');
+    });
+
+    // Initialize search on page load to show today's passes
+    $('#searchForm').submit();
+});
+
+// Clear filters function
+function clearFilters() {
+    $('#searchForm')[0].reset();
+    $('#searchResultContainer').html(
+        '<div class="card"><div class="card-body text-center py-5">' +
+        '<i class="fas fa-search fa-3x text-muted mb-3"></i>' +
+        '<h5 class="text-muted">Use the search criteria above to find gate passes</h5></div></div>'
+    );
+}
+
+// Bind actions for dynamically loaded content
+function bindTableActions() {
+    $('[data-bs-toggle="dropdown"]').dropdown();
+}
+
+// Function to show alerts
+function showAlert(message, type) {
+    var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissible fade show">' +
+                    message +
+                    '</div>';
+    $('#alertContainer').html(alertHtml);
+
+    setTimeout(function() {
+        $('.alert').fadeOut('slow', function() {
+            $(this).remove();
+        });
+    }, 5000);
+}
+
+// Open Create Modal
+function openCreateModal() {
+    $.ajax({
+        url: '@Url.Action("Create", "GatePass")',
+        type: 'GET',
+        success: function(data) {
+            $('#modalContent').html(data);
+            $('#gatePassModalLabel').text('Create New Gate Pass');
+            $('#gatePassModal').modal('show');
+            bindFormSubmit('createGatePassForm');
+        },
+        error: function() {
+            showAlert('Error loading create form', 'error');
+        }
+    });
+}
+
+// Open Edit Modal
+function openEditModal(id) {
+    $.ajax({
+        url: '@Url.Action("Edit", "GatePass")/' + id,
+        type: 'GET',
+        success: function(data) {
+            $('#modalContent').html(data);
+            $('#gatePassModalLabel').text('Edit Gate Pass');
+            $('#gatePassModal').modal('show');
+            setTimeout(function() {
+                bindFormSubmit('editGatePassForm');
+            }, 100);
+        },
+        error: function() {
+            showAlert('Error loading edit form', 'error');
+        }
+    });
+}
+
+
+    function openHistoryModal(studentId) {
+    currentHistoryStudentId = studentId; // Track the current student
+
+    $.ajax({
+        url: '@Url.Action("History", "GatePass")',
+        type: 'GET',
+        data: { studentId: studentId },
+        success: function(data) {
+            $('#modalContent').html(data);
+            $('#gatePassModalLabel').text('Gate Pass History');
+            $('#gatePassModal').modal('show');
+        },
+        error: function() {
+            showAlert('Error loading history', 'error');
+        }
+    });
+}
+
+// Bind form submit for AJAX
+function bindFormSubmit(formId) {
+    if ($('#' + formId).length === 0) {
+        console.warn('Form with ID ' + formId + ' not found');
+        return;
+    }
+
+    $('#' + formId).off('submit').on('submit', function(e) {
+        e.preventDefault();
+
+        var form = $(this);
+        var url = form.attr('action');
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: form.serialize(),
+            dataType: 'json',
+            success: function(response) {
+                if (response && response.success) {
+                    $('#gatePassModal').modal('hide');
+                    showAlert(response.message, 'success');
+
+                    // If gate pass was created, show print option
+                    if (response.gatePassId) {
+                        setTimeout(function() {
+                            if (confirm('Gate pass created successfully! Do you want to print it now?')) {
+                                printGatePass(response.gatePassId);
+                            }
+                        }, 500);
+                    }
+
+                    // Refresh search results
+                    setTimeout(function() {
+                        $('#searchForm').submit();
+                    }, 1000);
+                } else {
+                    if (response && response.message) {
+                        showAlert(response.message, 'error');
+                    } else {
+                        showAlert('An error occurred while processing your request', 'error');
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                if (xhr.responseText && xhr.responseText.indexOf('<') !== -1) {
+                    $('#modalContent').html(xhr.responseText);
+                    setTimeout(function() {
+                        bindFormSubmit(formId);
+                    }, 100);
+                } else {
+                    showAlert('An error occurred while processing your request', 'error');
+                }
+            }
+        });
+    });
+}
+
+// Delete Gate Pass
+function deleteGatePass(id) {
+    if (confirm('Are you sure you want to delete this gate pass?')) {
+        $.ajax({
+            url: '@Url.Action("Delete", "GatePass")',
+            type: 'POST',
+            data: {
+                id: id,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').first().val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    showAlert(response.message, 'success');
+
+                    // If we're in the history modal, refresh it
+                    if (currentHistoryStudentId) {
+                        refreshHistoryModal(currentHistoryStudentId);
+                    }
+
+                    // Also refresh the main search results
+                    setTimeout(function() {
+                        $('#searchForm').submit();
+                    }, 500);
+                } else {
+                    showAlert(response.message || 'Error deleting gate pass', 'error');
+                }
+            },
+            error: function() {
+                showAlert('An error occurred while deleting the gate pass', 'error');
+            }
+        });
+    }
+    }
+function refreshHistoryModal(studentId) {
+    $.ajax({
+        url: '@Url.Action("History", "GatePass")',
+        type: 'GET',
+        data: { studentId: studentId },
+        success: function(data) {
+            $('#modalContent').html(data);
+            // Re-bind any event handlers if needed
+        },
+        error: function() {
+            showAlert('Error refreshing history', 'error');
+        }
+    });
+}
+// Open blank gate pass
+function openBlankGatePass() {
+    var pdfUrl = '@Url.Action("GenerateBlankGatePass", "GatePassForm")';
+    window.open(pdfUrl, '_blank');
+}
+
+// Global function to close modal
+    function closeModal() {
+        currentHistoryStudentId = null; // Clear the tracked student
+        $('#modalContent').html('');
+        $('#gatePassModal').modal('hide');
+
+        // Force cleanup of Bootstrap modal
+        setTimeout(function () {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+            $('body').css('padding-right', '');
+        }, 300);
+    }
+
+// Clean up on page unload
+$(window).on('beforeunload', function() {
+    if (gpModalInstance.isOpen) {
+        closeGatePassPrintModal();
+    }
+});
+
+// Make functions globally accessible
+window.showAlert = showAlert;
+window.closeModal = closeModal;
+window.printGatePass = printGatePass;
+window.deleteGatePass = deleteGatePass;
+window.openEditModal = openEditModal;
+window.openHistoryModal = openHistoryModal;
+</script>

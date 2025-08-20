@@ -1,0 +1,821 @@
+﻿@model ERPIndia.Controllers.StudentMarksViewModel
+@{
+    ViewBag.Title = "Subject Grade Entry";
+}
+
+<style>
+    .filter-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .filter-dropdown {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 8px 12px;
+        width: 100%;
+        font-size: 14px;
+    }
+
+    .show-button {
+        background: linear-gradient(to right, #007bff, #0056b3);
+        color: white;
+        padding: 10px 30px;
+        font-size: 14px;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+
+
+    .show-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    .data-table thead th {
+        background: linear-gradient(to bottom, #007bff, #0056b3);
+        color: white;
+        border: 1px solid #dee2e6;
+        padding: 10px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 13px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .data-table tbody td {
+        border: 1px solid #dee2e6;
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .data-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .data-table tbody tr.modified {
+        background: #fff3cd;
+    }
+
+    .grade-select {
+        width: 120px;
+        padding: 5px 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .grade-select:focus {
+        border-color: #80bdff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+
+    .grade-select.grade-a-plus {
+        background: #28a745;
+        color: white;
+    }
+
+    .grade-select.grade-a {
+        background: #5cb85c;
+        color: white;
+    }
+
+    .grade-select.grade-b-plus {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .grade-select.grade-b {
+        background: #5bc0de;
+        color: white;
+    }
+
+    .grade-select.grade-c-plus {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .grade-select.grade-c {
+        background: #f0ad4e;
+        color: white;
+    }
+
+    .grade-select.grade-d {
+        background: #fd7e14;
+        color: white;
+    }
+
+    .grade-select.grade-f {
+        background: #dc3545;
+        color: white;
+    }
+
+    .grade-select.grade-ab {
+        background: #6c757d;
+        color: white;
+    }
+
+    .remarks-input {
+        width: 100%;
+        padding: 5px 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+
+    .update-btn {
+        background: transparent;
+        border: none;
+        color: #28a745;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 5px 10px;
+        transition: all 0.3s;
+    }
+
+    .update-btn:hover {
+        color: #218838;
+        transform: scale(1.2);
+    }
+
+    .save-all-btn {
+        background: linear-gradient(to right, #28a745, #20c997);
+        color: white;
+        padding: 12px 35px;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        margin: 20px 0;
+        transition: all 0.3s ease;
+        font-size: 16px;
+    }
+
+    .save-all-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+    }
+
+    .save-all-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .summary-box {
+        background: linear-gradient(to right, #e7f3ff, #f0f8ff);
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+        border-left: 4px solid #007bff;
+    }
+
+    .summary-item {
+        display: inline-block;
+        margin-right: 25px;
+        font-size: 14px;
+    }
+
+    .summary-item strong {
+        color: #007bff;
+        font-weight: 600;
+    }
+
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+    }
+
+    .toast {
+        min-width: 300px;
+        margin-bottom: 10px;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        animation: slideIn 0.3s ease;
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .toast-success {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        color: #155724;
+    }
+
+    .toast-error {
+        background: #f8d7da;
+        border-left: 4px solid #dc3545;
+        color: #721c24;
+    }
+
+    .toast-warning {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        color: #856404;
+    }
+
+    .spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .spinner-box {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .subject-badge {
+        background: linear-gradient(to right, #667eea, #764ba2);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .batch-actions {
+        display: inline-block;
+        margin-left: 20px;
+    }
+
+    .batch-grade-select {
+        padding: 6px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        margin-right: 10px;
+    }
+
+    .apply-batch-btn {
+        background: #17a2b8;
+        color: white;
+        padding: 6px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .apply-batch-btn:hover {
+        background: #138496;
+    }
+
+    .entries-info {
+        background: #e9ecef;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+
+    .quick-fill-buttons {
+        float: right;
+    }
+
+    .quick-fill-btn {
+        padding: 5px 12px;
+        margin-left: 5px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+    }
+
+    .quick-fill-btn:hover {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>Subject Grade Entry
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <label class="form-label">Class <span class="text-danger">*</span></label>
+                            @Html.DropDownListFor(x => x.Classes, Model.Classes, "Select Class", new { @class = "filter-dropdown", id = "ddlClass" })
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Section <span class="text-danger">*</span></label>
+                            @Html.DropDownListFor(x => x.Sections, Model.Sections, "Select Section", new { @class = "filter-dropdown", id = "ddlSection" })
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Subject <span class="text-danger">*</span></label>
+                            <select class="filter-dropdown" id="ddlSubject">
+                                <option value="">Select Subject</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Exam <span class="text-danger">*</span></label>
+                            @Html.DropDownListFor(x => x.ExamTypes, Model.ExamTypes, "Select Exam", new { @class = "filter-dropdown", id = "ddlExam" })
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" class="btn show-button w-100" id="btnShow">
+                                <i class="fas fa-search"></i> Load Students
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+                    <!-- Data Table Section -->
+                    <div id="dataTableContainer" style="display:none;">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-users"></i> Student Grade Entry
+                                    </h6>
+                                    <div style="display:none">
+                                        <div class="batch-actions">
+                                            <label>Apply to All:</label>
+                                            <select class="batch-grade-select" id="batchGradeSelect">
+                                                <option value="">Select Grade</option>
+                                            </select>
+                                            <button class="apply-batch-btn" onclick="applyBatchGrade()">
+                                                <i class="fas fa-check"></i> Apply
+                                            </button>
+                                        </div>
+                                        <div class="quick-fill-buttons">
+                                            <button class="quick-fill-btn" onclick="fillAllPresent()">All Present</button>
+                                            <button class="quick-fill-btn" onclick="fillAllAbsent()">All Absent</button>
+                                            <button class="quick-fill-btn" onclick="clearAllGrades()">Clear All</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Data Table -->
+                                <div class="table-responsive">
+                                    <table class="data-table" id="gradesTable">
+                                        <thead>
+                                            <tr>
+                                                <th width="50">
+                                                    <input type="checkbox" id="selectAll">
+                                                </th>
+                                                <th width="60">Sr</th>
+                                                <th width="80">Roll</th>
+                                                <th>Student Name</th>
+                                                <th>Father Name</th>
+                                                <th width="150">Subject</th>
+                                                <th width="150">Grade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="gradesTableBody">
+                                            <!-- Data will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Save All Button -->
+                                <div class="text-center mt-4">
+                                    <button class="save-all-btn" id="btnSaveAll">
+                                        <i class="fas fa-save"></i> Save All Grades
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toast Container -->
+                <div class="toast-container" id="toastContainer"></div>
+
+                <!-- Spinner Overlay -->
+                <div class="spinner-overlay" id="spinnerOverlay">
+                    <div class="spinner-box">
+                        <div class="spinner"></div>
+                        <div>Processing...</div>
+                    </div>
+                </div>
+
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+                <script>
+$(document).ready(function() {
+    var allStudentsData = [];
+    var modifiedGrades = {};
+    var gradeOptions = [];
+    var currentSubject = null;
+
+    // Load subjects when class and section are selected
+    $('#ddlClass, #ddlSection').change(function() {
+        var classId = $('#ddlClass').val();
+        var sectionId = $('#ddlSection').val();
+
+        if (classId && sectionId) {
+            loadSubjects(classId, sectionId);
+        }
+    });
+
+    // Load subjects
+    function loadSubjects(classId, sectionId) {
+        $.ajax({
+            url: '@Url.Action("GetGradeSubjects", "StudentMarks")',
+            type: 'POST',
+            data: { classId: classId, sectionId: sectionId },
+            success: function(data) {
+                if (data.success) {
+                    var $dropdown = $('#ddlSubject');
+                    $dropdown.empty().append('<option value="">Select Subject</option>');
+
+                    $.each(data.subjects, function(i, subject) {
+                        $dropdown.append('<option value="' + subject.SubjectID + '">' + subject.SubjectName + '</option>');
+                    });
+                }
+            }
+        });
+    }
+
+    // Show button click
+    $('#btnShow').click(function() {
+        var classId = $('#ddlClass').val();
+        var sectionId = $('#ddlSection').val();
+        var examId = $('#ddlExam').val();
+        var subjectId = $('#ddlSubject').val();
+
+        if (!classId || !sectionId || !examId || !subjectId) {
+            showToast('Please select all required fields', 'warning');
+            return;
+        }
+
+        loadStudentGrades(classId, sectionId, examId, subjectId);
+    });
+
+    // Load student grades
+    function loadStudentGrades(classId, sectionId, examId, subjectId) {
+        showSpinner();
+
+        $.ajax({
+            url: '@Url.Action("GetStudentGradesForSubject", "StudentMarks")',
+            type: 'POST',
+            data: {
+                classId: classId,
+                sectionId: sectionId,
+                examTypeId: examId,
+                subjectId: subjectId
+            },
+            success: function(data) {
+                hideSpinner();
+
+                if (data.success) {
+                    allStudentsData = data.students;
+                    gradeOptions = data.gradeOptions;
+                    currentSubject = data.subject;
+
+                    var $batchSelect = $('#batchGradeSelect');
+                    $batchSelect.empty().append('<option value="">Select Grade</option>');
+                    $.each(gradeOptions, function(i, option) {
+                        $batchSelect.append('<option value="' + option.GradeName + '">' + option.GradeName + '</option>');
+                    });
+
+                    // Show table
+                    $('#dataTableContainer').show();
+                    renderTable();
+
+                    showToast('Data loaded successfully', 'success');
+                } else {
+                    showToast(data.message || 'Failed to load data', 'error');
+                }
+            },
+            error: function() {
+                hideSpinner();
+                showToast('Error loading data', 'error');
+            }
+        });
+    }
+
+    // Render table
+    function renderTable() {
+        var $tbody = $('#gradesTableBody');
+        $tbody.empty();
+
+        $.each(allStudentsData, function(index, student) {
+            var gradeSelectHtml = '<select class="grade-select" data-studentid="' + student.StudentID + '">';
+            gradeSelectHtml += '<option value="">-Select-</option>';
+
+            $.each(gradeOptions, function(i, option) {
+                var selected = student.Grade === option.GradeName ? 'selected' : '';
+                gradeSelectHtml += '<option value="' + option.GradeName + '" ' + selected + '>' + option.GradeName + '</option>';
+            });
+            gradeSelectHtml += '</select>';
+
+            var row = '<tr data-studentid="' + student.StudentID + '">' +
+                     '<td><input type="checkbox" class="row-checkbox"></td>' +
+                     '<td>' + (index + 1) + '</td>' +
+                     '<td>' + (student.RollNumber || '-') + '</td>' +
+                     '<td><strong>' + student.StudentName + '</strong></td>' +
+                     '<td>' + (student.FatherName || '-') + '</td>' +
+                     '<td><span class="subject-badge">' + currentSubject.SubjectName + '</span></td>' +
+                     '<td>' + gradeSelectHtml + '</td>' +
+                     '</tr>';
+
+            $tbody.append(row);
+        });
+
+        bindTableEvents();
+        updateGradesEntered();
+    }
+
+    // Bind table events
+    function bindTableEvents() {
+        // Grade select change
+        $('.grade-select').off('change').on('change', function() {
+            var $select = $(this);
+            var studentId = $select.data('studentid');
+            var grade = $select.val();
+            var $row = $select.closest('tr');
+
+            // Update visual style based on grade
+            $select.removeClass('grade-a-plus grade-a grade-b-plus grade-b grade-c-plus grade-c grade-d grade-f grade-ab');
+            if (grade) {
+                var gradeClass = 'grade-' + grade.toLowerCase().replace('+', '-plus');
+                $select.addClass(gradeClass);
+            }
+
+            // Track modification
+            if (grade !== '') {
+                modifiedGrades[studentId] = {
+                    grade: grade,
+                    remarks: $('.remarks-input[data-studentid="' + studentId + '"]').val()
+                };
+                $row.addClass('modified');
+            } else {
+                delete modifiedGrades[studentId];
+                $row.removeClass('modified');
+            }
+
+            updateGradesEntered();
+        });
+
+        // Remarks input change
+        $('.remarks-input').off('input').on('input', function() {
+            var $input = $(this);
+            var studentId = $input.data('studentid');
+            var grade = $('.grade-select[data-studentid="' + studentId + '"]').val();
+
+            if (grade) {
+                modifiedGrades[studentId] = {
+                    grade: grade,
+                    remarks: $input.val()
+                };
+                $input.closest('tr').addClass('modified');
+            }
+        });
+
+        // Enter key navigation
+        $('.grade-select, .remarks-input').on('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                var $inputs = $('.grade-select:visible, .remarks-input:visible');
+                var index = $inputs.index(this);
+                if (index < $inputs.length - 1) {
+                    $inputs.eq(index + 1).focus();
+                }
+            }
+        });
+    }
+
+    // Update grades entered count
+    function updateGradesEntered() {
+        var count = Object.keys(modifiedGrades).length;
+        $('#summaryEntered').text(count);
+        $('#btnSaveAll').prop('disabled', count === 0);
+    }
+
+    // Save all grades
+    $('#btnSaveAll').click(function() {
+        if (Object.keys(modifiedGrades).length === 0) {
+            showToast('No grades to save', 'warning');
+            return;
+        }
+
+        if (!confirm('Save all entered grades?')) return;
+
+        var gradesToSave = [];
+        $.each(modifiedGrades, function(studentId, data) {
+            gradesToSave.push({
+                StudentID: studentId,
+                SubjectID: currentSubject.SubjectID,
+                ExamTypeID: $('#ddlExam').val(),
+                Grade: data.grade,
+                Remarks: data.remarks
+            });
+        });
+
+        showSpinner();
+
+        $.ajax({
+            url: '@Url.Action("SaveStudentGrades", "StudentMarks")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                grades: gradesToSave,
+                classId: $('#ddlClass').val(),
+                sectionId: $('#ddlSection').val(),
+                examTypeId: $('#ddlExam').val()
+            }),
+            success: function(result) {
+                hideSpinner();
+
+                if (result.success) {
+                    showToast('Grades saved successfully!', 'success');
+
+                    // Clear modified grades
+                    modifiedGrades = {};
+                    $('.modified').removeClass('modified');
+                    updateGradesEntered();
+                } else {
+                    showToast(result.message || 'Failed to save grades', 'error');
+                }
+            },
+            error: function() {
+                hideSpinner();
+                showToast('Error saving grades', 'error');
+            }
+        });
+    });
+
+    // Update single grade
+    window.updateSingleGrade = function(studentId) {
+        var grade = $('.grade-select[data-studentid="' + studentId + '"]').val();
+        var remarks = $('.remarks-input[data-studentid="' + studentId + '"]').val();
+
+        if (!grade) {
+            showToast('Please select a grade', 'warning');
+            return;
+        }
+
+        showSpinner();
+
+        $.ajax({
+            url: '@Url.Action("SaveStudentGrades", "StudentMarks")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                grades: [{
+                    StudentID: studentId,
+                    SubjectID: currentSubject.SubjectID,
+                    ExamTypeID: $('#ddlExam').val(),
+                    Grade: grade,
+                    Remarks: remarks
+                }],
+                classId: $('#ddlClass').val(),
+                sectionId: $('#ddlSection').val(),
+                examTypeId: $('#ddlExam').val()
+            }),
+            success: function(result) {
+                hideSpinner();
+
+                if (result.success) {
+                    showToast('Grade saved successfully!', 'success');
+                    $('[data-studentid="' + studentId + '"]').closest('tr').removeClass('modified');
+                    delete modifiedGrades[studentId];
+                    updateGradesEntered();
+                } else {
+                    showToast(result.message || 'Failed to save grade', 'error');
+                }
+            },
+            error: function() {
+                hideSpinner();
+                showToast('Error saving grade', 'error');
+            }
+        });
+    };
+
+    // Batch operations
+    window.applyBatchGrade = function() {
+        var grade = $('#batchGradeSelect').val();
+        if (!grade) {
+            showToast('Please select a grade to apply', 'warning');
+            return;
+        }
+
+        $('.row-checkbox:checked').each(function() {
+            var $row = $(this).closest('tr');
+            var studentId = $row.data('studentid');
+            $('.grade-select[data-studentid="' + studentId + '"]').val(grade).trigger('change');
+        });
+
+        showToast('Grade applied to selected students', 'success');
+    };
+
+    window.fillAllPresent = function() {
+        if (confirm('Mark all students as present with grade A?')) {
+            $('.grade-select').val('A').trigger('change');
+        }
+    };
+
+    window.fillAllAbsent = function() {
+        if (confirm('Mark all students as absent?')) {
+            $('.grade-select').val('AB').trigger('change');
+        }
+    };
+
+    window.clearAllGrades = function() {
+        if (confirm('Clear all grades?')) {
+            $('.grade-select').val('').trigger('change');
+            $('.remarks-input').val('');
+            modifiedGrades = {};
+            $('.modified').removeClass('modified');
+            updateGradesEntered();
+        }
+    };
+
+    // Select all checkbox
+    $('#selectAll').change(function() {
+        $('.row-checkbox').prop('checked', $(this).prop('checked'));
+    });
+
+    // Helper functions
+    function showSpinner() {
+        $('#spinnerOverlay').css('display', 'flex');
+    }
+
+    function hideSpinner() {
+        $('#spinnerOverlay').hide();
+    }
+
+    function showToast(message, type) {
+        var toastHtml = '<div class="toast toast-' + type + '">' +
+                       '<i class="fas fa-' + (type === 'success' ? 'check' : type === 'error' ? 'times' : 'exclamation') + '-circle me-2"></i>' +
+                       message +
+                       '</div>';
+
+        var $toast = $(toastHtml);
+        $('#toastContainer').append($toast);
+
+        setTimeout(function() {
+            $toast.fadeOut(function() {
+                $(this).remove();
+            });
+        }, 3000);
+    }
+});
+                </script>

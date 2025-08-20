@@ -1,0 +1,153 @@
+﻿
+@model TransportDTO.TransportDefaulterViewModel
+@{
+    ViewBag.Title = "Transport Fee Defaulter";
+}
+<div class="container-fluid">
+    <!-- Search Panel Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h2>Transport Fee Route Wise Defaulter<small>(Ex: For Check Defaulter Of July : Click April,May,June,July)</small></h2>
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("DefaulterRouteWise", "TransportReport", FormMethod.Post, new { id = "reportForm" }))
+            {
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="ddlMonths" class="form-label">Month</label>
+                        @Html.DropDownListFor(m => m.Criteria.SelectedMonths,
+                            new SelectList(new[] {
+                                "ALL","Apr", "May", "Jun", "Jul", "Aug", "Sep",
+                                "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"
+                            }),
+                            new { @class = "form-control multiselect", @id = "ddlMonths" })
+                        @Html.ValidationMessageFor(m => m.Criteria.SelectedMonths, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-3">
+                        <label for="SectionId" class="form-label">Route</label>
+                        @Html.DropDownListFor(m => m.Criteria.SelectedRoute, Model.Criteria.RouteList, new { @class = "form-control" })
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-success btn-block">
+                            <i class="glyphicon glyphicon-search"></i> Search Here
+                        </button>
+                    </div>
+                </div>
+
+            }
+        </div>
+        <div class="card-body">
+            @if (Model.Results != null && Model.Results.Any())
+            {
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-12 text-center">
+                                <hr />
+                                <button type="button" class="btn btn-default" onclick="window.print();">
+                                    <i class="glyphicon glyphicon-print"></i> Print
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reportSection">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button class="btn btn-sm btn-default">
+                                        <i class="glyphicon glyphicon-print"></i>
+                                    </button>
+                                    <div class="btn-group">
+                                        <input type="text" class="form-control input-sm" placeholder="Find..." style="width: 150px; display: inline-block;" />
+                                        <button class="btn btn-sm btn-default">
+                                            <i class="glyphicon glyphicon-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <h4>Main Report</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="text-center" style="background-color: #c8f7e4; padding: 8px; margin-bottom: 15px; border-radius: 5px;">
+                                <h4>Routewise Transport Report</h4>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>SrNo</th>
+                                            <th>Class</th>
+                                            <th>Name</th>
+                                            <th>Father</th>
+                                            <th>Mobile</th>
+                                            <th>StCurrentAddress</th>
+                                            <th>ReqTransp</th>
+                                            <th>RecvdTrasnp</th>
+                                            <th>RemainTran</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.RouteGroupedResults != null && Model.RouteGroupedResults.Any())
+                                        {
+                                            foreach (var routeGroup in Model.RouteGroupedResults)
+                                            {
+                                                <tr>
+                                                    <td colspan="9" class="bg-info">
+                                                        <strong>Route Name: @routeGroup.Key</strong>
+                                                    </td>
+                                                </tr>
+
+                                                foreach (var item in routeGroup.Value)
+                                                {
+                                                    <tr>
+                                                        <td>@item.SrNo</td>
+                                                        <td>@item.Class</td>
+                                                        <td>@item.Name</td>
+                                                        <td>@item.Father</td>
+                                                        <td>@item.Mobile</td>
+                                                        <td>@item.StCurrentAddress</td>
+                                                        <td>@item.FormattedReqTransp</td>
+                                                        <td>@item.FormattedRecvdTransp</td>
+                                                        <td>@item.FormattedRemainTran</td>
+                                                    </tr>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="9" class="bg-info">
+                                                    <strong>Route Name: Van- 01</strong>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>0R02</td>
+                                                <td>LKG- A</td>
+                                                <td>Nakul singh</td>
+                                                <td>Shiv bahadur singh</td>
+                                                <td>7388701694</td>
+                                                <td>Chhotki lalai Prayagraj</td>
+                                                <td>0.00</td>
+                                                <td>0.00</td>
+                                                <td>0.00</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+

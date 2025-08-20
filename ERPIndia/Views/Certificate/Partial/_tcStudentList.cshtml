@@ -1,0 +1,583 @@
+﻿@model IEnumerable<ERPIndia.Models.CollectFee.DTOs.FeeCollectionDto>
+@using ERPIndia.Class.Helper
+@{
+    Layout = null;
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<style>
+    .cert-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(to bottom, #5ec82f, #3e9f12);
+        border: none;
+        border-radius: 12px;
+        padding: 4px 18px;
+        font-size: 12px;
+        font-weight: 500;
+        color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+        .cert-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+        }
+
+        .cert-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+    .edit-btn {
+        background: linear-gradient(to bottom, #007bff, #0056b3);
+    }
+
+    .disabled-btn {
+        background: linear-gradient(to bottom, #6c757d, #495057);
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    #certificateTable th {
+        background-color: #e3f2fd;
+        position: sticky;
+        color: black;
+        top: 0;
+        z-index: 10;
+        font-weight: bold;
+        text-align: center;
+        border: 1px solid #dee2e6;
+    }
+
+    #certificateTable tbody tr:nth-child(even) td {
+        background-color: #e9ecef;
+    }
+
+    #certificateTable td {
+        border: 1px solid #dee2e6;
+        vertical-align: middle;
+    }
+
+    .certificate-actions {
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .tc-status {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .tc-saved {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .tc-draft {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .tc-not-saved {
+        background-color: #dc3545;
+        color: white;
+    }
+    .tc-genrated {
+        background-color: #800080;
+        color: white;
+    }
+    
+</style>
+
+@if (Model != null && Model.Any())
+{
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-print"></i> Transfer Certificate Management
+                    </h5>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="certificateTable" class="table table-bordered display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th width="25%">Actions</th>
+                            <th>Status</th>
+                            <th>TC No</th>
+                            <th>Class</th>
+                            <th>Student Name</th>
+                            <th>Father Name</th>
+                            <th>Gender</th>
+							<th>Adm No</th>
+                            <th>Category</th>
+                            <th>Mobile</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model)
+                        {
+                            <tr data-student-id="@student.StudentId" data-admission-no="@student.AdmsnNo">
+                                <td class="certificate-actions">
+                                    <button onclick="editTCDetails('@student.StudentId', '@student.AdmsnNo')"
+                                            class="cert-btn edit-btn" title="Edit TC Details">
+                                        <i class="fas fa-edit"></i>
+                                        Edit Details
+                                    </button>
+                                    <button onclick="printTCCertificate('@student.StudentId', '@student.AdmsnNo')"
+                                            class="cert-btn print-tc-btn" title="Print TC Certificate">
+                                        <i class="fas fa-file-alt"></i>
+                                        Print TC
+                                    </button>
+                                </td>
+                                <td class="tc-status-cell text-center">
+                                    @if (student.TCStatus == "Not Generated")
+                                    {
+                                        <span class="tc-status tc-not-saved">Not Generated</span>
+                                    }
+                                    else if (student.TCStatus == "Draft")
+                                    {
+                                        <span class="tc-status tc-draft">Pending</span>
+                                    }
+                                    else
+                                    {
+                                <span class="tc-status tc-saved">Generated</span>
+                                    }
+                                </td>
+                                <td class="tc-number" align="center">
+                                    @if (String.IsNullOrEmpty(student.TCNumber))
+                                    {
+                                        <span>-</span>
+                                    }
+                                    else
+                                    {
+                                <span class="tc-status tc-genrated">@student.TCNumber</span>
+                                        
+                                    }
+
+                                </td>
+                                <td align="center">@(student.ClassName + " - " + student.SectionName)</td>
+                                <td>@student.FirstName</td>
+                                <td>@(student.FatherName ?? "")</td>
+                                <td>@(student.Gender ?? "")</td>
+								<td align="center">@student.AdmsnNo</td>
+                                <td align="center">@(student.CategoryName ?? "")</td>
+                                <td>@student.Mobile</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- TC Details Modal -->
+<div class="modal fade" id="tcDetailsModal" tabindex="-1" role="dialog" aria-labelledby="tcDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tcDetailsModalLabel">Transfer Certificate Details</h5>
+            </div>
+            <div class="modal-body" id="tcDetailsContent">
+                <!-- TC form will be loaded here -->
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- TC Print Modal -->
+<div id="TCPrintModal" class="tc-modal" style="display: none;">
+    <div class="tc-modal-dialog">
+        <div class="tc-modal-content">
+            <div class="tc-modal-header">
+                <h5 class="tc-modal-title" id="tcModalTitle">Transfer Certificate</h5>
+                <button type="button" class="tc-modal-close" onclick="closeTCPrintModal()">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="tc-modal-body">
+                <div id="tcLoadingIndicator" class="tc-loading-container">
+                    <div class="tc-spinner"></div>
+                    <div class="tc-loading-text">Loading Transfer Certificate...</div>
+                </div>
+                <iframe id="tcContentIframe" class="tc-modal-iframe" style="display:none;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    /* TC Modal Styles */
+    .tc-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2000;
+        background-color: rgba(0, 0, 0, 0.5);  /* Dark overlay */
+        overflow: hidden;
+    }
+
+    .tc-modal-dialog {
+        width: 95%;
+        max-width: 1100px;
+        margin: 20px auto;
+        height: calc(100% - 40px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tc-modal-content {
+        background-color: #fff;  /* White modal content */
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tc-modal-header {
+        padding: 5px;
+        border-bottom: 1px solid #e5e5e5;
+        background-color: #f8f9fa;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .tc-modal-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .tc-modal-body {
+        padding: 0;
+        flex-grow: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        background-color: #ffffff;  /* Add white background */
+    }
+
+    .tc-modal-close {
+        font-size: 24px;
+        font-weight: bold;
+        color: #000;
+        opacity: 0.5;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .tc-modal-close:hover {
+        opacity: 0.8;
+    }
+
+    .tc-modal-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        flex-grow: 1;
+        background-color: #ffffff;  /* White background for iframe */
+    }
+
+    .tc-loading-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ffffff;  /* Solid white background */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 2;
+    }
+
+    .tc-spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: tc-spin 1s linear infinite;
+        margin-bottom: 15px;
+    }
+
+    @@keyframes tc-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .tc-loading-text {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+    }
+
+    body.tc-modal-open {
+        overflow: hidden;
+    }
+
+    .tc-modal.show {
+        display: block !important;
+        animation: tcFadeIn 0.3s ease-in-out;
+    }
+
+    @@keyframes tcFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+<script>
+    var certificateTable;
+
+    $(function () {
+        // Initialize DataTable
+        certificateTable = $('#certificateTable').DataTable({
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "pageLength": 10,
+            "order": [[3, "asc"]], // Order by Admission No
+            "scrollX": false,
+            "responsive": true,
+            "dom": 'Blfrtip',
+            "buttons": [
+                {
+                    extend: 'csv',
+                    title: 'TCStudentList',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'excel',
+                    title: 'TCStudentList',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'pdf',
+                    title: 'TCStudentList',
+                    className: 'btn btn-sm btn-secondary',
+                    orientation: 'landscape'
+                },
+                {
+                    extend: 'print',
+                    title: 'TCStudentList',
+                    className: 'btn btn-sm btn-secondary'
+                }
+            ]
+        });
+
+        // Load TC status for all students
+        loadTCStatus();
+    });
+    // Open TC Print Modal
+function openTCPrintModal(studentId, admissionNo) {
+    console.log('Opening TC print modal for Student:', studentId);
+
+    // Update modal title
+    $('#tcModalTitle').text('Transfer Certificate - Admission No: ' + admissionNo);
+
+    // Show loading
+    $('#tcLoadingIndicator').show();
+    $('#tcContentIframe').hide();
+
+    // Clear previous iframe content
+    $('#tcContentIframe').attr('src', '');
+
+    // Show modal
+    $('#TCPrintModal').addClass('show').fadeIn(300);
+    $('body').addClass('tc-modal-open');
+
+    // Build URL
+    var schoolCode = '@CommonLogic.GetSessionValue(StringConstants.TenantCode)';
+    var printUrl = '@Url.Action("PrintTC", "Certificate")' +
+                   '?studentId=' + studentId +
+                   '&admissionNo=' + admissionNo +
+                   '&code=' + schoolCode;
+
+    // Set up load handlers
+    $('#tcContentIframe')
+        .off('load error')
+        .on('load', function() {
+            console.log('TC document loaded');
+            // Hide loading, show content
+            $('#tcLoadingIndicator').fadeOut(200, function() {
+                $('#tcContentIframe').fadeIn(200);
+            });
+        })
+        .on('error', function() {
+            console.error('Error loading TC document');
+            alert('Failed to load Transfer Certificate.');
+        });
+
+    // Load the document
+    $('#tcContentIframe').attr('src', printUrl);
+}
+
+// Close TC Print Modal
+function closeTCPrintModal() {
+    console.log('Closing TC print modal');
+
+    // Clear iframe
+    $('#tcContentIframe').attr('src', '');
+
+    // Hide modal with animation
+    $('#TCPrintModal').removeClass('show').fadeOut(300, function() {
+        $('body').removeClass('tc-modal-open');
+    });
+}
+    function loadTCStatus() {
+        // Get all student IDs from the table
+        var studentData = [];
+        $('#certificateTable tbody tr').each(function() {
+            var studentId = $(this).data('student-id');
+            var admissionNo = $(this).data('admission-no');
+
+            if (studentId && admissionNo) {
+                studentData.push({
+                    StudentId: studentId,
+                    AdmissionNo: parseInt(admissionNo)
+                });
+            }
+        });
+
+        if (studentData.length === 0) return;
+
+        // Make AJAX call to get TC status
+        $.ajax({
+            url: '@Url.Action("GetBulkTCStatus", "Certificate")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(studentData),
+            success: function(response) {
+                if (response.success && response.data) {
+                    response.data.forEach(function(item) {
+                        var row = $('tr[data-student-id="' + item.studentId + '"][data-admission-no="' + item.admissionNo + '"]');
+
+                        if (row.length > 0) {
+                            var statusHtml = '';
+                            var tcNumberText = '-';
+
+                            // Update status based on TC state
+                            if (item.tcNumber && item.tcNumber !== '' && item.tcNumber !== '0') {
+                                if (item.isFinalSaved) {
+                                    statusHtml = '<span class="tc-status tc-saved">Final</span>';
+                                    tcNumberText = item.tcNumber;
+                                } else {
+                                    statusHtml = '<span class="tc-status tc-draft">Draft</span>';
+                                    tcNumberText = 'Draft';
+                                }
+                            } else {
+                                statusHtml = '<span class="tc-status tc-not-saved">Not Saved</span>';
+                                tcNumberText = '-';
+                            }
+
+                            // Update the cells
+                            row.find('.tc-status-cell').html(statusHtml);
+                            row.find('.tc-number').text(tcNumberText);
+
+                            // Update button states
+                            if (item.isFinalSaved) {
+                                row.find('.print-tc-btn').removeClass('disabled-btn').prop('disabled', false);
+                            } else {
+                                row.find('.print-tc-btn').addClass('disabled-btn').prop('disabled', true);
+                            }
+                        }
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading TC status:', error);
+            }
+        });
+    }
+
+    function editTCDetails(studentId, admissionNo) {
+        $.ajax({
+            url: '@Url.Action("EditTC", "Certificate")',
+            type: 'GET',
+            data: { studentId: studentId, admissionNo: admissionNo },
+            success: function(result) {
+                $('#tcDetailsContent').html(result);
+                $('#tcDetailsModal').modal('show');
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading TC details:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error loading TC details form'
+                });
+            }
+        });
+    }
+
+   function printTCCertificate(studentId, admissionNo) {
+    var schoolCode = '@CommonLogic.GetSessionValue(StringConstants.TenantCode)';
+
+    // First check if TC details are saved
+    $.ajax({
+        url: '@Url.Action("CheckTCStatus", "Certificate")',
+        type: 'POST',
+        data: { studentId: studentId, admissionNo: admissionNo },
+        success: function(response) {
+            if (response.success && response.isFinalSaved) {
+                // TC is finalized, open in modal
+                openTCPrintModal(studentId, admissionNo);
+            } else if (response.success && response.hasTCDetails && !response.isFinalSaved) {
+                // TC is in draft status
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'TC in Draft Status',
+                    text: 'The TC has been saved as draft. Please finalize it before printing.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#007bff'
+                });
+            } else {
+                // TC details not saved
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'TC Details Not Saved',
+                    text: 'Please save TC details before printing. Click "Edit Details" to enter TC information.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#007bff'
+                });
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error checking TC status:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error checking TC status'
+            });
+        }
+    });
+}
+
+    // Refresh status when modal is closed
+    $('#tcDetailsModal').on('hidden.bs.modal', function () {
+        loadTCStatus();
+    });
+</script>

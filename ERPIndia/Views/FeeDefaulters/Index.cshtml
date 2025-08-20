@@ -1,0 +1,92 @@
+﻿@model ERPIndia.FeeDefaultersModels.FeeDefaultersSearchRequest
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Fee Defaulters Search</h5>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("Search", "FeeDefaulters", FormMethod.Post, new { id = "searchForm", @class = "needs-validation", novalidate = "novalidate" }))
+                    {
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.ClassId, "Class", new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.ClassId,
+                                    ViewData["Classes"] as List<SelectListItem>,
+                                    new { @class = "form-select" })
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.SectionId, "Section", new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.SectionId,
+                                    ViewData["Sections"] as List<SelectListItem>,
+                                    new { @class = "form-select" })
+                            </div>
+
+                            <div class="col-md-2">
+                                @Html.LabelFor(m => m.MinimumDueAmount, "Minimum Due Amount", new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.MinimumDueAmount,
+                                    new { @class = "form-control", type = "number", min = "0", step = "0.01" })
+                            </div>
+
+                            <div class="col-md-2">
+                                @Html.LabelFor(m => m.AsOfDate, "As of Date", new { @class = "form-label" })
+                                @Html.TextBoxFor(m => m.AsOfDate,
+                                    new { @class = "form-control", type = "date" })
+                            </div>
+
+                            <div class="col-md-2 align-self-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search me-2"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchResultContainer" class="mt-4">
+        <!-- Search results will be loaded here -->
+    </div>
+</div>
+
+
+    <script>
+        $(document).ready(function() {
+            // Set default date to today
+            if (!$('#AsOfDate').val()) {
+                $('#AsOfDate').val(new Date().toISOString().split('T')[0]);
+            }
+
+            // Form submission via AJAX
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: '@Url.Action("Search", "FeeDefaulters")',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    beforeSend: function() {
+                        // Show loading indicator
+                        $('#searchResultContainer').html(
+                            '<div class="text-center"><div class="spinner-border text-primary" role="status">' +
+                            '<span class="visually-hidden">Loading...</span></div></div>'
+                        );
+                    },
+                    success: function(result) {
+                        // Load partial view results
+                        $('#searchResultContainer').html(result);
+                    },
+                    error: function() {
+                        $('#searchResultContainer').html(
+                            '<div class="alert alert-danger">An error occurred while searching.</div>'
+                        );
+                    }
+                });
+            });
+        });
+    </script>

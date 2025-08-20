@@ -1,0 +1,44 @@
+﻿@using ERPIndia.Class.Helper;
+@{
+    var pagingParams = (IPagingParams)ViewBag.PagedList;
+    int startRec = ((ViewBag.PageNo - 1) * ViewBag.PageSize) + 1, endRec;
+
+    if (ViewBag.PageSize == 0)
+    {
+        endRec = startRec + pagingParams.TotalItemCount - 1;
+    }
+    else
+    {
+        endRec = startRec + ViewBag.ListRecords - 1;
+    }
+}
+
+<div class="row gutters-8">
+    <div class="col-xl-6 col-lg-6 col-12 form-group">
+        @if (Model != null && Model.Count > 0)
+        {
+            <div class="margin-top-10">
+                @string.Format(StringConstants.RecordStatus, startRec, endRec, pagingParams.TotalItemCount)
+            </div>
+        }
+    </div>
+    <div class="col-xl-6 col-lg-6 col-12 form-group">
+        @Html.PagedListPager((IPagingParams)ViewBag.PagedList, page => Url.Action("Index", new { page, pageSize = ViewBag.PageSize, searchField = ViewBag.SearchField, searchValue = ViewBag.SearchValue, sortField = ViewBag.SortField, sortOrder = ViewBag.SortOrder }), PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(new AjaxOptions() { HttpMethod = "POST", UpdateTargetId = "divPageBody" }))
+    </div>
+</div>
+
+@*<div class="row">
+        <div class="col-md-6 col-sm-12">
+            @if (Model != null && Model.Count > 0)
+            {
+                <div class="margin-top-10">
+                    @string.Format(StringConstants.RecordStatus, startRec, endRec, pagingParams.TotalItemCount)
+                </div>
+            }
+        </div>
+        <div class="col-md-6 col-sm-12" style="margin-left: 0px; text-align:right">
+            <div class="dataTables_paginate paging_bootstrap_full_number">
+                @Html.PagedListPager((IPagingParams)ViewBag.PagedList, page => Url.Action("Index", new { page, pageSize = ViewBag.PageSize, searchField = ViewBag.SearchField, searchValue = ViewBag.SearchValue, sortField = ViewBag.SortField, sortOrder = ViewBag.SortOrder }), PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(new AjaxOptions() { HttpMethod = "POST", UpdateTargetId = "divPageBody" }))
+            </div>
+        </div>
+    </div>*@

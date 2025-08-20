@@ -1,0 +1,28 @@
+﻿@model ERPIndia.Models.InvoiceDetailModel
+
+@using (Html.BeginCollectionItem("InvoiceDetailModels"))
+{
+    <div class="form-group testRow">
+        <label class="col-md-2 control-label">
+            <label>Add Service </label> <span class="required">*</span>
+        </label>
+        <div class="col-md-2">
+            <div>
+                @Html.DropDownListFor(model => model, new SelectList(ViewBag.Services, "Value", "Text"), new { style = "", @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div>
+                @Html.TextBoxFor(model => model.Amount, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div>
+                @Html.TextBoxFor(model => model.Remarks, new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="col-md-2">
+            <a href="#" class="deleteRow"><i class="fa fa-trash-o fa-2x"></i></a>
+        </div>
+    </div>
+}

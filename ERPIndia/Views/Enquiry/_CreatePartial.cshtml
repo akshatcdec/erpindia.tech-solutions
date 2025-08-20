@@ -1,0 +1,267 @@
+﻿@model ERPK12Models.ViewModel.Enquiry.EnquiryViewModel
+<style>
+   
+    .required-field1 {
+        border-left: 4px solid #dc3545 !important; /* Red border for required fields */
+        transition: border-left-color 0.3s ease;
+    }
+
+        .required-field1:focus {
+            border-left-color: #007bff !important; /* Blue border when focused */
+            box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+        }
+</style>
+@using (Html.BeginForm("Create", "Enquiry", FormMethod.Post, new { @class = "form-horizontal", id = "createEnquiryForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="modal-body">
+        <!-- Basic Information -->
+        <h5 class="text-primary mb-3"><i class="fas fa-user"></i> Student Information</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Student, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Student, new { @class = "form-control required-field1", placeholder = "Enter student name" , autocomplete = "off" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Student, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Father, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Father, new { @class = "form-control required-field1", placeholder = "Enter father's name", autocomplete = "off" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Father, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Mother, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Mother, new { @class = "form-control", placeholder = "Enter mother's name", autocomplete = "off" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Mother, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.ClassId, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.ClassId, Model.ClassList, new { @class = "form-control required-field1" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.ClassId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Mobile1, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Mobile1, new
+               {
+                   @class = "form-control required-field1",
+                   placeholder = "Primary mobile",
+                   autocomplete = "off",
+                   @type = "tel",
+                   pattern = "[0-9]{10}",
+                   maxlength = "10",
+                   onkeypress = "return isNumberKey(event)"
+               })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Mobile1, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Mobile2, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Mobile2, new
+               {
+                   @class = "form-control",
+                   placeholder = "Secondary mobile",
+                   autocomplete = "off",
+                   @type = "tel",
+                   pattern = "[0-9]{10}",
+                   maxlength = "10",
+                   onkeypress = "return isNumberKey(event)"
+               })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Mobile2, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Gender, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.Gender, ViewBag.GenderList as SelectList, "Select", new { @class = "form-control required-field1" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Gender, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <!-- Inserted Previous School and Relation below -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.PreviousSchool, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.PreviousSchool, new { @class = "form-control", placeholder = "Enter previous school name", autocomplete = "off" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.NoOfChild, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.NoOfChild,
+                        new SelectList(Enumerable.Range(1, 10).Select(i => new { Value = i, Text = i.ToString() }), "Value", "Text"),
+                        "Select",
+                        new { @class = "form-control required-field1" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.NoOfChild, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Relation, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.Relation, ViewBag.RelationList as SelectList, "Select", new { @class = "form-control" })
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Address, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Address, new { @class = "form-control required-field1", placeholder = "Enter complete address", autocomplete = "off" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Address, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <br />
+        <!-- Office Use Only Section -->
+        <h5 class="text-primary mb-3"><i class="fas fa-building"></i> Office Use Only</h5>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.EnquiryDate, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.EnquiryDate, "{0:yyyy-MM-dd}", new
+                    {
+                        @class = "form-control required-field1",
+                        type = "date",
+                        autocomplete = "off"
+                    })
+                    @Html.ValidationMessageFor(m => m.Enquiry.EnquiryDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.DealBy, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.DealBy, new { @class = "form-control", placeholder = "Staff name" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Source, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.Source, ViewBag.SourceList as SelectList, "Select Source", new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.FormAmt, new { @class = "control-label", })
+                    @Html.TextBoxFor(m => m.Enquiry.FormAmt, new
+                    {
+                        @class = "form-control",
+                        id = "formAmount",
+                        maxlength = "4",
+                        placeholder = "0",
+                        onkeypress = "return isNumberKey(event)"
+                    })
+                    <span id="formAmtError" class="text-danger" style="display:none;"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.RcptDate, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.RcptDate, "{0:dd-MM-yyyy}", new
+               {
+                   @class = "form-control",
+                   id = "receiptDate",
+                   type = "date",
+                   autocomplete = "off"
+               })
+                    <span id="rcptDateError" class="text-danger" style="display:none;"></span>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Note, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Note, new { @class = "form-control", placeholder = "Any additional notes" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.SendSMS, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.SendSMS, ViewBag.SendSMSList as SelectList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal" data-bs-dismiss="modal" onclick="closeModal()">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+        &nbsp;
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </div>
+}
+
+<script>
+    // Function to allow only numbers
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+        return true;
+    }
+
+    // Form validation
+    $(document).ready(function () {
+        // Add change event listeners
+        $('#formAmount, #receiptDate').on('change blur', function () {
+            validateAmountAndDate();
+        });
+
+        // Form submit validation
+        $('#createEnquiryForm').on('submit', function (e) {
+            if (!validateAmountAndDate()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+
+    function validateAmountAndDate() {
+        var isValid = true;
+        var amount = $('#formAmount').val();
+        var receiptDate = $('#receiptDate').val();
+
+        // Clear previous errors
+        $('#formAmtError').hide().text('');
+        $('#rcptDateError').hide().text('');
+
+        // Convert amount to number
+        var amountNum = parseFloat(amount) || 0;
+
+        // Validation logic
+        if (amountNum > 0 && !receiptDate) {
+            // If amount is entered, receipt date is required
+            $('#rcptDateError').text('Receipt date is required when amount is entered').show();
+            isValid = false;
+        }
+
+        if (receiptDate && amountNum <= 0) {
+            // If receipt date is provided, amount must be greater than zero
+            $('#formAmtError').text('Amount must be greater than zero when receipt date is provided').show();
+            isValid = false;
+        }
+
+        return isValid;
+    }
+</script>

@@ -1,0 +1,116 @@
+﻿@model ERPIndia.Models.ImportDataModel
+
+<section class="content">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3>Student Import</h3>
+            <button type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#standard-modal">Import Instruction</button>   
+            <div class="modal fade" id="standard-modal" data-bs-backdrop="static"
+                 data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">Import Data Instrcution</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="notice-box">
+                                <div class="notice-text">
+                                    <ol class="notice-list">
+                                        <li>Download the template and maintain the same column structure</li>
+                                        <li>All required fields must have values</li>
+                                        <li>Dates should be in DD/MM/YYYY format (also accepts DD-MM-YYYY, DD/MM/YY, DD-MM-YY)</li>
+                                        <li>Category must be one of: GENERAL, OBC, SC, ST, MINORITY</li>
+                                        <li>Blood Group must be one of: Blood Group, A+, A-, B+, B-, O+, O-</li>
+                                        <li>Gender must be "male" or "female"</li>
+                                        <li>Mobile numbers must be valid 10-digit numbers</li>
+                                        <li>Boolean fields (Active, EnquiryData, SendSms) must be "true" or "false"</li>
+                                        <li>Numeric fields (AdmsnNo, SchoolCode, StudentNo, RollNo, UserId, OldBalance) must contain numbers only</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            <div class="heading-layout1 mg-b-0">
+                                <div class="item-title mg-b-0">
+                                    <p><strong>Note:</strong> No data will be imported until all validation errors are resolved.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="#" class="btn btn-success btn-flat">
+                                <i class="fa fa-file-excel mr-1"></i> Download Template
+                            </a>
+                            <button type="button" class="btn btn-light me-2"
+                                    data-bs-dismiss="modal">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("Index", "ImportData", FormMethod.Post, new { enctype = "multipart/form-data", onsubmit = "onBeginSubmit()" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="row">
+                    <div class="col-xl-3 col-lg-6 col-12 form-group">
+                        <label>Browse File</label>
+                        <input type="file" name="ProfileImg" id="ProfileImg" />
+                        @Html.HiddenFor(model => model.ProfilePic)
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-12 form-group">
+                         <button type="submit" class="btn btn-success btn-flat"><i class="fa fa-save"></i>Upload</button>
+                        &nbsp;&nbsp; 
+                        @Html.ValidationMessage("Validation", new { @class = "text-danger" })
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="heading-layout1">
+                        <div class="item-title">
+                            <h3>Excel Import Summary</h3>
+                        </div>
+                    </div>
+                        @Html.Raw(HttpUtility.HtmlDecode(@Html.ValidationMessage("ProfilePic", new { @class = "text-danger" }).ToHtmlString()))
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<script type="text/javascript">
+    $(this.document).ready(function () {
+        if ('@ViewBag.ErrorMsg' != null && '@ViewBag.ErrorMsg' != '') {
+            notificationMessage('@ViewBag.ErrorMsg', 'danger')
+            HRN.hideLoader();
+        }
+
+        if ('@ViewBag.SuccessMsg' != null && '@ViewBag.SuccessMsg' != '') {
+            notificationMessage('@ViewBag.SuccessMsg', 'success')
+            HRN.hideLoader();
+        }
+
+        //checkValidation();
+    });
+
+    var onBeginSubmit = function () {
+       // HRN.showLoader();
+    };
+
+    function onSuccess() {
+        if ('@ViewBag.ErrorMsg' == null || '@ViewBag.ErrorMsg' == '') {
+            HRN.hideLoader();
+        }
+    }
+</script>

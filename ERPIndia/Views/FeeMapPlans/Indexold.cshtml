@@ -1,0 +1,472 @@
+﻿
+
+
+<style>
+    .table-borderless td {
+        padding: 0.25rem 1rem 0.25rem 0;
+    }
+
+    .loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loading-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }
+</style>
+
+    <!-- Loading Spinner -->
+    <div class="loading" id="loadingSpinner">
+        <div class="loading-content">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading configuration data...</p>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <section class="py-3">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="h3">
+                        <small>Fee Setup</small>
+                    </h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Manage Fee Setup</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Fee Setup Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="feeSetupForm">
+                            <div class="row mb-3">
+                                <label for="feeHead" class="col-sm-3 col-form-label">Fee Head</label>
+                                <div class="col-sm-9">
+                                    <div class="table table-borderless mb-0" id="feeHeadContainer">
+                                        <!-- Dynamic Fee Head checkboxes will be filled here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label for="class" class="col-sm-3 col-form-label">Class</label>
+                                <div class="col-sm-9">
+                                    <div class="table table-borderless mb-0" id="classContainer">
+                                        <!-- Dynamic Class checkboxes will be filled here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label for="section" class="col-sm-3 col-form-label">Section</label>
+                                <div class="col-sm-9">
+                                    <div class="table table-borderless mb-0" id="sectionContainer">
+                                        <!-- Dynamic Section checkboxes will be filled here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label for="category" class="col-sm-3 col-form-label">Category</label>
+                                <div class="col-sm-9">
+                                    <div class="table table-borderless mb-0" id="categoryContainer">
+                                        <!-- Dynamic Category checkboxes will be filled here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-sm-3 col-form-label">Fee Mode</label>
+                                <div class="col-sm-9" id="frequencyContainer">
+                                    <!-- Dynamic Fee Mode radio buttons will be filled here -->
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label for="dynamicAmount" class="col-sm-3 col-form-label">Enter Amount</label>
+                                <div class="col-sm-9">
+                                    <input type="number" class="form-control" id="dynamicAmount" step="0.01">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-sm-3 col-form-label">Fee Amount</label>
+                                <div class="col-sm-9">
+                                    <div class="row mb-2">
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtApril" placeholder="April" value="0">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtMay" placeholder="May" value="0">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtJune" placeholder="June" value="0">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtJuly" placeholder="July" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtAugust" placeholder="August" value="0">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtSeptember" placeholder="September" value="0">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtOctober" placeholder="October" value="0">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtNovember" placeholder="November" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtDecember" placeholder="December" value="0">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtJanuary" placeholder="January" value="0">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtFebruary" placeholder="February" value="0">
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <input type="text" class="form-control" id="txtMarch" placeholder="March" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-sm-9 offset-sm-3">
+                                    <button type="button" id="btnSave" class="btn btn-primary">Save</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+   
+    <script type="text/javascript">
+        // Data objects that will be populated from the configuration table
+        var feeHeadData = [];
+        var classData = [];
+        var sectionData = [];
+        var categoryData = [];
+        var clientId = @Session["UserId"]; // This will be set from session or other application logic
+
+        // Hardcoded frequency data
+        var frequencyData = [
+            { id: "0", name: "NA" },
+            { id: "Monthly", name: "Monthly" },
+            { id: "Quarterly", name: "Quarterly" },
+            { id: "Annually", name: "Annually" }
+        ];
+
+        $(document).ready(function() {
+            // Load configuration data from the server
+            loadConfigurationData();
+
+            // Set up event handlers
+            $(document).on('change', 'input[name="frequency"]', updateFees);
+            $('#dynamicAmount').on('input', updateFees);
+
+            // Save button click handler
+            $('#btnSave').click(function() {
+                saveFeeSetup();
+            });
+        });
+
+        // Load configuration data from the server
+        function loadConfigurationData() {
+            // Show loading spinner
+            $('#loadingSpinner').show();
+
+            // Make AJAX request to get configuration data
+            $.ajax({
+                url: '@Url.Action("GetConfigurationLists", "FeeSetup")',  // Adjust to match your controller route
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.error) {
+                        console.error('Error from server:', response.error);
+                        alert('Failed to load configuration data: ' + response.error);
+                        $('#loadingSpinner').hide();
+                        return;
+                    }
+
+                    // Process configuration data
+                    processConfigurationData(response);
+
+                    // Initialize form with the loaded data
+                    loadFeeHeads();
+                    loadClasses();
+                    loadSections();
+                    loadCategories();
+                    loadFrequencies();
+
+                    // Hide loading spinner
+                    $('#loadingSpinner').hide();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading configuration data:', error);
+                    alert('Failed to load configuration data. Please refresh the page and try again.');
+
+                    // Hide loading spinner
+                    $('#loadingSpinner').hide();
+                }
+            });
+        }
+
+        // Process configuration data from the server
+        function processConfigurationData(data) {
+            // Process fee heads - Filter by Module="FeeHead"
+            feeHeadData = data
+                .filter(item => item.Module === 'FeeHead')
+                .sort((a, b) => a.SortOrder - b.SortOrder)
+                .map(item => {
+                    return { id: item.Id, name: item.KeyValue };
+                });
+
+            // Process classes - Filter by Module="Class"
+            classData = data
+                .filter(item => item.Module === 'Class')
+                .sort((a, b) => a.SortOrder - b.SortOrder)
+                .map(item => {
+                    return { id: item.Id, name: item.KeyValue };
+                });
+
+            // Process sections - Filter by Module="Section"
+            sectionData = data
+                .filter(item => item.Module === 'Section')
+                .sort((a, b) => a.SortOrder - b.SortOrder)
+                .map(item => {
+                    return { id: item.Id, name: item.KeyValue };
+                });
+
+            // Process categories - Filter by Module="Category"
+            categoryData = data
+                .filter(item => item.Module === 'Category')
+                .sort((a, b) => a.SortOrder - b.SortOrder)
+                .map(item => {
+                    return { id: item.Id, name: item.KeyValue };
+                });
+        }
+
+        // Load dynamic checkboxes and radio buttons
+        function loadFeeHeads() {
+            let html = createCheckboxes(feeHeadData, 'feeHead');
+            $('#feeHeadContainer').html(html);
+        }
+
+        function loadClasses() {
+            let html = createCheckboxes(classData, 'class');
+            $('#classContainer').html(html);
+        }
+
+        function loadSections() {
+            let html = createCheckboxes(sectionData, 'section');
+            $('#sectionContainer').html(html);
+        }
+
+        function loadCategories() {
+            let html = createCheckboxes(categoryData, 'category');
+            $('#categoryContainer').html(html);
+        }
+
+        function loadFrequencies() {
+            let html = '';
+            frequencyData.forEach((item, index) => {
+                html += `
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="frequency" id="freq${item.id}" value="${item.id}" ${index === 0 ? 'checked' : ''}>
+                    <label class="form-check-label" for="freq${item.id}">${item.name}</label>
+                </div>`;
+            });
+            $('#frequencyContainer').html(html);
+        }
+
+        // Helper function to create checkbox grid
+        function createCheckboxes(data, name) {
+            if (!data || data.length === 0) {
+                return '<div class="alert alert-warning">No data available</div>';
+            }
+
+            let html = '<div class="row">';
+            data.forEach((item, index) => {
+                // Create a new row every 4 items
+                if (index > 0 && index % 4 === 0) {
+                    html += '</div><div class="row">';
+                }
+
+                html += `
+                <div class="col-sm-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="${name}${item.id}" name="${name}" value="${item.id}">
+                        <label class="form-check-label" for="${name}${item.id}">${item.name}</label>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        function updateFees() {
+            var frequency = $('input[name="frequency"]:checked').val();
+            var amount = parseFloat($('#dynamicAmount').val());
+
+            // Clear all text boxes
+            clearTextBoxes();
+
+            if (frequency === "0") {
+                return;
+            }
+            if (isNaN(amount)) {
+                return;
+            }
+
+            var monthIds = [
+                'txtApril',
+                'txtMay',
+                'txtJune',
+                'txtJuly',
+                'txtAugust',
+                'txtSeptember',
+                'txtOctober',
+                'txtNovember',
+                'txtDecember',
+                'txtJanuary',
+                'txtFebruary',
+                'txtMarch'
+            ];
+
+            if (frequency === "Monthly") {
+                for (var i = 0; i < monthIds.length; i++) {
+                    $('#' + monthIds[i]).val(amount.toFixed(2));
+                }
+            } else if (frequency === "Quarterly") {
+                var quarterlyMonths = [0, 3, 6, 9]; // Indices for April, July, October, January
+                for (var i = 0; i < quarterlyMonths.length; i++) {
+                    $('#' + monthIds[quarterlyMonths[i]]).val(amount.toFixed(2));
+                }
+            } else if (frequency === "Annually") {
+                $('#' + monthIds[0]).val(amount.toFixed(2)); // April
+            }
+        }
+
+        function clearTextBoxes() {
+            var monthIds = [
+                'txtApril',
+                'txtMay',
+                'txtJune',
+                'txtJuly',
+                'txtAugust',
+                'txtSeptember',
+                'txtOctober',
+                'txtNovember',
+                'txtDecember',
+                'txtJanuary',
+                'txtFebruary',
+                'txtMarch'
+            ];
+
+            for (var i = 0; i < monthIds.length; i++) {
+                $('#' + monthIds[i]).val('0');
+            }
+        }
+
+        function saveFeeSetup() {
+            // Collect form data
+            var formData = {
+                clientId: clientId,
+                feeHeads: getSelectedValues('feeHead'),
+                classes: getSelectedValues('class'),
+                sections: getSelectedValues('section'),
+                categories: getSelectedValues('category'),
+                frequency: $('input[name="frequency"]:checked').val(),
+                amount: $('#dynamicAmount').val(),
+                months: {
+                    April: $('#txtApril').val(),
+                    May: $('#txtMay').val(),
+                    June: $('#txtJune').val(),
+                    July: $('#txtJuly').val(),
+                    August: $('#txtAugust').val(),
+                    September: $('#txtSeptember').val(),
+                    October: $('#txtOctober').val(),
+                    November: $('#txtNovember').val(),
+                    December: $('#txtDecember').val(),
+                    January: $('#txtJanuary').val(),
+                    February: $('#txtFebruary').val(),
+                    March: $('#txtMarch').val()
+                }
+            };
+
+            // Show loading spinner
+            $('#loadingSpinner').show();
+
+            // Send Ajax request
+            $.ajax({
+                url: '@Url.Action("SaveFeeSetup", "FeeSetup")',  // Adjust to match your controller route
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    // Hide loading spinner
+                    $('#loadingSpinner').hide();
+
+                    if (response.success) {
+                        alert('Fee setup saved successfully!');
+                    } else {
+                        alert('Error saving fee setup: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // Hide loading spinner
+                    $('#loadingSpinner').hide();
+                    alert('Error saving fee setup: ' + error);
+                }
+            });
+        }
+
+        function getSelectedValues(name) {
+            var selected = [];
+            $('input[name="' + name + '"]:checked').each(function() {
+                selected.push($(this).val());
+            });
+            return selected;
+        }
+    </script>

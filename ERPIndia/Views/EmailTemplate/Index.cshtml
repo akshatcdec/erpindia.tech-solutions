@@ -1,0 +1,88 @@
+@model List<ERPIndia.Models.EmailTemplateModel>
+
+<section class="content-header">
+    <h1>Email Templates</h1>
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("", "SiteMap")"><i class="fa fa-home"></i> Home</a></li>
+        <li class="active">Email Templates</li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <div class="message-box"></div>
+                </div>
+                <div class="box-body">
+                    @Html.Partial("_UCFilter")
+
+                    @Html.Partial("_UCGridTop")
+
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 datagrid">
+                            <table cellspacing="1" cellpadding="2" style="width: 100%;" id="dgList" class="table table-striped table-hover table-bordered table-hd">
+                                <thead>
+                                    <tr class="gridheader">
+                                        <td valign="middle" align="center" style="width: 2%;">
+                                            <input id="chkAll" onclick="javascript: checkAll();" type="checkbox" name="chkAll" />
+                                        </td>
+                                        <td class="search_field" search_field_value="Code">Code </td>
+                                        <td class="search_field" search_field_value="Title">Title</td>
+                                        <td style="width: 5%;" class="text-center search_field" search_field_value="IsActive">Status</td>
+                                        <td style="width: 5%;" class="text-center">Edit</td>
+                                        <td style="width: 5%;" class="text-center">Delete</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model != null && Model.Count > 0)
+                                    {
+                                        for (int i = 0; i < Model.Count; i++)
+                                        {
+                                            <tr>
+                                                <td valign="middle" align="center" style="width: 2%;">
+                                                    <input id="chkBox" name="chkBox" type="checkbox" onclick="javascript: checkManual();" value="@Model[i].EmailTemplateId" />
+                                                </td>
+                                                <td>@Model[i].Code</td>
+                                                <td>@Model[i].Title</td>
+                                                <td style="width: 5%;" class="text-center">
+                                                    @if (@Model[i].IsActive)
+                                                    {
+                                                        <a onclick="return SetActiveInactive(this);" class="SetStatusClick" name="imgInactive" title="Click to make inactive" id="imgInactive" style="text-decoration: none" href="javascript:void(0)"><i class='fa fa-check'></i></a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a onclick="return SetActiveInactive(this);" class="SetStatusClick" name="imgActive" title="Click to make active" id="imgActive" style="text-decoration: none" href="javascript:void(0)"><i class="fa fa-ban"></i></a>
+                                                    }
+                                                </td>
+                                                <td style="width: 5%;" class="text-center">
+                                                    <a href="@Url.Action("Add","EmailTemplate", routeValues: new {  id = @Model[i].EmailTemplateId})" title="Click here to edit"><i class="fa fa-edit"></i></a>
+                                                </td>
+                                                <td style="width: 5%;" class="text-center">
+                                                    <a onclick="return SetActiveInactive(this);" class="SetStatusClick" name="imgDelete" title="Click here to delete" id="imgDelete" style="text-decoration: none" href="javascript:void(0)"><i class="fa fa-trash-o"></i></a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                            @if (Model == null || Model.Count == 0)
+                            {
+                                @Html.Partial("_UCNoRecordsMsg")
+                            }
+                        </div>
+                    </div>
+
+                    @Html.Partial("_UCGridBottom")
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+    $(document).ready(function () {
+        hideFilterControls(false, true, false, false);
+    });
+</script>

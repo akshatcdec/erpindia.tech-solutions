@@ -1,0 +1,166 @@
+﻿
+<link href="/template/assets/js/student/feecollect.css" rel="stylesheet" />
+<link href="/template/assets/plugins/studentsearch/studentsearch.css" rel="stylesheet" />
+<div class="card">
+    <div class="card-header bg-light">
+        <div class="d-flex align-items-center">
+            <h5 class="text-dark">Pay Fee Page</h5>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="col-xxl-12 col-xl-3">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center">
+                        <h5 class="text-dark"> Search Student </h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3 row">
+                        <div class="col-md-12">
+                            <div id="studentSearch"></div>
+                        </div>
+                        <div class="mb-3 row">
+                            <div class="fee-collect-section" id="feeCollectContainer"></div>
+                            <div class="validation-panel">
+                                <h2>Payment Processing</h2>
+                                <div class="button-group">
+                                    <button id="validateButton" class="action-button validate-button">Validate</button>
+                                    <button id="clearButton" class="action-button clear-button">Clear Fees</button>
+                                    <button id="saveDataButton" class="action-button save-button">View Payment Data</button>
+                                </div>
+
+                                <div id="validationResult" class="validation-result"></div>
+                                <div id="paymentData" class="payment-data">
+                                    <pre id="paymentDataContent"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="log-panel">
+    <h2>Event Log</h2>
+    <div id="eventLog"></div>
+</div>
+<div id="result" style="margin-top: 20px;"></div>
+
+<div class="container">
+    <div class="student-selector">
+        <h2>Select Student</h2>
+        <select id="studentSelector">
+            <option value="">Loading students...</option>
+        </select>
+    </div>
+
+    <div class="fee-collect-wrapper">
+        <div id="feeCollectContainer"></div>
+    </div>
+</div>
+
+<script src="/template/assets/plugins/studentsearch/studentsearch.js"></script>
+<script src="/template/assets/js/student/feecollect.js"></script>
+<script src="/template/assets/js/student/fee-collect-integration.js"></script>
+<script>
+    $(document).ready(function () {
+        var feeCollect;
+        var isStudentSelected = false;
+
+        // Initialize the student search component
+        var studentSearch = new StudentSearch('#studentSearch', {
+            placeholder: 'Type to search student by name, ID, class, or mobile...',
+            apiUrl: '@Url.Action("SearchStudents", "API")',
+            maxResults: 5,
+            onSelect: function (student) {
+                console.log('Selected student:', student);
+
+                // Update hidden fields
+                $('#AdmsnNo').val(student.admsnNo);
+                $('#SchoolCode').val(student.schoolCode);
+                $('#StudentName').val(student.name);
+                $('#StudentClass').val(student.class);
+
+                // Enable submit button
+                $('#submitBtn').prop('disabled', false);
+
+                // Initialize or activate FeeCollect component with the student data
+                if (!isStudentSelected) {
+                    // Fetch fee data for this student (you might need to make an API call here)
+                    // For now, using sample data from your existing code
+                    const feeData = {
+                        feeData: [
+                            // Your fee data here - or fetch it from an API based on student.admsnNo
+                        ],
+                        studentInfo: {
+                            name: student.name,
+                            id: student.admsnNo,
+                            class: student.class,
+                            section: student.section || '',
+                            balance: student.balance || 0
+                        }
+                    };
+
+                    // Initialize FeeCollect with the student data
+                    feeCollect = new FeeCollect('#feeCollectContainer', feeData, {
+                        currency: '₹',
+                        showFineDiscount: true,
+                        autoUpdateReceived: true,
+                        callbacks: {
+                            // Your existing callbacks
+                        }
+                    });
+
+                    // Show the fee component container
+                    $('#feeCollectContainer').show();
+                    isStudentSelected = true;
+                } else {
+                    // If FeeCollect was already initialized, update it with new student data
+                    feeCollect.setStudentInfo({
+                        name: student.name,
+                        id: student.admsnNo,
+                        class: student.class,
+                        section: student.section || '',
+                        balance: student.balance || 0
+                    });
+
+                    // Clear any previously selected fees
+                    feeCollect.clearSelectedFees();
+
+                    // Show the fee component container if it was hidden
+                    $('#feeCollectContainer').show();
+                }
+            },
+            onClear: function () {
+                // Disable submit button
+                $('#submitBtn').prop('disabled', true);
+
+                // Clear hidden fields
+                $('#AdmsnNo').val('');
+                $('#SchoolCode').val('');
+                $('#StudentName').val('');
+                $('#StudentClass').val('');
+
+                // Hide or reset the fee component
+                if (isStudentSelected && feeCollect) {
+                    // Option 1: Hide the fee component container
+                    $('#feeCollectContainer').hide();
+
+                    // Option 2: Clear selected fees
+                    feeCollect.clearSelectedFees();
+                }
+
+                isStudentSelected = false;
+            }
+        });
+
+
+    });
+
+
+
+</script>

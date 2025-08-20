@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Search Example</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    /* StudentSearch styles */
+    .student-search {
+      position: relative;
+    }
+    .ss-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    .ss-search-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .ss-input {
+      width: 100%;
+      height: 38px;
+      padding: 6px 36px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .ss-search-icon, .ss-clear-icon {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      color: #777;
+    }
+    .ss-search-icon {
+      left: 0;
+    }
+    .ss-clear-icon {
+      right: 0;
+      cursor: pointer;
+    }
+    .ss-dropdown-container {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      max-height: 0;
+      overflow: hidden;
+      background: white;
+      border: 0 solid #ccc;
+      border-radius: 0 0 4px 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 1000;
+      transition: max-height 0.2s;
+      margin-top: -1px;
+    }
+    .ss-dropdown-open {
+      max-height: 300px;
+      border-width: 1px;
+    }
+    .ss-spinner {
+      display: none;
+      text-align: center;
+      padding: 10px;
+    }
+    .ss-spinner-border {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .ss-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+    .ss-item:last-child {
+      border-bottom: none;
+    }
+    .ss-item:hover, .ss-item-active {
+      background-color: #f8f9fa;
+    }
+    .ss-item-content {
+      display: flex;
+    }
+    .ss-item-photo {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+      background-color: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ss-item-info {
+      flex: 1;
+    }
+    .ss-item-name {
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+    .ss-item-details {
+      font-size: 12px;
+      color: #666;
+    }
+    .ss-selected-display {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .button {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Student Search</h1>
+    
+    <form id="studentForm">
+      <div class="form-group">
+        <label for="studentSearch">Search for a student:</label>
+        <div id="studentSearch"></div>
+      </div>
+      
+      <button type="submit" class="button">Submit</button>
+    </form>
+    
+    <div id="result" style="margin-top: 20px;"></div>
+  </div>
+
+  <script>
+    // StudentSearch Library
+    (function(window) {
+      function StudentSearch(selector, options) {
+        // Default options
+        this.options = {
+          placeholder: 'Search for students...',
+          useTestData: true,
+          maxResults: 5,
+          minLength: 2,
+          searchDelay: 300,
+          onSelect: null
+        };
+        
+        // Merge options
+        if (options) {
+          for (var key in options) {
+            if (options.hasOwnProperty(key)) {
+              this.options[key] = options[key];
+            }
+          }
+        }
+        
+        // Get container
+        this.container = typeof selector === 'string' ? 
+          document.querySelector(selector) : selector;
+        
+        if (!this.container) {
+          console.error('Container not found');
+          return;
+        }
+        
+        // State variables
+        this.timeout = null;
+        this.currentFocus = -1;
+        this.isOpen = false;
+        
+        // Initialize
+        this.init();
+      }
+      
+      // Initialize component
+      StudentSearch.prototype.init = function() {
+        this.container.classList.add('student-search');
+        this.createElements();
+        this.setupEvents();
+      };
+      
+      // Create DOM elements
+      StudentSearch.prototype.createElements = function() {
+        // Clear container
+        this.container.innerHTML = '';
+        
+        // Create wrapper
+        this.wrapper = document.createElement('div');
+        this.wrapper.className = 'ss-wrapper';
+        
+        // Create search container
+        this.searchContainer = document.createElement('div');
+        this.searchContainer.className = 'ss-search-container';
+        
+        // Create search icon
+        this.searchIcon = document.createElement('div');
+        this.searchIcon.className = 'ss-search-icon';
+        this.searchIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+        
+        // Create clear icon
+        this.clearIcon = document.createElement('div');
+        this.clearIcon.className = 'ss-clear-icon';
+        this.clearIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        
+        // Create input
+        this.input = document.createElement('input');
+        this.input.type = 'text';
+        this.input.className = 'ss-input';
+        this.input.placeholder = this.options.placeholder;
+        
+        // Create hidden fields
+        this.hiddenId = document.createElement('input');
+        this.hiddenId.type = 'hidden';
+        this.hiddenId.name = this.container.id + '_id';
+        
+        this.hiddenName = document.createElement('input');
+        this.hiddenName.type = 'hidden';
+        this.hiddenName.name = this.container.id + '_name';
+        
+        this.hiddenClass = document.createElement('input');
+        this.hiddenClass.type = 'hidden';
+        this.hiddenClass.name = this.container.id + '_class';
+        
+        // Create dropdown
+        this.dropdown = document.createElement('div');
+        this.dropdown.className = 'ss-dropdown-container';
+        
+        // Create spinner
+        this.spinner = document.createElement('div');
+        this.spinner.className = 'ss-spinner';
+        this.spinner.innerHTML = '<div class="ss-spinner-border"></div>';
+        
+        // Create results container
+        this.results = document.createElement('div');
+        this.results.className = 'ss-results';
+        
+        // Create selected display
+        this.selectedDisplay = document.createElement('div');
+        this.selectedDisplay.className = 'ss-selected-display';
+        this.selectedDisplay.style.display = 'none';
+        this.selectedDisplay.innerHTML = '<div class="ss-selected-info">' +
+          '<div class="ss-selected-main"></div>' +
+          '<div class="ss-selected-details"></div>' +
+        '</div>';
+        
+        // Assemble the component
+        this.searchContainer.appendChild(this.searchIcon);
+        this.searchContainer.appendChild(this.input);
+        this.searchContainer.appendChild(this.clearIcon);
+        
+        this.dropdown.appendChild(this.spinner);
+        this.dropdown.appendChild(this.results);
+        
+        this.wrapper.appendChild(this.searchContainer);
+        this.wrapper.appendChild(this.dropdown);
+        this.wrapper.appendChild(this.selectedDisplay);
+        this.wrapper.appendChild(this.hiddenId);
+        this.wrapper.appendChild(this.hiddenName);
+        this.wrapper.appendChild(this.hiddenClass);
+        
+        this.container.appendChild(this.wrapper);
+      };
+      
+      // Set up event listeners
+      StudentSearch.prototype.setupEvents = function() {
+        var self = this;
+        
+        // Input event
+        this.input.addEventListener('input', function() {
+          clearTimeout(self.timeout);
+          
+          var query = this.value.trim();
+          if (query.length < self.options.minLength) {
+            self.closeDropdown();
+            return;
+          }
+          
+          self.timeout = setTimeout(function() {
+            self.search(query);
+          }, self.options.searchDelay);
+        });
+        
+        // Focus event
+        this.input.addEventListener('focus', function() {
+          var query = this.value.trim();
+          if (query.length >= self.options.minLength) {
+            self.search(query);
+          }
+        });
+        
+        // Clear button click
+        this.clearIcon.addEventListener('click', function() {
+          self.input.value = '';
+          self.closeDropdown();
+          self.clearSelection();
+        });
+        
+        // Keyboard navigation
+        this.input.addEventListener('keydown', function(e) {
+          var items = self.results.querySelectorAll('.ss-item');
+          if (!items || items.length === 0) return;
+          
+          // Down arrow
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            self.currentFocus++;
+            self.setActiveItem(items);
+          } 
+          // Up arrow
+          else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            self.currentFocus--;
+            self.setActiveItem(items);
+          } 
+          // Enter key
+          else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (self.currentFocus > -1 && items[self.currentFocus]) {
+              items[self.currentFocus].click();
+            }
+          }
+          // Escape key
+          else if (e.key === 'Escape') {
+            self.closeDropdown();
+          }
+        });
+        
+        // Click outside to close
+        document.addEventListener('click', function(e) {
+          if (!self.wrapper.contains(e.target)) {
+            self.closeDropdown();
+          }
+        });
+      };
+      
+      // Search for students
+      StudentSearch.prototype.search = function(query) {
+        var self = this;
+        
+        this.openDropdown();
+        this.spinner.style.display = 'block';
+        this.results.innerHTML = '';
+        this.currentFocus = -1;
+        
+        // Use test data
+        if (this.options.useTestData) {
+          setTimeout(function() {
+            var data = self.getTestData();
+            var queryLower = query.toLowerCase();
+            
+            var filtered = data.filter(function(student) {
+              return (
+                (student.name && student.name.toLowerCase().includes(queryLower)) ||
+                (student.srNo && student.srNo.toLowerCase().includes(queryLower)) ||
+                (student.mobNo && student.mobNo.toLowerCase().includes(queryLower)) ||
+                (student.fatherName && student.fatherName.toLowerCase().includes(queryLower)) ||
+                (student.class && student.class.toLowerCase().includes(queryLower))
+              );
+            });
+            
+            var limitedResults = filtered.slice(0, self.options.maxResults);
+            
+            self.spinner.style.display = 'none';
+            self.renderResults(limitedResults);
+          }, 300);
+        }
+      };
+      
+      // Render results
+      StudentSearch.prototype.renderResults = function(students) {
+        var self = this;
+        
+        this.results.innerHTML = '';
+        
+        if (!students || students.length === 0) {
+          this.results.innerHTML = '<div class="ss-no-results">No students found</div>';
+          return;
+        }
+        
+        students.forEach(function(student, index) {
+          var item = document.createElement('div');
+          item.className = 'ss-item';
+          
+          // Set data attributes
+          item.dataset.id = student.srNo || '';
+          item.dataset.name = student.name || '';
+          item.dataset.class = student.class || '';
+          
+          // Create content
+          var content = document.createElement('div');
+          content.className = 'ss-item-content';
+          
+          var photo = document.createElement('div');
+          photo.className = 'ss-item-photo';
+          photo.textContent = 'P';
+          
+          var info = document.createElement('div');
+          info.className = 'ss-item-info';
+          
+          var name = document.createElement('div');
+          name.className = 'ss-item-name';
+          name.textContent = student.name || '';
+          
+          var details = document.createElement('div');
+          details.className = 'ss-item-details';
+          details.innerHTML = 
+            '<strong>ID:</strong> ' + (student.srNo || '') + 
+            ' | <strong>Class:</strong> ' + (student.class || '') +
+            '<br><strong>Father:</strong> ' + (student.fatherName || '') +
+            ' | <strong>Mobile:</strong> ' + (student.mobNo || '');
+          
+          // Set first item as active
+          if (index === 0) {
+            item.classList.add('ss-item-active');
+            self.currentFocus = 0;
+          }
+          
+          // Add click handler
+          item.addEventListener('click', function() {
+            self.selectStudent(student);
+          });
+          
+          // Assemble item
+          info.appendChild(name);
+          info.appendChild(details);
+          content.appendChild(photo);
+          content.appendChild(info);
+          item.appendChild(content);
+          
+          self.results.appendChild(item);
+        });
+      };
+      
+      // Select a student
+      StudentSearch.prototype.selectStudent = function(student) {
+        // Update hidden fields
+        this.hiddenId.value = student.srNo || '';
+        this.hiddenName.value = student.name || '';
+        this.hiddenClass.value = student.class || '';
+        
+        // Update selected display
+        var mainInfo = this.selectedDisplay.querySelector('.ss-selected-main');
+        mainInfo.innerHTML = '<strong>Name:</strong> [' + (student.srNo || '') + '] ' + 
+          (student.name || '') + ' | <strong>Class:</strong> ' + (student.class || '');
+        
+        var detailsInfo = this.selectedDisplay.querySelector('.ss-selected-details');
+        detailsInfo.innerHTML = '<strong>Father:</strong> ' + (student.fatherName || '') + 
+          ' | <strong>Mobile:</strong> ' + (student.mobNo || '') +
+          ' | <strong>Type:</strong> ' + (student.type || '') +
+          ' | <strong>Fee:</strong> ' + (student.feeType || '');
+        
+        // Show selected display
+        this.selectedDisplay.style.display = 'block';
+        
+        // Clear input and close dropdown
+        this.input.value = '';
+        this.closeDropdown();
+        
+        // Call onSelect callback
+        if (typeof this.options.onSelect === 'function') {
+          this.options.onSelect.call(this, student);
+        }
+      };
+      
+      // Clear selection
+      StudentSearch.prototype.clearSelection = function() {
+        this.hiddenId.value = '';
+        this.hiddenName.value = '';
+        this.hiddenClass.value = '';
+        this.selectedDisplay.style.display = 'none';
+      };
+      
+      // Set active item for keyboard navigation
+      StudentSearch.prototype.setActiveItem = function(items) {
+        if (!items || items.length === 0) return;
+        
+        // Remove active class from all items
+        for (var i = 0; i < items.length; i++) {
+          items[i].classList.remove('ss-item-active');
+        }
+        
+        // Adjust current focus
+        if (this.currentFocus >= items.length) this.currentFocus = 0;
+        if (this.currentFocus < 0) this.currentFocus = items.length - 1;
+        
+        // Add active class to current item
+        if (items[this.currentFocus]) {
+          items[this.currentFocus].classList.add('ss-item-active');
+        }
+      };
+      
+      // Open dropdown
+      StudentSearch.prototype.openDropdown = function() {
+        if (this.isOpen) return;
+        this.dropdown.classList.add('ss-dropdown-open');
+        this.isOpen = true;
+      };
+      
+      // Close dropdown
+      StudentSearch.prototype.closeDropdown = function() {
+        if (!this.isOpen) return;
+        this.dropdown.classList.remove('ss-dropdown-open');
+        this.isOpen = false;
+      };
+      
+      // Get test data
+      StudentSearch.prototype.getTestData = function() {
+        return [
+          {
+            srNo: '356',
+            name: 'Ruhi Nirmal',
+            dob: '10-10-2014',
+            mobNo: '7738984551',
+            fatherName: 'Suresh Kumar Nirmal',
+            motherName: 'Rekha Devi',
+            admNo: '356',
+            type: 'Old',
+            class: 'V-A',
+            feeType: 'Day-Scholar'
+          },
+          {
+            srNo: '357',
+            name: 'Aditya Sharma',
+            dob: '15-05-2014',
+            mobNo: '9876543210',
+            fatherName: 'Rajesh Sharma',
+            motherName: 'Sunita Devi',
+            admNo: '357',
+            type: 'Old',
+            class: 'V-A',
+            feeType: 'Day-Scholar'
+          },
+          {
+            srNo: '358',
+            name: 'Priya Patel',
+            dob: '22-08-2014',
+            mobNo: '8765432109',
+            fatherName: 'Vijay Patel',
+            motherName: 'Meena Devi',
+            admNo: '358',
+            type: 'Old',
+            class: 'V-B',
+            feeType: 'Hosteller'
+          },
+          {
+            srNo: '359',
+            name: 'Rahul Gupta',
+            dob: '05-03-2014',
+            mobNo: '7654321098',
+            fatherName: 'Sanjay Gupta',
+            motherName: 'Anita Devi',
+            admNo: '359',
+            type: 'New',
+            class: 'V-B',
+            feeType: 'Day-Scholar'
+          },
+          {
+            srNo: '360',
+            name: 'Neha Singh',
+            dob: '12-11-2014',
+            mobNo: '6543210987',
+            fatherName: 'Rakesh Singh',
+            motherName: 'Geeta Devi',
+            admNo: '360',
+            type: 'Old',
+            class: 'V-C',
+            feeType: 'Day-Scholar'
+          },
+          {
+            srNo: '361',
+            name: 'Saurabh Nirmal',
+            dob: '18-06-2012',
+            mobNo: '7738984551',
+            fatherName: 'Suresh Kumar Nirmal',
+            motherName: 'Rekha Devi',
+            admNo: '361',
+            type: 'Old',
+            class: 'VIII-A',
+            feeType: 'Day-Scholar'
+          },
+          {
+            srNo: '362',
+            name: 'Anshika Nirmal',
+            dob: '25-08-2012',
+            mobNo: '7738984551',
+            fatherName: 'Suresh Kumar Nirmal',
+            motherName: 'Rekha Devi',
+            admNo: '362',
+            type: 'Old',
+            class: 'VIII-B',
+            feeType: 'Day-Scholar'
+          }
+        ];
+      };
+      
+      // Add to window
+      window.StudentSearch = StudentSearch;
+    })(window);
+
+    // Initialize StudentSearch when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Create student search instance
+      var studentSearch = new StudentSearch('#studentSearch', {
+        placeholder: 'Type to search students...',
+        useTestData: true,
+        onSelect: function(student) {
+          console.log('Selected student:', student);
+        }
+      });
+      
+      // Handle form submission
+      document.getElementById('studentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        var studentId = document.querySelector('[name="studentSearch_id"]').value;
+        var studentName = document.querySelector('[name="studentSearch_name"]').value;
+        var studentClass = document.querySelector('[name="studentSearch_class"]').value;
+        
+        if (!studentId) {
+          alert('Please select a student');
+          return;
+        }
+        
+        var resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '<div style="padding: 15px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px;">' +
+          '<h3>Form Submitted</h3>' +
+          '<p><strong>Student ID:</strong> ' + studentId + '</p>' +
+          '<p><strong>Name:</strong> ' + studentName + '</p>' +
+          '<p><strong>Class:</strong> ' + studentClass + '</p>' +
+        '</div>';
+      });
+    });
+  </script>
+</body>
+</html>

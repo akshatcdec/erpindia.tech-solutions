@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+           elementFormDefault="qualified">
+
+	<!-- Root <DataSet> wrapper -->
+	<xs:element name="StudentDataSet" msdata:IsDataSet="true">
+		<xs:complexType>
+			<!-- Each DataTable goes inside <choice> -->
+			<xs:choice maxOccurs="unbounded">
+
+				<!-- DataTable: rpStudentExamInfo -->
+				<xs:element name="StudentExamInfo" msdata:Locale="en-US">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="StudentId"        type="xs:string"/>
+							<!-- GUID -->
+							<xs:element name="StudentName"      type="xs:string"/>
+							<xs:element name="MotherName"       type="xs:string"  minOccurs="0"/>
+							<xs:element name="FatherName"       type="xs:string"  minOccurs="0"/>
+							<xs:element name="ClassName"        type="xs:string"  minOccurs="0"/>
+							<xs:element name="Section"          type="xs:string"  minOccurs="0"/>
+							<xs:element name="RollNumber"       type="xs:string"  minOccurs="0"/>
+							<xs:element name="AdmissionNumber"  type="xs:string"  minOccurs="0"/>
+							<xs:element name="PhotoPath"        type="xs:string"  minOccurs="0"/>
+							<xs:element name="ExamId"           type="xs:string"  minOccurs="0"/>
+							<!-- GUID -->
+							<xs:element name="AdmitNote1"       type="xs:string"  minOccurs="0"/>
+							<xs:element name="AdmitNote2"       type="xs:string"  minOccurs="0"/>
+							<xs:element name="AdmitNote3"       type="xs:string"  minOccurs="0"/>
+							<xs:element name="AdmitNote4"       type="xs:string"  minOccurs="0"/>
+							<xs:element name="AdmitNote5"       type="xs:string"  minOccurs="0"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>

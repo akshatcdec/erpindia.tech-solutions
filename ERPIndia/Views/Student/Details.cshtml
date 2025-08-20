@@ -1,0 +1,962 @@
+﻿@model ERPIndia.StudentManagement.Models.StudentViewModel
+@{
+    ViewBag.Title = "Student Details";
+}
+
+<style>
+    .card {
+        margin-bottom: 20px;
+        break-inside: avoid;
+    }
+
+    .label-text {
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    .value-text {
+        font-weight: 400;
+    }
+
+    .profile-image {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+    }
+
+    .profile-image-sm {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+    }
+
+    .detail-row {
+        margin-bottom: 10px;
+    }
+
+    @@media print {
+        body {
+            background-color: white;
+            font-size: 12pt;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            page-break-inside: avoid;
+        }
+
+        .container-fluid {
+            width: 100%;
+            padding: 0;
+        }
+
+        .profile-image {
+            width: 100px;
+            height: 100px;
+        }
+
+        .profile-image-sm {
+            width: 70px;
+            height: 70px;
+        }
+    }
+</style>
+<div class="container-fluid" id="printableArea">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-user fs-16"></i>
+                            </span>
+                            <h4 class="text-dark mb-0">Student Details</h4>
+                        </div>
+                        <div class="no-print">
+                            <button onclick="printDetails()" class="btn btn-primary me-2">
+                                <i class="ti ti-printer"></i> Print
+                            </button>
+                            <a href="@Url.Action("Edit", new { id = Model.Basic.AdmsnNo })" class="btn btn-warning me-2">
+                                <i class="ti ti-edit"></i> Edit
+                            </a>
+                            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                                <i class="ti ti-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Personal Information -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-info-square-rounded fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Personal Information</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 text-center mb-4">
+                                    @if (!string.IsNullOrEmpty(Model.Basic.PhotoPath))
+                                    {
+                                        <img src="@Url.Content(Model.Basic.PhotoPath)" class="profile-image" alt="Student Photo" />
+                                    }
+                                    else
+                                    {
+                                        <div class="profile-image d-flex align-items-center justify-content-center bg-light">
+                                            <i class="ti ti-user fs-1 text-muted"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="row">
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Admission No</div>
+                                            <div class="value-text">@Model.Basic.AdmsnNo</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Admission Date</div>
+                                            <div class="value-text"></div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Roll No</div>
+                                            <div class="value-text">@Model.Basic.RollNo</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Name</div>
+                                            <div class="value-text">@Model.Basic.FirstName @Model.Basic.LastName</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Class</div>
+                                            <div class="value-text">@Model.Basic.Class</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Section</div>
+                                            <div class="value-text">@Model.Basic.Section</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Academic Year</div>
+                                            <div class="value-text">@Model.Basic.AcademicYear</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Status</div>
+                                            <div class="value-text">@Model.Basic.Status</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Gender</div>
+                                    <div class="value-text">@Model.Basic.Gender</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Date of Birth</div>
+                                    <div class="value-text"></div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Blood Group</div>
+                                    <div class="value-text">@Model.Basic.BloodGroup</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">House</div>
+                                    <div class="value-text">@Model.Basic.House</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Religion</div>
+                                    <div class="value-text">@Model.Basic.Religion</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Category</div>
+                                    <div class="value-text">@Model.Basic.Category</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Caste</div>
+                                    <div class="value-text">@Model.Basic.Caste</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Mother Tongue</div>
+                                    <div class="value-text">@Model.Basic.MotherTongue</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Mobile</div>
+                                    <div class="value-text">@Model.Basic.Mobile</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">WhatsApp</div>
+                                    <div class="value-text">@Model.Basic.WhatsAppNum</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Email</div>
+                                    <div class="value-text">@Model.Basic.Email</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Height</div>
+                                    <div class="value-text">@Model.Basic.Height</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Weight</div>
+                                    <div class="value-text">@Model.Basic.Weight</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Languages Known</div>
+                                    <div class="value-text">@Model.Basic.LanguagesKnown</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">SMS Enabled</div>
+                                    <div class="value-text">@(Model.Basic.SendSMS ? "Yes" : "No")</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Aadhar Number</div>
+                                    <div class="value-text">@Model.Basic.AadharNo</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Fee Category</div>
+                                    <div class="value-text">@Model.Basic.FeeCategory</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Discount Category</div>
+                                    <div class="value-text">@Model.Basic.DiscountCategory</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Personal Information -->
+                    <!-- Subject Information -->
+                    @if (Model.Basic.Subjects != null && Model.Basic.Subjects.Any())
+                    {
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <div class="d-flex align-items-center">
+                                    <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                        <i class="ti ti-books fs-16"></i>
+                                    </span>
+                                    <h5 class="text-dark">Subject Information</h5>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    @foreach (var subject in Model.Basic.Subjects.Where(s => s.IsSelected))
+                                    {
+                                        <div class="col-md-3 detail-row">
+                                            <div class="label-text">@subject.Name</div>
+                                            <div class="value-text">Selected</div>
+                                        </div>
+                                    }
+                                    @if (!Model.Basic.Subjects.Any(s => s.IsSelected))
+                                    {
+                                        <div class="col-md-12">
+                                            <p class="text-muted">No subjects selected</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <!-- /Subject Information -->
+                    <!-- Parents & Guardian Information -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-user-shield fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Parents & Guardian Information</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h6 class="mb-3">Father's Info</h6>
+                                </div>
+                                <div class="col-md-3 text-center mb-3">
+                                    @if (!string.IsNullOrEmpty(Model.Family.FatherPhotoPath))
+                                    {
+                                        <img src="@Url.Content(Model.Family.FatherPhotoPath)" class="profile-image-sm" alt="Father's Photo" />
+                                    }
+                                    else
+                                    {
+                                        <div class="profile-image-sm d-flex align-items-center justify-content-center bg-light">
+                                            <i class="ti ti-user fs-1 text-muted"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="row">
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Name</div>
+                                            <div class="value-text">@Model.Family.FName</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Email</div>
+                                            <div class="value-text">@Model.Family.FEmail</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Phone</div>
+                                            <div class="value-text">@Model.Family.FPhone</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Occupation</div>
+                                            <div class="value-text">@Model.Family.FOccupation</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Education</div>
+                                            <div class="value-text">@Model.Family.FEducation</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Aadhar</div>
+                                            <div class="value-text">@Model.Family.FAadhar</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Note</div>
+                                            <div class="value-text">@Model.Family.FNote</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h6 class="mb-3">Mother's Info</h6>
+                                </div>
+                                <div class="col-md-3 text-center mb-3">
+                                    @if (!string.IsNullOrEmpty(Model.Family.MotherPhotoPath))
+                                    {
+                                        <img src="@Url.Content(Model.Family.MotherPhotoPath)" class="profile-image-sm" alt="Mother's Photo" />
+                                    }
+                                    else
+                                    {
+                                        <div class="profile-image-sm d-flex align-items-center justify-content-center bg-light">
+                                            <i class="ti ti-user fs-1 text-muted"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="row">
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Name</div>
+                                            <div class="value-text">@Model.Family.MName</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Email</div>
+                                            <div class="value-text">@Model.Family.MEmail</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Phone</div>
+                                            <div class="value-text">@Model.Family.MPhone</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Occupation</div>
+                                            <div class="value-text">@Model.Family.MOccupation</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Education</div>
+                                            <div class="value-text">@Model.Family.MEducation</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Aadhar</div>
+                                            <div class="value-text">@Model.Family.MAadhar</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Note</div>
+                                            <div class="value-text">@Model.Family.MNote</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h6 class="mb-3">Guardian's Info</h6>
+                                </div>
+                                <div class="col-md-3 text-center mb-3">
+                                    @if (!string.IsNullOrEmpty(Model.Family.GuardianPhotoPath))
+                                    {
+                                        <img src="@Url.Content(Model.Family.GuardianPhotoPath)" class="profile-image-sm" alt="Guardian's Photo" />
+                                    }
+                                    else
+                                    {
+                                        <div class="profile-image-sm d-flex align-items-center justify-content-center bg-light">
+                                            <i class="ti ti-user fs-1 text-muted"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="row">
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Guardian Type</div>
+                                            <div class="value-text">@Model.Family.GuardianType</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Name</div>
+                                            <div class="value-text">@Model.Family.GName</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Relation</div>
+                                            <div class="value-text">@Model.Family.GRelation</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Phone</div>
+                                            <div class="value-text">@Model.Family.GPhone</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Email</div>
+                                            <div class="value-text">@Model.Family.GEmail</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Occupation</div>
+                                            <div class="value-text">@Model.Family.GOccupation</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Education</div>
+                                            <div class="value-text">@Model.Family.GEducation</div>
+                                        </div>
+                                        <div class="col-md-4 detail-row">
+                                            <div class="label-text">Remark</div>
+                                            <div class="value-text">@Model.Family.GRemark</div>
+                                        </div>
+                                        <div class="col-md-12 detail-row">
+                                            <div class="label-text">Address</div>
+                                            <div class="value-text">@Model.Family.GAddress</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Parents & Guardian Information -->
+                    <!-- Address -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-map fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Address</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 detail-row">
+                                    <div class="label-text">Current Address</div>
+                                    <div class="value-text">@Model.Family.StCurrentAddress</div>
+                                </div>
+                                <div class="col-md-6 detail-row">
+                                    <div class="label-text">Permanent Address</div>
+                                    <div class="value-text">@Model.Family.StPermanentAddress</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Address -->
+                    <!-- Siblings -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-users fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Siblings</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 detail-row">
+                                    <div class="label-text">Is Sibling in Same School</div>
+                                    <div class="value-text">@(Model.Family.IsSiblingInSameSchool == true ? "Yes" : "No")</div>
+                                </div>
+
+                                @if (Model.Family.IsSiblingInSameSchool == true && Model.Family.Siblings != null && Model.Family.Siblings.Any())
+                                {
+                                    <div class="col-md-12 mt-2">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Class</th>
+                                                    <th>Roll No</th>
+                                                    <th>Admission No</th>
+                                                    <th>Father's Name</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var sibling in Model.Family.Siblings)
+                                                {
+                                                    <tr>
+                                                        <td>@sibling.Name</td>
+                                                        <td>@sibling.Class</td>
+                                                        <td>@sibling.RollNo</td>
+                                                        <td>@sibling.AdmissionNo</td>
+                                                        <td>@sibling.FatherName</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Siblings -->
+                    <!-- Transport Information -->
+                    @if (Model.Family.TransportNeeded == true)
+                    {
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <div class="d-flex align-items-center">
+                                    <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                        <i class="ti ti-bus-stop fs-16"></i>
+                                    </span>
+                                    <h5 class="text-dark">Transport Information</h5>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 detail-row">
+                                        <div class="label-text">Route</div>
+                                        <div class="value-text">@Model.Family.Route</div>
+                                    </div>
+                                    <div class="col-md-4 detail-row">
+                                        <div class="label-text">Vehicle Number</div>
+                                        <div class="value-text">@Model.Family.VehicleNumber</div>
+                                    </div>
+                                    <div class="col-md-4 detail-row">
+                                        <div class="label-text">Pickup Point</div>
+                                        <div class="value-text">@Model.Basic.PickupPoint</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <!-- /Transport Information -->
+                    <!-- Hostel Information -->
+                    @if (Model.Family.HostelNeeded == true)
+                    {
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <div class="d-flex align-items-center">
+                                    <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                        <i class="ti ti-building-fortress fs-16"></i>
+                                    </span>
+                                    <h5 class="text-dark">Hostel Information</h5>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 detail-row">
+                                        <div class="label-text">Hostel</div>
+                                        <div class="value-text">@Model.Family.HostelDetail</div>
+                                    </div>
+                                    <div class="col-md-6 detail-row">
+                                        <div class="label-text">Room Number</div>
+                                        <div class="value-text">@Model.Family.HostelNo</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <!-- /Hostel Information -->
+                    <!-- Documents -->
+                    <!-- Documents -->
+                    @if (!string.IsNullOrEmpty(Model.Other.UploadTitle1) || !string.IsNullOrEmpty(Model.Other.UploadTitle2) ||
+                        !string.IsNullOrEmpty(Model.Other.UploadTitle3) || !string.IsNullOrEmpty(Model.Other.UploadTitle4))
+                    {
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <div class="d-flex align-items-center">
+                                    <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                        <i class="ti ti-file fs-16"></i>
+                                    </span>
+                                    <h5 class="text-dark">Documents</h5>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    @if (!string.IsNullOrEmpty(Model.Other.UploadTitle1))
+                                    {
+                                        <div class="col-md-6 detail-row">
+                                            <div class="label-text">@Model.Other.UploadTitle1</div>
+                                            <div class="value-text">
+                                                <span class="text-muted">Document uploaded</span>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Other.UploadTitle2))
+                                    {
+                                        <div class="col-md-6 detail-row">
+                                            <div class="label-text">@Model.Other.UploadTitle2</div>
+                                            <div class="value-text">
+                                                <span class="text-muted">Document uploaded</span>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Other.UploadTitle3))
+                                    {
+                                        <div class="col-md-6 detail-row">
+                                            <div class="label-text">@Model.Other.UploadTitle3</div>
+                                            <div class="value-text">
+                                                <span class="text-muted">Document uploaded</span>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Other.UploadTitle4))
+                                    {
+                                        <div class="col-md-6 detail-row">
+                                            <div class="label-text">@Model.Other.UploadTitle4</div>
+                                            <div class="value-text">
+                                                <span class="text-muted">Document uploaded</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <!-- /Documents -->
+                    <!-- /Documents -->
+                    <!-- Medical History -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-medical-cross fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Medical History</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 detail-row">
+                                    <div class="label-text">Medical Condition</div>
+                                    <div class="value-text">@Model.Other.MedicalCondition</div>
+                                </div>
+                                <div class="col-md-4 detail-row">
+                                    <div class="label-text">Allergies</div>
+                                    <div class="value-text">
+                                        @if (!string.IsNullOrEmpty(Model.Other.Allergies))
+                                        {
+                                            foreach (var allergy in Model.Other.Allergies.Split(','))
+                                            {
+                                                <span class="badge bg-light text-dark me-1 mb-1">@allergy.Trim()</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">None</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-4 detail-row">
+                                    <div class="label-text">Medications</div>
+                                    <div class="value-text">
+                                        @if (!string.IsNullOrEmpty(Model.Other.Medications))
+                                        {
+                                            foreach (var medication in Model.Other.Medications.Split(','))
+                                            {
+                                                <span class="badge bg-light text-dark me-1 mb-1">@medication.Trim()</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">None</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Medical History -->
+                    <!-- Previous School Details -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-building fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Previous School Details</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 detail-row">
+                                    <div class="label-text">School Name</div>
+                                    <div class="value-text">@Model.Other.PreviousSchoolDtl</div>
+                                </div>
+                                <div class="col-md-6 detail-row">
+                                    <div class="label-text">Address</div>
+                                    <div class="value-text">@Model.Other.PreviousSchoolAddress</div>
+                                </div>
+                                <div class="col-md-6 detail-row">
+                                    <div class="label-text">UDISE Code</div>
+                                    <div class="value-text">@Model.Other.UdiseCode</div>
+                                </div>
+                                <div class="col-md-6 detail-row">
+                                    <div class="label-text">School Note</div>
+                                    <div class="value-text">@Model.Other.SchoolNote</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Previous School Details -->
+                    <!-- Educational Details -->
+                    @if (Model.Other.EducationDetails != null && Model.Other.EducationDetails.Any())
+                    {
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <div class="d-flex align-items-center">
+                                    <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                        <i class="ti ti-school fs-16"></i>
+                                    </span>
+                                    <h5 class="text-dark">Educational Details</h5>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Class</th>
+                                                <th>Roll No</th>
+                                                <th>Maximum Marks</th>
+                                                <th>Obtained Marks</th>
+                                                <th>Percentage</th>
+                                                <th>Board</th>
+                                                <th>Passing Year</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.Other.EducationDetails.Select((education, index) => new { education, index }))
+                                            {
+                                                <tr>
+                                                    <td>@(item.index + 1)</td>
+                                                    <td>@item.education.Class</td>
+                                                    <td>@item.education.RollNo</td>
+                                                    <td>@item.education.MaximumMarks</td>
+                                                    <td>@item.education.ObtainedMarks</td>
+                                                    <td>@item.education.Percentage%</td>
+                                                    <td>@item.education.Board</td>
+                                                    <td>@item.education.PassingYear</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="row mt-3">
+                                    @foreach (var item in Model.Other.EducationDetails.Select((education, index) => new { education, index }))
+                                    {
+                                        <div class="col-md-6 detail-row">
+                                            <div class="label-text">Subjects (Record #@(item.index + 1))</div>
+                                            <div class="value-text">@item.education.Subjects</div>
+                                        </div>
+                                        <div class="col-md-6 detail-row">
+                                            <div class="label-text">Other Details (Record #@(item.index + 1))</div>
+                                            <div class="value-text">@item.education.Others</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <!-- /Educational Details -->
+                    <!-- Banking & Other Details -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-building-bank fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Banking & Other Details</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Bank Name</div>
+                                    <div class="value-text">@Model.Other.BankName</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Branch</div>
+                                    <div class="value-text">@Model.Other.BankBranch</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Account Number</div>
+                                    <div class="value-text">@Model.Other.BankAcNo</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">IFSC Code</div>
+                                    <div class="value-text">@Model.Other.IfscCode</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">NAD ID</div>
+                                    <div class="value-text">@Model.Other.NADID</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Identity Local</div>
+                                    <div class="value-text">@Model.Other.IDentityLocal</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Identity Other</div>
+                                    <div class="value-text">@Model.Other.IdentityOther</div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-12 detail-row">
+                                    <div class="label-text">Additional Information</div>
+                                    <div class="value-text">@Model.Other.OtherInformation</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Banking & Other Details -->
+                    <!-- Miscellaneous Details -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                    <i class="ti ti-asterisk fs-16"></i>
+                                </span>
+                                <h5 class="text-dark">Miscellaneous Details</h5>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">PEN Number</div>
+                                    <div class="value-text">@Model.Basic.PENNo</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">Old Balance</div>
+                                    <div class="value-text">@Model.Basic.OldBalance</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">SR Number</div>
+                                    <div class="value-text">@Model.Basic.SrNo</div>
+                                </div>
+                                <div class="col-md-3 detail-row">
+                                    <div class="label-text">User ID</div>
+                                    <div class="value-text">@Model.Basic.UserId</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Miscellaneous Details -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function printDetails() {
+        window.print();
+    }
+
+    // Add footer and header info for printed pages
+    window.onbeforeprint = function() {
+        // Create custom headers/footers for the printed page
+        var header = document.createElement('div');
+        header.classList.add('print-header');
+        header.innerHTML = '<div class="text-center py-2"><h3>@ViewBag.SchoolName</h3><p>Student Details - @Model.Basic.FirstName @Model.Basic.LastName</p></div>';
+
+        var footer = document.createElement('div');
+        footer.classList.add('print-footer');
+        footer.innerHTML = '<div class="text-center py-2"><p>Generated on: ' + new Date().toLocaleDateString() + '</p></div>';
+
+        document.body.insertBefore(header, document.body.firstChild);
+        document.body.appendChild(footer);
+    };
+
+    window.onafterprint = function() {
+        // Clean up the header and footer after printing
+        var header = document.querySelector('.print-header');
+        var footer = document.querySelector('.print-footer');
+
+        if (header) header.parentNode.removeChild(header);
+        if (footer) footer.parentNode.removeChild(footer);
+    };
+
+    // Initialize any necessary components when the document is ready
+    $(document).ready(function() {
+        // Format any dates that need special formatting
+        $('.date-format').each(function() {
+            var date = $(this).text();
+            if (date && date.trim() !== '') {
+                try {
+                    var formattedDate = new Date(date).toLocaleDateString('en-GB');
+                    $(this).text(formattedDate);
+                } catch (e) {
+                    console.error('Error formatting date', e);
+                }
+            }
+        });
+    });
+</script>
+
+<style>
+    /* Additional print styles */
+    @@media print {
+        .print-header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            border-bottom: 1px solid #ddd;
+            background-color: white;
+        }
+
+        .print-footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border-top: 1px solid #ddd;
+            background-color: white;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .detail-row {
+            margin-bottom: 0.5rem;
+        }
+        /* Ensure page breaks don't happen in the middle of a section */
+        .card {
+            page-break-inside: avoid;
+        }
+        /* Add some space for the header and footer */
+        body {
+            margin-top: 1.5cm;
+            margin-bottom: 1.5cm;
+        }
+        /* Hide certain elements when printing */
+        .btn, button {
+            display: none !important;
+        }
+        /* Make sure text is readable when printed */
+        .value-text {
+            color: #000 !important;
+        }
+        /* Better alignment for tables when printing */
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+        }
+
+        th, td {
+            padding: 0.25rem !important;
+            border: 1px solid #ddd !important;
+        }
+    }
+</style>

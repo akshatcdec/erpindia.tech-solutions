@@ -1,0 +1,286 @@
+﻿@model ERPK12Models.ViewModel.GatePass.GatePassHistoryViewModel
+
+<div class="modal-body">
+    <!-- Student Information -->
+    <div class="alert alert-info">
+        <h6 class="mb-1"><i class="fas fa-user"></i> Gate Pass History for: <strong>@Model.StudentName</strong></h6>
+    </div>
+
+    <!-- Gate Pass History Gridview -->
+    @if (Model.GatePasses != null && Model.GatePasses.Any())
+    {
+        <div class="table-container">
+            <table class="table table-sm table-striped table-hover gate-pass-table">
+                <thead class="sticky-top bg-light">
+                    <tr>
+                        <th class="col-sr">Sr</th>
+                        <th class="col-print text-center">Print</th>
+                        <th class="col-pass">Pass No.</th>
+                        <th class="col-date">Date</th>
+                        <th class="col-time text-center">In</th>
+                        <th class="col-time text-center">Out</th>
+                        <th class="col-guardian">Guardian</th>
+                        <th class="col-relation">Relation</th>
+                        <th class="col-mobile">Mobile</th>
+                        <th class="col-reason">Reason</th>
+                        <th class="col-delete text-center">Del</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{int srno = 1;}
+                    @foreach (var gp in Model.GatePasses
+                                            .OrderByDescending(g => g.Date)
+                                            .ThenByDescending(g => g.TimeOut))
+                    {
+                        <tr id="row-@gp.Id">
+                            <td class="text-center">@srno</td>
+
+                            <!-- Print Column -->
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-info" onclick="printGatePass('@gp.Id')" title="Print">
+                                    <i class="fas fa-print"></i>
+                                    @if (gp.PrintCount > 0)
+                                    {
+                                        <span class="badge bg-danger print-count-badge">
+                                            @gp.PrintCount
+                                        </span>
+                                    }
+                                </button>
+                            </td>
+
+                            <!-- Pass Number -->
+                            <td><span class="badge bg-primary">@gp.PassNo</span></td>
+
+                            <!-- Date -->
+                            <td>
+                                <strong class="date-text">@gp.Date.ToString("dd-MMM-yyyy")</strong><br />
+                                <small class="text-muted">@gp.Date.ToString("ddd")</small>
+                            </td>
+
+                            <!-- Time In -->
+                            <td class="text-center">
+                                <span class="badge bg-success time-badge">@gp.D16</span>
+                            </td>
+
+                            <!-- Time Out -->
+                            <td class="text-center">
+                                <span class="badge bg-danger time-badge">@gp.D17</span>
+                            </td>
+
+                            <!-- Guardian -->
+                            <td class="text-truncate-custom" title="@(gp.ParentGuardianName ?? "N/A")">
+                                <strong>@(gp.ParentGuardianName ?? "N/A")</strong>
+                            </td>
+
+                            <!-- Relation - Hidden on smaller screens -->
+                            <td class="text-center">
+                                <small class="text-muted">@(gp.RelationshipToStudent ?? "N/A")</small>
+                            </td>
+
+                            <!-- Mobile - Hidden on smaller screens -->
+                            <td class="text-center">
+                                <span class="badge bg-purple">@(gp.GuardianMobile ?? "N/A")</span>
+                            </td>
+
+                            <!-- Reason -->
+                            <td class="text-truncate-custom" title="@(gp.ReasonFor ?? "")">
+                                @{
+                                    var reason = gp.ReasonFor ?? "";
+                                    var shortReason = reason.Length > 25
+                                        ? reason.Substring(0, 25) + "…"
+                                        : reason;
+                                }
+                                <small class="text-muted font-italic">@shortReason</small>
+                            </td>
+
+                            <!-- Delete -->
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-danger"
+                                        onclick="deleteGatePassFromHistory('@gp.Id')"
+                                        title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        srno = srno + 1;
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Hidden field to store student ID for export -->
+        <input type="hidden" id="exportStudentId" value="@Model.GatePasses.First().StudentId" />
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No gate pass history found</h5>
+            <p class="text-muted">This student has not been issued any gate passes yet.</p>
+        </div>
+    }
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="fas fa-times"></i> Close
+    </button>
+    @*@if (Model.GatePasses != null && Model.GatePasses.Any())
+    {
+        <button type="button" class="btn btn-primary" onclick="exportHistory()">
+            <i class="fas fa-file-excel"></i> Export to Excel
+        </button>
+    }*@
+</div>
+
+<script>
+// Your existing JavaScript functions remain the same
+function deleteGatePassFromHistory(id) {
+    deleteGatePass(id);
+}
+
+function exportHistory() {
+    var studentId = $('#exportStudentId').val();
+    if (!studentId) {
+        showAlert('Unable to export: Student ID not found', 'error');
+        return;
+    }
+
+    var exportBtn = $('button[onclick="exportHistory()"]');
+    var originalHtml = exportBtn.html();
+    exportBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+    var form = $('<form>', {
+        method: 'POST',
+        action: '@Url.Action("ExportHistory", "GatePass")'
+    });
+
+    form.append($('<input>', {
+        type: 'hidden',
+        name: 'studentId',
+        value: studentId
+    }));
+
+    form.append($('<input>', {
+        type: 'hidden',
+        name: '__RequestVerificationToken',
+        value: $('input[name="__RequestVerificationToken"]').first().val()
+    }));
+
+    form.appendTo('body').submit().remove();
+
+    setTimeout(function() {
+        exportBtn.prop('disabled', false).html(originalHtml);
+    }, 2000);
+}
+
+$(document).ready(function() {
+    $('[data-bs-dismiss="modal"]').on('click', function() {
+        closeModal();
+    });
+});
+</script>
+
+<style>
+/* Enhanced CSS for better table display */
+.gate-pass-table {
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+.gate-pass-table th,
+.gate-pass-table td {
+    padding: 6px 4px;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+}
+
+/* Column width optimization */
+.col-sr { width: 40px; }
+.col-print { width: 60px; }
+.col-pass { width: 110px; }
+.col-date { width: 110px; }
+.col-time { width: 80px; }
+.col-guardian { width: 120px; max-width: 120px; }
+.col-relation { width: 80px; }
+.col-mobile { width: 110px; }
+.col-reason { width: 140px; max-width: 140px; }
+.col-delete { width: 50px; }
+
+/* Text truncation for long content */
+.text-truncate-custom {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Table container with controlled height */
+.table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+/* Sticky header */
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f8f9fa !important;
+}
+
+/* Badge improvements */
+.badge {
+    font-size: 0.7rem;
+}
+
+.time-badge {
+    font-size: 0.65rem;
+}
+
+.date-text {
+    font-size: 0.8rem;
+}
+
+/* Print count badge positioning */
+.print-count-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 9px;
+}
+
+/* Button improvements */
+.btn-sm {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.75rem;
+}
+
+/* Responsive behavior */
+@@media (max-width: 1199px) {
+    .d-xl-table-cell {
+        display: none !important;
+    }
+}
+
+/* Remove the problematic table-responsive class behavior */
+.table-container::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+</style>

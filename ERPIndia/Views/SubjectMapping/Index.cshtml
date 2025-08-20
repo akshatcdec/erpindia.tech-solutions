@@ -1,0 +1,684 @@
+﻿@{
+    ViewBag.Title = "Subject Mapping";
+}
+
+<div class="loading" id="loadingSpinner">
+    <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2" id="loadingMessage">Loading configuration data...</p>
+    </div>
+</div>
+
+<!-- Validation Modal -->
+<div class="modal fade" id="validationModal" tabindex="-1" aria-labelledby="validationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="validationModalLabel">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Some subject mappings for the selected combinations already exist. Would you like to replace them?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSave">Yes, Replace</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <!-- Main Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h4 class="card-title">Subject Mapping Information</h4>
+                </div>
+                <div class="card-body">
+                    <form id="subjectMappingForm">
+                        <!-- Grid-based layout for selection options -->
+                        <div class="row mb-4">
+                            <!-- Class Column -->
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Class</h5>
+                                        <a href="/AcademicClass/ManageClasses"  class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    </div>
+                                    <div class="card-body" id="classContainer">
+                                        <!-- Class checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section Column -->
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Section</h5>
+                                        <a  href="AcademicSection/ManageSections"  class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    </div>
+                                    <div class="card-body" id="sectionContainer">
+                                        <!-- Section checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subject Column -->
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Subject</h5>
+                                        <a  href="academicsubject/managesubjects" class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    </div>
+                                    <div class="card-body" id="subjectContainer">
+                                        <!-- Subject checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12 text-end">
+                                <button type="button" id="btnSave" class="btn btn-lg btn-warning">
+                                    <i class="fa fa-save" aria-hidden="true"></i>
+                                    Save Mapping
+                                </button></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table Section -->
+        <div class="col-12 mt-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h4 class="card-title">Subject Mappings List</h4>
+                    <div class="card-tools">
+                        <!-- Filter Controls -->
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <select id="filterClass" class="form-select form-select-sm">
+                                    <option value="">All Classes</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select id="filterSection" class="form-select form-select-sm">
+                                    <option value="">All Sections</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select id="filterSubject" class="form-select form-select-sm">
+                                    <option value="">All Subjects</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="subjectMappingTable" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Class</th>
+                                    <th>Section</th>
+                                    <th>Subject</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .checkbox-header {
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 10;
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .checkbox-container {
+        scrollbar-width: thin;
+    }
+
+        .checkbox-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .checkbox-container::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 3px;
+        }
+
+    .checkbox-counter {
+        font-size: 0.8rem;
+        text-align: right;
+    }
+
+    .card-header h5 {
+        transition: all 0.3s ease;
+    }
+
+    .card-header {
+        background-color: #e9ecef;
+      
+    }
+
+       
+    .select-all-btn {
+        font-size: 0.8rem;
+        padding: 2px 6px;
+    }
+
+    .loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 9999;
+    }
+
+    .loading-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+    }
+</style>
+
+<script type="text/javascript">
+// Data variables
+var classData = [];
+var sectionData = [];
+var subjectData = [];
+var existingMappings = [];
+var clientId = '@Session["UserId"]';
+
+// Bootstrap modal instance
+var validationModal;
+
+$(document).ready(function () {
+    // Initialize DataTable
+    $('#subjectMappingTable').DataTable({
+        processing: true,
+        serverSide: false,
+        data: [],
+        order: [
+            [1, 'asc'], // ClassName
+            [2, 'asc'], // SectionName
+            [3, 'asc']  // SubjectName
+        ],
+        columns: [
+            { data: "Id", visible: false },
+            { data: "ClassName" },
+            { data: "SectionName" },
+            { data: "SubjectName" },
+            {
+                data: null,
+                orderable: false,
+                className: "text-center",
+                render: function (data, type, row) {
+                    return '<button class="btn btn-danger btn-sm delete-mapping" data-id="' + row.Id + '"><i class="fa fa-trash"></i></button>';
+                }
+            }
+        ],
+        language: {
+            emptyTable: "No subject mapping records found"
+        }
+    });
+
+    // Initialize Bootstrap modal
+    validationModal = new bootstrap.Modal(document.getElementById('validationModal'));
+
+    // Set up event handlers
+    setupEventHandlers();
+
+    // Load all initial data
+    loadConfigurationData();
+    loadSubjectMappingData();
+});
+
+function setupEventHandlers() {
+    // Search functionality
+    $(document).on('input', '.checkbox-search', function () {
+        const searchTerm = $(this).val().toLowerCase();
+        const targetName = $(this).data('target');
+
+        $(`input[name="${targetName}"]`).each(function () {
+            const label = $(`label[for="${this.id}"]`).text().toLowerCase();
+            const matching = label.includes(searchTerm);
+            $(this).closest('.form-check').toggle(matching);
+        });
+
+        updateCheckboxCounter(targetName);
+    });
+
+    // Select all functionality
+    $(document).on('click', '.select-all-btn', function () {
+        const targetName = $(this).data('target');
+        const allChecked = $(`input[name="${targetName}"]:checked:visible`).length ===
+                          $(`input[name="${targetName}"]:visible`).length;
+
+        $(`input[name="${targetName}"]:visible`).prop('checked', !allChecked);
+        updateCheckboxCounter(targetName);
+    });
+
+    // Update counter when checkboxes change
+    $(document).on('change', 'input[type="checkbox"]', function () {
+        updateCheckboxCounter($(this).attr('name'));
+    });
+
+    // Save button click
+    $('#btnSave').click(function () {
+        validateAndSave();
+    });
+
+    // Confirm save button click
+    $('#confirmSave').click(function () {
+        validationModal.hide();
+        saveSubjectMapping(true);
+    });
+
+    // Delete mapping click
+    $(document).on('click', '.delete-mapping', function() {
+        var mappingId = $(this).data('id');
+        if (confirm('Are you sure you want to delete this subject mapping?')) {
+            deleteSubjectMapping(mappingId);
+        }
+    });
+
+    // Filter change handlers
+    $('#filterClass, #filterSection, #filterSubject').change(function() {
+        loadSubjectMappingData();
+    });
+}
+
+function loadConfigurationData() {
+    $('#loadingSpinner').show();
+    $('#loadingMessage').text('Loading configuration data...');
+
+    Promise.all([
+        // Get classes
+        $.ajax({
+            url: '@Url.Action("GetClasses", "Dropdown")',
+            type: 'GET',
+            dataType: 'json'
+        }),
+        // Get sections
+        $.ajax({
+            url: '@Url.Action("GetSections", "Dropdown")',
+            type: 'GET',
+            dataType: 'json'
+        }),
+        // Get subjects
+        $.ajax({
+            url: '@Url.Action("GetSubjects", "Dropdown")',
+            type: 'GET',
+            dataType: 'json'
+        })
+    ])
+    .then(function(responses) {
+        // Process classes
+        if (responses[0].success) {
+            classData = responses[0].data.map(item => ({ id: item.Id, name: item.Name }));
+            loadClasses();
+        }
+
+        // Process sections
+        if (responses[1].success) {
+            sectionData = responses[1].data.map(item => ({ id: item.Id, name: item.Name }));
+            loadSections();
+        }
+
+        // Process subjects
+        if (responses[2].success) {
+            subjectData = responses[2].data.map(item => ({ id: item.Id, name: item.Name }));
+            loadSubjects();
+        }
+
+        // Populate filter dropdowns
+        populateFilterDropdowns();
+
+        // Load existing mappings
+        loadExistingMappings();
+
+        $('#loadingSpinner').hide();
+    })
+    .catch(function(error) {
+        console.error('Error loading configuration data:', error);
+        $('#loadingSpinner').hide();
+        alert('Error loading configuration data. Please try again.');
+    });
+}
+
+function createCheckboxes(data, name) {
+    if (!data || data.length === 0) {
+        return '<div class="alert alert-warning">No data available</div>';
+    }
+
+    let html = `
+    <div class="mb-2 checkbox-header">
+        <div class="input-group input-group-sm">
+            <input type="text" class="form-control form-control-sm checkbox-search"
+                   placeholder="Search..." data-target="${name}">
+            <div class="input-group-append">
+                <button class="btn btn-sm btn-outline-secondary select-all-btn"
+                        type="button" data-target="${name}">All</button>
+            </div>
+        </div>
+    </div>`;
+
+    html += `<div class="checkbox-container" style="${data.length > 6 ? 'height: 240px; overflow-y: auto;' : ''}">`
+
+    data.forEach((item) => {
+        html += `
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="${name}${item.id}"
+                   name="${name}" value="${item.id}">
+            <label class="form-check-label" for="${name}${item.id}">${item.name}</label>
+        </div>`;
+    });
+
+    html += '</div>';
+
+    html += `
+    <div class="mt-2 small text-muted checkbox-counter">
+        <span class="selected-count">0</span> of <span class="total-count">${data.length}</span> selected
+    </div>`;
+
+    return html;
+}
+
+function loadClasses() {
+    $('#classContainer').html(createCheckboxes(classData, 'CLASS'));
+}
+
+function loadSections() {
+    $('#sectionContainer').html(createCheckboxes(sectionData, 'SECTION'));
+}
+
+function loadSubjects() {
+    $('#subjectContainer').html(createCheckboxes(subjectData, 'SUBJECT'));
+}
+
+function populateFilterDropdowns() {
+    // Classes dropdown
+    let classOptions = '<option value="">All Classes</option>';
+    classData.forEach(item => {
+        classOptions += `<option value="${item.id}">${item.name}</option>`;
+    });
+    $('#filterClass').html(classOptions);
+
+    // Sections dropdown
+    let sectionOptions = '<option value="">All Sections</option>';
+    sectionData.forEach(item => {
+        sectionOptions += `<option value="${item.id}">${item.name}</option>`;
+    });
+    $('#filterSection').html(sectionOptions);
+
+    // Subjects dropdown
+    let subjectOptions = '<option value="">All Subjects</option>';
+    subjectData.forEach(item => {
+        subjectOptions += `<option value="${item.id}">${item.name}</option>`;
+    });
+    $('#filterSubject').html(subjectOptions);
+}
+
+function updateCheckboxCounter(name) {
+    const totalVisible = $(`input[name="${name}"]:visible`).length;
+    const totalSelected = $(`input[name="${name}"]:checked`).length;
+
+    const counterElement = $(`input[name="${name}"]`).closest('.card-body').find('.checkbox-counter');
+    counterElement.find('.selected-count').text(totalSelected);
+    counterElement.find('.total-count').text(totalVisible);
+
+    const headerElement = $(`input[name="${name}"]`).closest('.card').find('.card-header h5');
+    headerElement.toggleClass('text-primary font-weight-bold', totalSelected > 0);
+}
+
+function loadExistingMappings() {
+    $.ajax({
+        url: '@Url.Action("GetExistingMappings", "SubjectMapping")',
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            if (Array.isArray(response)) {
+                existingMappings = response;
+            } else {
+                existingMappings = [];
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error loading existing mappings:', error);
+            existingMappings = [];
+        }
+    });
+}
+
+function loadSubjectMappingData() {
+    $('#loadingSpinner').show();
+    $('#loadingMessage').text('Loading subject mapping data...');
+
+    $.ajax({
+        url: '@Url.Action("GetSubjectMappingList", "SubjectMapping")',
+        type: 'GET',
+        data: {
+            classId: $('#filterClass').val() || '',
+            sectionId: $('#filterSection').val() || '',
+            subjectId: $('#filterSubject').val() || ''
+        },
+        dataType: 'json',
+        success: function(response) {
+            $('#loadingSpinner').hide();
+
+            if (response.error) {
+                console.error('Error loading subject mapping data:', response.error);
+                alert('Failed to load subject mapping data: ' + response.error);
+                return;
+            }
+
+            var table = $('#subjectMappingTable').DataTable();
+            table.clear();
+
+            if (Array.isArray(response) && response.length > 0) {
+                table.rows.add(response).draw();
+            } else {
+                table.draw();
+            }
+        },
+        error: function(xhr, status, error) {
+            $('#loadingSpinner').hide();
+            console.error('Error loading subject mapping data:', error);
+            alert('Failed to load subject mapping data. Please try again.');
+        }
+    });
+}
+
+function validateAndSave() {
+    var classes = getSelectedValues('CLASS');
+    var sections = getSelectedValues('SECTION');
+    var subjects = getSelectedValues('SUBJECT');
+
+    if (classes.length === 0) {
+        alert('Please select at least one Class');
+        return;
+    }
+
+    if (sections.length === 0) {
+        alert('Please select at least one Section');
+        return;
+    }
+
+    if (subjects.length === 0) {
+        alert('Please select at least one Subject');
+        return;
+    }
+
+    var hasExistingMappings = checkForExistingMappings(classes, sections, subjects);
+
+    if (hasExistingMappings) {
+        validationModal.show();
+    } else {
+        saveSubjectMapping(false);
+    }
+}
+
+function checkForExistingMappings(classes, sections, subjects) {
+    if (existingMappings.length === 0) {
+        return false;
+    }
+
+    for (var i = 0; i < classes.length; i++) {
+        for (var j = 0; j < sections.length; j++) {
+            for (var k = 0; k < subjects.length; k++) {
+                var exists = existingMappings.some(mapping =>
+                    mapping.ClassID == classes[i] &&
+                    mapping.SectionID == sections[j] &&
+                    mapping.SubjectID == subjects[k]
+                );
+
+                if (exists) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+function saveSubjectMapping(forceOverride) {
+    var selectedClasses = getSelectedValues('CLASS');
+    var selectedSections = getSelectedValues('SECTION');
+    var selectedSubjects = getSelectedValues('SUBJECT');
+
+    $('#loadingSpinner').show();
+    $('#loadingMessage').text('Saving subject mappings...');
+
+    var successCount = 0;
+    var errorCount = 0;
+    var totalRequests = selectedClasses.length * selectedSections.length * selectedSubjects.length;
+    var completedRequests = 0;
+
+    function checkAllComplete() {
+        completedRequests++;
+        if (completedRequests >= totalRequests) {
+            $('#loadingSpinner').hide();
+
+            if (errorCount > 0) {
+                alert(`Subject mapping process completed with ${successCount} successful entries and ${errorCount} errors.`);
+            } else {
+                alert('Subject mapping process completed successfully!');
+            }
+            resetForm();
+            loadExistingMappings();
+            loadSubjectMappingData();
+        }
+    }
+
+    // Generate all combinations
+    for (var i = 0; i < selectedClasses.length; i++) {
+        for (var j = 0; j < selectedSections.length; j++) {
+            for (var k = 0; k < selectedSubjects.length; k++) {
+                var mappingModel = {
+                    ClassID: selectedClasses[i],
+                    SectionID: selectedSections[j],
+                    SubjectID: selectedSubjects[k],
+                    IsActive: true
+                };
+
+                $.ajax({
+                    url: '@Url.Action("CreateSubjectMapping", "SubjectMapping")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(mappingModel),
+                    success: function (response) {
+                        if (response.success) {
+                            successCount++;
+                        } else {
+                            console.error('Error saving subject mapping:', response.message);
+                            errorCount++;
+                        }
+                        checkAllComplete();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('AJAX error:', error);
+                        errorCount++;
+                        checkAllComplete();
+                    }
+                });
+            }
+        }
+    }
+
+    if (totalRequests === 0) {
+        $('#loadingSpinner').hide();
+        alert('No subject mapping combinations to save.');
+    }
+}
+
+function deleteSubjectMapping(mappingId) {
+    $('#loadingSpinner').show();
+    $('#loadingMessage').text('Deleting subject mapping...');
+
+    $.ajax({
+        url: '@Url.Action("DeleteSubjectMapping", "SubjectMapping")',
+        type: 'POST',
+        data: { id: mappingId },
+        success: function(response) {
+            $('#loadingSpinner').hide();
+
+            if (response.success) {
+                alert('Subject mapping deleted successfully!');
+                loadSubjectMappingData();
+            } else {
+                alert('Error deleting subject mapping: ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            $('#loadingSpinner').hide();
+            alert('Error deleting subject mapping: ' + error);
+        }
+    });
+}
+
+function resetForm() {
+    $('input[type="checkbox"]').prop('checked', false);
+    ['CLASS', 'SECTION', 'SUBJECT'].forEach(updateCheckboxCounter);
+}
+
+function getSelectedValues(name) {
+    var selected = [];
+    $('input[name="' + name + '"]:checked').each(function () {
+        selected.push($(this).val());
+    });
+    return selected;
+}
+</script>

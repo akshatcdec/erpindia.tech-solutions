@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+  <!-- Exam details (rpExamDetails) -->
+  <xs:element name="ExamDetails">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ExamId"      type="xs:string"/>          <!-- GUID -->
+        <xs:element name="ExamName"    type="xs:string"/>
+        <xs:element name="AdmitCard"   type="xs:string"  minOccurs="0"/>
+        <xs:element name="Session"     type="xs:string"  minOccurs="0"/>
+        <xs:element name="SubjectID"   type="xs:string"  minOccurs="0"/>  <!-- GUID -->
+        <xs:element name="ExamDate"    type="xs:dateTime" minOccurs="0"/>
+        <xs:element name="ExamTime"    type="xs:string"  minOccurs="0"/>
+        <xs:element name="SubjectName" type="xs:string"  minOccurs="0"/>
+        <xs:element name="ExamDay"     type="xs:string"  minOccurs="0"/>
+
+        <!-- Admit‑card notes -->
+        <xs:element name="AdmitNote1"  type="xs:string"  minOccurs="0"/>
+        <xs:element name="AdmitNote2"  type="xs:string"  minOccurs="0"/>
+        <xs:element name="AdmitNote3"  type="xs:string"  minOccurs="0"/>
+        <xs:element name="AdmitNote4"  type="xs:string"  minOccurs="0"/>
+        <xs:element name="AdmitNote5"  type="xs:string"  minOccurs="0"/>
+        <xs:element name="AdmitNote6"  type="xs:string"  minOccurs="0"/>
+        <xs:element name="AdmitNote7"  type="xs:string"  minOccurs="0"/>
+        <xs:element name="AdmitNote8"  type="xs:string"  minOccurs="0"/>
+        <xs:element name="AdmitNote9"  type="xs:string"  minOccurs="0"/>
+        <xs:element name="AdmitNote10" type="xs:string"  minOccurs="0"/>
+
+ 	<xs:element name="StudentId"        type="xs:string"/>         <!-- GUID -->
+        <xs:element name="StudentName"      type="xs:string"/>
+        <xs:element name="MotherName"       type="xs:string"  minOccurs="0"/>
+        <xs:element name="FatherName"       type="xs:string"  minOccurs="0"/>
+        <xs:element name="ClassName"        type="xs:string"  minOccurs="0"/>
+        <xs:element name="Section"          type="xs:string"  minOccurs="0"/>
+        <xs:element name="RollNumber"       type="xs:string"  minOccurs="0"/>
+        <xs:element name="AdmissionNumber"  type="xs:string"  minOccurs="0"/>
+        <xs:element name="PhotoPath"        type="xs:string"  minOccurs="0"/>
+
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

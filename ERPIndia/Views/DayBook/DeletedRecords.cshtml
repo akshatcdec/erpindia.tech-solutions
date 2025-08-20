@@ -1,0 +1,197 @@
+﻿@model ERPIndia.DTOs.Fee.DeletedFeeRecordsViewModel
+@{
+    ViewBag.Title = "Deleted Fee Records";
+}
+<link href="/Content/model.css" rel="stylesheet" />
+<div class="container-fluid">
+    <!-- Search Panel Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h4 class="m-0">Deleted Fee Records - Search Criteria</h4>
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("DeletedRecords", "DayBook", FormMethod.Get, new { id = "deletedRecordsForm" }))
+            {
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>From Date</label>
+                            @Html.TextBoxFor(m => m.FromDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>To Date</label>
+                            @Html.TextBoxFor(m => m.ToDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fa fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Results Panel Card -->
+    <div class="card" id="printableArea">
+        <div class="card-body">
+            <!-- Header Section -->
+            @*<div class="d-flex justify-content-between align-items-center mb-4" style="display:none">
+                <div class="text-success font-weight-bold">
+                    DATE RANGE: @Model.DisplayDateRange
+                </div>
+                <div class="border border-danger bg-warning p-2 text-center rounded">
+                    <h2 class="text-danger font-weight-bold m-0">DELETED FEE RECORDS</h2>
+                </div>
+                <div class="text-success font-weight-bold">
+                    TOTAL RECORDS: @Model.DeletedRecords.Count
+                </div>
+            </div>*@
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-circle mr-2"></i> @Model.ErrorMessage
+                </div>
+            }
+
+            @if (!Model.DeletedRecords.Any())
+            {
+                <!-- No Data Found Message -->
+                <div class="alert alert-info text-center my-4">
+                    <i class="fa fa-info-circle mr-2"></i> No deleted fee records found for the selected date range.
+                </div>
+            }
+            else
+            {
+                <!-- Main Table -->
+                <div class="table-responsive mb-4">
+                    <table id="deletedRecordsTable" class="table table-bordered table-striped table-hover">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="text-center">Print-Slip</th>
+                                <th class="text-center">Rcpt</th>
+                                <th class="text-center">Rcpt Date</th>
+                                <th class="text-center">Amnt</th>
+                                <th>Name</th>
+                                <th>Father</th>
+                                <th>Cls</th>
+                                <th>Sec</th>
+                                <th>Mobile</th>
+                                <th>Deleted By</th>
+                                <th>Deleted Date</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.DeletedRecords)
+                            {
+                                <tr>
+                                    <td class="text-center">
+                                        <a href="javascript:void(0)"
+                                           onclick="openModal('', '@Url.Action("FeeReceipt", "CollectFee", new { receiptNumber = item.ReceiptNo, code = item.Code })', 'Receipt @item.ReceiptNo', '')"
+                                           class="btn btn-success">
+                                            <i class="fas fa-print"></i>&nbsp;FeeRcpt
+                                        </a>
+                                    </td>
+                                    <td class="text-center">@item.ReceiptNo</td>
+                                    <td class="text-center">@item.DateAuto</td>
+                                    <td class="text-right">@item.Amount.ToString("N0")</td>
+                                    <td>@item.Name</td>
+                                    <td class="text-center">@item.Roll</td>
+                                    <td>@item.Class</td>
+                                    <td>@item.Section</td>
+                                    <td>@item.Mobile</td>
+                                    <td>@item.DeletedBy</td>
+                                    <td>@item.DeletedDate</td>
+                                    <td>@item.DeleteReason</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style type="text/css">
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+
+        #printableArea, #printableArea * {
+            visibility: visible;
+        }
+
+        #printableArea {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+
+        .btn-success {
+            display: none;
+        }
+
+        @@page {
+            size: landscape;
+            margin: 10mm;
+        }
+    }
+</style>
+
+<!-- DataTables CSS and JS -->
+<script type="text/javascript">
+    $(function () {
+        // Initialize DataTable
+        var table = $('#deletedRecordsTable').DataTable({
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "pageLength": 10,
+            "order": [[1, "asc"]], // Order by receipt number descending
+            "dom": 'Bfrtip',
+            "buttons": [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'csv',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'excel',
+                    className: 'btn btn-sm btn-secondary',
+                    title: 'Deleted Fee Records ' + $('#DisplayDateRange').text()
+                },
+                {
+                    extend: 'pdf',
+                    className: 'btn btn-sm btn-secondary',
+                    title: 'Deleted Fee Records ' + $('#DisplayDateRange').text(),
+                    orientation: 'landscape'
+                },
+                {
+                    extend: 'print',
+                    className: 'btn btn-sm btn-secondary'
+                }
+            ]
+        });
+
+        // Print button functionality
+        $('#printBtn').click(function () {
+            window.print();
+        });
+
+        // Export button functionality
+        $('#exportBtn').click(function () {
+            table.button('.buttons-excel').trigger();
+        });
+    });
+</script>

@@ -1,0 +1,277 @@
+﻿@model ERPK12Models.ViewModel.Enquiry.FollowUpViewModel
+<style>
+    .highlight-yellow {
+        background-color: yellow;
+    }
+
+    .required:after {
+        content: " *";
+        color: red;
+        font-weight: bold;
+    }
+
+    .response-cell {
+        max-width: 250px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .interest-high {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .interest-medium {
+        background-color: #ffc107;
+        color: black;
+    }
+
+    .interest-low {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .fade-out {
+        transition: opacity 0.3s ease-out;
+        opacity: 0;
+    }
+</style>
+
+@using (Html.BeginForm("FollowUp", "Enquiry", FormMethod.Post, new { @class = "form-horizontal", id = "followUpForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.EnquiryId)
+    @Html.HiddenFor(m => m.NewFollowUp.EnquiryId)
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <!-- Debug info - remove this after testing -->
+    <div style="display: none;">
+        Debug - EnquiryId: @Model.EnquiryId, NewFollowUp.EnquiryId: @Model.NewFollowUp.EnquiryId
+    </div>
+
+    <div class="modal-body">
+        <!-- Student Info Display -->
+        <div class="alert alert-info">
+            <h6 class="mb-1"><i class="fas fa-user"></i> <span class="highlight-yellow">Student Information</span></h6>
+
+            <div class="row">
+                <div class="col-md-4"><strong>Student: </strong><span style="font-weight:bold;color:black; padding-left:5px">@Model.StudentInfo.Student</span> </div>
+                <div class="col-md-4"><strong>Father: </strong><span style="font-weight: bold; color: black; padding-left: 5px">@Model.StudentInfo.Father</span></div>
+                <div class="col-md-4"><strong>Class: </strong> <span style="font-weight: bold; color: black; padding-left: 5px">@Model.StudentInfo.ApplyingForClass</span></div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4"><strong>No. of Children:</strong><span style="font-weight: bold; color: black; padding-left: 5px">@(Model.StudentInfo.NoOfChild??0)</span></div>
+                <div class="col-md-4"><strong>Relation:</strong><span style="font-weight: bold; color: black; padding-left: 5px">@(Model.StudentInfo.Relation?? "N/A")</span></div>
+                <div class="col-md-4">
+                    <strong>Mobile:</strong>
+                    <span style="font-weight: bold; color: black; padding-left: 5px">
+                        @Model.StudentInfo.Mobile1
+                        @if (!string.IsNullOrEmpty(Model.StudentInfo.Mobile2))
+                        {
+                            @: , @Model.StudentInfo.Mobile2
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Follow-up Entry Form -->
+        <h6 class="text-primary mb-3"><i class="fas fa-phone"></i> New Follow-up Entry</h6>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.NewFollowUp.FollowDate, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.NewFollowUp.FollowDate, "{0:yyyy-MM-dd}", new
+                    {
+                        @class = "form-control",
+                        @type = "date",
+                        autocomplete = "off",
+                        @Value = DateTime.Now.ToString("yyyy-MM-dd")
+                    })
+                    @Html.ValidationMessageFor(m => m.NewFollowUp.FollowDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.NewFollowUp.FollowTime, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.NewFollowUp.FollowTime, new
+                    {
+                        @class = "form-control",
+                        @type = "time",
+                        @Value = DateTime.Now.ToString("HH:mm")
+                    })
+                    @Html.ValidationMessageFor(m => m.NewFollowUp.FollowTime, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.NewFollowUp.CallStatus, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.NewFollowUp.CallStatus, ViewBag.CallStatusList as SelectList, "Select Status", new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.NewFollowUp.CallStatus, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.NewFollowUp.InterestLevel, new { @class = "control-label required" })
+                    @Html.DropDownListFor(m => m.NewFollowUp.InterestLevel, ViewBag.InterestLevelList as SelectList, "Select Interest", new { @class = "form-control", required = "required" })
+                    @Html.ValidationMessageFor(m => m.NewFollowUp.InterestLevel, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.NewFollowUp.NextFollowDate, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.NewFollowUp.NextFollowDate, "{0:yyyy-MM-dd}", new
+                    {
+                        @class = "form-control",
+                        @type = "date",
+                        autocomplete = "off"
+                    })
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.NewFollowUp.Response, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.NewFollowUp.Response, new { @class = "form-control", placeholder = "Enter follow-up response...", @maxlength = "100" })
+                    @Html.ValidationMessageFor(m => m.NewFollowUp.Response, "", new { @class = "text-danger", })
+                </div>
+            </div>
+        </div>
+
+        <!-- Previous Follow-ups -->
+        @if (Model.PreviousFollowUps != null && Model.PreviousFollowUps.Any())
+        {
+            <hr style="border:1px solid black;">
+            <h6 class="text-primary mb-3"><i class="fas fa-history"></i> Previous Follow-ups</h6>
+            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                <table class="table table-sm table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th width="7%"><b>Sr.</b></th>
+                            <th width="14%"><b>Follow Date</b></th>
+                            <th width="10%"><b>Time</b></th>
+                            <th width="14%"><b>Call Status</b></th>
+                            <th width="10%"><b>Interest</b></th>
+                            <th width="25%"><b>Response</b></th>
+                            <th width="12%"><b>Nxt F/U Date</b></th>
+                            <th width="8%"><b>Delete</b></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int index = 1;
+                            foreach (var followUp in Model.PreviousFollowUps.OrderBy(f => f.SrNo).Take(10))
+                            {
+                                <tr data-followup-row="@followUp.Id">
+                                    <td class="text-center">@index</td>
+                                    <td>@followUp.FollowDate.ToString("dd-MMM-yyyy")</td>
+                                    <td>@followUp.FollowTime.ToString(@"hh\:mm")</td>
+                                    <td>
+                                        <span class="badge bg-info text-white">@followUp.CallStatus</span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(followUp.InterestLevel))
+                                        {
+                                            <span class="badge interest-@followUp.InterestLevel.ToLower().Replace(" ", "")">
+                                                @followUp.InterestLevel
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="response-cell" title="@followUp.Response">
+                                            @{
+                                                string displayResponse = string.IsNullOrEmpty(followUp.Response) ? "-" :
+                                                    (followUp.Response.Length > 30 ? followUp.Response.Substring(0, 30) + "..." : followUp.Response);
+                                            }
+                                            @displayResponse
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (followUp.NextFollowDate.HasValue)
+                                        {
+                                            @followUp.NextFollowDate.Value.ToString("dd-MMM-yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button"
+                                                class="btn btn-sm btn-danger delete-followup"
+                                                onclick="deleteFollowUp('@followUp.Id')"
+                                                title="Delete this follow-up">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                index++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <hr class="my-4">
+            <div class="text-center py-3">
+                <i class="fas fa-phone-slash fa-2x text-muted mb-2"></i>
+                <p class="text-muted">No previous follow-ups recorded</p>
+            </div>
+        }
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal" data-bs-dismiss="modal" onclick="closeModal()">
+            <i class="fas fa-times"></i> Cancel
+        </button> &nbsp;
+        <button type="submit" class="btn btn-warning">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </div>
+}
+
+<script>
+    // ====================================
+    // MODULAR DELETE FOLLOW-UP FUNCTION
+    // ====================================
+
+    function deleteFollowUp(followUpId) {
+        if (!confirm('Are you sure you want to delete this follow-up entry?')) {
+            return;
+        }
+
+
+        fetch('/Enquiry/DeleteFollowup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `id=${followUpId}`
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    openFollowUpModal('@Model.EnquiryId');
+                } else {
+                    alert('Error: ' + (result.message || 'Failed to delete'));
+                }
+            })
+            .catch(() => {
+                alert('An error occurred while deleting the follow-up.');
+            });
+    }
+
+    // Helper function to update serial numbers
+
+
+</script>

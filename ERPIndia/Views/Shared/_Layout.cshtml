@@ -1,0 +1,229 @@
+﻿@using ERPIndia.Class.Helper;
+    <!DOCTYPE HTML>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>@ERPIndia.ERPIndiaApplication.Setting.SiteTitle</title>
+        <!-- Tell the browser to be responsive to screen width -->
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+        <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic" rel="stylesheet" type="text/css" />
+
+        <!-- Bootstrap 3.3.6 -->
+        @Styles.Render("~/Content/mainCSS")
+        <!-- Ionicons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+
+        @Styles.Render("~/Content/themeCSS")
+        @Styles.Render("~/plugins/uniform/css/uniformcss")
+
+        @RenderSection("pageLevelCSS", required: false)
+        @Styles.Render("~/Content/datepickerCSS")
+        @Styles.Render("~/Content/utilityCSS")
+
+        @Styles.Render("~/plugins/alerts/jAlertCSS")
+
+        @Scripts.Render("~/bundles/jquery")
+    
+     
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body class="hold-transition skin-blue sidebar-mini">
+        <div class="wrapper">
+            @Html.Partial("_UCTop")
+            <!-- Left side column. contains the logo and sidebar -->
+            @Html.Partial("_UCMenuDetail")
+            <!-- Content Wrapper. Contains page content -->
+            <div class="content-wrapper" id="divPageBody">
+                @RenderBody()
+            </div>
+            <!-- /.content-wrapper -->
+            @Html.Partial("_UCBottom")
+
+            @*@Html.Partial("_UCRightBar")*@
+
+            <div class="loader" style="display: none;">
+                <img src="@Url.Content("~/img/loader.png")" alt="loader" class="loading-anim" />
+            </div>
+
+        </div>
+
+
+        @Scripts.Render("~/bundles/jqueryPlugins")
+        <div class="modal fade" id="BigModal" role="dialog">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="col-md-8">
+                            <h3 id="titleBigModal" class="modal-title">Title</h3>
+                        </div>
+                        <div class="col-md-pull-4 pull-right">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">X</button>
+                        </div>
+                    </div>
+                    <div class="modal-body" id="BigModalDiv">
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $.widget.bridge('uibutton', $.ui.button);
+        </script>
+
+        @RenderSection("pageLelvelScripts", required: false)
+
+        @Scripts.Render("~/bundles/datepickerJS")
+
+        @Scripts.Render("~/bundles/jalert")
+
+        @Scripts.Render("~/bundles/utilityPluginJS")
+
+        @Scripts.Render("~/bundles/appJS")
+
+        @RenderSection("specificScripts", required: false)
+
+        <script type="text/javascript">
+            $(function () { SetActiveMenu(); });
+
+            jQuery(document).ready(function () {
+                pageLoad();
+            });
+
+
+            function pageLoad() {
+                pageLoadEvents();
+            }
+
+            function pageLoadEvents() {
+
+                $(":checkbox").uniform();
+
+                alertTitle = jQuery('.page-alert-title').html();
+
+                // listing page status(active/inactive) and delete button event
+                $("#imgActive, #imgInactive, #imgDelete").click(function () {
+                    if (!IsCheckBoxChecked()) {
+                        if (this.name == "imgDelete") {
+                            jAlert('@string.Format(StringConstants.MultiProcessValidation, "delete")', alertTitle);
+                        }
+                        else {
+                            jAlert('@string.Format(StringConstants.MultiProcessValidation, "change status")', alertTitle);
+                        }
+                    }
+                    else {
+                        ActionClickEvent(this.id, this.name);
+                    }
+                });
+            }
+
+            // listing page status(active/inactive) and delete event
+            function ActionClickEvent(clickId, clickName) {
+                var confirmMsg = '@StringConstants.MultiProcessConfirmation'.replace("{0}", clickName.replace('img', '').toLowerCase());
+
+                checkedValues = '';
+                $('input[name="chkBox"]:checked').each(function () {
+                    checkedValues += this.value + ",";
+                });
+
+                if (checkedValues.length > 0) {
+                    checkedValues = checkedValues.substring(0, checkedValues.length - 1);
+
+                    jConfirm(confirmMsg, alertTitle, function (r) {
+                        if (r == true) {
+                            multiProcessMode = clickName.replace('img', '');
+                            var postData = { "page": pageNo, "pageSize": pageSize, "searchField": searchField, "searchValue": searchValue, "sortField": sortField, "sortOrder": sortOrder, "ids": checkedValues, "mode": multiProcessMode };
+
+                            callPageAction(currentSiteUrl, postData, 'MultiProcess');
+                        }
+
+                        //UnCheck();
+                    });
+                }
+            }
+
+            function InitDatePicker(clickId, isCreate) {
+                if (isCreate)
+                    $("#" + clickId).datepicker();
+                else
+                    $("#" + clickId).datepicker('remove');
+            }
+
+            function callPageAction(url, postData, action) {
+                //showLoading();
+                HRN.showLoader();
+                $.ajax({
+                    url: url,
+                    data: postData,
+                    type: 'POST',
+                    success: function (response) {
+                        if (response.IsError) {
+                            notificationMessage(response.ErrorMsg, 'danger')
+                            HRN.hideLoader();
+                            return;
+
+                        }
+                        else {
+                            $('#divPageBody').html(response);
+                        }
+
+                        $('#divPageBody').html(response);
+
+                        if (action == 'MultiProcess') {
+                            var arrcheckedCount = checkedValues.split(',');
+
+                            if (multiProcessMode == 'Active') {
+                                notificationMessage('@StringConstants.RecordActive'.replace('{0}', arrcheckedCount.length), 'success');
+                            }
+                            else if (multiProcessMode == 'Inactive') {
+                                notificationMessage('@StringConstants.RecordInactive'.replace('{0}', arrcheckedCount.length), 'success');
+                            }
+                            else {
+                                notificationMessage('@StringConstants.RecordDelete'.replace('{0}', arrcheckedCount.length), 'success');
+                            }
+                        }
+                        else if (action == 'Sorting' || action == 'Searching') {
+                            if (searchField != '' && searchValue != '') {
+                                var msg = '@Html.Raw(StringConstants.RecordSearch)';
+                                msg = msg.replace('{1}', itemListCount);
+
+                                if (searchField == 'IsActive' || searchField == 'Status') {
+                                    msg = msg.replace('{0}', $("#ddlStatus option:selected").text());
+                                }
+                                else {
+                                    msg = msg.replace('{0}', searchValue);
+                                }
+
+                                notificationMessage(msg, 'info')
+                            }
+                        }
+                        else if (action == 'ViewAll') {
+                            $('#ddlStatus').hide();
+                            $('#txtSearchField').show();
+                            $('#txtSearchField').val('');
+                            $('#ddlStatus').val('1');
+                            $("#ddlFilter")[0].selectedIndex = 0;
+                        }
+
+                        HRN.hideLoader();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        HRN.hideLoader();
+                        $('#divPageBody').html(jqXHR.responseText);
+                    }
+                });
+            }
+
+        </script>
+
+    </body>
+</html>

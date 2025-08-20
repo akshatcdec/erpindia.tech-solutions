@@ -1,0 +1,254 @@
+﻿@model ERPIndia.ViewModel.DashboardViewModel
+@using ERPIndia.Class.Helper;
+@{
+    Layout = "~/Views/Shared/_PreSchoolLayout.cshtml";
+
+}
+<div class="breadcrumbs-area">
+    <h3>Dashboard</h3>
+    <ul>
+        <li>
+            <a href="@Url.Action("", "SiteMap")"><i class="fa fa-home"></i> Home</a>
+        </li>
+        <li>Dashboard</li>
+    </ul>
+</div>
+<div class="card height-auto">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-3 col-xl-12 col-3-xxxl">
+                <div class="card dashboard-card-three pd-b-20">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3>Client Report</h3>
+                            </div>
+                        </div>
+                        <div class="doughnut-chart-wrap">
+                            <canvas id="student-doughnut-chart" width="100" height="300"></canvas>
+                        </div>
+                        <div class="student-report">
+                            <div class="student-count pseudo-bg-blue">
+                                <h4 class="item-title">Female Students</h4>
+                                <div class="item-number">45,000</div>
+                            </div>
+                            <div class="student-count pseudo-bg-yellow">
+                                <h4 class="item-title">Male Students</h4>
+                                <div class="item-number">1,05,000</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3 col-xl-6 col-3-xxxl">
+                <div class="card dashboard-card-three pd-b-20">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3>Collection Report</h3>
+                            </div>
+                        </div>
+                        <div class="doughnut-chart-wrap">
+                            <canvas id="student-doughnut-chart1" width="100" height="300"></canvas>
+                        </div>
+                        <div class="student-report">
+                            <div class="student-count pseudo-bg-blue">
+                                <h4 class="item-title">Female Students</h4>
+                                <div class="item-number">45,000</div>
+                            </div>
+                            <div class="student-count pseudo-bg-yellow">
+                                <h4 class="item-title">Male Students</h4>
+                                <div class="item-number">1,05,000</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3 col-xl-6 col-3-xxxl">
+                <div class="card dashboard-card-three pd-b-20">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3>Client Report</h3>
+                            </div>
+                        </div>
+                        <div class="doughnut-chart-wrap">
+                            <canvas id="student-doughnut-chart2" width="100" height="300"></canvas>
+                        </div>
+                        <div class="student-report">
+                            <div class="student-count pseudo-bg-blue">
+                                <h4 class="item-title">Female Students</h4>
+                                <div class="item-number">45,000</div>
+                            </div>
+                            <div class="student-count pseudo-bg-yellow">
+                                <h4 class="item-title">Male Students</h4>
+                                <div class="item-number">1,05,000</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3 col-xl-6 col-3-xxxl">
+                <div class="card dashboard-card-three pd-b-20">
+                    <div class="card-body">
+                        <div class="heading-layout1">
+                            <div class="item-title">
+                                <h3>Client Report</h3>
+                            </div>
+                        </div>
+                        <div class="doughnut-chart-wrap">
+                            <canvas id="student-doughnut-chart3" width="100" height="300"></canvas>
+                        </div>
+                        <div class="student-report">
+                            <div class="student-count pseudo-bg-blue">
+                                <h4 class="item-title">Female Students</h4>
+                                <div class="item-number">45,000</div>
+                            </div>
+                            <div class="student-count pseudo-bg-yellow">
+                                <h4 class="item-title">Male Students</h4>
+                                <div class="item-number">1,05,000</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        if ($("#student-doughnut-chart1").length) {
+
+            var doughnutChartData = {
+                labels: ["Female Students", "Male Students"],
+                datasets: [{
+                    backgroundColor: ["#304ffe", "#ffa601"],
+                    data: [45000, 105000],
+                    label: "Total Students"
+                },]
+            };
+            var doughnutChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutoutPercentage: 65,
+                rotation: -9.4,
+                animation: {
+                    duration: 2000
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    enabled: true
+                },
+            };
+            var studentCanvas = $("#student-doughnut-chart1").get(0).getContext("2d");
+            var studentChart = new Chart(studentCanvas, {
+                type: 'doughnut',
+                data: doughnutChartData,
+                options: doughnutChartOptions
+            });
+        }
+    });
+    $(document).ready(function () {
+        if ($("#student-doughnut-chart2").length) {
+
+            var doughnutChartData = {
+                labels: ["Female Students", "Male Students"],
+                datasets: [{
+                    backgroundColor: ["#304ffe", "#ffa601"],
+                    data: [45000, 105000],
+                    label: "Total Students"
+                },]
+            };
+            var doughnutChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutoutPercentage: 65,
+                rotation: -9.4,
+                animation: {
+                    duration: 2000
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    enabled: true
+                },
+            };
+            var studentCanvas = $("#student-doughnut-chart2").get(0).getContext("2d");
+            var studentChart = new Chart(studentCanvas, {
+                type: 'doughnut',
+                data: doughnutChartData,
+                options: doughnutChartOptions
+            });
+        }
+    });
+    $(document).ready(function () {
+        if ($("#student-doughnut-chart3").length) {
+
+            var doughnutChartData = {
+                labels: ["Female Students", "Male Students"],
+                datasets: [{
+                    backgroundColor: ["#304ffe", "#ffa601"],
+                    data: [45000, 105000],
+                    label: "Total Students"
+                },]
+            };
+            var doughnutChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutoutPercentage: 65,
+                rotation: -9.4,
+                animation: {
+                    duration: 2000
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    enabled: true
+                },
+            };
+            var studentCanvas = $("#student-doughnut-chart3").get(0).getContext("2d");
+            var studentChart = new Chart(studentCanvas, {
+                type: 'doughnut',
+                data: doughnutChartData,
+                options: doughnutChartOptions
+            });
+        }
+    });
+</script>
+@*@if (Model.RoleId == RoleType.SuperAdmin.GetHashCode())
+    {
+        @Html.Partial("_SuperAdminDashboard")
+    }
+    @if (Model.RoleId == RoleType.Admin.GetHashCode())
+    {
+        @Html.Partial("_AdminDashboard")
+    }
+    @if (Model.RoleId == RoleType.Doctor.GetHashCode())
+    {
+        @Html.Partial("_DoctorDashboard")
+    }
+    @if (Model.RoleId == RoleType.Nurse.GetHashCode())
+    {
+        @Html.Partial("_NurseDashboard")
+    }
+    @if (Model.RoleId == RoleType.Pharmacist.GetHashCode())
+    {
+        @Html.Partial("_PharmacistDashboard")
+    }
+    @if (Model.RoleId == RoleType.Laboratorist.GetHashCode())
+    {
+        @Html.Partial("_LaboratoristDashboard")
+    }
+    @if (Model.RoleId == RoleType.Accountant.GetHashCode())
+    {
+        @Html.Partial("_AccountantDashboard")
+    }
+    @if (Model.RoleId == RoleType.Patient.GetHashCode())
+    {
+        @Html.Partial("_PatientDashboard")
+    }*@
+

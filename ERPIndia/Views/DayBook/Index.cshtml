@@ -1,0 +1,412 @@
+﻿@model ERPIndia.DTOs.Cashbook.CashBookReportViewModel
+@using ERPIndia.Class.Helper
+@{
+    ViewBag.Title = "Cash Book Report";
+    string code = CommonLogic.GetSessionValue(StringConstants.TenantCode);
+    string session = CommonLogic.GetSessionValue(StringConstants.ActiveSessionID);
+    string sessionId = CommonLogic.GetSessionValue(StringConstants.ActiveSessionPrint);
+}
+<link href="/Content/model.css" rel="stylesheet" />
+<div class="container-fluid">
+    <!-- Search Panel Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h4 class="m-0">DayBook - Select Criteria</h4>
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("Index", "DayBook", FormMethod.Get, new { id = "reportForm" }))
+            {
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>From Date</label>
+                            @Html.TextBoxFor(m => m.FromDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label>To Date</label>
+                            @Html.TextBoxFor(m => m.ToDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Class</label>
+                            @Html.DropDownListFor(m => m.SelectedClass, Model.ClassList, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Section</label>
+                            @Html.DropDownListFor(m => m.SelectedSection, Model.SectionList, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Pay Mode</label>
+                            <select name="paymentMode" id="PaymentMode" class="form-control">
+                                <option value="ALL" @(Model.PaymentMode == "ALL" ? "selected" : "")>ALL</option>
+                                @foreach (var mode in Model.AvailablePaymentModes)
+                                {
+                                    string selected = (Model.PaymentMode == mode.PaymentMode) ? "selected" : "";
+                                    <option value="@mode.PaymentMode" @selected>@mode.PaymentMode</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="form-group">
+                            <br />
+                            <button type="submit" class="btn" style="background-color: navy; color: white;">
+                                <i class="fa fa-filter"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="form-group">
+                            <br />
+                            <a href="javascript:void(0)"
+                               onclick="printCashBookReport()"
+                               class="btn"
+                               style="background-color: orange; color: white;">
+                                <i class="fa fa-print"></i> Print
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <!-- Results Panel Card -->
+    @if (Model.TenantCode > 0)
+    {
+        <!-- Check if search has been performed -->
+        <div class="card" id="printableArea">
+            <div class="card-body">
+                <!-- Header Section -->
+                @if (!Model.FeeData.Any())
+                {
+                    <!-- No Data Found Message -->
+                    <div class="alert alert-info text-center my-4">
+                        <i class="fa fa-info-circle mr-2"></i> No records found for the selected criteria.
+                    </div>
+                }
+                else
+                {
+                    <!-- Main Table -->
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-striped">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Print</th>
+                                    <th>Rcpt. No</th>
+                                    <th>Student</th>
+                                    <th>Father</th>
+                                    <th>Class</th>
+                                    <th>Sec.</th>
+                                    <th>Date/Note/Username</th>
+                                    <th>Rcvd. Amt.</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.FeeData)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a href="javascript:void(0)"
+                                               onclick="openModal('', '@Url.Action("FeeReceipt", "CollectFee", new { receiptNumber = item.ReceiptNo, code = code })', 'Receipt @item.ReceiptNo', '')"
+                                               class="btn btn-success">
+                                                <i class="fas fa-print"></i>&nbsp;FeeRcpt
+                                            </a>
+                                        </td>
+                                        <td>
+                                            @item.ReceiptNo
+                                        </td>
+                                        <td>@item.FirstName</td>
+                                        <td>@item.LastName</td>
+                                        <td>@item.ClassName</td>
+                                        <td>@item.SectionName</td>
+                                        <td>@Html.Raw(item.D1.Replace("\r\n", "<br/>"))</td>
+                                        <td class="text-right font-weight-bold">@item.Received.ToString("N0")</td>
+                                        <td>
+                                            <button type="button" class="btn btn-danger btn-sm deleteReceiptBtn" data-id="@item.ReceiptId" data-receipt-no="@item.ReceiptNo" data-student="@item.StudentName">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row">
+                        <!-- Payment Mode Summary - 6 columns -->
+                        <div class="col-md-6">
+                            <div class="card border-secondary mb-3">
+                                <div class="card-header bg-light font-weight-bold">Payment Mode Summary</div>
+                                <div class="card-body">
+                                    <p class="mb-1"><strong>CASH:</strong> @(Model.PaymentTotals.CASH.ToString("N0") ?? "0")</p>
+                                    @if (Model.PaymentTotals != null && Model.PaymentTotals.BANK > 0)
+                                    {
+                                        <p class="mb-1"><strong>BANK:</strong> @Model.PaymentTotals.BANK.ToString("N0")</p>
+                                    }
+                                    @if (Model.PaymentTotals != null && Model.PaymentTotals.PAYTM > 0)
+                                    {
+                                        <p class="mb-1"><strong>PAYTM:</strong> @Model.PaymentTotals.PAYTM.ToString("N0")</p>
+                                    }
+                                    @if (Model.PaymentTotals != null && Model.PaymentTotals.UPI > 0)
+                                    {
+                                        <p class="mb-1"><strong>UPI:</strong> @Model.PaymentTotals.UPI.ToString("N0")</p>
+                                    }
+                                    @if (Model.PaymentTotals != null && Model.PaymentTotals.CHEQUE > 0)
+                                    {
+                                        <p class="mb-1"><strong>CHEQUE:</strong> @Model.PaymentTotals.CHEQUE.ToString("N0")</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex justify-content-center mb-4">
+                            <div class="card border-info w-100">
+                                <div class="card-header bg-light font-weight-bold">Class Wise Summary</div>
+                                <div class="card-body">
+                                    @foreach (var item in Model.ClassWiseSummary)
+                                    {
+                                        <p class="mb-1"><strong>@item.ClassName:</strong> @item.TotalAmount.ToString("N0")</p>
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Total Section - 3 columns -->
+                        <div class="col-md-3 d-flex justify-content-center mb-4">
+                            <div class="card border-dark w-100">
+                                <div class="card-header bg-light text-center">TOTAL</div>
+                                <div class="card-body text-center">
+                                    <h4 class="font-weight-bold">@(Model.PaymentTotals.TOTAL.ToString("N0") ?? "0")</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Section - 3 columns (you can add your content here) -->
+
+                    </div>
+
+                    <!-- Payment Method Summary Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>USERNAME</th>
+                                    <th>CASH</th>
+                                    <th>UPI</th>
+                                    <th>PAYTM</th>
+                                    <th>BANK</th>
+                                    <th>CHEQUE</th>
+                                    <th>OTHER</th>
+                                    <th>TOTAL COLLECTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!Model.UserSummary.Any())
+                                {
+                                    <tr>
+                                        <td colspan="8" class="text-center">No user summary available.</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    foreach (var user in Model.UserSummary)
+                                    {
+                                        <tr>
+                                            <td>@user.UserName</td>
+                                            <td>@(user.CASH > 0 ? user.CASH.ToString("N0") : "")</td>
+                                            <td>@(user.UPI > 0 ? user.UPI.ToString("N0") : "")</td>
+                                            <td>@(user.PAYTM > 0 ? user.PAYTM.ToString("N0") : "")</td>
+                                            <td>@(user.BANK > 0 ? user.BANK.ToString("N0") : "")</td>
+                                            <td>@(user.CHEQUE > 0 ? user.CHEQUE.ToString("N0") : "")</td>
+                                            <td>@(user.OTHER > 0 ? user.OTHER.ToString("N0") : "")</td>
+                                            <td class="text-center font-weight-bold">@user.TOTAL_COLLECTION.ToString("N0")</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Initial State Message -->
+        <div class="card mt-3">
+            <div class="card-body text-center py-5">
+                <i class="fa fa-info-circle fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Please select date range and click "Generate Report" to view Cash Book data</h4>
+            </div>
+        </div>
+    }
+    <div id="searchResultContainer" class="mt-4">
+        <!-- Search results will be loaded here -->
+    </div>
+</div>
+<script>
+  // Function to print cash book report with all form values
+function printCashBookReport() {
+    // Get all form values
+    var fromDate = $('#FromDate').val();
+    var toDate = $('#ToDate').val();
+    var selectedClass = $('#SelectedClass').val();
+    var selectedSection = $('#SelectedSection').val();
+    var paymentMode = $('#PaymentMode').val();
+    var session = '@session';
+    var code = '@code';
+
+    // Build URL with all parameters
+    var baseUrl = '@Url.Action("GetReportData", "DayBook")';
+    var urlParams = '?tenantCode=' + encodeURIComponent(code) +
+                    '&FromDate=' + encodeURIComponent(fromDate) +
+                    '&sessionId=' + encodeURIComponent(session) +
+                   '&ToDate=' + encodeURIComponent(toDate) +
+                   '&ClassId=' + encodeURIComponent(selectedClass) +
+                   '&SectionId=' + encodeURIComponent(selectedSection) +
+                   '&PaymentMode=' + encodeURIComponent(paymentMode);
+
+    var fullUrl = baseUrl + urlParams;
+
+    // Call openModal with the generated URL
+    openModal('', fullUrl, 'Cash Book Report', '');
+}
+</script>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="height:auto">
+            <div class="modal-header text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Confirm Delete</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="deleteReason"><b>Please provide a reason for deleting receipt No. <span id="receiptNoToDelete"></span></label>
+                    <textarea id="deleteReason" class="form-control" rows="1" maxlength="30" placeholder="Enter reason for deletion..."></textarea>
+                </div>
+
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Important:</strong> Fee Receipt order number can not be deleted
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button> &nbsp;
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn"><i class="fas fa-trash"></i> Delete Receipt</button>
+            </div>
+        </div>
+    </div>
+</div>
+<style type="text/css">
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+
+        #printableArea, #printableArea * {
+            visibility: visible;
+        }
+
+        #printableArea {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        @@page {
+            size: A4;
+            margin: 10mm;
+        }
+    }
+</style>
+
+
+<script type="text/javascript">
+    $(function () {
+        // Print button functionality
+        $('#printBtn').click(function () {
+            window.print();
+        });
+
+        // Manual close buttons for the modal
+        $(document).on('click', '[data-bs-dismiss="modal"]', function() {
+            var modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+            if (modal) {
+                modal.hide();
+            }
+        });
+
+        // Delete button click handler
+        $('.deleteReceiptBtn').click(function () {
+            var receiptId = $(this).data('id');
+            var receiptNo = $(this).data('receipt-no');
+            var studentName = $(this).data('student');
+
+            // Set values in the confirmation modal
+            $('#receiptNoToDelete').text(receiptNo);
+            //$('#studentNameToDelete').text(studentName);
+
+            // Store the receipt ID for the delete operation
+            $('#confirmDeleteBtn').data('receipt-id', receiptId);
+
+            // Show the confirmation modal
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            deleteModal.show();
+        });
+
+        // Confirm delete button click handler
+        $('#confirmDeleteBtn').click(function () {
+            var receiptId = $(this).data('receipt-id');
+            var deleteReason = $('#deleteReason').val();
+
+            // Validate that a reason is provided
+            if (!deleteReason || deleteReason.trim() === '') {
+                toastr.warning('Please provide a reason for deletion');
+                return;
+            }
+
+            // Send ajax request to delete the receipt
+            $.ajax({
+                url: '@Url.Action("DeleteFeeReceipt", "DayBook")',
+                type: 'POST',
+                data: {
+                    id: receiptId,
+                    reason: deleteReason
+                },
+                success: function (result) {
+                    // Close the modal
+                    var deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+                    deleteModal.hide();
+
+                    if (result.success) {
+                        // Show success message
+                        toastr.success(result.message);
+                        // Reload the page to refresh the data
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        // Show error message
+                        toastr.error(result.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Close the modal
+                    var deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+                    deleteModal.hide();
+                    // Show error message
+                    toastr.error("An error occurred while trying to delete the receipt: " + error);
+                }
+            });
+        });
+    });
+</script>

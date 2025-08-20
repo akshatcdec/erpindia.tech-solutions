@@ -1,0 +1,1168 @@
+﻿
+
+
+<div class="loading" id="loadingSpinner">
+    <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2" id="loadingMessage">Loading configuration data...</p>
+    </div>
+</div>
+
+<!-- Validation Modal -->
+<div class="modal fade" id="validationModal" tabindex="-1" aria-labelledby="validationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="validationModalLabel">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Some fee configurations for the selected combinations already exist. Would you like to replace them?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSave">Yes, Replace</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <section class="py-3">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="h3">
+                    <small>Fee Conc Setup</small>
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Manage Fee Conc Setup</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Fee Conc Setup Information</h4>
+                    </div>
+                    <div class="card-body">
+
+                        <form id="feeSetupForm">
+                            <!-- Grid-based layout for selection options -->
+                            <div class="row mb-4">
+                                <!-- Fee Head Column -->
+                                <div class="col-md-3 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">Fee Head</h5>
+                                            <button type="button" class="btn btn-sm btn-success">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <div class="card-body" id="feeHeadContainer">
+                                            <!-- Fee Head checkboxes will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Class Column -->
+                                <div class="col-md-3 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">Class</h5>
+                                            <button type="button" class="btn btn-sm btn-success">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <div class="card-body" id="classContainer">
+                                            <!-- Class checkboxes will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Section Column -->
+                                <div class="col-md-3 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">Section</h5>
+                                            <button type="button" class="btn btn-sm btn-success">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <div class="card-body" id="sectionContainer">
+                                            <!-- Section checkboxes will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Category Column -->
+                                <div class="col-md-3 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">Fee Conc</h5>
+                                            <button type="button" class="btn btn-sm btn-success">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <div class="card-body" id="categoryContainer">
+                                            <!-- Category checkboxes will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="row align-items-center">
+                                        <label for="dynamicAmount" class="col-sm-6 col-form-label">Enter Amount</label>
+                                        <div class="col-sm-6">
+                                            <input type="number" class="form-control" id="dynamicAmount">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="row align-items-center">
+                                        <label class="col-sm-3 col-form-label">Fee Mode</label>
+                                        <div class="col-sm-9" id="frequencyContainer">
+                                            <!-- Dynamic Fee Mode radio buttons will be filled here -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-12">
+                                    <div class="row">
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtApril" placeholder="April">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtMay" placeholder="May">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtJune" placeholder="June">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtJuly" placeholder="July">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtAugust" placeholder="August">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtSeptember" placeholder="September">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtOctober" placeholder="October">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtNovember" placeholder="November">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtDecember" placeholder="December">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtJanuary" placeholder="January">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtFebruary" placeholder="February">
+                                        </div>
+                                        <div class="col">
+                                            <input type="text" class="form-control form-control-sm" id="txtMarch" placeholder="March">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-12 text-end">
+                                    <button type="button" id="btnSave" class="btn btn-lg btn-warning">Save</button>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="feeSetupTable" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fee Head</th>
+                                    <th>Class</th>
+                                    <th>Section</th>
+                                    <th>Category</th>
+                                    <th>April</th>
+                                    <th>May</th>
+                                    <th>June</th>
+                                    <th>July</th>
+                                    <th>August</th>
+                                    <th>September</th>
+                                    <th>October</th>
+                                    <th>November</th>
+                                    <th>December</th>
+                                    <th>January</th>
+                                    <th>February</th>
+                                    <th>March</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+
+
+    <script type="text/javascript">
+        var feeHeadData = [];
+var classData = [];
+var sectionData = [];
+var categoryData = [];
+var existingConfigurations = []; // Store existing configurations for validation
+var clientId ='@Session["UserId"]'; // Get client ID from session
+
+// Hardcoded frequency data
+var frequencyData = [
+    { id: "0", name: "NA" },
+    { id: "Monthly", name: "Monthly" },
+    { id: "Quarterly", name: "Quarterly" },
+    { id: "Annually", name: "Annually" },
+    { id: "Custom", name: "Custom" }
+];
+
+// Bootstrap modal instance
+var validationModal;
+
+       $(document).ready(function () {
+    // Data objects that will be populated from the configuration table
+
+           let customNote = `
+    <div id="customModeNote" class="alert alert-info mt-2" style="display: none;">
+        <small><i class="fa fa-info-circle"></i> Custom mode: Enter amounts manually for each month.</small>
+    </div>`;
+
+           $('#frequencyContainer').after(customNote);
+
+           // Show/hide custom note based on frequency selection
+           $(document).on('change', 'input[name="frequency"]', function () {
+               if ($(this).val() === "Custom") {
+                   $('#customModeNote').show();
+               } else {
+                   $('#customModeNote').hide();
+               }
+           });
+
+           // Style changes for month inputs in custom mode
+
+
+    // CSS Styles
+    const css = `
+    <style>
+    .checkbox-header {
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 10;
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .checkbox-container {
+        scrollbar-width: thin;
+    }
+
+    .checkbox-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .checkbox-container::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 3px;
+    }
+
+    .checkbox-counter {
+        font-size: 0.8rem;
+        text-align: right;
+    }
+
+    .card-header h5 {
+        transition: all 0.3s ease;
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        transition: background-color 0.3s ease;
+    }
+
+    .card-header:hover {
+        background-color: #e9ecef;
+    }
+
+    .select-all-btn {
+        font-size: 0.8rem;
+        padding: 2px 6px;
+    }
+    </style>
+    `;
+
+    // Add the CSS to the document head
+    $('head').append(css);
+
+    // Initialize DataTable with proper column definitions
+    $('#feeSetupTable').DataTable({
+        processing: true,
+        serverSide: false,
+        data: [], // Start with empty data
+        columns: [
+            { data: "Id", visible: false },
+            { data: "FeeHeadName" },
+            { data: "ClassName" },
+            { data: "SectionName" },
+            { data: "DiscountName" },
+            { data: "April", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "May", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "June", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "July", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "August", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "September", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "October", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "November", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "December", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "January", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "February", render: function (data) { return parseFloat(data).toFixed(2); } },
+            { data: "March", render: function (data) { return parseFloat(data).toFixed(2); } },
+            {
+                // Add a column for delete action
+                data: null,
+                orderable: false,
+                className: "text-center",
+                render: function (data, type, row) {
+                    return '<button class="btn btn-danger btn-sm delete-fee" data-id="' + row.Id + '"><i class="fa fa-trash"></i></button>';
+                }
+            }
+        ],
+        language: {
+            emptyTable: "No fee setup records found"
+        }
+    });
+
+    // Initialize Bootstrap modal
+    validationModal = new bootstrap.Modal(document.getElementById('validationModal'));
+
+    // Set up event handlers for checkboxes and search
+    $(document).on('input', '.checkbox-search', function () {
+        const searchTerm = $(this).val().toLowerCase();
+        const targetName = $(this).data('target');
+
+        $(`input[name="${targetName}"]`).each(function () {
+            const label = $(`label[for="${this.id}"]`).text().toLowerCase();
+            const matching = label.includes(searchTerm);
+            $(this).closest('.form-check').toggle(matching);
+        });
+
+        // Update the counter after filtering
+        updateCheckboxCounter(targetName);
+    });
+
+    // Select all functionality
+    $(document).on('click', '.select-all-btn', function () {
+        const targetName = $(this).data('target');
+        const allChecked = $(`input[name="${targetName}"]:checked:visible`).length === $(`input[name="${targetName}"]:visible`).length;
+
+        // Toggle selection (select all if not all are selected, deselect if all are selected)
+        $(`input[name="${targetName}"]:visible`).prop('checked', !allChecked);
+
+        // Update counter
+        updateCheckboxCounter(targetName);
+    });
+
+    // Update counter when checkboxes change
+    $(document).on('change', 'input[type="checkbox"]', function () {
+        updateCheckboxCounter($(this).attr('name'));
+    });
+
+    // Initialize counters
+    ['FEEHEAD', 'CLASS', 'SECTION', 'FEECATEGORY'].forEach(updateCheckboxCounter);
+
+    // Set up frequency change event handler
+    $(document).on('change', 'input[name="frequency"]', updateFees);
+    $('#dynamicAmount').on('input', updateFees);
+
+    // Save button click handler
+    $('#btnSave').click(function () {
+        validateAndSave();
+    });
+
+    // Confirm save button click handler
+    $('#confirmSave').click(function () {
+        validationModal.hide();
+        saveFeeSetup(true); // true indicates forced save (override existing)
+    });
+
+    // Delete fee setup click handler
+    $(document).on('click', '.delete-fee', function() {
+        var feeId = $(this).data('id');
+        if (confirm('Are you sure you want to delete this fee setup?')) {
+            deleteFeeSetup(feeId);
+        }
+    });
+
+    // Add filter button click handler
+    $('#btnFilter').click(function() {
+        loadFeeSetupData();
+    });
+
+    // Add reset filter button click handler
+    $('#btnResetFilter').click(function() {
+        $('#filterFeeHead, #filterClass, #filterSection, #filterCategory').val('');
+        loadFeeSetupData();
+    });
+
+    // Load all initial data
+    loadConfigurationData();
+    loadFeeSetupData();
+});
+
+// Load configuration data from the server
+function loadConfigurationData() {
+    // Show loading spinner
+    $('#loadingSpinner').show();
+    $('#loadingMessage').text('Loading configuration data...');
+
+    // We'll use Promise.all to make all AJAX calls in parallel
+    Promise.all([
+        // Get fee heads from DropdownController
+        $.ajax({
+            url: '@Url.Action("GetFeeHeads", "Dropdown")',
+            type: 'GET',
+            dataType: 'json'
+        }),
+        // Get classes from DropdownController
+        $.ajax({
+            url: '@Url.Action("GetClasses", "Dropdown")',
+            type: 'GET',
+            dataType: 'json'
+        }),
+        // Get sections from DropdownController
+        $.ajax({
+            url: '@Url.Action("GetSections", "Dropdown")',
+            type: 'GET',
+            dataType: 'json'
+        }),
+        // Get fee categories from DropdownController
+        $.ajax({
+            url: '@Url.Action("GetFeeDiscountHeads", "Dropdown")',
+            type: 'GET',
+            dataType: 'json'
+        })
+    ])
+    .then(function(responses) {
+        // Process the responses
+        if (responses[0].success) {
+            feeHeadData = responses[0].data.map(function(item) {
+                return { id: item.Id, name: item.Name };
+            });
+            loadFeeHeads();
+        } else {
+            console.error('Error loading fee heads:', responses[0].message);
+            $('#feeHeadContainer').html('<div class="alert alert-danger">Error loading fee heads: ' + responses[0].message + '</div>');
+        }
+
+        if (responses[1].success) {
+            classData = responses[1].data.map(function(item) {
+                return { id: item.Id, name: item.Name };
+            });
+            loadClasses();
+        } else {
+            console.error('Error loading classes:', responses[1].message);
+            $('#classContainer').html('<div class="alert alert-danger">Error loading classes: ' + responses[1].message + '</div>');
+        }
+
+        if (responses[2].success) {
+            sectionData = responses[2].data.map(function(item) {
+                return { id: item.Id, name: item.Name };
+            });
+            loadSections();
+        } else {
+            console.error('Error loading sections:', responses[2].message);
+            $('#sectionContainer').html('<div class="alert alert-danger">Error loading sections: ' + responses[2].message + '</div>');
+        }
+
+        if (responses[3].success) {
+            categoryData = responses[3].data.map(function(item) {
+                return { id: item.Id, name: item.Name };
+            });
+            loadCategories();
+        } else {
+            console.error('Error loading categories:', responses[3].message);
+            $('#categoryContainer').html('<div class="alert alert-danger">Error loading categories: ' + responses[3].message + '</div>');
+        }
+
+        // Load frequency options (hardcoded)
+        loadFrequencies();
+
+        // Populate filter dropdowns
+        populateFilterDropdowns();
+
+        // Load existing fee setups for validation
+        loadExistingFeeSetups();
+
+        // Hide loading spinner
+        $('#loadingSpinner').hide();
+    })
+    .catch(function(error) {
+        console.error('Error loading configuration data:', error);
+        $('#loadingSpinner').hide();
+        alert('Error loading configuration data. Please try again.');
+    });
+}
+
+// Helper function to create checkbox grid
+function createCheckboxes(data, name) {
+    if (!data || data.length === 0) {
+        return '<div class="alert alert-warning">No data available</div>';
+    }
+
+    let html = '';
+
+    // Add search box and select all in the header
+    html += `
+    <div class="mb-2 checkbox-header">
+        <div class="input-group input-group-sm">
+            <input type="text" class="form-control form-control-sm checkbox-search"
+                   placeholder="Search..." data-target="${name}">
+            <div class="input-group-append">
+                <button class="btn btn-sm btn-outline-secondary select-all-btn"
+                        type="button" data-target="${name}">All</button>
+            </div>
+        </div>
+    </div>`;
+
+    // Create checkbox container with fixed height and scrolling
+    html += `<div class="checkbox-container" style="${data.length > 6 ? 'height: 240px; overflow-y: auto;' : ''}">`
+
+    // Create one checkbox per row
+    data.forEach((item) => {
+        html += `
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="${name}${item.id}" name="${name}" value="${item.id}">
+            <label class="form-check-label" for="${name}${item.id}">${item.name}</label>
+        </div>`;
+    });
+
+    html += '</div>';
+
+    // Add counter at the bottom
+    html += `
+    <div class="mt-2 small text-muted checkbox-counter">
+        <span class="selected-count">0</span> of <span class="total-count">${data.length}</span> selected
+    </div>`;
+
+    return html;
+}
+
+// Function to populate filter dropdowns
+function populateFilterDropdowns() {
+    // Fee Heads dropdown
+    let feeHeadOptions = '<option value="">All Fee Heads</option>';
+    feeHeadData.forEach(item => {
+        feeHeadOptions += `<option value="${item.id}">${item.name}</option>`;
+    });
+    $('#filterFeeHead').html(feeHeadOptions);
+
+    // Classes dropdown
+    let classOptions = '<option value="">All Classes</option>';
+    classData.forEach(item => {
+        classOptions += `<option value="${item.id}">${item.name}</option>`;
+    });
+    $('#filterClass').html(classOptions);
+
+    // Sections dropdown
+    let sectionOptions = '<option value="">All Sections</option>';
+    sectionData.forEach(item => {
+        sectionOptions += `<option value="${item.id}">${item.name}</option>`;
+    });
+    $('#filterSection').html(sectionOptions);
+
+    // Categories dropdown
+    let categoryOptions = '<option value="">All Categories</option>';
+    categoryData.forEach(item => {
+        categoryOptions += `<option value="${item.id}">${item.name}</option>`;
+    });
+    $('#filterCategory').html(categoryOptions);
+}
+
+// Functions to load dynamic checkboxes and radio buttons
+function loadFeeHeads() {
+    let html = createCheckboxes(feeHeadData, 'FEEHEAD');
+    $('#feeHeadContainer').html(html);
+}
+
+function loadClasses() {
+    let html = createCheckboxes(classData, 'CLASS');
+    $('#classContainer').html(html);
+}
+
+function loadSections() {
+    let html = createCheckboxes(sectionData, 'SECTION');
+    $('#sectionContainer').html(html);
+}
+
+function loadCategories() {
+    let html = createCheckboxes(categoryData, 'FEECATEGORY');
+    $('#categoryContainer').html(html);
+}
+
+        // Modify the loadFrequencies function to add the event handler without changing appearance
+        function loadFrequencies() {
+            let html = '';
+            frequencyData.forEach((item, index) => {
+                html += `
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="frequency" id="freq${item.id}" value="${item.id}" ${index === 0 ? 'checked' : ''}>
+                <label class="form-check-label" for="freq${item.id}">${item.name}</label>
+            </div>`;
+            });
+            $('#frequencyContainer').html(html);
+
+            // Add event listener for frequency change - simpler version
+            $('input[name="frequency"]').on('change', function () {
+                var selectedFrequency = $(this).val();
+
+                // Enable or disable month fields based on selection
+                var monthInputs = [
+                    'txtApril', 'txtMay', 'txtJune', 'txtJuly',
+                    'txtAugust', 'txtSeptember', 'txtOctober', 'txtNovember',
+                    'txtDecember', 'txtJanuary', 'txtFebruary', 'txtMarch'
+                ];
+
+                if (selectedFrequency === "Custom") {
+                    // For custom mode, just enable all month inputs for manual entry
+                    monthInputs.forEach(function (inputId) {
+                        $('#' + inputId).prop('disabled', false);
+                    });
+                    $('#dynamicAmount').parent().parent().hide(); // Hide the amount field
+                } else {
+                    // For other modes, disable manual entry and run updateFees
+                    monthInputs.forEach(function (inputId) {
+                        $('#' + inputId).prop('disabled', true);
+                    });
+                    $('#dynamicAmount').parent().parent().show(); // Show the amount field
+                    updateFees(); // Update fee values based on selected mode
+                }
+            });
+        }
+
+
+// Update checkbox counter function
+function updateCheckboxCounter(name) {
+    const totalVisible = $(`input[name="${name}"]:visible`).length;
+    const totalSelected = $(`input[name="${name}"]:checked`).length;
+
+    // Update the counter text
+    const counterElement = $(`input[name="${name}"]`).closest('.card-body').find('.checkbox-counter');
+    counterElement.find('.selected-count').text(totalSelected);
+    counterElement.find('.total-count').text(totalVisible);
+
+    // Highlight header if items are selected
+    const headerElement = $(`input[name="${name}"]`).closest('.card').find('.card-header h5');
+    headerElement.toggleClass('text-primary font-weight-bold', totalSelected > 0);
+}
+
+        function updateFees() {
+            var frequency = $('input[name="frequency"]:checked').val();
+            var amount = parseFloat($('#dynamicAmount').val());
+
+            // Skip if Custom mode is selected or amount is invalid
+            if (frequency === "Custom" || frequency === "0" || isNaN(amount)) {
+                if (frequency !== "Custom") {
+                    clearTextBoxes();
+                }
+                return;
+            }
+
+            // Clear all text boxes
+            clearTextBoxes();
+
+            var monthIds = [
+                'txtApril',
+                'txtMay',
+                'txtJune',
+                'txtJuly',
+                'txtAugust',
+                'txtSeptember',
+                'txtOctober',
+                'txtNovember',
+                'txtDecember',
+                'txtJanuary',
+                'txtFebruary',
+                'txtMarch'
+            ];
+
+            if (frequency === "Monthly") {
+                for (var i = 0; i < monthIds.length; i++) {
+                    $('#' + monthIds[i]).val(amount.toFixed(2));
+                }
+            } else if (frequency === "Quarterly") {
+                var quarterlyMonths = [0, 3, 6, 9]; // Indices for April, July, October, January
+                for (var i = 0; i < quarterlyMonths.length; i++) {
+                    $('#' + monthIds[quarterlyMonths[i]]).val(amount.toFixed(2));
+                }
+            } else if (frequency === "Annually") {
+                $('#' + monthIds[0]).val(amount.toFixed(2)); // April
+            }
+        }
+
+function clearTextBoxes() {
+    var monthIds = [
+        'txtApril',
+        'txtMay',
+        'txtJune',
+        'txtJuly',
+        'txtAugust',
+        'txtSeptember',
+        'txtOctober',
+        'txtNovember',
+        'txtDecember',
+        'txtJanuary',
+        'txtFebruary',
+        'txtMarch'
+    ];
+
+    for (var i = 0; i < monthIds.length; i++) {
+        $('#' + monthIds[i]).val('0');
+    }
+}
+
+// Function to load existing fee setups for validation
+function loadExistingFeeSetups() {
+    // Show loading spinner
+    $('#loadingSpinner').show();
+    $('#loadingMessage').text('Loading existing fee setups...');
+
+    $.ajax({
+        url: '@Url.Action("GetFeeConcessionList", "feemapconcession")',
+        type: 'GET',
+        data: { clientId: clientId },
+        dataType: 'json',
+        success: function(response) {
+            // Hide loading spinner
+            $('#loadingSpinner').hide();
+
+            if (Array.isArray(response)) {
+                existingConfigurations = response;
+            } else {
+                console.error('Invalid response format for existing fee setups');
+                existingConfigurations = [];
+            }
+        },
+        error: function(xhr, status, error) {
+            // Hide loading spinner
+            $('#loadingSpinner').hide();
+            console.error('Error loading existing fee setups:', error);
+            existingConfigurations = [];
+        }
+    });
+}
+
+function loadFeeSetupData() {
+    // Show loading indicator
+    $('#loadingSpinner').show();
+    $('#loadingMessage').text('Loading fee setup data...');
+
+    // AJAX call to retrieve fee setup data
+    $.ajax({
+        url: '@Url.Action("GetFeeConcessionList", "feemapconcession")',
+        type: 'GET',
+        data: {
+            feeHeadId: $('#filterFeeHead').val() || '',
+            classId: $('#filterClass').val() || '',
+            sectionId: $('#filterSection').val() || '',
+            categoryId: $('#filterCategory').val() || ''
+        },
+        dataType: 'json',
+        success: function(response) {
+            // Hide loading spinner
+            $('#loadingSpinner').hide();
+
+            if (response.error) {
+                console.error('Error loading fee setup data:', response.error);
+                alert('Failed to load fee setup data: ' + response.error);
+                return;
+            }
+
+            // Get DataTable instance
+            var table = $('#feeSetupTable').DataTable();
+
+            // Clear existing data
+            table.clear();
+
+            // Add data to the table
+            if (Array.isArray(response) && response.length > 0) {
+                table.rows.add(response).draw();
+            } else {
+                // Just redraw the table if empty
+                table.draw();
+            }
+        },
+        error: function(xhr, status, error) {
+            // Hide loading spinner
+            $('#loadingSpinner').hide();
+            console.error('Error loading fee setup data:', error);
+            alert('Failed to load fee setup data. Please try again.');
+        }
+    });
+}
+        function updateFees() {
+            var frequency = $('input[name="frequency"]:checked').val();
+            var amount = parseFloat($('#dynamicAmount').val());
+
+            // Skip if Custom mode is selected or amount is invalid
+            if (frequency === "Custom" || frequency === "0" || isNaN(amount)) {
+                if (frequency !== "Custom") {
+                    clearTextBoxes();
+                }
+                return;
+            }
+
+            // Clear all text boxes
+            clearTextBoxes();
+
+            var monthIds = [
+                'txtApril',
+                'txtMay',
+                'txtJune',
+                'txtJuly',
+                'txtAugust',
+                'txtSeptember',
+                'txtOctober',
+                'txtNovember',
+                'txtDecember',
+                'txtJanuary',
+                'txtFebruary',
+                'txtMarch'
+            ];
+
+            if (frequency === "Monthly") {
+                for (var i = 0; i < monthIds.length; i++) {
+                    $('#' + monthIds[i]).val(amount.toFixed(2));
+                }
+            } else if (frequency === "Quarterly") {
+                var quarterlyMonths = [0, 3, 6, 9]; // Indices for April, July, October, January
+                for (var i = 0; i < quarterlyMonths.length; i++) {
+                    $('#' + monthIds[quarterlyMonths[i]]).val(amount.toFixed(2));
+                }
+            } else if (frequency === "Annually") {
+                $('#' + monthIds[0]).val(amount.toFixed(2)); // April
+            }
+        }
+// Validate selections before saving
+        function validateAndSave() {
+            // Basic form validation
+            var feeHeads = getSelectedValues('FEEHEAD');
+            var classes = getSelectedValues('CLASS');
+            var sections = getSelectedValues('SECTION');
+            var categories = getSelectedValues('FEECATEGORY');
+            var frequency = $('input[name="frequency"]:checked').val();
+
+            // Check if required fields are selected
+            if (feeHeads.length === 0) {
+                alert('Please select at least one Fee Head');
+                return;
+            }
+
+            if (classes.length === 0) {
+                alert('Please select at least one Class');
+                return;
+            }
+
+            if (sections.length === 0) {
+                alert('Please select at least one Section');
+                return;
+            }
+
+            if (categories.length === 0) {
+                alert('Please select at least one Category');
+                return;
+            }
+
+            if (frequency === "0") {
+                alert('Please select a Fee Mode');
+                return;
+            }
+
+            // For Custom frequency, check if at least one month has an amount
+            if (frequency === "Custom") {
+                var hasAmount = false;
+                var monthIds = [
+                    'txtApril', 'txtMay', 'txtJune', 'txtJuly',
+                    'txtAugust', 'txtSeptember', 'txtOctober', 'txtNovember',
+                    'txtDecember', 'txtJanuary', 'txtFebruary', 'txtMarch'
+                ];
+
+                for (var i = 0; i < monthIds.length; i++) {
+                    var value = $('#' + monthIds[i]).val();
+                    if (value && value.trim() !== '' && parseFloat(value) > 0) {
+                        hasAmount = true;
+                        break;
+                    }
+                }
+
+                if (!hasAmount) {
+                    alert('Please enter an amount for at least one month');
+                    return;
+                }
+            } else {
+                // For other frequencies, validate the amount field
+                var amount = $('#dynamicAmount').val();
+                if (!amount || amount.trim() === '' || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+                    alert('Please enter a valid amount greater than 0');
+                    $('#dynamicAmount').focus();
+                    return;
+                }
+            }
+
+            // Check for existing configurations
+            var hasExistingConfigs = checkForExistingConfigurations(feeHeads, classes, sections, categories);
+
+            if (hasExistingConfigs) {
+                // Show confirmation modal
+                validationModal.show();
+            } else {
+                // Save directly if no existing configurations
+                saveFeeSetup(false);
+            }
+        }
+
+
+// Check if any selected combination already exists
+        // Check if any selected combination already exists
+function checkForExistingConfigurations(feeHeads, classes, sections, categories) {
+            if (existingConfigurations.length === 0) {
+                return false;
+            }
+
+            for (var i = 0; i < feeHeads.length; i++) {
+                for (var j = 0; j < classes.length; j++) {
+                    for (var k = 0; k < sections.length; k++) {
+                        for (var l = 0; l < categories.length; l++) {
+                            // Check if this combination exists
+                            var exists = existingConfigurations.some(config =>
+                                config.FeeHeadsID == feeHeads[i] &&
+                                config.ClassID == classes[j] &&
+                                config.SectionID == sections[k] &&
+                                config.FeeDiscountID == categories[l]
+                            );
+
+                            if (exists) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+}
+
+            return false;
+        }
+
+function saveFeeSetup(forceOverride) {
+    // Get selected values
+    var selectedFeeHeads = getSelectedValues('FEEHEAD');
+    var selectedClasses = getSelectedValues('CLASS');
+    var selectedSections = getSelectedValues('SECTION');
+    var selectedCategories = getSelectedValues('FEECATEGORY');
+    var frequency = $('input[name="frequency"]:checked').val();
+    var amount = parseFloat($('#dynamicAmount').val()) || 0;
+
+    // Show loading spinner
+    $('#loadingSpinner').show();
+    $('#loadingMessage').text('Saving fee setup...');
+
+    // Create an array to store all combinations for batch processing
+    var setupItems = [];
+    var successCount = 0;
+    var errorCount = 0;
+    var totalRequests = selectedFeeHeads.length * selectedClasses.length * selectedSections.length * selectedCategories.length;
+    var completedRequests = 0;
+
+    // Function to check if all requests are complete
+    function checkAllComplete() {
+        completedRequests++;
+        if (completedRequests >= totalRequests) {
+            // Hide loading spinner
+            $('#loadingSpinner').hide();
+
+            if (errorCount > 0) {
+                alert(`Fee setup process completed with ${successCount} successful entries and ${errorCount} errors.`);
+            } else {
+                alert('Fee setup process completed successfully!');
+            }
+            resetForm();
+            // Reload existing fee setups for future validation
+            loadExistingFeeSetups();
+            // Refresh the table data
+            loadFeeSetupData();
+        }
+    }
+
+    // Generate all combinations
+    for (var i = 0; i < selectedFeeHeads.length; i++) {
+        for (var j = 0; j < selectedClasses.length; j++) {
+            for (var k = 0; k < selectedSections.length; k++) {
+                for (var l = 0; l < selectedCategories.length; l++) {
+                    // Create a model that matches FeeMapPlanModel on the server
+                    var mapPlanModel = {
+                        FeeHeadsID: selectedFeeHeads[i],
+                        ClassID: selectedClasses[j],
+                        SectionID: selectedSections[k],
+                        FeeDiscountID: selectedCategories[l],
+                        Frequency: frequency,
+                        Amount: amount,
+                        April: parseFloat($('#txtApril').val()) || 0,
+                        May: parseFloat($('#txtMay').val()) || 0,
+                        June: parseFloat($('#txtJune').val()) || 0,
+                        July: parseFloat($('#txtJuly').val()) || 0,
+                        August: parseFloat($('#txtAugust').val()) || 0,
+                        September: parseFloat($('#txtSeptember').val()) || 0,
+                        October: parseFloat($('#txtOctober').val()) || 0,
+                        November: parseFloat($('#txtNovember').val()) || 0,
+                        December: parseFloat($('#txtDecember').val()) || 0,
+                        January: parseFloat($('#txtJanuary').val()) || 0,
+                        February: parseFloat($('#txtFebruary').val()) || 0,
+                        March: parseFloat($('#txtMarch').val()) || 0,
+                        IsActive: true
+                    };
+
+                    // Send individual request for each combination
+                    $.ajax({
+                        url: '@Url.Action("CreateFeeConcession", "FeeMapConcession")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(mapPlanModel),
+                        success: function (response) {
+                            if (response.success) {
+                                successCount++;
+                            } else {
+                                console.error('Error saving fee setup:', response.message);
+                                errorCount++;
+                            }
+                            checkAllComplete();
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('AJAX error:', error);
+                            errorCount++;
+                            checkAllComplete();
+                        }
+                    });
+
+                    // Add to our tracking array
+                    setupItems.push(mapPlanModel);
+                }
+            }
+        }
+    }
+
+    // If no requests were sent (empty selections), hide spinner and show message
+    if (totalRequests === 0) {
+        $('#loadingSpinner').hide();
+        alert('No fee setup combinations to save.');
+    }
+}
+
+function deleteFeeSetup(feeId) {
+    // Show loading spinner
+    $('#loadingSpinner').show();
+    $('#loadingMessage').text('Deleting fee setup...');
+
+    $.ajax({
+        url: '@Url.Action("DeleteFeeConcession", "feemapconcession")', // Changed from FeeSetup to FeeMapPlans
+        type: 'POST',
+        data: {
+            id: feeId
+            // clientId is not needed as the controller uses CurrentTenantID
+        },
+        success: function(response) {
+            // Hide loading spinner
+            $('#loadingSpinner').hide();
+
+            if (response.success) {
+                alert('Deleted successfully!');
+                // Reload the data table to reflect the changes
+                loadFeeSetupData();
+            } else {
+                alert('Error deleting fee setup: ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            // Hide loading spinner
+            $('#loadingSpinner').hide();
+            alert('Error deleting fee setup: ' + error);
+        }
+    });
+}
+
+        function resetForm() {
+            // Uncheck all checkboxes
+            $('input[type="checkbox"]').prop('checked', false);
+
+            // Reset frequency to default (first option)
+            $('input[name="frequency"]').first().prop('checked', true);
+
+            // Enable the dynamic amount field
+            $('#dynamicAmount').parent().parent().show();
+
+            // Reset month fields
+            var monthIds = [
+                'txtApril', 'txtMay', 'txtJune', 'txtJuly',
+                'txtAugust', 'txtSeptember', 'txtOctober', 'txtNovember',
+                'txtDecember', 'txtJanuary', 'txtFebruary', 'txtMarch'
+            ];
+
+            // Reset month input styling and enable all
+            monthIds.forEach(function (inputId) {
+                $('#' + inputId).removeClass('border-primary')
+                    .attr('placeholder', inputId.replace('txt', ''))
+                    .prop('disabled', true)
+                    .val('0');
+            });
+
+            // Hide custom mode note
+            $('#customModeNote').hide();
+
+            // Clear amount input
+            $('#dynamicAmount').val('');
+
+            // Update checkbox counters
+            ['FEEHEAD', 'CLASS', 'SECTION', 'FEECATEGORY'].forEach(updateCheckboxCounter);
+        }
+
+function getSelectedValues(name) {
+    var selected = [];
+    $('input[name="' + name + '"]:checked').each(function () {
+        selected.push($(this).val());
+    });
+    return selected;
+}
+    </script>
+

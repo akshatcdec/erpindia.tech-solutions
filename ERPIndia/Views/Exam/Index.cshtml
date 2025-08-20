@@ -1,0 +1,166 @@
+﻿@model ERPIndia.Models.Exam.ExamBulkUpdateViewModel
+
+@{
+    ViewBag.Title = "Exam Management";
+   
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible">
+       
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible">
+      
+        @TempData["Error"]
+    </div>
+}
+
+@using (Html.BeginForm("Index", "Exam", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.SessionID)
+    @Html.HiddenFor(m => m.SessionYear)
+    @Html.HiddenFor(m => m.SessionName)
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Manage Exam Name</h3>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%">S.No</th>
+                            <th style="width: 10%">Num</th>
+                            <th style="width: 10%">MS</th>
+                            <th style="width: 20%">Exam Name</th>
+                            <th style="width: 20%">Admit Card</th>
+                            <th style="width: 10%">AC</th>
+                            <th style="width: 25%;">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Exams.Count; i++)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    @Html.HiddenFor(m => m.Exams[i].ExamID)
+                                    @Html.HiddenFor(m => m.Exams[i].SerialNumber)
+                                    <span>@Model.Exams[i].SerialNumber</span>
+                                </td>
+                                <td class="text-center">
+                                    @Html.CheckBoxFor(m => m.Exams[i].Num, new { @class = "form-check-input" })
+                                </td>
+                                <td class="text-center">
+                                    @Html.CheckBoxFor(m => m.Exams[i].MS, new { @class = "form-check-input" })
+                                </td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.Exams[i].ExamName, new { @class = "form-control input-sm", required = "required" , maxlength = "40" })
+                                    @Html.ValidationMessageFor(m => m.Exams[i].ExamName, "", new { @class = "text-danger" })
+                                </td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.Exams[i].AdmitCard, new { @class = "form-control input-sm", maxlength = "40" })
+                                </td>
+                                <td class="text-center">
+                                    @Html.CheckBoxFor(m => m.Exams[i].AC, new { @class = "form-check-input" })
+                                </td>
+                                <td>
+                                   <span>@Model.Exams[i].Remarks</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa fa-save"></i> Save All Changes
+            </button>
+            <button type="button" style="display:none" class="btn btn-success" onclick="checkAll(true)">
+                <i class="fa fa-check-square"></i> Check All
+            </button>
+            <button type="button" style="display:none" class="btn btn-warning" onclick="checkAll(false)">
+                <i class="fa fa-square"></i> Uncheck All
+            </button>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-default">
+                <i class="fa fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+}
+
+
+    <script type="text/javascript">
+        function checkAll(checked) {
+            // Check/uncheck all Num checkboxes
+            $('input[name*=".Num"]').prop('checked', checked);
+            // Check/uncheck all MS checkboxes
+            $('input[name*=".MS"]').prop('checked', checked);
+            // Check/uncheck all AC checkboxes
+            $('input[name*=".AC"]').prop('checked', checked);
+        }
+
+        $(document).ready(function () {
+            // Add form validation
+            $('form').on('submit', function () {
+                var isValid = true;
+
+                // Validate required fields
+                $('.form-control[required]').each(function () {
+                    if ($(this).val().trim() === '') {
+                        $(this).addClass('error');
+                        isValid = false;
+                    } else {
+                        $(this).removeClass('error');
+                    }
+                });
+
+                if (!isValid) {
+                    alert('Please fill in all required fields.');
+                    return false;
+                }
+
+                return true;
+            });
+        });
+    </script>
+
+
+<style>
+    .table > tbody > tr > td {
+        vertical-align: middle;
+    }
+
+    .input-sm {
+        height: 30px;
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+
+    .form-check-input {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .error {
+        border-color: #d9534f;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .panel-footer button, .panel-footer a {
+        margin-right: 5px;
+    }
+</style>

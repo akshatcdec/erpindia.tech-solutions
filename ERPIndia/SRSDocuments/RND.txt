@@ -1,0 +1,8 @@
+﻿Using NEWSEQUENTIALID() (sequential UUID):
+sql
+Copy
+Edit
+ALTER TABLE Schools
+ADD TenantID UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID();
+Advantage: Sequential UUIDs improve indexing and reduce fragmentation.
+Use case: Recommended if TenantID will be indexed or frequently queried.

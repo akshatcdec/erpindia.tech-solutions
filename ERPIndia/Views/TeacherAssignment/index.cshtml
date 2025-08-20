@@ -1,0 +1,742 @@
+﻿<div class="loading" id="loadingSpinner">
+    <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2" id="loadingMessage">Loading configuration data...</p>
+    </div>
+</div>
+
+<!-- Validation Modal -->
+<div class="modal fade" id="validationModal" tabindex="-1" aria-labelledby="validationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="validationModalLabel">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This teacher assignment already exists. Would you like to replace it?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSave">Yes, Replace</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <!-- Header Section -->
+  
+    <!-- Main Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Teacher Subject Assignment Information</h4>
+                </div>
+                <div class="card-body">
+                    <form id="teacherAssignmentForm">
+                        <!-- Grid-based layout for selection options -->
+                        <div class="row mb-4">
+                            <!-- Fee Head Column -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Teacher</h5>
+                                        <button type="button" class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body" id="teacherContainer">
+                                        <!-- Fee Head checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Class Column -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Class</h5>
+                                        <button type="button" class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body" id="classContainer">
+                                        <!-- Class checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section Column -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Section</h5>
+                                        <button type="button" class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body" id="sectionContainer">
+                                        <!-- Section checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Category Column -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Subject</h5>
+                                        <button type="button" class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body" id="subjectContainer">
+                                        <!-- Category checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12 text-end">
+                                <button type="button" id="btnSave" class="btn btn-lg btn-warning">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="teacherAssignmentTable" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Teacher</th>
+                                <th>Class</th>
+                                <th>Section</th>
+                                <th>Subject</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for the form functionality -->
+<script type="text/javascript">
+    $(document).ready(function () {
+        // Add search and select all functionality
+        $(document).on('input', '.checkbox-search', function () {
+            const searchTerm = $(this).val().toLowerCase();
+            const targetName = $(this).data('target');
+
+            $(`input[name="${targetName}"]`).each(function () {
+                const label = $(`label[for="${this.id}"]`).text().toLowerCase();
+                const matching = label.includes(searchTerm);
+                $(this).closest('.form-check').toggle(matching);
+            });
+        });
+
+        // Select all functionality
+        $(document).on('click', '.select-all-btn', function () {
+            const targetName = $(this).data('target');
+            const allChecked = $(`input[name="${targetName}"]:checked`).length === $(`input[name="${targetName}"]:visible`).length;
+
+            // Toggle selection (select all if not all are selected, deselect if all are selected)
+            $(`input[name="${targetName}"]:visible`).prop('checked', !allChecked);
+
+            // Update counter
+            updateCheckboxCounter(targetName);
+        });
+
+        // Update counter when checkboxes change
+        $(document).on('change', 'input[type="checkbox"]', function () {
+            updateCheckboxCounter($(this).attr('name'));
+        });
+
+        // Initialize counters for all checkbox groups
+        ['TEACHER', 'CLASS', 'SECTION', 'SUBJECT'].forEach(updateCheckboxCounter);
+    });
+
+    // Update checkbox counter function
+    function updateCheckboxCounter(name) {
+        const totalVisible = $(`input[name="${name}"]:visible`).length;
+        const totalSelected = $(`input[name="${name}"]:checked`).length;
+
+        // Update the counter text
+        const counterElement = $(`input[name="${name}"]`).closest('.card-body').find('.checkbox-counter');
+        counterElement.find('.selected-count').text(totalSelected);
+        counterElement.find('.total-count').text(totalVisible);
+
+        // Highlight header if items are selected
+        const headerElement = $(`input[name="${name}"]`).closest('.card').find('.card-header h5');
+        headerElement.toggleClass('text-primary font-weight-bold', totalSelected > 0);
+    }
+
+    // Helper function to create checkbox grid with search and counter
+    function createCheckboxes(data, name) {
+        if (!data || data.length === 0) {
+            return '<div class="alert alert-warning">No data available</div>';
+        }
+
+        let html = '';
+
+        // Add search box and select all in the header
+        html += `
+    <div class="mb-2 checkbox-header">
+        <div class="input-group input-group-sm">
+            <input type="text" class="form-control form-control-sm checkbox-search"
+                   placeholder="Search..." data-target="${name}">
+            <div class="input-group-append">
+                <button class="btn btn-sm btn-outline-secondary select-all-btn"
+                        type="button" data-target="${name}">All</button>
+            </div>
+        </div>
+    </div>`;
+
+        // Create checkbox container with fixed height and scrolling
+        html += `<div class="checkbox-container" style="${data.length > 6 ? 'height: 240px; overflow-y: auto;' : ''}">`
+
+        // Create one checkbox per row
+        data.forEach((item) => {
+            html += `
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="${name}${item.id}" name="${name}" value="${item.id}">
+            <label class="form-check-label" for="${name}${item.id}">${item.name}</label>
+        </div>`;
+        });
+
+        html += '</div>';
+
+        // Add counter at the bottom
+        html += `
+    <div class="mt-2 small text-muted checkbox-counter">
+        <span class="selected-count">0</span> of <span class="total-count">${data.length}</span> selected
+    </div>`;
+
+        return html;
+    }
+
+    const css = `
+<style>
+.checkbox-header {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 10;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.checkbox-container {
+    scrollbar-width: thin;
+}
+
+.checkbox-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.checkbox-container::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+}
+
+.checkbox-counter {
+    font-size: 0.8rem;
+    text-align: right;
+}
+
+.card-header h5 {
+    transition: all 0.3s ease;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    transition: background-color 0.3s ease;
+}
+
+.card-header:hover {
+    background-color: #e9ecef;
+}
+
+.select-all-btn {
+    font-size: 0.8rem;
+    padding: 2px 6px;
+}
+</style>
+`;
+
+    // Add the CSS to the document head
+    $('head').append(css);
+
+    // Function to reset the form after saving
+    function resetForm() {
+        // Uncheck all checkboxes
+        $('input[type="checkbox"]').prop('checked', false);
+
+        // Clear any search inputs
+        $('.checkbox-search').val('');
+
+        // Show all checkboxes that might have been hidden by search
+        $('.form-check').show();
+
+        // Reset the counters
+        ['TEACHER', 'CLASS', 'SECTION', 'SUBJECT'].forEach(updateCheckboxCounter);
+
+        // Remove any highlighting on headers
+        $('.card-header h5').removeClass('text-primary font-weight-bold');
+    }
+
+    // Data objects that will be populated from the configuration table
+    var teacherData = [];
+    var classData = [];
+    var sectionData = [];
+    var subjectData = [];
+    var existingAssignments = []; // Store existing configurations for validation
+    var clientId = @Session["UserId"]; // Get client ID from session
+
+    // Bootstrap modal instance
+    var validationModal;
+
+    $(document).ready(function () {
+        // Initialize DataTable with proper column definitions
+        $('#teacherAssignmentTable').DataTable({
+            processing: true,
+            serverSide: false,
+            data: [], // Start with empty data
+            columns: [
+                { data: "Id" ,visible: false},
+                { data: "TeacherName" },
+                { data: "ClassName" },
+                { data: "SectionName" },
+                { data: "SubjectName" },
+                {
+                    // Add a column for delete action
+                    data: null,
+                    orderable: false,
+                    className: "text-center",
+                    render: function (data, type, row) {
+                        return '<button class="btn btn-danger btn-sm delete-assignment" data-id="' + row.Id + '"><i class="fa fa-trash"></i></button>';
+                    }
+                }
+            ],
+            language: {
+                emptyTable: "No teacher subject assignments found"
+            }
+        });
+
+        // Initialize Bootstrap modal
+        validationModal = new bootstrap.Modal(document.getElementById('validationModal'));
+
+        // Load configuration data from the server
+        loadConfigurationData();
+        loadAssignmentData();
+
+        // Save button click handler
+        $('#btnSave').click(function () {
+            validateAndSave();
+        });
+
+        // Confirm save button click handler
+        $('#confirmSave').click(function () {
+            validationModal.hide();
+            saveAssignment(true); // true indicates forced save (override existing)
+        });
+
+        // Delete button click handler
+        $(document).on('click', '.delete-assignment', function() {
+            var assignmentId = $(this).data('id');
+            if (confirm('Are you sure you want to delete this teacher subject assignment?')) {
+                deleteAssignment(assignmentId);
+            }
+        });
+    });
+
+    // Load configuration data from the server
+    function loadConfigurationData() {
+        // Show loading spinner
+        $('#loadingSpinner').show();
+        $('#loadingMessage').text('Loading configuration data...');
+
+        // Make AJAX request to get configuration data
+        $.ajax({
+            url: '@Url.Action("GetConfigurationLists", "TeacherAssignment")', // Adjust to match your controller route
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                if (response.error) {
+                    console.error('Error from server:', response.error);
+                    alert('Failed to load configuration data: ' + response.error);
+                    $('#loadingSpinner').hide();
+                    return;
+                }
+
+                // Process configuration data
+                processConfigurationData(response);
+
+                // Initialize form with the loaded data
+                loadTeachers();
+                loadClasses();
+                loadSections();
+                loadSubjects();
+
+                // Load existing assignments for validation
+                loadExistingAssignments();
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading configuration data:', error);
+                alert('Failed to load configuration data. Please refresh the page and try again.');
+
+                // Hide loading spinner
+                $('#loadingSpinner').hide();
+            }
+        });
+    }
+
+    // Load existing assignments for validation
+    function loadExistingAssignments() {
+        $('#loadingMessage').text('Loading existing assignments...');
+
+        $.ajax({
+            url: '@Url.Action("GetExistingAssignments", "TeacherAssignment")', // Adjust to match your controller route
+            type: 'GET',
+            data: { clientId: clientId },
+            dataType: 'json',
+            success: function (response) {
+                if (response.error) {
+                    console.error('Error from server:', response.error);
+                    $('#loadingSpinner').hide();
+                    return;
+                }
+
+                // Store existing assignments for validation
+                existingAssignments = response;
+
+                // Hide loading spinner
+                $('#loadingSpinner').hide();
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading existing assignments:', error);
+
+                // Hide loading spinner
+                $('#loadingSpinner').hide();
+            }
+        });
+    }
+
+    // Process configuration data from the server
+    function processConfigurationData(data) {
+        // Process teachers
+        teacherData = data
+            .filter(item => item.KeyName === 'TEACHER')
+            .sort((a, b) => a.SortOrder - b.SortOrder)
+            .map(item => {
+                return { id: item.Id, name: item.KeyValue };
+            });
+
+        // Process classes
+        classData = data
+            .filter(item => item.KeyName === 'CLASS')
+            .sort((a, b) => a.SortOrder - b.SortOrder)
+            .map(item => {
+                return { id: item.Id, name: item.KeyValue };
+            });
+
+        // Process sections
+        sectionData = data
+            .filter(item => item.KeyName === 'SECTION')
+            .sort((a, b) => a.SortOrder - b.SortOrder)
+            .map(item => {
+                return { id: item.Id, name: item.KeyValue };
+            });
+
+        // Process subjects
+        subjectData = data
+            .filter(item => item.KeyName === 'SUBJECT')
+            .sort((a, b) => a.SortOrder - b.SortOrder)
+            .map(item => {
+                return { id: item.Id, name: item.KeyValue };
+            });
+    }
+
+    // Load dynamic checkboxes
+    function loadTeachers() {
+        let html = createCheckboxes(teacherData, 'TEACHER');
+        $('#teacherContainer').html(html);
+    }
+
+    function loadClasses() {
+        let html = createCheckboxes(classData, 'CLASS');
+        $('#classContainer').html(html);
+    }
+
+    function loadSections() {
+        let html = createCheckboxes(sectionData, 'SECTION');
+        $('#sectionContainer').html(html);
+    }
+
+    function loadSubjects() {
+        let html = createCheckboxes(subjectData, 'SUBJECT');
+        $('#subjectContainer').html(html);
+    }
+
+    // Helper function to create checkbox grid
+    function createCheckboxes(data, name) {
+        if (!data || data.length === 0) {
+            return '<div class="alert alert-warning">No data available</div>';
+        }
+
+        let html = '';
+
+        // Add search box and select all in the header
+        html += `
+<div class="mb-2 checkbox-header">
+    <div class="input-group input-group-sm">
+        <input type="text" class="form-control form-control-sm checkbox-search"
+               placeholder="Search..." data-target="${name}">
+        <div class="input-group-append">
+            <button class="btn btn-sm btn-outline-secondary select-all-btn"
+                    type="button" data-target="${name}">All</button>
+        </div>
+    </div>
+</div>`;
+
+        // Create checkbox container with fixed height and scrolling
+        html += `<div class="checkbox-container" style="${data.length > 6 ? 'height: 240px; overflow-y: auto;' : ''}">`
+
+        // Create one checkbox per row
+        data.forEach((item) => {
+            html += `
+    <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="${name}${item.id}" name="${name}" value="${item.id}">
+        <label class="form-check-label" for="${name}${item.id}">${item.name}</label>
+    </div>`;
+        });
+
+        html += '</div>';
+
+        // Add counter at the bottom
+        html += `
+<div class="mt-2 small text-muted checkbox-counter">
+    <span class="selected-count">0</span> of <span class="total-count">${data.length}</span> selected
+</div>`;
+
+        return html;
+    }
+
+    // Validate selections before saving
+    function validateAndSave() {
+        // Basic form validation
+        var teachers = getSelectedValues('TEACHER');
+        var classes = getSelectedValues('CLASS');
+        var sections = getSelectedValues('SECTION');
+        var subjects = getSelectedValues('SUBJECT');
+
+        // Check if required fields are selected
+        if (teachers.length === 0) {
+            alert('Please select at least one Teacher');
+            return;
+        }
+
+        if (classes.length === 0) {
+            alert('Please select at least one Class');
+            return;
+        }
+
+        if (sections.length === 0) {
+            alert('Please select at least one Section');
+            return;
+        }
+
+        if (subjects.length === 0) {
+            alert('Please select at least one Subject');
+            return;
+        }
+
+        // Check for existing assignments
+        var hasExistingAssignments = checkForExistingAssignments(teachers, classes, sections, subjects);
+
+        if (hasExistingAssignments) {
+            // Show confirmation modal
+            validationModal.show();
+        } else {
+            // Save directly if no existing assignments
+            saveAssignment(false);
+        }
+    }
+
+    // Check if any selected combination already exists
+    function checkForExistingAssignments(teachers, classes, sections, subjects) {
+        if (existingAssignments.length === 0) {
+            return false;
+        }
+
+        for (var i = 0; i < teachers.length; i++) {
+            for (var j = 0; j < classes.length; j++) {
+                for (var k = 0; k < sections.length; k++) {
+                    for (var l = 0; l < subjects.length; l++) {
+                        // Check if this combination exists
+                        var exists = existingAssignments.some(assignment =>
+                            assignment.TeacherID == teachers[i] &&
+                            assignment.ClassID == classes[j] &&
+                            assignment.SectionID == sections[k] &&
+                            assignment.SubjectID == subjects[l]
+                        );
+
+                        if (exists) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // Save teacher subject assignment
+    function saveAssignment(forceOverride) {
+        // Collect form data
+        var formData = {
+            clientId: clientId,
+            teachers: getSelectedValues('TEACHER'),
+            classes: getSelectedValues('CLASS'),
+            sections: getSelectedValues('SECTION'),
+            subjects: getSelectedValues('SUBJECT'),
+            forceOverride: forceOverride // Add flag to indicate if existing records should be overridden
+        };
+
+        // Show loading spinner
+        $('#loadingSpinner').show();
+        $('#loadingMessage').text('Saving assignment...');
+
+        // Send Ajax request
+        $.ajax({
+            url: '@Url.Action("SaveTeacherAssignment", "TeacherAssignment")', // Adjust to match your controller route
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function (response) {
+                // Hide loading spinner
+                $('#loadingSpinner').hide();
+
+                if (response.success) {
+                    alert('Teacher subject assignment saved successfully!');
+                    resetForm();
+                    // Reload existing assignments for future validation
+                    loadExistingAssignments();
+
+                    // Refresh the table data
+                    loadAssignmentData();
+                } else {
+                    alert('Error saving assignment: ' + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                // Hide loading spinner
+                $('#loadingSpinner').hide();
+                alert('Error saving assignment: ' + error);
+            }
+        });
+    }
+
+    // Load assignment data for the table
+    function loadAssignmentData() {
+        // Show loading indicator
+        $('#loadingSpinner').show();
+        $('#loadingMessage').text('Loading assignment data...');
+
+        // AJAX call to retrieve assignment data
+        $.ajax({
+            url: '@Url.Action("GetTeacherAssignmentList", "TeacherAssignment")', // Adjust to match your controller route
+            type: 'GET',
+            data: {
+                clientId: clientId
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Hide loading spinner
+                $('#loadingSpinner').hide();
+
+                if (response.error) {
+                    console.error('Error loading assignment data:', response.error);
+                    alert('Failed to load assignment data: ' + response.error);
+                    return;
+                }
+
+                // Get DataTable instance
+                var table = $('#teacherAssignmentTable').DataTable();
+
+                // Clear existing data
+                table.clear();
+
+                // Add data to the table
+                if (Array.isArray(response) && response.length > 0) {
+                    table.rows.add(response).draw();
+                } else {
+                    // Just redraw the table if empty
+                    table.draw();
+                }
+            },
+            error: function(xhr, status, error) {
+                // Hide loading spinner
+                $('#loadingSpinner').hide();
+                console.error('Error loading assignment data:', error);
+                alert('Failed to load assignment data. Please try again.');
+            }
+        });
+    }
+
+    // Delete an assignment
+    function deleteAssignment(assignmentId) {
+        // Show loading spinner
+        $('#loadingSpinner').show();
+        $('#loadingMessage').text('Deleting assignment...');
+
+        $.ajax({
+            url: '@Url.Action("DeleteTeacherAssignment", "TeacherAssignment")', // Adjust to match your controller route
+            type: 'POST',
+            data: {
+                id: assignmentId,
+                clientId: clientId
+            },
+            success: function(response) {
+                // Hide loading spinner
+                $('#loadingSpinner').hide();
+
+                if (response.success) {
+                    alert('Teacher subject assignment deleted successfully!');
+                    // Reload the data table to reflect the changes
+                    loadAssignmentData();
+                } else {
+                    alert('Error deleting assignment: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                // Hide loading spinner
+                $('#loadingSpinner').hide();
+                alert('Error deleting assignment: ' + error);
+            }
+        });
+    }
+
+    // Helper function to get selected values from checkboxes
+    function getSelectedValues(name) {
+        var selected = [];
+        $('input[name="' + name + '"]:checked').each(function () {
+            selected.push($(this).val());
+        });
+        return selected;
+    }
+</script>

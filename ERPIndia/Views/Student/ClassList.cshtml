@@ -1,0 +1,182 @@
+﻿@model ERPIndia.Controllers.ClasswiseListViewModel
+@using ERPIndia.Class.Helper
+@{
+    ViewBag.Title = "Classwise List";
+    string code = CommonLogic.GetSessionValue(StringConstants.TenantCode);
+    
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                            <i class="ti ti-users fs-16"></i>
+                        </span>
+                        <h4 class="text-dark mb-0">@ViewBag.Title</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <!-- Filter Form -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        @using (Html.BeginForm("ClassList", "Student", FormMethod.Get, new { id = "filterForm", @class = "row g-3" }))
+                        {
+                            <div class="col-md-2">
+                                <label for="ClassId" class="form-label">Class</label>
+                                @Html.DropDownListFor(m => m.SelectedClass, Model.ClassList, new { @class = "form-control" })
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="SectionId" class="form-label">Section</label>
+                                @Html.DropDownListFor(m => m.SelectedSection, Model.SectionList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-2">
+                                <label for="SubjectId" class="form-label">Subject</label>
+                                @Html.DropDownListFor(m => m.SelectedSubject, Model.SubjectList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-4 align-self-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter me-2"></i>Apply Filter
+                                </button>
+                                <a href="@Url.Action("ClassList", new { viewType = ViewBag.ViewType })" class="btn btn-outline-secondary">
+                                    <i class="fas fa-redo me-2"></i>Reset
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>SL No.</th>
+                                <th>Photo</th>
+                                <th>Adm. No</th>
+                                <th>SR Number</th>
+                                <th>Roll No</th>
+                                <th>Admission Date</th>
+                                <th>Student Name</th>
+                                <th>Class</th>
+                                <th>Section</th>
+                                <th>Fee Category</th>
+                                <th>Gender</th>
+                                <th>Date of Birth</th>
+                                <th>Religion</th>
+                                <th>Mobile</th>
+                                <th>Student Aadhar</th>
+                                <th>Father's Name</th>
+                                <th>Mother's Name</th>
+                                <th>Guardian's Name</th>
+                                <th>Full Address</th>
+                                <th>Village/City/Town</th>
+                                <th>Pickup Point</th>
+                                <th>PEN No.</th>
+                                <th>Old Balance</th>
+                                <th>Udise Code</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{int slNo = 1;}
+                            @foreach (var student in Model.Students)
+                            {
+                                <tr>
+                                    <td>@(slNo++)</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(student.Photo))
+                                        {
+                                            string path = string.Format(@"/documents/{0}/StudentProfile/{1}_stu.jpg", code, student.AdmsnNo);
+                                            <img src="@path" class="img-fluid" alt="Student Photo" />
+                                        }
+                                        else
+                                        {
+                                            <i class="ti ti-photo-plus fs-16"></i>
+                                        }
+                                    </td>
+                                    <td>@student.AdmsnNo</td>
+                                    <td>@student.SrNo</td>
+                                    <td>@student.RollNo</td>
+                                    <td>@student.AdmsnDate</td>
+                                    <td>@student.FirstName</td>
+                                    <td>@student.ClassName</td>
+                                    <td>@student.SectionName</td>
+                                    <td>@student.CategoryName</td>
+                                    <td>@student.Gender</td>
+                                    <td>@student.DOB</td>
+                                    <td>@student.Religion</td>
+                                    <td>@student.Mobile</td>
+                                    <td>@student.AadharNo</td>
+                                    <td>@student.FatherName</td>
+                                    <td>@student.MotherName</td>
+                                    <td>@student.GuardianName</td>
+                                    <td>@student.StCurrentAddress</td>
+                                    <td>@student.VillageName</td>
+                                    <td>@student.PickupName</td>
+                                    <td>@student.PENNo</td>
+                                    <td>@student.OldBalance</td>
+                                    <td>@student.UdiseCode</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('#usersTable').DataTable({
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "pageLength": 10,
+            "order": [[0, "asc"]], // Order by receipt number descending
+            "dom": 'Blfrtip',
+            "scrollX": true,
+            "buttons": [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'csv',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'excel',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'pdf',
+                    title: 'Student',
+                    className: 'btn btn-sm btn-secondary',
+                    orientation: 'landscape'
+                },
+                {
+                    extend: 'print',
+                    className: 'btn btn-sm btn-secondary'
+                }
+            ]
+        });
+
+    });</script>
+

@@ -1,0 +1,73 @@
+@model List<ERPIndia.Models.InvoiceModel>
+
+<section class="content-header">
+    <h1>Invoice </h1>
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("", "SiteMap")"><i class="fa fa-home"></i> Home</a></li>
+        <li class="active">Invoices</li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <div class="message-box"></div>
+                </div>
+                <div class="box-body">
+                    @Html.Partial("_UCClientFilter")
+
+                    @Html.Partial("_UCGridTop")
+
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 datagrid">
+                            <table cellspacing="1" cellpadding="2" style="width: 100%;" id="dgList" class="table table-striped table-hover table-bordered table-hd">
+                                <thead>
+                                    <tr class="gridheader">
+                                        <td>Name</td>
+                                        <td>Invoice Date</td>
+                                        <td>Due Date</td>
+                                        <td class="search_field" search_field_value="ServiceTotal">Amount</td>
+                                        <td class="search_field">Status</td>
+                                        <td class="search_field">Details</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model != null && Model.Count > 0)
+                                    {
+                                        for (int i = 0; i < Model.Count; i++)
+                                        {
+                                            <tr>
+                                                <td>@Model[i].ClientName</td>
+                                                <td>@(Model[i].InvoiceDate.HasValue ? Model[i].InvoiceDate.Value.ToString("dd-MMM-yyyy") : "") </td>
+                                                <td>@(Model[i].DueDate.HasValue ? Model[i].DueDate.Value.ToString("dd-MMM-yyyy") : "") </td>
+                                                <td>@Model[i].ServiceTotal</td>
+                                                <td style="width: 5%;" class="text-center">@(Model[i].PaymentStatus == 0 ? "Pending" : "Received")</td>
+                                                <td style="width: 5%;" class="text-center">
+                                                    <a href="@Url.Action("Invoice", "ClientService", routeValues: new { id = @Model[i].InvoiceId })" title="Click here"><i class="fa fa-vcard"></i></a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                            @if (Model == null || Model.Count == 0)
+                            {
+                                @Html.Partial("_UCNoRecordsMsg")
+                            }
+                        </div>
+                    </div>
+
+                    @Html.Partial("_UCGridBottom")
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+    $(document).ready(function () {
+        hideFilterControls(false, false, true, true);
+    });
+</script>

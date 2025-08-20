@@ -1,0 +1,256 @@
+﻿@model ERPIndia.Models.LoginModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0" />
+    <meta name="description" content="School Management Software" />
+    <meta name="keywords" content="admin, estimates, bootstrap, business, html5, responsive, Projects" />
+    <meta name="author" content="ERP India technologies - School Management Software" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>ERP India technologies - School Management Software </title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="/img/erplogo.png" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/template/assets/css/bootstrap.min.css" />
+
+    <!-- Feather CSS -->
+    <link rel="stylesheet" href="/template/assets/plugins/icons/feather/feather.css" />
+
+    <!-- Tabler Icon CSS -->
+    <link rel="stylesheet" href="/template/assets/plugins/tabler-icons/tabler-icons.css" />
+
+    <!-- Fontawesome CSS -->
+    <link rel="stylesheet" href="/template/assets/plugins/fontawesome/css/fontawesome.min.css" />
+    <link rel="stylesheet" href="/template/assets/plugins/fontawesome/css/all.min.css" />
+
+    <!-- Select2 CSS -->
+    <link rel="stylesheet" href="/template/assets/plugins/select2/css/select2.min.css" />
+
+    <!-- Slick Slider CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/template/assets/css/style.css" />
+
+    <script>
+        function isNumber(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body class="account-page">
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <div class="container-fuild">
+            <div class="login-wrapper w-100 overflow-hidden position-relative flex-wrap d-block vh-100">
+                <div class="row">
+                    <!-- Left side with slider -->
+                    <div class="col-lg-6 slider-section">
+                        <div class="login-background position-relative d-lg-flex align-items-center justify-content-center d-lg-block d-none flex-wrap vh-100 overflowy-auto">
+                            <div class="slider-container w-100 h-100">
+                                <div class="image-slider w-100 h-100">
+                                    <div class="slider-item">
+                                        <img src="https://preskool.dreamstechnologies.com/html/template/assets/img/authentication/authentication-01.jpg" class="img-fluid w-100" alt="Slide 1" />
+                                        <div class="slider-overlay">
+                                            <h2>Transforming Education Management</h2>
+                                            <p>All-in-one platform for student information, attendance, and grade tracking</p>
+                                        </div>
+                                    </div>
+                                    <div class="slider-item">
+                                        <img src="https://preskool.dreamstechnologies.com/html/template/assets/img/authentication/authentication-02.jpg" class="img-fluid w-100" alt="Slide 2" />
+                                        <div class="slider-overlay">
+                                            <h2>Connecting Parents, Teachers & Students</h2>
+                                            <p>Seamless communication and collaboration tools for the entire school community</p>
+                                        </div>
+                                    </div>
+                                    <div class="slider-item">
+                                        <img src="https://preskool.dreamstechnologies.com/html/template/assets/img/authentication/authentication-03.jpg" class="img-fluid w-100" alt="Slide 3" />
+                                        <div class="slider-overlay">
+                                            <h2>Smart Learning Analytics</h2>
+                                            <p>Data-driven insights to improve student performance and teaching effectiveness</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right side with login form -->
+                    <div class="col-lg-6 col-md-12 col-sm-12">
+                        @using (Html.BeginForm("Login", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "login-form", @novalidate = "novalidate", @id = "frmLogin" }))
+                        {
+                            @Html.AntiForgeryToken()
+
+                            <div class="row justify-content-center align-items-center vh-100 overflow-auto flex-wrap">
+                                <div class="col-md-8 mx-auto p-4">
+                                    <div>
+                                        <div class="mx-auto text-center">
+                                            <img src="/img/erplogo.png" class="img-fluid" style="max-width: 120px;" alt="Logo" />
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-body p-4">
+                                                <div class="mb-3">
+                                                    <div class="form-group">
+                                                        <label class="form-label">User Name</label>
+                                                        <div class="input-icon mb-3 position-relative">
+                                                            <span class="input-icon-addon">
+                                                                <i class="ti ti-user"></i>
+                                                            </span>
+                                                            @Html.TextBoxFor(model => model.UserName, new { @class = "form-control", @placeholder = "Username", @autocomplete = "off", @maxlength = "50" })
+                                                            @Html.ValidationMessageFor(model => model.UserName)
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <label class="form-label">Password</label>
+                                                        <div class="pass-group">
+                                                            @Html.PasswordFor(model => model.Password, new { @class = "pass-input form-control", @placeholder = "Password", @autocomplete = "off", @maxlength = "50" })
+                                                            <span class="ti toggle-password ti-eye-off"></span>
+                                                            @Html.ValidationMessageFor(model => model.Password)
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group mt-3">
+                                                        <label class="form-label">Client Code</label>
+                                                        <div class="input-icon mb-3 position-relative">
+                                                            <span class="input-icon-addon">
+                                                                <i class="ti ti-building"></i>
+                                                            </span>
+                                                            @Html.TextBoxFor(model => model.Code, new { @class = "form-control", @placeholder = "Client Code", @maxlength = "50", @autocomplete = "off", onkeypress = "return isNumber(event)" })
+                                                            @Html.ValidationMessageFor(model => model.Code)
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-wrap form-wrap-checkbox mt-3 mb-3">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="form-check form-check-md mb-0">
+                                                                    @Html.CheckBoxFor(model => model.RememberMe, new { @class = "form-check-input mt-0" })
+                                                                </div>
+                                                                <p class="ms-1 mb-0">Remember Me</p>
+                                                            </div>
+                                                            <div class="text-end">
+                                                                <a href="#" class="link-danger">Forgot Password?</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <div id="dvmsg"></div>
+                                                        <button type="submit" class="btn btn-primary w-100">Sign In</button>
+                                                    </div>
+                                                    <div class="mb-3" style="text-align:center">
+                                                        <div class="contact-info">
+                                                            <div class="contact-item">
+                                                                <i class="fas fa-phone" style="margin-right: 15px;"></i>
+                                                                <span class="contact-label">Call:</span>
+                                                                <span class="contact-value">+91- 9005855852</span>
+                                                            </div>
+
+                                                            <div class="contact-item">
+                                                                <i class="fas fa-envelope" style="margin-right: 15px;"></i>
+                                                                <span class="contact-label">Email:</span>
+                                                                <span class="contact-value">oriondigitalworld@gmail.com</span>
+                                                            </div>
+
+                                                            <div class="contact-item">
+                                                                <i class="fas fa-globe" style="margin-right: 15px;"></i>
+                                                                <span class="contact-label">Web:</span>
+                                                                <span class="contact-value">https://erpindia.online</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Social Login Buttons -->
+                                            <div class="text-center px-4" style="text-align:center">
+                                                <div class="d-flex align-items-center justify-content-center flex-wrap">
+                                                    <div class="text-center me-2 flex-fill">
+                                                        <a href="https://www.facebook.com/oriondigitalworld" class="bg-primary br-10 p-2 btn btn-primary d-flex align-items-center justify-content-center">
+                                                            <i class="fab fa-facebook-f"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="text-center me-2 flex-fill">
+                                                        <a href="https://www.instagram.com/oriondigiworld" class="br-10 p-2 btn btn-outline-light d-flex align-items-center justify-content-center">
+                                                            <i class="fab fa-instagram"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-3 text-center pb-3">
+                                                <p class="mb-0">Copyright &copy; 2024 - ERPIndia</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /Main Wrapper -->
+    <!-- jQuery -->
+    <script src="/template/assets/js/jquery-3.7.1.min.js"></script>
+
+    <!-- Bootstrap Core JS -->
+    <script src="/template/assets/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Feather Icon JS -->
+    <script src="/template/assets/js/feather.min.js"></script>
+
+    <!-- Slimscroll JS -->
+    <script src="/template/assets/js/jquery.slimscroll.min.js"></script>
+
+    <!-- Select2 JS -->
+    <script src="/template/assets/plugins/select2/js/select2.min.js"></script>
+
+    <!-- Slick Slider JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="/template/assets/js/script.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('.image-slider').slick({
+                dots: true,
+                infinite: true,
+                speed: 500,
+                fade: true,
+                cssEase: 'linear',
+                autoplay: true,
+                autoplaySpeed: 2000,
+                arrows: false
+            });
+
+            // Password visibility toggle
+            $(".toggle-password").click(function () {
+                $(this).toggleClass("ti-eye ti-eye-off");
+                var input = $(this).parent().find("input");
+                if (input.attr("type") == "password") {
+                    input.attr("type", "text");
+                } else {
+                    input.attr("type", "password");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

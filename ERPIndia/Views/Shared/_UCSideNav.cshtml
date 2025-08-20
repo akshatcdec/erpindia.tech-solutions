@@ -1,0 +1,48 @@
+﻿@using ERPIndia.Models;
+@using ERPIndia.Class.Helper;
+<div class="sidebar-main sidebar-menu-one sidebar-expand-md sidebar-color">
+    <div class="mobile-sidebar-header d-md-none">
+        <div class="header-logo">
+            <a href="index.html"><img src="img/logo1.png" alt="logo"></a>
+        </div>
+    </div>
+    <div class="sidebar-menu-content" style="min-height:895px;">
+        <ul class="nav nav-sidebar-menu sidebar-toggle-view">
+            @if (ViewBag.MenuList != null && ViewBag.MenuList.Count > 0)
+            {
+                List<SiteMenuModel> siteMenuList = ViewBag.MenuList;
+                List<SiteMenuModel> mainMenuList = siteMenuList.FindAll(m => m.ParentMenuId == 0);
+                if (mainMenuList != null && mainMenuList.Count > 0)
+                {
+                    for (int i = 0; i < mainMenuList.Count; i++)
+                    {
+                        List<SiteMenuModel> subMenuList = siteMenuList.FindAll(sm => sm.ParentMenuId == mainMenuList[i].MenuId);
+
+                        if (subMenuList != null && subMenuList.Count > 0)
+                        {
+                            <li id="@mainMenuList[i].MenuPageName.ToLower()" class="nav-item sidebar-nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="fa @mainMenuList[i].MenuImageName"></i><span>@mainMenuList[i].MenuName</span>
+                                </a>
+                                <ul class="nav sub-group-menu">
+                                    @for (int j = 0; j < subMenuList.Count; j++)
+                                    {
+                                        <li id="@subMenuList[j].MenuPageName" class="nav-item">
+                                            <a href="@Url.Action("", subMenuList[j].MenuPageName)" class="nav-link"><i class="fa @subMenuList[j].MenuImageName"></i>@subMenuList[j].MenuName</a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item" id="@mainMenuList[i].MenuPageName.ToLower()">
+                                <a href="@Url.Action("", mainMenuList[i].MenuPageName)" class="nav-link"><i class="fa @mainMenuList[i].MenuImageName"></i><span>@mainMenuList[i].MenuName</span></a>
+                            </li>
+                        }
+                    }
+                }
+            }
+        </ul>
+    </div>
+</div>

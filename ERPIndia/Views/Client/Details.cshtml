@@ -1,0 +1,343 @@
+﻿@model ERPIndia.ViewModel.ClientDetailsModel
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+    var invoicelist1 = Model.Ledgers.Where(x => x.LVoucherType == "INVOICE").ToList();
+    var drSum = invoicelist1.Select(x => x.LDrAmt).Sum();
+    var paymentlist1 = Model.Ledgers.Where(x => x.LVoucherType == "PAYMENT" || x.LVoucherType == "ADVANCE").ToList();
+    var crSum = paymentlist1.Select(x => x.LCrAmt).Sum();
+    var bal = crSum - drSum;
+}
+<div class="dashboard-content-one">
+    <!-- Breadcubs Area Start Here -->
+    <div class="breadcrumbs-area">
+        <h3>Client Details</h3>
+        <ul>
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+            <li>Client</li>
+        </ul>
+    </div>
+    <div class="row">
+        <div class="col-3-xxxl col-sm-6 col-12">
+            <div class="dashboard-summery-one">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="item-icon bg-light-red">
+                            <i class="flaticon-money text-red"></i>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="item-content">
+                            <div class="item-title">Total Due</div>
+                            <div class="item-number"><span>INR</span><span class="counter" data-num="@drSum">&nbsp; @drSum</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-3-xxxl col-sm-6 col-12">
+            <div class="dashboard-summery-one">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="item-icon bg-light-magenta">
+                            <i class="flaticon-shopping-list text-magenta"></i>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="item-content">
+                            <div class="item-title">Receive Amount</div>
+                            <div class="item-number"><span class="counter" data-num="@crSum">&nbsp; @crSum</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-3-xxxl col-sm-6 col-12">
+            <div class="dashboard-summery-one">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="item-icon bg-light-yellow">
+                            <i class="flaticon-mortarboard text-orange"></i>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="item-content">
+                            <div class="item-title">Balance Amount</div>
+                            <div class="item-number"><span class="counter" data-num="@bal">@bal</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-3-xxxl col-sm-6 col-12">
+            <div class="dashboard-summery-one">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="item-icon bg-light-blue">
+                            <i class="flaticon-money text-blue"></i>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="item-content">
+                            <div class="item-title">Total Invoice</div>
+                            <div class="item-number"><span class="counter" data-num="@invoicelist1.Count">@invoicelist1.Count</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12-xxxl col-12">
+            <div class="card dashboard-card-twelve">
+                <div class="card-body">
+                    <div class="heading-layout1">
+                        <div class="item-title">
+                            <h3>Client Details</h3>
+                        </div>
+                    </div>
+                    <div class="kids-details-wrap">
+                        <div class="row">
+                            <table cellspacing="1" cellpadding="2" style="width: 100%;" id="dgList" class="table table-striped table-hover table-bordered table-hd">
+                                <thead>
+                                    <tr class="gridheader">
+                                        <td style="width:40%;text-align:center">General Details</td>
+                                        <td style="width:30%;text-align: center">Contact Details</td>
+                                        <td style="width:30%;text-align: center">Other Details</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="width:40%;text-align:center">
+                                            <table class="table text-nowrap">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Client Name:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.ClientName</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Client Code:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.ClientCode</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Email:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.Email</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>GST No:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.GSTNo</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>PAN No:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.PANNo</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                        <td style="width:30%;text-align: center">
+                                            <table class="table text-nowrap">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Address1:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.Address1</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Address2:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.Address2</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>City:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.City</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>State:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.State</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>ZipCode:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.ZipCode</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Phone:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.Phone</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Fax:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.Fax</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>ZipCode:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.ZipCode</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Whatsapp:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.Whatsapp</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>WebSite:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.WebSite</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                        <td style="width:30%;text-align: center">
+                                            <table class="table text-nowrap">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Principal Name:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.PrincipalName</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Principal Number:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.PrincipalNumber</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Manager Name:</td>
+                                                        <td class="font-medium text-dark-medium">@Model.ClientModel.ManagerNumber</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Manager Number:</td>
+                                                        <td class="font-medium text-dark-medium"> @Model.ClientModel.ManagerNumber</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Twitter Link:</td>
+                                                        <td class="font-medium text-dark-medium"> 
+                                                        @Model.ClientModel.TwitterLink
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Facebook Account Link:</td>
+                                                        <td class="font-medium text-dark-medium">
+                                                            @Model.ClientModel.FacebookAccountLink
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="card ui-tab-card">
+        <div class="card-body">
+            <div class="basic-tab">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#tab1" role="tab" aria-selected="true">Invoice</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tab2" role="tab" aria-selected="false">Payment</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tab3" role="tab" aria-selected="false">ledger</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="tab1" role="tabpanel">
+                        <table cellspacing="1" cellpadding="2" style="width: 100%;" id="dgList" class="table table-striped table-hover table-bordered table-hd">
+                            <thead>
+                                <tr class="gridheader">
+                                    <td>Sr No</td>
+                                    <td>Date</td>
+                                    <td>Invoice Type</td>
+                                    <td>Amount</td>
+                                    <td>RefNo</td>
+                                    <td>Remarks</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Ledgers.Count > 0)
+                                {
+                                    var invoicelist = Model.Ledgers.Where(x => x.LVoucherType == "INVOICE").ToList();
+                                    for (int i = 0; i < invoicelist.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>@(i+1)</td>
+                                            <td>@invoicelist[i].LDate.ToString("dd-MMM-yyyy")</td>
+                                            <td>@invoicelist[i].LVoucherType</td>
+                                            <td>@invoicelist[i].LDrAmt</td>
+                                            <td>@invoicelist[i].RefNo</td>
+                                            <td>@invoicelist[i].LRemarks</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="tab2" role="tabpanel">
+                        <table cellspacing="1" cellpadding="2" style="width: 100%;" id="dgList" class="table table-striped table-hover table-bordered table-hd">
+                            <thead>
+                                <tr class="gridheader">
+                                    <td>Sr No</td>
+                                    <td>Date</td>
+                                    <td>Invoice Type</td>
+                                    <td>Amount</td>
+                                    <td>RefNo</td>
+                                    <td>Remarks</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Ledgers.Count > 0)
+                                {
+                                    var paymentlist = Model.Ledgers.Where(x => x.LVoucherType == "PAYMENT" || x.LVoucherType == "ADVANCE").ToList();
+                                    for (int i = 0; i < paymentlist.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>@(i+1)</td>
+                                            <td>@paymentlist[i].LDate.ToString("dd-MMM-yyyy")</td>
+                                            <td>@paymentlist[i].LVoucherType</td>
+                                            <td>@paymentlist[i].LCrAmt</td>
+                                            <td>@paymentlist[i].RefNo</td>
+                                            <td>@paymentlist[i].LRemarks</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="tab3" role="tabpanel">
+                        <table cellspacing="1" cellpadding="2" style="width: 100%;" id="dgList" class="table table-striped table-hover table-bordered table-hd">
+                            <thead>
+                                <tr class="gridheader">
+                                    <td>Sr No</td>
+                                    <td>Date</td>
+                                    <td>Invoice Type</td>
+                                    <td>Dr Amt</td>
+                                    <td>Cr Amt</td>
+                                    <td>Balance</td>
+                                    <td>BalanceType</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.LedgerBook.Count > 0)
+                                {
+                                    for (int i = 0; i < Model.LedgerBook.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>@(i+1)</td>
+                                            <td>@Model.LedgerBook[i].LDate.ToString("dd-MMM-yyyy")</td>
+                                            <td>@Model.LedgerBook[i].LvoucherType</td>
+                                            <td>@Model.LedgerBook[i].LDrAmt</td>
+                                            <td>@Model.LedgerBook[i].LCrAmt</td>
+                                            <td>@Model.LedgerBook[i].Balance</td>
+                                            <td>@Model.LedgerBook[i].BalanceType</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

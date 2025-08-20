@@ -1,0 +1,724 @@
+﻿@model ERPIndia.Models.Certificate.TCDetailsViewModel
+
+<style>
+    .tc-form-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .student-info-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 5px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .info-value {
+        font-weight: 500;
+        font-size: 15px;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .form-grid {
+        display: grid;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+
+    .grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @@media (max-width: 1024px) {
+        .grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .grid-cols-4,
+        .grid-cols-3,
+        .grid-cols-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 6px;
+    }
+
+        .form-label.required::after {
+            content: " *";
+            color: #e53e3e;
+        }
+
+    .form-control,
+    .form-select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.2s;
+        background-color: white;
+    }
+
+        .form-control:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 60px;
+    }
+
+    .form-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: #f7fafc;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-secondary {
+        background: #718096;
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+    .btn-warning {
+        background: #ed8936;
+        color: white;
+    }
+
+        .btn-warning:hover {
+            background: #dd6b20;
+        }
+
+    .btn-success {
+        background: #48bb78;
+        color: white;
+    }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .section-divider {
+        border-top: 1px solid #e2e8f0;
+        margin: 2px 0;
+        padding-top: 2px;
+    }
+
+    .section-heading {
+        font-size: 14px;
+        font-weight: 600;
+        padding-top: 25px;
+        color: #667eea;
+        margin-bottom: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-bar {
+        background: #eef3fb; /* your light bg */
+        border-radius: 12px;
+        padding: 10px 16px;
+    }
+
+    /* Full-width 4-column grid that collapses nicely on smaller screens */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        column-gap: 32px;
+        row-gap: 8px;
+        align-items: center;
+    }
+
+    /* Keep label and value on one line; let value truncate with ellipsis */
+    .info-pair {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 8px;
+        min-width: 0; /* required for truncation in grids */
+    }
+
+    .info-label {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .info-value {
+        min-width: 0; /* required for truncation */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Optional: on very small screens, switch to 2 columns */
+    @@media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>
+
+<form id="tcDetailsForm">
+    @Html.HiddenFor(m => m.StudentId)
+    @Html.HiddenFor(m => m.AdmissionNo)
+    @Html.HiddenFor(m => m.TCId)
+
+    <div class="info-bar">
+        <div class="info-grid">
+            <div class="info-pair">
+                <span class="info-label">Student:</span>
+                <span class="info-value">@Model.StudentName</span>
+            </div>
+            <div class="info-pair">
+                <span class="info-label">Father:</span>
+                <span class="info-value">@Model.FatherName</span>
+            </div>
+            <div class="info-pair">
+                <span class="info-label">Class:</span>
+                <span class="info-value">@Model.ClassSection</span>
+            </div>
+            <div class="info-pair">
+                <span class="info-label">Adm. No:</span>
+                <span class="info-value">@Model.AdmissionNo</span>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+
+        <div class="card-body pb-1">
+
+            <!-- Basic Information Section -->
+            <div class="row">
+                <div class="col-xxl-3 col-xl-3 col-md-3">
+                    <div class="row">
+                        <div class="col-xxl-10 col-xl-10 col-md-10">
+                            <h6 class="section-heading">BASIC INFORMATION</h6>
+                        </div>
+                        <div class="col-xxl-1 col-xl-1 col-md-1">
+                            <h6 class="section-heading">:</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-9 col-xl-9 col-md-9">
+                    <div class="row">
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Student Name Hindi</label>
+                                @Html.TextBoxFor(m => m.StudentNameHindi, new { @class = "form-control", @readonly = "readonly", placeholder = "छात्र का नाम" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Father Name Hindi</label>
+                                @Html.TextBoxFor(m => m.FatherNameHindi, new { @class = "form-control", @readonly = "readonly", placeholder = "पिता का नाम" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Mother Name Hindi</label>
+                                @Html.TextBoxFor(m => m.MotherNameHindi, new { @class = "form-control", @readonly = "readonly", placeholder = "माता का नाम" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Certificate Application Date</label>
+                                @Html.TextBoxFor(m => m.CertificateApplicationDate, new
+                                {
+                                    @class = "form-control",
+                                    type = "date",
+                                    @Value = ERPIndia.Class.Helper.DateTimeExtensions.ToHtmlDateString(Model.CertificateApplicationDate)
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academic Details Section -->
+            <div class="row">
+                <div class="col-xxl-3 col-xl-3 col-md-3">
+                    <div class="row">
+                        <div class="col-xxl-10 col-xl-10 col-md-10">
+                            <h6 class="section-heading">ACADEMIC DETAILS</h6>
+                        </div>
+                        <div class="col-xxl-1 col-xl-1 col-md-1">
+                            <h6 class="section-heading">:</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-9 col-xl-9 col-md-9">
+                    <div class="row">
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label"> First Addmisison Class</label>
+                                @Html.TextBoxFor(m => m.ClassWhenFirstAdmitted, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label required">Last Studied Class</label>
+                                @Html.TextBoxFor(m => m.LastClassStudied, new { @class = "form-control", required = "required" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Whether Fail (once or more)</label>
+                                @Html.TextBoxFor(m => m.FailedInPast, new { @class = "form-control", required = "required" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Promotion From Class</label>
+                                @Html.TextBoxFor(m => m.PromotedFromClass, new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subject and Fee Section -->
+            <div class="row">
+                <div class="col-xxl-3 col-xl-3 col-md-3">
+                    <div class="row">
+                        <div class="col-xxl-10 col-xl-10 col-md-10">
+                            <h6 class="section-heading">SUBJECT AND FEE DETAILS</h6>
+                        </div>
+                        <div class="col-xxl-1 col-xl-1 col-md-1">
+                            <h6 class="section-heading">:</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-9 col-xl-9 col-md-9">
+                    <div class="row">
+                        <div class="col-xxl-5 col-xl-5 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Subject Studied</label>
+                                @Html.TextBoxFor(m => m.SubjectsStudied, new { @class = "form-control", placeholder = "Enter subjects" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-2 col-xl-2 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label"> Due Status</label>
+                                @Html.DropDownListFor(m => m.AreAllDuesPaid,
+                                    new SelectList(new[] {
+                                        new { Value = "true", Text = "Yes" },
+                                        new { Value = "false", Text = "No" }
+                                    }, "Value", "Text"),
+                                    "Select",
+                                    new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-2 col-xl-2 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label"> Fee Cons.</label>
+                                @Html.TextBoxFor(m => m.FeeConcessionDetails, new { @class = "form-control", placeholder = "Enter if any" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Conduct of the Student</label>
+                                @Html.DropDownListFor(m => m.StudentConduct,
+                                    new SelectList(new[] { "Excellent", "Very Good", "Good", "Satisfactory" }),
+                                    "Select",
+                                    new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registration and Activities Section -->
+            <div class="row">
+                <div class="col-xxl-3 col-xl-3 col-md-3">
+                    <div class="row">
+                        <div class="col-xxl-10 col-xl-10 col-md-10">
+                            <h6 class="section-heading">REGISTRATION AND ACTIVITIES</h6>
+                        </div>
+                        <div class="col-xxl-1 col-xl-1 col-md-1">
+                            <h6 class="section-heading">:</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-9 col-xl-9 col-md-9">
+                    <div class="row">
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Scholar Reg No.</label>
+                                @Html.TextBoxFor(m => m.ScholarRegistrationNo, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">IXth OR Xth Regi. No.</label>
+                                @Html.TextBoxFor(m => m.BoardRegistrationNo, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">NCC/Scout/Games</label>
+                                @Html.TextBoxFor(m => m.NCCCadetScoutGuideDetails, new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Extra Curricular</label>
+                                @Html.TextBoxFor(m => m.ExtraCurricularActivities, new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance and Results Section -->
+            <div class="row">
+                <div class="col-xxl-3 col-xl-3 col-md-3">
+                    <div class="row">
+                        <div class="col-xxl-10 col-xl-10 col-md-10">
+                            <h6 class="section-heading">ATTENDANCE AND RESULTS</h6>
+                        </div>
+                        <div class="col-xxl-1 col-xl-1 col-md-1">
+                            <h6 class="section-heading">:</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-9 col-xl-9 col-md-9">
+                    <div class="row">
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label for="TotalWorkingDays" class="form-label">Total Working Days</label>
+                                @Html.TextBoxFor(m => m.TotalWorkingDays, new { @class = "form-control", type = "number", id = "TotalWorkingDays" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label for="TotalDaysAttended" class="form-label">Total Days Present</label>
+                                @Html.TextBoxFor(m => m.TotalDaysAttended, new { @class = "form-control", type = "number", id = "TotalDaysAttended" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label for="DateOfLeavingSchool" class="form-label">Date of Leaving School</label>
+                                @Html.TextBoxFor(m => m.DateOfLeavingSchool, new
+                                {
+                                    @class = "form-control",
+                                    type = "date",
+                                    @Value = ERPIndia.Class.Helper.DateTimeExtensions.ToHtmlDateString(Model.DateOfLeavingSchool)
+                                })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label for="LastExamResult" class="form-label">Last Annual Exam & Result</label>
+                                @Html.TextBoxFor(m => m.LastExamResult, new { @class = "form-control", id = "LastExamResult" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reason and Remarks Section -->
+            <div class="row">
+                <div class="col-xxl-3 col-xl-3 col-md-3">
+                    <div class="row">
+                        <div class="col-xxl-10 col-xl-10 col-md-10">
+                            <h6 class="section-heading">REASON AND REMARKS</h6>
+                        </div>
+                        <div class="col-xxl-1 col-xl-1 col-md-1">
+                            <h6 class="section-heading">:</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-9 col-xl-9 col-md-9">
+                    <div class="row">
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label required">Reason of Leaving School</label>
+                                @Html.TextBoxFor(m => m.ReasonForLeaving, new { @class = "form-control", required = "required", placeholder = "Enter reason" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Date of TC Issue</label>
+                                @Html.TextBoxFor(m => m.DateOfIssue, new
+                                {
+                                    @class = "form-control",
+                                    type = "date",
+                                    @Value = ERPIndia.Class.Helper.DateTimeExtensions.ToHtmlDateString(Model.DateOfIssue)
+                                })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Remark1</label>
+                                @Html.TextBoxFor(m => m.Remarks1, new { @class = "form-control", placeholder = "Enter remarks if any" })
+                            </div>
+                        </div>
+                        <div class="col-xxl-3 col-xl-3 col-md-6">
+                            <div class="mb-2">
+                                <label class="form-label">Remark2</label>
+                                @Html.TextBoxFor(m => m.Remarks2, new { @class = "form-control", placeholder = "Additional remarks" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.TCNumber) && Model.TCNumber != "0")
+            {
+                <!-- TC Generation Details Section -->
+                <div class="row" style="display:none">
+                    <div class="col-xxl-3 col-xl-3 col-md-3">
+                        <div class="row">
+                            <h6 class="section-heading">TC GENERATION DETAILS</h6>
+                        </div>
+                    </div>
+                    <div class="col-xxl-9 col-xl-9 col-md-9">
+                        <div class="row">
+                            <div class="col-xxl-3 col-xl-3 col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">TC Number</label>
+                                    <input type="text" class="form-control" value="@Model.TCNumber" readonly style="background-color: #f7fafc;" />
+                                    @Html.HiddenFor(m => m.TCNumber)
+                                </div>
+                            </div>
+                            <div class="col-xxl-3 col-xl-3 col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Prepared By</label>
+                                    @Html.TextBoxFor(m => m.PreparedBy, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-xxl-3 col-xl-3 col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Checked By</label>
+                                    @Html.TextBoxFor(m => m.CheckedBy, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-xxl-3 col-xl-3 col-md-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Approved By</label>
+                                    @Html.TextBoxFor(m => m.ApprovedBy, new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal" data-bs-dismiss="modal" onclick="closeModal()">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+        &nbsp;
+        <div style="display: flex; gap: 10px;">
+
+            <button type="button" class="btn btn-warning" onclick="saveTCDetails(true)">
+                <i class="fas fa-save"></i> Save
+            </button>
+
+            @if (!Model.IsFinalSaved)
+            {
+                <button type="button" class="btn btn-success" onclick="saveTCDetails(false)">
+                    <i class="fas fa-check"></i> Create TC
+                </button>
+            }
+        </div>
+
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        // Any initialization code can go here
+        console.log('TC Details form loaded');
+    });
+
+    // Function to close the modal - works with both Bootstrap 4 and 5
+    function closeModal() {
+        try {
+            // Try Bootstrap 5 first
+            var modalElement = $('#tcDetailsForm').closest('.modal');
+            if (modalElement.length) {
+                // Check if Bootstrap 5 Modal is available
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    var modal = bootstrap.Modal.getInstance(modalElement[0]);
+                    if (modal) {
+                        modal.hide();
+                    } else {
+                        // If no instance exists, create one and hide it
+                        modal = new bootstrap.Modal(modalElement[0]);
+                        modal.hide();
+                    }
+                } else {
+                    // Fallback to Bootstrap 4
+                    modalElement.modal('hide');
+                }
+            } else {
+                // If we can't find the modal by form, try other methods
+                $('.modal').modal('hide');
+            }
+            setTimeout(function () {
+                location.reload();
+            }, 300);
+        } catch (e) {
+            console.log('Error closing modal:', e);
+            // Fallback: manually remove modal
+            $('.modal').hide();
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css('padding-right', '');
+        }
+    }
+
+    function saveTCDetails(isDraft) {
+
+
+        var form = $('#tcDetailsForm')[0];
+        if (!isDraft && !form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        var reason = $.trim($('#ReasonForLeaving').val());
+        if (!reason) {
+            alert('Please enter the reason for leaving school before saving.');
+            $('#ReasonForLeaving').focus();
+            return;
+        }
+
+        var formData = $('#tcDetailsForm').serialize() + '&isDraft=' + isDraft;
+        var $btn = $(event.target);
+        var originalHtml = $btn.html();
+
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+
+        $.ajax({
+            url: '/Certificate/SaveTC',
+            type: 'POST',
+            data: formData,
+            success: function (response) {
+                if (response.success) {
+                    if (isDraft) {
+                        // Show success message
+                        alert('TC details have been saved successfully!');
+                        // Close modal after draft save
+                        closeModal();
+                        // Optional: Reload the parent page to show updated data
+                        // location.reload();
+                    } else {
+                        // Show success message with TC number
+                        alert('TC Generated Successfully! TC Number: ' + (response.tcNumber || 'TC/2025/001'));
+                        // Close modal first
+                        closeModal();
+                        // Then reload the page after a short delay
+                       
+                    }
+                } else {
+                    // Show error message
+                    alert('Error: ' + (response.message || 'Failed to save TC details'));
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+                console.error('Response:', xhr.responseText);
+
+                // Parse error message if possible
+                var errorMessage = 'An error occurred while saving. Please try again.';
+                try {
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                } catch (e) {
+                    // Use default error message
+                }
+
+                alert(errorMessage);
+            },
+            complete: function () {
+                // Re-enable the button and restore original text
+                $btn.prop('disabled', false).html(originalHtml);
+            }
+        });
+    }
+</script>

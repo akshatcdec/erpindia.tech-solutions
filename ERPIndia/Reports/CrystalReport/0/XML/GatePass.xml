@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+	<!-- Root element for list of Gate Passes -->
+	<xs:element name="GatePassList">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="GatePassInfo" maxOccurs="unbounded" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Id"                   type="xs:string"/>
+							<xs:element name="PassNo"               type="xs:string"/>
+							<xs:element name="Date"                 type="xs:dateTime"/>
+							<xs:element name="StudentName"          type="xs:string"/>
+							<xs:element name="Father"               type="xs:string" minOccurs="0"/>
+							<xs:element name="Mother"               type="xs:string" minOccurs="0"/>
+							<xs:element name="Class"                type="xs:string" minOccurs="0"/>
+							<xs:element name="ClassId"              type="xs:string" minOccurs="0"/>
+							<xs:element name="Address"              type="xs:string" minOccurs="0"/>
+							<xs:element name="TimeIn"               type="xs:string" minOccurs="0"/>
+							<xs:element name="TimeOut"              type="xs:string" minOccurs="0"/>
+							<xs:element name="ParentGuardianName"   type="xs:string" minOccurs="0"/>
+							<xs:element name="GuardianMobile"       type="xs:string" minOccurs="0"/>
+							<xs:element name="RelationshipToStudent" type="xs:string" minOccurs="0"/>
+							<xs:element name="ReasonForLeave"       type="xs:string" minOccurs="0"/>
+							<xs:element name="PrintTime"            type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="PrintCount"           type="xs:int" minOccurs="0"/>
+							<xs:element name="SessionId"            type="xs:string"/>
+							<xs:element name="TenantCode"           type="xs:string"/>
+							<xs:element name="CreatedBy"            type="xs:string"/>
+							<xs:element name="CreatedDate"          type="xs:dateTime"/>
+							<xs:element name="ModifiedBy"           type="xs:string" minOccurs="0"/>
+							<xs:element name="ModifiedDate"         type="xs:dateTime" minOccurs="0"/>
+							<xs:element name="IsActive"             type="xs:boolean"/>
+							<xs:element name="IsDeleted"            type="xs:boolean"/>
+
+							<!-- D1–D40 Fields -->
+							<xs:element name="D1"  type="xs:string" minOccurs="0"/>
+							<xs:element name="D2"  type="xs:string" minOccurs="0"/>
+							<xs:element name="D3"  type="xs:string" minOccurs="0"/>
+							<xs:element name="D4"  type="xs:string" minOccurs="0"/>
+							<xs:element name="D5"  type="xs:string" minOccurs="0"/>
+							<xs:element name="D6"  type="xs:string" minOccurs="0"/>
+							<xs:element name="D7"  type="xs:string" minOccurs="0"/>
+							<xs:element name="D8"  type="xs:string" minOccurs="0"/>
+							<xs:element name="D9"  type="xs:string" minOccurs="0"/>
+							<xs:element name="D10" type="xs:string" minOccurs="0"/>
+							<xs:element name="D11" type="xs:string" minOccurs="0"/>
+							<xs:element name="D12" type="xs:string" minOccurs="0"/>
+							<xs:element name="D13" type="xs:string" minOccurs="0"/>
+							<xs:element name="D14" type="xs:string" minOccurs="0"/>
+							<xs:element name="D15" type="xs:string" minOccurs="0"/>
+							<xs:element name="D16" type="xs:string" minOccurs="0"/>
+							<xs:element name="D17" type="xs:string" minOccurs="0"/>
+							<xs:element name="D18" type="xs:string" minOccurs="0"/>
+							<xs:element name="D19" type="xs:string" minOccurs="0"/>
+							<xs:element name="D20" type="xs:string" minOccurs="0"/>
+							<xs:element name="D21" type="xs:string" minOccurs="0"/>
+							<xs:element name="D22" type="xs:string" minOccurs="0"/>
+							<xs:element name="D23" type="xs:string" minOccurs="0"/>
+							<xs:element name="D24" type="xs:string" minOccurs="0"/>
+							<xs:element name="D25" type="xs:string" minOccurs="0"/>
+							<xs:element name="D26" type="xs:string" minOccurs="0"/>
+							<xs:element name="D27" type="xs:string" minOccurs="0"/>
+							<xs:element name="D28" type="xs:string" minOccurs="0"/>
+							<xs:element name="D29" type="xs:string" minOccurs="0"/>
+							<xs:element name="D30" type="xs:string" minOccurs="0"/>
+							<xs:element name="D31" type="xs:string" minOccurs="0"/>
+							<xs:element name="D32" type="xs:string" minOccurs="0"/>
+							<xs:element name="D33" type="xs:string" minOccurs="0"/>
+							<xs:element name="D34" type="xs:string" minOccurs="0"/>
+							<xs:element name="D35" type="xs:string" minOccurs="0"/>
+							<xs:element name="D36" type="xs:string" minOccurs="0"/>
+							<xs:element name="D37" type="xs:string" minOccurs="0"/>
+							<xs:element name="D38" type="xs:string" minOccurs="0"/>
+							<xs:element name="D39" type="xs:string" minOccurs="0"/>
+							<xs:element name="D40" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

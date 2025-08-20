@@ -1,0 +1,90 @@
+@model List<ERPIndia.Models.ClientModel>
+
+<div class="breadcrumbs-area">
+    <h3>Clients</h3>
+    <ul>
+        <li>
+            <a href="@Url.Action("", "SiteMap")">Home</a>
+        </li>
+        <li>Clients</li>
+    </ul>
+</div>
+<div class="card height-auto">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12 col-sm-12 datagrid">
+
+
+
+                @Html.Partial("_UCFilter")
+
+                @Html.Partial("_UCGridTop")
+
+                <div class="row">
+                    <div class="col-md-12 col-sm-12 datagrid">
+                        <table cellspacing="1" cellpadding="2" style="width: 100%;" id="dgList" class="table table-striped table-hover table-bordered table-hd">
+                            <thead>
+                                <tr class="gridheader">
+                                    <td valign="middle" align="center" style="width: 2%;">
+                                        <input id="chkAll" onclick="javascript: checkAll();" type="checkbox" name="chkAll" />
+                                    </td>
+                                    <td class="search_field" search_field_value="BranchName">Branch Name</td>
+                                    <td class="search_field" search_field_value="ClientName">Client Name</td>
+                                    <td class="search_field" search_field_value="Address1">Address1</td>
+                                    <td class="search_field" search_field_value="Email">Email</td>
+                                    <td class="search_field" search_field_value="Phone">Phone</td>
+                                    <td style="width: 5%;" class="text-center search_field" search_field_value="IsActive">Status</td>
+                                    <td style="width: 5%;" class="text-center">Details</td>
+                                    <td style="width: 5%;" class="text-center">Edit</td>
+                                    <td style="width: 5%;" class="text-center">Delete</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Count > 0)
+                                {
+                                    for (int i = 0; i < Model.Count; i++)
+                                    {
+                                        <tr>
+                                            <td valign="middle" align="center" style="width: 2%;">
+                                                <input id="chkBox" name="chkBox" type="checkbox" onclick="javascript: checkManual();" value="@Model[i].ClientId" />
+                                            </td>
+                                            <td>@Model[i].BranchName</td>
+                                            <td>@Model[i].ClientName</td>
+                                            <td>@Model[i].Address1</td>
+                                            <td>@Model[i].Email</td>
+                                            <td>@Model[i].Phone</td>
+                                            <td style="width: 5%;" class="text-center">
+                                                @if (@Model[i].IsActive)
+                                                {
+                                                    <a onclick="return SetActiveInactive(this);" class="SetStatusClick" name="imgInactive" title="Click to make inactive" id="imgInactive" style="text-decoration: none" href="javascript:void(0)"><i class='fa fa-check'></i></a>
+                                                }
+                                                else
+                                                {
+                                                    <a onclick="return SetActiveInactive(this);" class="SetStatusClick" name="imgActive" title="Click to make active" id="imgActive" style="text-decoration: none" href="javascript:void(0)"><i class="fa fa-ban"></i></a>
+                                                }
+                                            </td>
+                                            <td style="width: 5%;" class="text-center">
+                                                <a href="Client/Details/@Model[i].ClientId" title="Click here to Details"><i class="fa fa-desktop"></i></a>
+                                            </td>
+                                            <td style="width: 5%;" class="text-center">
+                                                <a href="Client/Add/@Model[i].ClientId" title="Click here to edit"><i class="fa fa-edit"></i></a>
+                                            </td>
+                                            <td style="width: 5%;" class="text-center">
+                                                <a onclick="return SetActiveInactive(this);" class="SetStatusClick" name="imgDelete" title="Click here to delete" id="imgDelete" style="text-decoration: none" href="javascript:void(0)"><i class="fa fa-trash-o"></i></a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                        @if (Model == null || Model.Count == 0)
+                        {
+                            @Html.Partial("_UCNoRecordsMsg")
+                        }
+                    </div>
+                </div>
+                @Html.Partial("_UCGridBottom")
+            </div>
+        </div>
+    </div>
+</div>

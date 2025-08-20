@@ -1,0 +1,471 @@
+﻿@model ERPK12Models.ViewModel.Enquiry.EnquiryViewModel
+<style>
+    .required-field1 {
+        border-left: 4px solid #dc3545 !important; /* Red border for required fields */
+        transition: border-left-color 0.3s ease;
+    }
+
+        .required-field1:focus {
+            border-left-color: #007bff !important; /* Blue border when focused */
+            box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+        }
+</style>
+@using (Html.BeginForm("Edit", "Enquiry", FormMethod.Post, new { @class = "form-horizontal", id = "editEnquiryForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(m => m.Enquiry.Id)
+    <div class="modal-body">
+        <!-- Basic Information -->
+        <h5 class="text-primary mb-3"><i class="fas fa-user"></i> Student Information</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Student, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Student, new { @class = "form-control required-field1", placeholder = "Enter student name" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Student, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Father, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Father, new { @class = "form-control required-field1", placeholder = "Enter father's name" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Father, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Mother, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Mother, new { @class = "form-control", placeholder = "Enter mother's name" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Mother, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.ClassId, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.ClassId, Model.ClassList, new { @class = "form-control required-field1" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.ClassId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Mobile1, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Mobile1, new
+                    {
+                        @class = "form-control required-field1",
+                        placeholder = "Primary mobile",
+                        @type = "tel",
+                        pattern = "[0-9]{10}",
+                        maxlength = "10",
+                        onkeypress = "return isNumberKey(event)"
+                    })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Mobile1, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Mobile2, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Mobile2, new
+                    {
+                        @class = "form-control",
+                        placeholder = "Secondary mobile",
+                        @type = "tel",
+                        pattern = "[0-9]{10}",
+                        maxlength = "10",
+                        onkeypress = "return isNumberKey(event)"
+                    })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Mobile2, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Gender, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.Gender, ViewBag.GenderList as SelectList, "Select", new { @class = "form-control required-field1" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Gender, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.PreviousSchool, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.PreviousSchool, new { @class = "form-control", placeholder = "Enter previous school name" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.NoOfChild, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.NoOfChild,
+                        new SelectList(Enumerable.Range(1, 10).Select(i => new { Value = i, Text = i.ToString() }), "Value", "Text"),
+                        "Select",
+                        new { @class = "form-control required-field1" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.NoOfChild, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Relation, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.Relation, ViewBag.RelationList as SelectList, "Select", new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Address, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Address, new { @class = "form-control required-field1", placeholder = "Enter complete address" })
+                    @Html.ValidationMessageFor(m => m.Enquiry.Address, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <br />
+        <!-- Office Use Only Section -->
+        <h5 class="text-primary mb-3"><i class="fas fa-building"></i> Office Use Only</h5>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.EnquiryDate, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.EnquiryDate, "{0:yyyy-MM-dd}", new
+                    {
+                        @class = "form-control required-field1",
+                        type = "date",
+                        autocomplete = "off"
+                    })
+                    @Html.ValidationMessageFor(m => m.Enquiry.EnquiryDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.DealBy, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.DealBy, new { @class = "form-control", placeholder = "Staff name" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Source, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.Source, ViewBag.SourceList as SelectList, "Select Source", new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.FormAmt, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.FormAmt, new
+                    {
+                        @class = "form-control",
+                        id = "formAmount",
+                        maxlength = "4",
+                        placeholder = "0",
+                        onkeypress = "return isNumberKey(event)"
+                    })
+                    <span id="formAmtError" class="text-danger" style="display:none;"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.RcptDate, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.RcptDate, "{0:yyyy-MM-dd}", new
+                    {
+                        @class = "form-control",
+                        id = "receiptDate",
+                        type = "date",
+                        autocomplete = "off"
+                    })
+                    <span id="rcptDateError" class="text-danger" style="display:none;"></span>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.Note, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.Enquiry.Note, new { @class = "form-control", placeholder = "Any additional notes" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Enquiry.SendSMS, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.Enquiry.SendSMS, ViewBag.SendSMSList as SelectList, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal" data-bs-dismiss="modal" onclick="closeModal()">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Update
+        </button>
+    </div>
+}
+
+<script>
+    // Function to allow only numbers
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+        return true;
+    }
+
+    // Function to close modal properly
+    function closeModal() {
+        // Clear any validation errors
+        clearAllErrors();
+
+        // Close modal using both Bootstrap 4 and 5 methods
+        $('#enquiryModal').modal('hide');
+
+        // Fallback: remove modal backdrop and body classes
+        setTimeout(function () {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+            $('body').css('padding-right', '');
+        }, 300);
+    }
+
+    function clearAllErrors() {
+        // Remove error classes
+        $('.error-field').removeClass('error-field');
+
+        // Remove error messages
+        $('.error-message').remove();
+
+        // Hide custom error spans
+        $('#formAmtError, #rcptDateError').hide().text('');
+
+        // Remove error summary
+        $('.error-summary').remove();
+    }
+
+    // Form validation
+    $(document).ready(function () {
+        // Add validation styles
+        addValidationStyles();
+
+        // Mark required fields with asterisk
+        const requiredFields = [
+            'Enquiry_Student', 'Enquiry_Father', 'Enquiry_Mother',
+            'Enquiry_ApplyingForClass', 'Enquiry_Mobile1', 'Enquiry_Gender',
+            'Enquiry_Address', 'Enquiry_EnquiryDate'
+        ];
+
+        requiredFields.forEach(function (fieldId) {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                const label = field.closest('.form-group').querySelector('label');
+                if (label) {
+                    label.classList.add('required-field');
+                }
+            }
+        });
+
+        // Add change event listeners for amount and receipt date
+        $('#formAmount, #receiptDate').on('change blur', function () {
+            validateAmountAndDate();
+        });
+
+        // Clear errors when user starts typing
+        $('.form-control').on('input', function () {
+            $(this).removeClass('error-field');
+            $(this).parent().find('.error-message').remove();
+        });
+
+        // Form submit validation
+        $('#editEnquiryForm').on('submit', function (e) {
+            // Clear previous errors
+            clearAllErrors();
+
+            if (!validateEditForm()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+
+    function validateAmountAndDate() {
+        var isValid = true;
+        var amount = $('#formAmount').val();
+        var receiptDate = $('#receiptDate').val();
+
+        // Clear previous errors
+        $('#formAmtError').hide().text('');
+        $('#rcptDateError').hide().text('');
+
+        // Convert amount to number
+        var amountNum = parseFloat(amount) || 0;
+
+        // Validation logic
+        if (amountNum > 0 && !receiptDate) {
+            // If amount is entered, receipt date is required
+            $('#rcptDateError').text('Receipt date is required when amount is entered').show();
+            isValid = false;
+        }
+
+        if (receiptDate && amountNum <= 0) {
+            // If receipt date is provided, amount must be greater than zero
+            $('#formAmtError').text('Amount must be greater than zero when receipt date is provided').show();
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    function validateEditForm() {
+        let isValid = true;
+        let errorMessages = [];
+
+        // Required fields validation
+        const requiredFields = [
+            { id: 'Enquiry_Student', name: 'Student Name' },
+            { id: 'Enquiry_Father', name: 'Father Name' },
+            { id: 'Enquiry_Mother', name: 'Mother Name' },
+            { id: 'Enquiry_ApplyingForClass', name: 'Applying For Class' },
+            { id: 'Enquiry_Mobile1', name: 'Primary Mobile' },
+            { id: 'Enquiry_Gender', name: 'Gender' },
+            { id: 'Enquiry_Address', name: 'Address' },
+            { id: 'Enquiry_EnquiryDate', name: 'Enquiry Date' }
+        ];
+
+        // Check each required field
+        requiredFields.forEach(function (field) {
+            const element = document.getElementById(field.id);
+            if (element) {
+                const value = element.value.trim();
+
+                if (!value || value === '' || value === 'Select' || value === 'Select Class') {
+                    isValid = false;
+                    showError(element, field.name + ' is required');
+                    errorMessages.push(field.name + ' is required');
+                }
+            }
+        });
+
+        // Mobile number validation (10 digits)
+        const mobile1Element = document.getElementById('Enquiry_Mobile1');
+        if (mobile1Element) {
+            const mobile1 = mobile1Element.value.trim();
+            if (mobile1 && !/^\d{10}$/.test(mobile1)) {
+                isValid = false;
+                showError(mobile1Element, 'Primary Mobile must be 10 digits');
+                errorMessages.push('Primary Mobile must be 10 digits');
+            }
+        }
+
+        // Secondary mobile validation (optional, but if provided must be 10 digits)
+        const mobile2Element = document.getElementById('Enquiry_Mobile2');
+        if (mobile2Element) {
+            const mobile2 = mobile2Element.value.trim();
+            if (mobile2 && !/^\d{10}$/.test(mobile2)) {
+                isValid = false;
+                showError(mobile2Element, 'Secondary Mobile must be 10 digits');
+                errorMessages.push('Secondary Mobile must be 10 digits');
+            }
+        }
+
+        // Amount and Receipt Date validation
+        if (!validateAmountAndDate()) {
+            isValid = false;
+            const amount = $('#formAmount').val();
+            const receiptDate = $('#receiptDate').val();
+            const amountNum = parseFloat(amount) || 0;
+
+            if (amountNum > 0 && !receiptDate) {
+                errorMessages.push('Receipt Date is required when Form Amount > 0');
+            }
+            if (receiptDate && amountNum <= 0) {
+                errorMessages.push('Form Amount must be greater than zero when Receipt Date is provided');
+            }
+        }
+
+        // Show error summary if validation failed
+        if (!isValid) {
+            showErrorSummary(errorMessages);
+            scrollToFirstError();
+        }
+
+        return isValid;
+    }
+
+    function showError(element, message) {
+        // Add error class to element
+        element.classList.add('error-field');
+
+        // Create error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        errorDiv.style.color = '#dc3545';
+        errorDiv.style.fontSize = '12px';
+        errorDiv.style.marginTop = '5px';
+
+        // Insert error message after the element
+        element.parentNode.appendChild(errorDiv);
+    }
+
+    function showErrorSummary(errorMessages) {
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'error-summary alert alert-danger';
+        summaryDiv.style.marginBottom = '20px';
+
+        let summaryHTML = '<h6 style="margin: 0 0 10px 0;"><strong>Please correct the following errors:</strong></h6><ul style="margin: 0; padding-left: 20px;">';
+        errorMessages.forEach(function (message) {
+            summaryHTML += '<li>' + message + '</li>';
+        });
+        summaryHTML += '</ul>';
+
+        summaryDiv.innerHTML = summaryHTML;
+
+        // Insert at the beginning of modal-body
+        const modalBody = document.querySelector('.modal-body');
+        modalBody.insertBefore(summaryDiv, modalBody.firstChild);
+    }
+
+    function scrollToFirstError() {
+        const firstError = document.querySelector('.error-field');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+    }
+
+    // Add CSS styles for error fields and required fields
+    function addValidationStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .error-field {
+                border: 2px solid #dc3545 !important;
+                background-color: #fff5f5;
+            }
+            .error-field:focus {
+                border-color: #dc3545 !important;
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+            }
+            .required-field::after {
+                content: " *";
+                color: #dc3545;
+                font-weight: bold;
+            }
+            /* Add spacing between buttons */
+            .modal-footer .btn {
+                margin-right: 10px;
+            }
+            .modal-footer .btn:last-child {
+                margin-right: 0;
+            }
+            /* Ensure consistent button spacing */
+            .mr-2 {
+                margin-right: 0.5rem !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+</script>

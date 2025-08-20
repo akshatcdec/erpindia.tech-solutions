@@ -1,0 +1,370 @@
+﻿@model ERPIndia.DTOs.Ledger.StudentLedgerWithSiblingDto
+@using ERPIndia.Class.Helper
+@{
+    Layout = null;
+    string code = CommonLogic.GetSessionValue(StringConstants.TenantCode);
+    string session = CommonLogic.GetSessionValue(StringConstants.ActiveSessionPrint);
+    string img = CommonLogic.GetSessionValue(StringConstants.LogoImg);
+    string logoPath = Server.MapPath(ERPIndia.Class.Helper.AppLogic.GetLogoImage(code, img));
+    bool rs = System.IO.File.Exists(logoPath);
+}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Ledger with Sibling</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px 35px; /* Added 35px left and right padding */
+            font-size: 14px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .school-logo {
+            width: 100px;
+            height: 80px;
+            border: 1px solid #000;
+            margin: 0 auto;
+        }
+
+        .school-name {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .school-address {
+            margin: 5px 0;
+        }
+
+        .school-contact {
+            margin: 5px 0;
+        }
+
+        .page-title {
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+            padding: 8px;
+            margin: 10px 0;
+            font-weight: bold;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        .session-info {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        table, th, td {
+            border: 1px solid #000;
+        }
+
+        th, td {
+            padding: 5px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .no-border-right {
+            border-right: none;
+        }
+
+        .no-border-left {
+            border-left: none;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .amount {
+            font-weight: bold;
+        }
+
+        .green-text {
+            color: green;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            text-align: left;
+            color: #666;
+        }
+
+        .summary-box {
+            display: inline-block;
+            border: 1px solid #000;
+            margin-right: 10px;
+            min-width: 200px;
+            font-weight: bold;
+        }
+
+        .summary-box-label {
+            padding: 3px 5px;
+            border-right: 1px solid #000;
+            display: inline-block;
+            min-width: 150px;
+            font-weight: bold;
+        }
+
+        .summary-box-value {
+            padding: 3px 5px;
+            display: inline-block;
+            min-width: 100px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .currency-symbol {
+            font-family: Arial, sans-serif;
+            margin-right: 5px;
+        }
+
+        .total-row {
+            background-color: #f9f9f9;
+        }
+
+        .small-text {
+            font-size: 11px;
+        }
+
+        .receipt-numbers {
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        @if (rs)
+        {
+            <div style="border:0px">
+                <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/",code) + img)" height="100px" alt="School Logo" />
+            </div>
+        }
+        <div class="school-name">@Model.SchoolInfo.Name</div>
+        @if (string.IsNullOrWhiteSpace(Model.SchoolInfo.Line1) == false)
+        {
+            <div class="school-address">@Model.SchoolInfo.Line1</div>
+        }
+        @if (string.IsNullOrWhiteSpace(Model.SchoolInfo.Line2) == false)
+        {
+            <div class="school-contact">@Model.SchoolInfo.Line2</div>
+        }
+        @if (string.IsNullOrWhiteSpace(Model.SchoolInfo.Line3) == false)
+        {
+            <div class="school-contact">@Model.SchoolInfo.Line3</div>
+        }
+        @if (string.IsNullOrWhiteSpace(Model.SchoolInfo.Line4) == false)
+        {
+            <div class="school-contact">@Model.SchoolInfo.Line4</div>
+        }
+        @if (string.IsNullOrWhiteSpace(Model.Session) == false)
+        {
+            <div class="school-contact">@Model.Session</div>
+        }
+    </div>
+
+    <div class="page-title">STUDENT LEDGER WITH SIBLING</div>
+
+    <table>
+        <tr>
+            <th>FATHER'S NAME</th>
+            <th>FATHER'S AADHAR</th>
+            <th>ADDRESS</th>
+            <th>MOBILE</th>
+        </tr>
+        <tr>
+            <td>@Model.ParentInfo.FatherName</td>
+            <td>@Model.ParentInfo.FatherAadhar</td>
+            <td>@Model.ParentInfo.Address</td>
+            <td>@Model.ParentInfo.Mobile</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <th rowspan="2">SR</th>
+            <th rowspan="2">STUDENT NAME<br>Class/Sec</th>
+            <th colspan="3">FEE REQUIRED</th>
+            <th rowspan="2">TOTAL<br>REQUIRED</th>
+            <th rowspan="2">TOTAL RECEIVED </th>
+            <th rowspan="2">TOTAL RECEIPT NO</th>
+            <th rowspan="2">TOTAL DUES</th>
+        </tr>
+        <tr>
+            <th>OLD BAL</th>
+            <th>ACEDEMIC<br>FEE</th>
+            <th>TRANS<br>FEE</th>
+        </tr>
+        @foreach (var student in Model.Students)
+        {
+            <tr>
+                <td>@student.SerialNumber</td>
+                <td>@student.Name<br>@student.Class-@student.Section</td>
+                <td>@student.FeeDetails.OldBalance.ToString("N0")</td>
+                <td>@student.FeeDetails.AcademicFee.ToString("N0")</td>
+                <td>@student.FeeDetails.TransportFee.ToString("N0")</td>
+                <td>
+                    (+)@student.FeeDetails.Additions.ToString("N2")<br>
+                    (-)@student.FeeDetails.Deductions.ToString("N2")<br>
+                    @student.FeeDetails.TotalRequired.ToString("N2")
+                </td>
+                <td>
+                    @student.FeeDetails.TotalReceived.ToString("N2")
+                </td>
+                <td>
+                    @if (student.FeeDetails.ReceiptNumbers != null && student.FeeDetails.ReceiptNumbers.Any())
+                    {
+                        for (int i = 0; i < student.FeeDetails.ReceiptNumbers.Count; i++)
+                        {
+                            var receipt = student.FeeDetails.ReceiptNumbers[i];
+                            <a style="text-decoration:none; font-weight:bold; color:darkblue"
+                               href="@Url.Action("Receipt1", "CollectFee", new { receiptNumber = receipt, code = code })"
+                               target="_blank">
+                                @receipt
+                            </a>
+
+                            if (i < student.FeeDetails.ReceiptNumbers.Count - 1)
+                            {
+                                <span style="text-decoration:none; font-weight:bold; color:darkblue">,</span>
+                            }
+                        }
+                    }
+                </td>
+                @{
+                    decimal final = student.FeeDetails.TotalRequired - student.FeeDetails.TotalReceived;
+                }
+                <td class="@(final== 0 ? "green-text" : "")">@final.ToString("N2")</td>
+            </tr>
+        }
+    </table>
+
+    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+        <div>
+            <div class="summary-box">
+                <div class="summary-box-label">REMAIN TO PAY</div>
+                <div class="summary-box-value">
+                    <span class="currency-symbol">₹</span>@Model.FeeSummary.RemainingToPay.ToString("N2")
+                </div>
+            </div>
+            <br>
+            <div class="summary-box">
+                <div class="summary-box-label">TOTAL FEE REQUIRED</div>
+                <div class="summary-box-value">
+                    <span class="currency-symbol">₹</span>@Model.FeeSummary.TotalFeeRequired.ToString("N2")
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="summary-box">
+                <div class="summary-box-label">TOTAL COLLECT FEE</div>
+                <div class="summary-box-value green-text">
+                    <span class="currency-symbol">₹</span>@Model.FeeSummary.TotalCollectedFee.ToString("N2")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+    </div>
+
+    <div style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
+        <button id="printButton" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
+            <i style="margin-right: 5px;">🖨️</i> Print Ledger
+        </button>
+    </div>
+
+    <script>
+        document.getElementById('printButton').addEventListener('click', function () {
+            // Hide the print button before printing
+            this.style.display = 'none';
+
+            // Print the page
+            window.print();
+
+            // Show the button again after printing dialog closes
+            setTimeout(() => {
+                this.style.display = 'block';
+            }, 100);
+        });
+    </script>
+
+    <style>
+        @@media print {
+            #printButton {
+                display: none !important;
+            }
+
+            body {
+                margin: 0;
+                padding: 20px 30px; /* Maintained padding for printing */
+                color: black !important; /* Force text color to black */
+                background-color: white !important; /* Force background to white */
+                -webkit-print-color-adjust: exact !important; /* Chrome, Safari */
+                color-adjust: exact !important; /* Firefox */
+                print-color-adjust: exact !important; /* Future standard */
+            }
+
+            @@page {
+                size: auto;
+                margin: 0.5cm;
+            }
+            /* Ensure all text elements keep their color */
+            * {
+                color: black !important;
+                background-color: white !important;
+            }
+            /* Preserve specific colored elements */
+            .green-text {
+                color: green !important;
+                print-color-adjust: exact !important;
+            }
+
+            .page-title {
+                background-color: #000 !important;
+                color: #fff !important;
+                print-color-adjust: exact !important;
+            }
+
+            th {
+                background-color: #f2f2f2 !important;
+                print-color-adjust: exact !important;
+            }
+
+            .total-row {
+                background-color: #f9f9f9 !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</body>
+</html>

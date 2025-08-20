@@ -1,0 +1,258 @@
+﻿@model ERPK12Models.ViewModel.Enquiry.EnquiryListViewModel
+
+<div class="card">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>Search Results
+                <span class="badge bg-primary ms-2">@Model.Enquiries.Count() enquiries found</span>
+            </h5>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (Model.Enquiries.Any())
+        {
+            <!-- Data Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover" id="enquiryResultsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="5%">Sr.</th>
+                            <th width="15%" class="text-center">Name</th>
+                            <th width="15%" class="text-center">Guardian</th>
+                            <th width="15%" class="text-center">Mobile No.</th>
+                            <th width="10%" class="text-center">Class</th>
+                            <th width="10%" class="text-center">Gender</th>
+                            <th width="12%">Enquiry Date</th>
+                            <th width="10%">Nxt F/U Date</th>
+                            <th width="8%" class="no-print">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int cnt = 1;}
+                        @foreach (var enquiry in Model.Enquiries)
+                        {
+                            <tr>
+                                <td class="text-center">@cnt</td>
+                                <td>
+                                    <strong>@enquiry.Student</strong><br>
+                                    <span class="payment-status @(enquiry.FormAmt > 0 ? "paid" : "unpaid")">
+                                        <i class="fas @(enquiry.FormAmt > 0 ? "fa-check-circle" : "fa-times-circle") me-1"></i>
+                                        @(enquiry.FormAmt > 0 ? "Paid" : "Unpaid")
+                                    </span>
+                                </td>
+                                <td class="guardian-info">
+                                    <div class="mb-1">
+                                        <small><i class="fas fa-male text-primary me-1"></i></small>
+                                        <strong>@(enquiry.Father ?? "N/A")</strong>
+                                    </div>
+                                    <div>
+                                        <small><i class="fas fa-female text-danger me-1"></i></small>
+                                        @(enquiry.Mother ?? "N/A")
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="btn btn-sm" style="background-color: #EAB300;color:black; font-weight:bold">
+                                        <i class="fa fa-phone"></i>&nbsp; @(enquiry.Mobile1 ?? "N/A")
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(enquiry.Mobile2))
+                                    {
+                                        <br />
+                                        <span class="btn btn-sm mt-1" style="background-color: #EAB300; color: black; font-weight: bold">
+                                            <i class="fa fa-phone"></i>&nbsp;  @enquiry.Mobile2
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge" style="background-color: #5B00B8;">@(enquiry.ApplyingForClass ?? "N/A")</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="mb-1">
+                                        <span class="badge @(enquiry.Gender == "Male" ? "bg-primary" : "bg-pink")">
+                                            @(enquiry.Gender == "Male" ? "Male" : enquiry.Gender == "Female" ? "Female" : "-")
+                                        </span>
+                                    </div>
+                                    <small class="badge bg-success">
+                                        Rs. @Convert.ToInt32(enquiry.FormAmt ?? 0) /-
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="mb-1">
+                                        <strong>@enquiry.EnquiryDate.ToString("dd MMM yyyy")</strong>
+                                    </div>
+                                    <small class="text-info">
+                                        <i class="fas fa-users me-1"></i>Children: @(enquiry.NoOfChild ?? 0)
+                                    </small>
+                                </td>
+                                <td>
+                                    @if (enquiry.NextFollowup.HasValue)
+                                    {
+                                        <div class="mb-1">
+                                            <strong>@enquiry.NextFollowup.Value.ToString("dd MMM yyyy")</strong>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(enquiry.InterestLevel))
+                                    {
+                                        <span class="badge interest-@enquiry.InterestLevel.ToLower().Replace(" ", "")">
+                                            @enquiry.InterestLevel
+                                        </span>
+                                    }
+                                </td>
+                                <td class="no-print">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li style="display:none">
+                                                <a class="dropdown-item" href="@Url.Action("Details", new { id = enquiry.Id })">
+                                                    <i class="fa fa-address-card me-2" style="color: #6c757d;"></i>
+                                                    View Details
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="javascript:void(0)" onclick="openEditModal('@enquiry.Id')">
+                                                    <i class="fas fa-edit me-2" style="color: #28a745;"></i>
+                                                    Edit Enquiry
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="javascript:void(0)" onclick="openFollowUpModal('@enquiry.Id')">
+                                                    <i class="fas fa-phone me-2" style="color: #ffc107;"></i>
+                                                    Follow-up
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="javascript:void(0)" onclick="openPopup('@enquiry.Id', 'form-filled')">
+                                                    <i class="fa-solid fa-file-pdf me-2" style="color: #FB00F8;"></i>
+                                                    Print Form
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="javascript:void(0)" onclick="openPopup('@enquiry.Id', 'receipt')">
+                                                    <i class="fa-solid fa-receipt me-2" style="color: #0d6efd;"></i>
+                                                    Receipt
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="javascript:void(0)" onclick="convertToAdmission('@enquiry.Id', '@enquiry.Student')">
+                                                    <i class="fas fa-graduation-cap me-2" style="color: #6500CC;"></i>
+                                                    Admission
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="javascript:void(0)"
+                                                   onclick="deleteEnquiry('@enquiry.Id')">
+                                                    <i class="fa-solid fa-trash-can me-2" style="color: #dc3545;"></i>
+                                                    Delete Student
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                                @{ cnt++; }
+                            </tr>
+
+
+                            
+
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+         
+           
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No enquiries found</h5>
+                <p class="text-muted">Try adjusting your search criteria and search again.</p>
+            </div>
+        }
+    </div>
+</div>
+<script>
+    $(function () {
+        // Initialize DataTable
+        var table = $('#enquiryResultsTable').DataTable({
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "pageLength": 10,
+            "scrollX": false,
+            "responsive": true,
+            "dom": 'Blfrtip',
+            "buttons": [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'csv',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'excel',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'pdf',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary',
+                    orientation: 'landscape'
+                },
+                {
+                    extend: 'print',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary'
+                }
+            ]
+        });
+    });
+</script>
+
+
+<style>
+    .bg-pink {
+        background-color: #e91e63 !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.075);
+    }
+
+    .mobile-highlight {
+        font-weight: 600;
+        color: #0d6efd;
+    }
+
+    .guardian-info {
+        font-size: 0.9em;
+    }
+
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+        .table {
+            font-size: 12px;
+        }
+    }
+
+    /* Interest level badges */
+    .interest-pending { background-color: #6c757d !important; color: white; }
+    .interest-hot { background-color: #dc3545 !important; color: white; }
+    .interest-excellent { background-color: #28a745 !important; color: white; }
+    .interest-verygood { background-color: #20c997 !important; color: white; }
+    .interest-normal { background-color: #17a2b8 !important; color: white; }
+    .interest-notinterested { background-color: #ffc107 !important; color: black; }
+    .interest-negative { background-color: #fd7e14 !important; color: white; }
+    .interest-bad { background-color: #dc3545 !important; color: white; }
+    .interest-completed { background-color: #343a40 !important; color: white; }
+</style>

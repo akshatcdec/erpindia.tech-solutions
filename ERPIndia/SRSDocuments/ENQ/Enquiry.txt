@@ -1,0 +1,63 @@
+======== Enquiry Form =========
+Student:
+Father:
+Mother:
+Applying For Class:
+Mobile1:
+Mobile2:
+Gender:
+Address:
+Previous School:
+Relation:
+No Of Child:
+---------- Office Use Only ----------
+Enquiry Date:
+Deal By:
+Source: General Enquiry/NewPaper/Hording/Website/Reference/Social Media/Facebook Ads/Google Ads/Teacher/Other
+Note:
+Form Amt:
+Rcpt Date:
+Send SMS:
+-------------------------------------------
+
+====== Gridview Column ======
+00). Sr.
+01). Student / Paid/Unpaid
+02). Guardian (Father, Mother) Dono Name Show honge.
+03). Mobile ( Mobile No.1, Mobile No. 2) Dono Mobile No. Show honge.
+04). Class
+05). Gender /Amt: 300 /-
+06). Enq. Date/ No Of Child: 4
+07). Next Follow Up Date / Status
+08). Action: Edit/Admission/Follow Up/Print Details/Receipt/Delete
+------------------------------------------
+
+=========== Follow Up ===========
+01). Top Bar Details: Student:/Father:/Class:/No. of Child:/Relation/Mobile
+02). Follow-up Date:
+03). Follow-up Time:
+04). Call Status: Answer/Not Answer/Busy/Switched Off/Call Cut/No Incoming/Call Not Connect/Wrong No./No. In-active/Out of Service/Out of Network
+06). Interest Level: Hot/Excellent/Very Good/Normal/Not Interested/Negative/Bad/Completed (By Default: Pending)
+05). Next Follow-up:
+07). Response: 
+-------------Gridview Column-----------------------
+00). Sr. :
+01). Follow-up Date:
+02). Follow-up Time:
+03). Call Status:
+04). Response
+05). Next Follow-up
+06). Action: Delete
+============================
+
+====== Filter=============
+01). Enquiry Datewise
+02). Classwise
+03). Call Status
+04). Interest Level
+05). Datewise Follow Up: Single Date
+06). Date Next Follow Up: Single Date
+=======================
+
+
+

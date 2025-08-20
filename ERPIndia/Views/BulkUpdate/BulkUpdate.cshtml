@@ -1,0 +1,1840 @@
+﻿@model ERPIndia.Controllers.BulkUpdateViewModel
+@{
+    ViewBag.Title = "Bulk Update Student";
+}
+
+<style>
+    .product-style-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .product-style-table thead th {
+            background: linear-gradient(to bottom, #69c1f7, #39a9f2);
+            color: #212529;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px 10px;
+            border: 1px solid #ddd !important;
+        }
+
+        .product-style-table tbody tr:nth-child(odd) {
+            background-color: #e3e8ed !important;
+        }
+
+        .product-style-table tbody tr:nth-child(even) {
+            background-color: #ffffff !important;
+        }
+
+        .product-style-table tbody tr.selected-row:nth-child(odd) {
+            background-color: #e3f2fd !important;
+        }
+
+        .product-style-table tbody tr.selected-row:nth-child(even) {
+            background-color: #e3f2fd !important;
+        }
+
+        .product-style-table tbody td {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+            background-color: transparent !important;
+        }
+
+        .product-style-table .form-check {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+    .gradient-button {
+        background: linear-gradient(to right, #6A5AE0, #A134B8);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        border: none;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease;
+    }
+
+        .gradient-button:hover {
+            color: white;
+            transform: scale(1.05);
+        }
+
+    .editable-cell {
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+    }
+
+    .student-photo {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .table-container {
+        /* Remove max-height and overflow when using DataTable */
+        /* max-height: 600px;
+        overflow-y: auto; */
+    }
+
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+    }
+
+    .update-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .selected-row {
+        background-color: #e3f2fd !important;
+    }
+
+    .badge-purple {
+        background-color: #6f42c1;
+        color: white;
+    }
+
+    /* Toast Notification Styles */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+    }
+
+    .toast {
+        min-width: 300px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease-in-out;
+    }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+    .toast-success {
+        background-color: #d4edda;
+        border-left: 4px solid #28a745;
+        color: #155724;
+    }
+
+    .toast-error {
+        background-color: #f8d7da;
+        border-left: 4px solid #dc3545;
+        color: #721c24;
+    }
+
+    .toast-info {
+        background-color: #d1ecf1;
+        border-left: 4px solid #17a2b8;
+        color: #0c5460;
+    }
+
+    .toast-warning {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        color: #856404;
+    }
+
+    .toast-header {
+        padding: 10px 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .toast-body {
+        padding: 10px 15px;
+    }
+
+    .toast-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+    }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+    .file-upload-cell {
+        position: relative;
+    }
+
+    .file-upload-preview {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin-top: 5px;
+    }
+
+    .preview-image {
+        width: 30px;
+        height: 30px;
+        object-fit: cover;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    .remove-image {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: red;
+        color: white;
+        border-radius: 50%;
+        width: 15px;
+        height: 15px;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .image-preview-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+    }
+
+    .photo-modal {
+        display: none;
+        position: fixed;
+        z-index: 10001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .photo-modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 600px;
+        border-radius: 10px;
+    }
+
+    .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .photo-item {
+        position: relative;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+        .photo-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+        }
+
+        .photo-item .delete-photo {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+    .photobutton {
+        background: linear-gradient(to bottom, #2d5fa9, #133b69);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        border: none;
+        border-radius: 20px;
+        display: flex;
+        font-weight: bold;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .photobutton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .photobutton img {
+            height: 28px;
+            margin-right: 12px;
+        }
+
+    /* Styles for disabled fields */
+    .disabled-field {
+        background-color: #e9ecef !important;
+        cursor: not-allowed !important;
+        opacity: 0.7;
+    }
+
+    .disabled-row {
+        background-color: #f8f9fa !important;
+    }
+
+        .disabled-row td {
+            background-color: transparent !important;
+        }
+
+    .form-check-input:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    /* Page blur overlay styles */
+    .page-blur-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        z-index: 9998;
+        display: none;
+    }
+
+    /* Update container with higher z-index when updating */
+    .updating-container {
+        position: relative;
+        z-index: 9999;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        margin: 20px auto;
+        max-width: 600px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users-cog me-2"></i>Bulk Update
+                    </h5>
+                    <a href="/BulkPhotoUpload" class="photobutton d-flex align-items-center">
+                        <i class="fas fa-image me-2"></i>Bulk Photo
+                    </a>
+                </div>
+
+                <div class="card-body">
+                    <div id="validationMessage" class="alert alert-warning d-none">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Please select all required fields before searching.
+                    </div>
+                    <form id="searchForm" class="needs-validation" novalidate>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="ddlClass" class="form-label">
+                                    Class <span class="text-danger">*</span>
+                                </label>
+                                @Html.DropDownListFor(x => x.SelectedClass, Model.Classes, "Select a class", new { @class = "form-select", id = "ddlClass" })
+                                @Html.ValidationMessageFor(m => m.SelectedClass, "", new { @class = "text-danger small" })
+                            </div>
+                            <div class="col-md-3">
+                                <label for="ddlSection" class="form-label">Section</label>
+                                @Html.DropDownListFor(x => x.SelectedSection, Model.Sections, "All Sections", new { @class = "form-select", id = "ddlSection" })
+                            </div>
+                            <div class="col-md-3">
+                                <label for="ddlColumn" class="form-label">
+                                    Update Column <span class="text-danger">*</span>
+                                </label>
+                                @Html.DropDownListFor(x => x.SelectedColumn, Model.Columns, "Select a column", new { @class = "form-select", id = "ddlColumn" })
+                                @Html.ValidationMessageFor(m => m.SelectedColumn, "", new { @class = "text-danger small" })
+                            </div>
+                            <div class="col-md-3 align-self-end">
+                                <button type="button" class="btn gradient-button w-100" id="btnSearch">
+                                    <i class="fas fa-search me-2"></i>Search Students
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchResultContainer" class="mt-4">
+        <!-- Search results will be loaded here -->
+    </div>
+</div>
+
+<!-- Student Grid Template (hidden by default) -->
+<div id="studentGridTemplate" style="display:none;">
+    <div class="card">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+                <i class="fas fa-list me-2"></i>Student List
+                <span class="badge bg-primary ms-2" id="selectedCount">0 selected</span>
+            </h6>
+            <button type="button" class="btn btn-success" id="btnUpdate">
+                <i class="fas fa-save me-2"></i>Update
+            </button>
+        </div>
+        <div class="card-body p-3">
+            <div class="table-responsive table-container">
+                <table id="studentDataTable" class="table product-style-table mb-0">
+                    <thead class="sticky-header">
+                        <tr>
+                            <th class="text-center" style="width: 50px;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="chkSelectAll">
+                                </div>
+                            </th>
+                            <th id="updateColumnHeader">Update</th>
+                            <th style="width: 60px;">Photo</th>
+                            <th>Adm No.</th>
+                            <th>Roll</th>
+                            <th>Cls</th>
+                            <th>Student</th>
+                            <th>Father</th>
+                            <th>Gen</th>
+                            <th>Mobile</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <!-- rows here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer text-muted">
+            <small>
+                <i class="fas fa-info-circle me-1"></i>
+                Select students and enter values in the highlighted column to update
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Page Blur Overlay -->
+<div class="page-blur-overlay" id="pageBlurOverlay"></div>
+
+<!-- Photo Upload Modal -->
+<div id="photoModal" class="photo-modal">
+    <div class="photo-modal-content">
+        <h5>Manage Photos for <span id="studentNameInModal"></span></h5>
+        <input type="hidden" id="currentStudentId" />
+        <div class="mb-3">
+            <input type="file" id="photoFileInput" class="form-control" accept="image/*" multiple />
+        </div>
+        <div class="photo-grid" id="photoGrid">
+            <!-- Photos will be displayed here -->
+        </div>
+        <div class="mt-3">
+            <button class="btn btn-primary" onclick="savePhotos()">Save</button>
+            <button class="btn btn-secondary" onclick="closePhotoModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- JavaScript section -->
+<script>
+$(document).ready(function() {
+    var selectedColumn = '';
+    var isUpdating = false;
+    var studentPhotos = {};
+    var dropdownCache = {}; // Cache for dropdown data
+    var currentClassName = '';
+    var currentSection = '';
+    var studentsData = []; // Store all students data
+    var dataTable = null; // Store DataTable instance
+
+    // Column configuration with types and validation
+    var columnConfig = {
+        // Numeric fields with specific validations
+        'SrNo': {
+            type: 'number',
+            validation: 'number',
+            min: 1,
+            maxLength: 10,
+            inputRestriction: 'isNumber'
+        },
+        'RollNo': {
+            type: 'text',
+            validation: 'alphanumericWithHyphen',
+            maxLength: 10,
+            inputRestriction: 'isAlphaNumericWithUnderscoreHyphen'
+        },
+        'StudentNo': {
+            type: 'number',
+            validation: 'number',
+            min: 1,
+            maxLength: 10,
+            inputRestriction: 'isNumber'
+        },
+        'OldBalance': {
+            type: 'number',
+            validation: 'number',
+            min: 0,
+            maxLength: 6,
+            inputRestriction: 'isNumber'
+        },
+        'Height': {
+            type: 'number',
+            validation: 'decimal',
+            min: 0,
+            maxLength: 6,
+            inputRestriction: 'isNumberOrDecimal'
+        },
+        'Weight': {
+            type: 'number',
+            validation: 'decimal',
+            min: 0,
+            maxLength: 6,
+            inputRestriction: 'isNumberOrDecimal'
+        },
+
+        // Text fields with specific validations
+        'AdmsnNo': {
+            type: 'number',
+            validation: 'number',
+            maxLength: 10,
+            inputRestriction: 'isNumber'
+        },
+        'FirstName': {
+            type: 'text',
+            validation: 'alphabetic',
+            maxLength: 100,
+            inputRestriction: 'isAlphabet'
+        },
+        'LastName': {
+            type: 'text',
+            validation: 'alphabetic',
+            maxLength: 100,
+            inputRestriction: 'isAlphabet'
+        },
+        'FatherName': {
+            type: 'text',
+            validation: 'alphabetic',
+            maxLength: 50,
+            inputRestriction: 'isAlphabet'
+        },
+        'MotherName': {
+            type: 'text',
+            validation: 'alphabetic',
+            maxLength: 50,
+            inputRestriction: 'isAlphabet'
+        },
+        'GuardianName': {
+            type: 'text',
+            validation: 'alphabetic',
+            maxLength: 50,
+            inputRestriction: 'isAlphabet'
+        },
+        'PENNo': {
+            type: 'text',
+            validation: 'any',
+            maxLength: 50
+        },
+        'PreviousSchool': {
+            type: 'text',
+            validation: 'any',
+            maxLength: 80
+        },
+        'UDISE': {
+            type: 'text',
+            validation: 'any',
+            maxLength: 30
+        },
+        'Password': {
+            type: 'password',
+            validation: 'any',
+            maxLength: 4
+        },
+        'Address': {
+            type: 'textarea',
+            validation: 'any',
+            maxLength: 100
+        },
+
+        // Aadhar fields with strict validation
+        'AadharNo': {
+            type: 'text',
+            validation: 'aadhar',
+            maxLength: 15,
+            inputRestriction: 'isNumber',
+            exactLength: 12
+        },
+        'FatherAadhar': {
+            type: 'text',
+            validation: 'aadhar',
+            maxLength: 15,
+            inputRestriction: 'isNumber',
+            exactLength: 12
+        },
+        'MotherAadhar': {
+            type: 'text',
+            validation: 'aadhar',
+            maxLength: 15,
+            inputRestriction: 'isNumber',
+            exactLength: 12
+        },
+
+        // Mobile fields with validation
+        'Mobile': {
+            type: 'text',
+            validation: 'mobile',
+            maxLength: 10,
+            inputRestriction: 'isNumber',
+            exactLength: 10
+        },
+
+        // Date fields
+        'DOB': {
+            type: 'date',
+            validation: 'date'
+        },
+        'AdmsnDate': {
+            type: 'date',
+            validation: 'date'
+        },
+
+        // Dynamic dropdown fields
+        'Gender': {
+            type: 'dropdown',
+            dynamic: true,
+            validation: 'any'
+        },
+        'BloodGroup': {
+            type: 'dropdown',
+            dynamic: true,
+            validation: 'any'
+        },
+        'Category': {
+            type: 'dropdown',
+            dynamic: true,
+            validation: 'any'
+        },
+        'Section': {
+            type: 'dropdown',
+            dynamic: true,
+            validation: 'any'
+        },
+        'FeeCategory': {
+            type: 'dropdown',
+            dynamic: true,
+            validation: 'any'
+        },
+        'VillegeName': {
+            type: 'dropdown',
+            dynamic: true,
+            validation: 'any'
+        },
+        'House': {
+            type: 'dropdown',
+            dynamic: true,
+            validation: 'any'
+        },
+        'Religion': {
+            type: 'dropdown',
+            dynamic: true,
+            validation: 'any'
+        },
+        'MotherTongue': {
+            type: 'dropdown',
+            dynamic: true,
+            validation: 'any'
+        },
+
+        // Boolean field
+        'IsActive': {
+            type: 'checkbox'
+        },
+
+        // File upload field
+        'Photo': {
+            type: 'file',
+            accept: 'image/*',
+            multiple: true
+        }
+    };
+
+    // Validation functions
+    var validators = {
+        number: function(value) {
+            return /^\d+$/.test(value);
+        },
+        decimal: function(value) {
+            return /^\d*\.?\d+$/.test(value);
+        },
+        alphabetic: function(value) {
+            return /^[a-zA-Z\s]+$/.test(value);
+        },
+        alphanumeric: function(value) {
+            return /^[a-zA-Z0-9\s]+$/.test(value);
+        },
+        alphanumericWithHyphen: function(value) {
+            return /^[a-zA-Z0-9_\-]+$/.test(value);
+        },
+        aadhar: function(value) {
+            var cleanValue = value.replace(/\s/g, '');
+            return /^\d{12}$/.test(cleanValue);
+        },
+        mobile: function(value) {
+            return /^[6-9]\d{9}$/.test(value);
+        },
+        date: function(value) {
+            return !isNaN(Date.parse(value));
+        },
+        any: function(value) {
+            return true;
+        }
+    };
+
+    // Input restriction functions
+    window.isNumber = function(evt) {
+        evt = (evt) ? evt : window.event;
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    };
+
+    window.isAlphabet = function(evt) {
+        evt = (evt) ? evt : window.event;
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if ((charCode < 65 || charCode > 90) && (charCode < 97 || charCode > 122) && charCode != 32) {
+            return false;
+        }
+        return true;
+    };
+
+    window.isAlphaNumericWithUnderscoreHyphen = function(evt) {
+        evt = (evt) ? evt : window.event;
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if ((charCode >= 48 && charCode <= 57) ||
+            (charCode >= 65 && charCode <= 90) ||
+            (charCode >= 97 && charCode <= 122) ||
+            charCode === 45 ||
+            charCode === 95) {
+            return true;
+        }
+        return false;
+    };
+
+    window.isNumberOrDecimal = function(evt) {
+        evt = (evt) ? evt : window.event;
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+
+        // Allow numbers and decimal point
+        if (charCode === 46) { // decimal point
+            var input = evt.target || evt.srcElement;
+            if (input.value.indexOf('.') !== -1) {
+                return false; // Only one decimal point allowed
+            }
+            return true;
+        }
+
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    };
+
+    // Check if field should be disabled
+    function shouldDisableField(studentData, columnName) {
+        if (studentData.HasFeeRecords === 'Y') {
+            var restrictedFields = ['OldBalance', 'FeeCategory', 'Section'];
+            return restrictedFields.indexOf(columnName) !== -1;
+        }
+        return false;
+    }
+
+    // Toast notification function
+    function showToast(message, type = 'success', duration = 3000) {
+        var toastId = 'toast-' + Date.now();
+        var iconMap = {
+            'success': 'fas fa-check-circle',
+            'error': 'fas fa-times-circle',
+            'warning': 'fas fa-exclamation-triangle',
+            'info': 'fas fa-info-circle'
+        };
+
+        var toastHtml =
+            '<div id="' + toastId + '" class="toast toast-' + type + '">' +
+                '<div class="toast-header" style="display:none">' +
+                    '<i class="' + iconMap[type] + ' me-2"></i>' +
+                    '<strong>' + type.charAt(0).toUpperCase() + type.slice(1) + '</strong>' +
+                    '<button type="button" class="toast-close" onclick="closeToast(\'' + toastId + '\')">&times;</button>' +
+                '</div>' +
+                '<div class="toast-body">' + message + '</div>' +
+            '</div>';
+
+        $('#toastContainer').append(toastHtml);
+
+        setTimeout(function() {
+            $('#' + toastId).addClass('show');
+        }, 10);
+
+        setTimeout(function() {
+            closeToast(toastId);
+        }, duration);
+    }
+
+    // Close toast function
+    window.closeToast = function(toastId) {
+        $('#' + toastId).removeClass('show');
+        setTimeout(function() {
+            $('#' + toastId).remove();
+        }, 300);
+    };
+
+    // Function to load dropdown data
+    function loadDropdownData(columnName, callback) {
+        // Check cache first
+        if (dropdownCache[columnName]) {
+            if (callback) callback(dropdownCache[columnName]);
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("GetDropdownData", "BulkUpdate")',
+            type: 'GET',
+            data: { columnName: columnName },
+            success: function(response) {
+                if (response.success && response.data) {
+                    dropdownCache[columnName] = response.data;
+                    if (callback) callback(response.data);
+                } else {
+                    showToast('Failed to load dropdown data for ' + columnName, 'error');
+                    if (callback) callback([]);
+                }
+            },
+            error: function() {
+                showToast('Error loading dropdown data', 'error');
+                if (callback) callback([]);
+            }
+        });
+    }
+
+    // Create input field based on column configuration
+    function createInputField(columnName, currentValue, rowData) {
+        var config = columnConfig[columnName] || { type: 'text', validation: 'any' };
+        var fieldHtml = '';
+        var fieldId = 'field_' + rowData.StudentId + '_' + columnName;
+        var isDisabled = shouldDisableField(rowData, columnName);
+
+        // Check if field should be hidden completely
+        var shouldHide = false;
+        if (rowData.HasFeeRecords === 'Y' && (columnName === 'FeeCategory' || columnName === 'Section')) {
+            shouldHide = true;
+        }
+
+        // If field should be hidden, return empty div
+        if (shouldHide) {
+            return '<div style="text-align: center; color: #6c757d; font-style: italic;">-</div>';
+        }
+
+        var placeholderText = $('#ddlColumn option[value="' + columnName + '"]').text() || columnName;
+
+        var commonAttrs = 'id="' + fieldId + '" ' +
+            'data-studentid="' + rowData.StudentId + '" ' +
+            'data-admsnno="' + rowData.AdmsnNo + '" ' +
+            'class="form-control form-control-sm editable-cell update-value' + (isDisabled ? ' disabled-field' : '') + '" ';
+
+        if (config.maxLength) {
+            commonAttrs += 'maxlength="' + config.maxLength + '" ';
+        }
+
+        if (isDisabled) {
+            commonAttrs += 'disabled="disabled" ';
+        }
+
+        var onKeyPress = '';
+        if (config.inputRestriction && !isDisabled) {
+            onKeyPress = 'onkeypress="return ' + config.inputRestriction + '(event);" ';
+        }
+
+        switch (config.type) {
+            case 'number':
+                fieldHtml = '<input type="text" ' + commonAttrs + onKeyPress +
+                    'value="' + (currentValue || '') + '" ' +
+                    (config.min !== undefined ? 'min="' + config.min + '" ' : '') +
+                    (config.max !== undefined ? 'max="' + config.max + '" ' : '') +
+                    'placeholder="' + (isDisabled ? 'Has fee records - Cannot edit' : 'Enter ' + placeholderText) + '">';
+                break;
+
+            case 'date':
+                fieldHtml = '<input type="date" ' + commonAttrs +
+                    'value="' + (currentValue || '') + '">';
+                break;
+
+            case 'textarea':
+                fieldHtml = '<textarea ' + commonAttrs + onKeyPress +
+                    'rows="2" placeholder="' + (isDisabled ? 'Has fee records - Cannot edit' : 'Enter ' + placeholderText) + '">' + (currentValue || '') + '</textarea>';
+                break;
+
+            case 'dropdown':
+                fieldHtml = '<select ' + commonAttrs + ' data-current-value="' + (currentValue || '') + '">';
+
+                if (isDisabled) {
+                    fieldHtml += '<option value="' + (currentValue || '') + '">' + (currentValue || 'Has fee records - Cannot edit') + '</option>';
+                } else if (config.dynamic) {
+                    fieldHtml += '<option value="">Loading...</option>';
+                } else if (config.options) {
+                    fieldHtml += '<option value="">Select...</option>';
+                    $.each(config.options, function(index, option) {
+                        var selected = option.value == currentValue ? 'selected' : '';
+                        fieldHtml += '<option value="' + option.value + '" ' + selected + '>' + option.text + '</option>';
+                    });
+                }
+
+                fieldHtml += '</select>';
+                break;
+
+            case 'checkbox':
+                var checked = currentValue == '1' || currentValue == 'true' || currentValue == true ? 'checked' : '';
+                let status = (currentValue === '1'
+                    || currentValue === 'true'
+                    || currentValue === true)
+                    ? ' Active'
+                    : ' Inactive';
+                fieldHtml = '<div class="form-check">' +
+                    '<input type="checkbox" class="form-check-input update-value' + (isDisabled ? ' disabled-field' : '') + '" ' +
+                    'id="' + fieldId + '" ' +
+                    'data-studentid="' + rowData.StudentId + '" ' +
+                    'data-admsnno="' + rowData.AdmsnNo + '" ' +
+                    (isDisabled ? 'disabled="disabled" ' : '') +
+                    checked + '>&nbsp;' + status +''
+                    '</div>';
+                break;
+
+            case 'file':
+                if (config.multiple) {
+                    fieldHtml = '<button type="button" class="btn btn-sm btn-primary" ' +
+                        (isDisabled ? 'disabled ' : '') +
+                        'onclick="openPhotoModal(\'' +
+                        rowData.StudentId + '\', \'' + rowData.StudentName + '\')">' +
+                        '<i class="fas fa-camera me-1"></i>' + (isDisabled ? 'Has fee records - Cannot edit' : 'Manage Photos') +
+                        '</button>' +
+                        '<div class="file-upload-preview mt-1" id="preview_' + rowData.StudentId + '"></div>';
+                } else {
+                    fieldHtml = '<input type="file" ' + commonAttrs +
+                        'accept="' + (config.accept || '*') + '">';
+                }
+                break;
+
+            default:
+                fieldHtml = '<input type="text" ' + commonAttrs + onKeyPress +
+                    'value="' + (currentValue || '') + '" ' +
+                    'placeholder="' + (isDisabled ? 'Has fee records - Cannot edit' : 'Enter ' + placeholderText) + '">';
+        }
+
+        fieldHtml += '<div class="invalid-feedback"></div>';
+        return fieldHtml;
+    }
+
+    // Validate field value
+    function validateField(value, columnName) {
+        var config = columnConfig[columnName];
+        if (!config || !config.validation) return { valid: true };
+
+        // Allow empty values unless field is required
+        if (!value && !config.required) {
+            return { valid: true };
+        }
+
+        // Check exact length if specified
+        if (config.exactLength && value) {
+            var cleanValue = value.replace(/\s/g, ''); // Remove spaces for length check
+            if (cleanValue.length !== config.exactLength) {
+                return {
+                    valid: false,
+                    message: columnName + ' must be exactly ' + config.exactLength + ' digits'
+                };
+            }
+        }
+
+        // Check max length
+        if (config.maxLength && value && value.length > config.maxLength) {
+            return {
+                valid: false,
+                message: columnName + ' cannot exceed ' + config.maxLength + ' characters'
+            };
+        }
+
+        // Check min/max for numeric values
+        if ((config.type === 'number' || config.validation === 'number' || config.validation === 'decimal') && value) {
+            var numValue = parseFloat(value);
+            if (config.min !== undefined && numValue < config.min) {
+                return {
+                    valid: false,
+                    message: columnName + ' cannot be less than ' + config.min
+                };
+            }
+            if (config.max !== undefined && numValue > config.max) {
+                return {
+                    valid: false,
+                    message: columnName + ' cannot be greater than ' + config.max
+                };
+            }
+        }
+
+        var validator = validators[config.validation];
+        if (!validator) return { valid: true };
+
+        if (value && !validator(value)) {
+            var messages = {
+                'number': 'Please enter only numbers',
+                'decimal': 'Please enter a valid decimal number',
+                'alphabetic': 'Please enter only letters',
+                'alphanumeric': 'Please enter only letters and numbers',
+                'alphanumericWithHyphen': 'Please enter only letters, numbers, hyphens and underscores',
+                'aadhar': 'Please enter a valid 12-digit Aadhar number',
+                'mobile': 'Please enter a valid 10-digit mobile number starting with 6-9',
+                'date': 'Please enter a valid date'
+            };
+            return { valid: false, message: messages[config.validation] || 'Invalid value' };
+        }
+
+        return { valid: true };
+    }
+
+    // Format Aadhar number with spaces
+    function formatAadhar(input) {
+        var value = input.value.replace(/\s/g, '');
+        var formatted = '';
+
+        for (var i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+                formatted += ' ';
+            }
+            formatted += value[i];
+        }
+
+        input.value = formatted;
+    }
+
+    // Photo modal functions
+    window.openPhotoModal = function(studentId, studentName) {
+        $('#currentStudentId').val(studentId);
+        $('#studentNameInModal').text(studentName);
+        $('#photoModal').show();
+
+        if (studentPhotos[studentId]) {
+            displayPhotos(studentId);
+        }
+    };
+
+    window.closePhotoModal = function() {
+        $('#photoModal').hide();
+        $('#photoFileInput').val('');
+    };
+
+    function displayPhotos(studentId) {
+        var photos = studentPhotos[studentId] || [];
+        var gridHtml = '';
+
+        photos.forEach(function(photo, index) {
+            gridHtml += '<div class="photo-item">' +
+                       '<img src="' + photo.url + '" alt="Photo ' + (index + 1) + '">' +
+                       '<button class="delete-photo" onclick="deletePhoto(\'' + studentId + '\', ' + index + ')">' +
+                       '<i class="fas fa-times"></i>' +
+                       '</button>' +
+                       '</div>';
+        });
+
+        $('#photoGrid').html(gridHtml);
+
+        var previewHtml = '';
+        photos.slice(0, 3).forEach(function(photo) {
+            previewHtml += '<img src="' + photo.url + '" class="preview-image" alt="Preview">';
+        });
+        if (photos.length > 3) {
+            previewHtml += '<span class="badge bg-secondary">+' + (photos.length - 3) + '</span>';
+        }
+        $('#preview_' + studentId).html(previewHtml);
+    }
+
+    window.deletePhoto = function(studentId, index) {
+        if (confirm('Are you sure you want to delete this photo?')) {
+            studentPhotos[studentId].splice(index, 1);
+            displayPhotos(studentId);
+        }
+    };
+
+    // Handle file input change
+    $('#photoFileInput').on('change', function(e) {
+        var files = e.target.files;
+        var studentId = $('#currentStudentId').val();
+
+        if (!studentPhotos[studentId]) {
+            studentPhotos[studentId] = [];
+        }
+
+        Array.from(files).forEach(function(file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                studentPhotos[studentId].push({
+                    file: file,
+                    url: e.target.result
+                });
+                displayPhotos(studentId);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    window.savePhotos = function() {
+        closePhotoModal();
+        showToast('Photos saved temporarily. Click Update to save permanently.', 'info');
+    };
+
+    // Function to populate all dynamic dropdowns
+    function populateDynamicDropdowns() {
+        var config = columnConfig[selectedColumn];
+
+        if (config && config.type === 'dropdown' && config.dynamic) {
+            loadDropdownData(selectedColumn, function(options) {
+                // Populate all dropdowns for this column
+                $('.update-value[id^="field_"][id$="_' + selectedColumn + '"]:not(:disabled)').each(function() {
+                    var $select = $(this);
+                    var currentValue = $select.data('current-value') || $select.val();
+
+                    $select.empty();
+                    $select.append('<option value="">Select...</option>');
+
+                    $.each(options, function(index, option) {
+                        var selected = option.value == currentValue ? 'selected' : '';
+                        $select.append('<option value="' + option.value + '" ' + selected + '>' + option.text + '</option>');
+                    });
+                });
+            });
+        }
+    }
+
+    // Initialize DataTable after data is loaded
+    function initializeDataTable() {
+        // Destroy existing DataTable if it exists
+        if (dataTable) {
+            dataTable.destroy();
+        }
+
+        // Initialize DataTable with export buttons
+        dataTable = $('#studentDataTable').DataTable({
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "pageLength": 25,
+            "order": [[5, "asc"], [3, "asc"]], // Order by Class and then Adm No
+            "scrollX": false,
+            "responsive": true,
+            "dom": 'Blfrtip',
+            "buttons": [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'csv',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'excel',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'pdf',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary',
+                    orientation: 'landscape'
+                },
+                {
+                    extend: 'print',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary'
+                }
+            ],
+            "drawCallback": function(settings) {
+                // Re-bind events after DataTable redraw
+                bindGridEvents();
+                bindValidationEvents();
+                bindInputEvents();
+                updateSelectedCount();
+                highlightSelectedRows();
+            }
+        });
+    }
+
+    // Preload dropdown data when column is selected
+    $('#ddlColumn').on('change', function() {
+        var column = $(this).val();
+        if (column && columnConfig[column] && columnConfig[column].dynamic) {
+            // Preload the dropdown data
+            loadDropdownData(column);
+        }
+    });
+
+    // Search button click handler
+    $('#btnSearch').click(function() {
+        $('#validationMessage').addClass('d-none');
+
+        var className = $('#ddlClass').val();
+        var section = $('#ddlSection').val();
+        selectedColumn = $('#ddlColumn').val();
+        currentClassName = className;
+        currentSection = section;
+
+        var errors = [];
+        if (!className) {
+            errors.push('Please select a class');
+        }
+        if (!selectedColumn) {
+            errors.push('Please select a column to update');
+        }
+
+        if (errors.length > 0) {
+            showToast(errors.join(', '), 'warning');
+            $('#validationMessage').html(
+                '<i class="fas fa-exclamation-triangle me-2"></i>' + errors.join(', ')
+            ).removeClass('d-none');
+            return;
+        }
+
+        $('#searchResultContainer').html(
+            '<div class="text-center py-5">' +
+            '<div class="spinner-border text-primary" role="status">' +
+            '<span class="visually-hidden">Loading...</span>' +
+            '</div>' +
+            '<div class="mt-2">Loading students...</div>' +
+            '</div>'
+        );
+
+        $.ajax({
+            url: '@Url.Action("GetStudents", "BulkUpdate")',
+            type: 'POST',
+            data: {
+                className: className,
+                section: section || ''
+            },
+            success: function(data) {
+                if (data.success) {
+                    studentsData = data.data; // Store the data
+                    displayStudents(data.data);
+                    showToast('Students loaded successfully', 'success');
+                } else {
+                    $('#searchResultContainer').html(
+                        '<div class="alert alert-danger">' +
+                        '<i class="fas fa-exclamation-circle me-2"></i>' +
+                        (data.message || 'No students found') +
+                        '</div>'
+                    );
+                    showToast(data.message || 'No students found', 'error');
+                }
+            },
+            error: function() {
+                $('#searchResultContainer').html(
+                    '<div class="alert alert-danger">' +
+                    '<i class="fas fa-times-circle me-2"></i>' +
+                    'An error occurred while loading students' +
+                    '</div>'
+                );
+                showToast('An error occurred while loading students', 'error');
+            }
+        });
+    });
+
+    // Display students in grid
+    function displayStudents(students) {
+        if (!students || students.length === 0) {
+            $('#searchResultContainer').html(
+                '<div class="alert alert-info">' +
+                '<i class="fas fa-info-circle me-2"></i>' +
+                'No students found for the selected criteria' +
+                '</div>'
+            );
+            return;
+        }
+
+        var gridHtml = $('#studentGridTemplate').html();
+        $('#searchResultContainer').html(gridHtml);
+
+        $('#updateColumnHeader').html('<b>Update:</b> <b style="color: #1200FF;">' + $('#ddlColumn option:selected').text() + '</b>');
+
+        var tbody = $('#studentTableBody');
+        tbody.empty();
+
+        $.each(students, function(index, student) {
+            var row = $('<tr>');
+
+            // Check if this row should have disabled checkbox
+            var isRowDisabled = false;
+            var restrictedFields = ['OldBalance', 'FeeCategory', 'Section'];
+            if (student.HasFeeRecords === 'Y' && restrictedFields.indexOf(selectedColumn) !== -1) {
+                isRowDisabled = true;
+                row.addClass('disabled-row');
+            }
+
+            // Checkbox column
+            row.append(
+                '<td class="text-center">' +
+                '<div class="form-check">' +
+                '<input class="form-check-input chkStudent" type="checkbox" ' +
+                'data-studentid="' + student.StudentId + '" ' +
+                'data-admsnno="' + student.AdmsnNo + '" ' +
+                'data-schoolcode="' + student.SchoolCode + '" ' +
+                'data-hasfeerecords="' + student.HasFeeRecords + '" ' +
+                (isRowDisabled ? 'disabled="disabled" ' : '') +
+                'id="chk_' + student.StudentId + '">' +
+                '</div>' +
+                '</td>'
+            );
+
+            // Update field column
+            var currentValue = getStudentFieldValue(student, selectedColumn);
+            var inputField = createInputField(selectedColumn, currentValue, student);
+            row.append('<td>' + inputField + '</td>');
+
+            // Photo column
+            var defaultPhoto = '/img/default.jpg';
+            row.append(
+                '<td>' +
+                '<img src="' + (student.Photo || defaultPhoto) + '" ' +
+                'class="student-photo" ' +
+                'onerror="this.onerror=null; this.src=\'' + defaultPhoto + '\'" />' +
+                '</td>'
+            );
+
+            // Other student data columns
+            row.append('<td>' + (student.AdmsnNo || '') + '</td>');
+            row.append('<td>' + (student.RollNo || '') + '</td>');
+            row.append(
+                '<td>' +
+                '<span class="badge badge-purple">' +
+                (student.ClassName || '') + ' - ' + (student.SectionName || '') +
+                '</span>' +
+                '</td>'
+            );
+            row.append('<td>' + (student.StudentName || '') + '</td>');
+            row.append('<td>' + (student.FatherName || '') + '</td>');
+            row.append('<td>' + (student.Gender || '') + '</td>');
+            row.append('<td>' + (student.Mobile || '') + '</td>');
+
+            tbody.append(row);
+        });
+
+        // Initialize DataTable after populating data
+        setTimeout(function() {
+            initializeDataTable();
+            // Populate dynamic dropdowns after DataTable initialization
+            populateDynamicDropdowns();
+        }, 100);
+
+        updateSelectedCount();
+    }
+
+    // Helper function to get current field value
+    function getStudentFieldValue(student, fieldName) {
+        return student[fieldName] || '';
+    }
+
+    // Bind input events for enabling/disabling rows
+    function bindInputEvents() {
+        $('.update-value:not(:disabled)').off('input change').on('input change', function() {
+            var $this = $(this);
+            var studentId = $this.data('studentid');
+            var $row = $this.closest('tr');
+            var $checkbox = $row.find('.chkStudent');
+            var hasValue = false;
+
+            // Check if input has value
+            if ($this.is(':checkbox')) {
+                hasValue = true; // Checkboxes always have a value
+            } else if ($this.is('select')) {
+                hasValue = $this.val() !== '';
+            } else {
+                hasValue = $this.val().trim() !== '';
+            }
+
+            // If this input has a value, automatically check its checkbox
+            if (hasValue) {
+                $checkbox.prop('checked', true);
+            } else {
+                // Optionally uncheck if value is removed
+                $checkbox.prop('checked', false);
+            }
+
+            // Update selected count
+            updateSelectedCount();
+            highlightSelectedRows();
+        });
+
+        // Handle keyboard events
+        $('.update-value:not(:disabled)').off('keydown').on('keydown', function(e) {
+            var $this = $(this);
+            var $row = $this.closest('tr');
+            var $allInputs = $('.update-value:not(:disabled):visible'); // Only visible inputs
+            var currentIndex = $allInputs.index($this);
+
+            switch (e.key) {
+                case 'Enter':
+                    e.preventDefault();
+                    // Move to next input
+                    if (currentIndex < $allInputs.length - 1) {
+                        $allInputs.eq(currentIndex + 1).focus();
+                    }
+                    break;
+                case 'Tab':
+                    // Default tab behavior
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    // Move to previous row same column
+                    var $prevRow = $row.prev();
+                    if ($prevRow.length) {
+                        $prevRow.find('.update-value:not(:disabled)').focus();
+                    }
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    // Move to next row same column
+                    var $nextRow = $row.next();
+                    if ($nextRow.length) {
+                        $nextRow.find('.update-value:not(:disabled)').focus();
+                    }
+                    break;
+            }
+        });
+    }
+
+    // Bind validation events
+    function bindValidationEvents() {
+        $('.update-value:not(:disabled)').off('blur').on('blur', function() {
+            var $this = $(this);
+            var value = $this.val();
+            var isCheckbox = $this.is(':checkbox');
+
+            if (isCheckbox) {
+                value = $this.is(':checked') ? '1' : '0';
+            }
+
+            var validation = validateField(value, selectedColumn);
+
+            if (!validation.valid) {
+                $this.addClass('is-invalid');
+                $this.siblings('.invalid-feedback').text(validation.message);
+            } else {
+                $this.removeClass('is-invalid');
+                $this.siblings('.invalid-feedback').text('');
+            }
+        });
+
+        // Special handling for Aadhar fields - format with spaces
+        if (selectedColumn === 'AadharNo' || selectedColumn === 'FatherAadhar' || selectedColumn === 'MotherAadhar') {
+            $('.update-value:not(:disabled)').off('input.aadhar').on('input.aadhar', function() {
+                formatAadhar(this);
+            });
+        }
+
+        // Special handling for mobile fields - restrict to 10 digits
+        if (selectedColumn === 'Mobile') {
+            $('.update-value:not(:disabled)').off('input.mobile').on('input.mobile', function() {
+                var value = this.value.replace(/\D/g, '');
+                if (value.length > 10) {
+                    value = value.substring(0, 10);
+                }
+                this.value = value;
+            });
+        }
+    }
+
+    // Bind grid events
+    function bindGridEvents() {
+        $('#chkSelectAll').off('change').on('change', function() {
+            var isChecked = $(this).prop('checked');
+
+            // Handle pagination - only check visible rows
+            if (dataTable) {
+                dataTable.$('.chkStudent:not(:disabled)').prop('checked', isChecked);
+            } else {
+                $('.chkStudent:not(:disabled)').prop('checked', isChecked);
+            }
+
+            updateSelectedCount();
+            highlightSelectedRows();
+        });
+
+        $('.chkStudent').off('change').on('change', function() {
+            var $this = $(this);
+            var $row = $this.closest('tr');
+            var $input = $row.find('.update-value');
+
+            updateSelectedCount();
+            highlightSelectedRows();
+        });
+
+        $('#btnUpdate').off('click').on('click', updateStudents);
+    }
+
+    // Update selected count
+    function updateSelectedCount() {
+        var count = 0;
+        if (dataTable) {
+            // Count across all pages
+            count = dataTable.$('.chkStudent:checked').length;
+        } else {
+            count = $('.chkStudent:checked').length;
+        }
+        $('#selectedCount').text(count + ' selected');
+        $('#btnUpdate').prop('disabled', count === 0);
+    }
+
+    // Highlight selected rows
+    function highlightSelectedRows() {
+        if (dataTable) {
+            dataTable.$('.chkStudent').each(function() {
+                if ($(this).is(':checked')) {
+                    $(this).closest('tr').addClass('selected-row');
+                } else {
+                    $(this).closest('tr').removeClass('selected-row');
+                }
+            });
+        } else {
+            $('.chkStudent').each(function() {
+                if ($(this).is(':checked')) {
+                    $(this).closest('tr').addClass('selected-row');
+                } else {
+                    $(this).closest('tr').removeClass('selected-row');
+                }
+            });
+        }
+    }
+
+    // Update students - UPDATED VERSION WITH SAME LOADER AS STUDENT LOADING
+    function updateStudents() {
+        if (isUpdating) {
+            return;
+        }
+
+        var updates = [];
+        var hasErrors = false;
+        var skippedCount = 0;
+
+        // Collect updates from checked students across all pages
+        var $checkedBoxes = dataTable ? dataTable.$('.chkStudent:checked') : $('.chkStudent:checked');
+
+        $checkedBoxes.each(function() {
+            var $checkbox = $(this);
+            var studentId = $checkbox.data('studentid');
+            var admsnNo = $checkbox.data('admsnno');
+            var schoolCode = $checkbox.data('schoolcode');
+            var hasFeeRecords = $checkbox.data('hasfeerecords');
+            var $row = $checkbox.closest('tr');
+            var $updateField = $row.find('.update-value');
+            var value = '';
+
+            if ($updateField.length > 0) {
+                // Skip if field is disabled
+                if ($updateField.is(':disabled')) {
+                    skippedCount++;
+                    return; // Continue to next iteration
+                }
+
+                if ($updateField.is(':checkbox')) {
+                    value = $updateField.is(':checked') ? '1' : '0';
+                } else if ($updateField.is('select')) {
+                    value = $updateField.val() || '';
+                } else {
+                    value = $updateField.val() || '';
+                }
+
+                // Validate
+                var validation = validateField(value, selectedColumn);
+                if (!validation.valid) {
+                    $updateField.addClass('is-invalid');
+                    $updateField.siblings('.invalid-feedback').text(validation.message);
+                    hasErrors = true;
+                } else {
+                    $updateField.removeClass('is-invalid');
+                }
+
+                updates.push({
+                    StudentId: studentId,
+                    AdmsnNo: admsnNo,
+                    SchoolCode: schoolCode,
+                    Value: value
+                });
+            }
+        });
+
+        console.log('Updates collected:', updates);
+
+        if (hasErrors) {
+            showToast('Please fix validation errors before updating', 'error');
+            return;
+        }
+
+        if (updates.length === 0) {
+            if (skippedCount > 0) {
+                showToast('All selected students have existing fee records and cannot be updated for this field', 'warning');
+            } else {
+                showToast('Please select at least one student to update', 'warning');
+            }
+            return;
+        }
+
+        var confirmMessage = 'Are you sure you want to update ' + updates.length + ' student(s)?';
+        if (skippedCount > 0) {
+            confirmMessage += '\n\nNote: ' + skippedCount + ' student(s) with existing fee records will be skipped for this field.';
+        }
+
+        if (confirm(confirmMessage)) {
+            isUpdating = true;
+
+            // SHOW BLUR OVERLAY
+            $('#pageBlurOverlay').fadeIn(200);
+
+            // ADD UPDATING CONTAINER CLASS AND USE THE SAME LOADER STYLE AS STUDENT LOADING
+            $('#searchResultContainer').addClass('updating-container').html(
+                '<div class="text-center py-5">' +
+                '<div class="spinner-border text-primary" role="status">' +
+                '<span class="visually-hidden">Loading...</span>' +
+                '</div>' +
+                '<div class="mt-2">Updating students...</div>' +
+                '</div>'
+            );
+
+            // Create proper request object
+            var requestData = {
+                ColumnName: selectedColumn,
+                Updates: updates,
+                ClassName: currentClassName,
+                Section: currentSection
+            };
+
+            // Handle different column types
+            if (selectedColumn === 'Photo') {
+                // For photo uploads, use FormData
+                var formData = new FormData();
+                formData.append('ColumnName', selectedColumn);
+                formData.append('Updates', JSON.stringify(updates));
+                formData.append('ClassName', currentClassName);
+                formData.append('Section', currentSection);
+
+                // Add photos
+                for (var studentId in studentPhotos) {
+                    var photos = studentPhotos[studentId];
+                    photos.forEach(function(photo, index) {
+                        if (photo.file) {
+                            formData.append('photos_' + studentId + '_' + index, photo.file);
+                        }
+                    });
+                }
+
+                $.ajax({
+                    url: '@Url.Action("UpdateStudents", "BulkUpdate")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: handleUpdateSuccess,
+                    error: handleUpdateError,
+                    complete: function() {
+                        isUpdating = false;
+                    }
+                });
+            } else {
+                // For regular updates, use JSON
+                $.ajax({
+                    url: '@Url.Action("UpdateStudents", "BulkUpdate")',
+                    type: 'POST',
+                    data: JSON.stringify(requestData),
+                    contentType: 'application/json',
+                    success: handleUpdateSuccess,
+                    error: handleUpdateError,
+                    complete: function() {
+                        isUpdating = false;
+                    }
+                });
+            }
+        }
+    }
+
+    // Handle update success - UPDATED VERSION
+    function handleUpdateSuccess(result) {
+        if (result.success) {
+            // Keep blur overlay while showing success
+            // Show success message in the same container
+            $('#searchResultContainer').html(
+                '<div class="text-center py-5">' +
+                '<div class="mb-3">' +
+                '<i class="fas fa-check-circle text-success" style="font-size: 48px;"></i>' +
+                '</div>' +
+                '<div class="text-success h5">Update successful!</div>' +
+                '<div class="text-muted mt-2">Refreshing page...</div>' +
+                '</div>'
+            );
+
+            // Reload after showing success
+            setTimeout(function() {
+                // Show refreshing message
+                $('#searchResultContainer').html(
+                    '<div class="text-center py-5">' +
+                    '<div class="spinner-border text-primary" role="status">' +
+                    '<span class="visually-hidden">Loading...</span>' +
+                    '</div>' +
+                    '<div class="mt-2"><i class="fas fa-sync-alt fa-spin me-2"></i>Refreshing page...</div>' +
+                    '</div>'
+                );
+
+                setTimeout(function() {
+                    window.location.reload();
+                }, 500);
+            }, 1500);
+
+        } else {
+            // Hide blur overlay on error
+            $('#pageBlurOverlay').fadeOut(200);
+            $('#searchResultContainer').removeClass('updating-container');
+
+            // Show error in the same container
+            var errorMessage = 'Update failed';
+            if (result.errors && result.errors.length > 0) {
+                errorMessage = '<div>Update failed:</div><ul class="text-start">';
+                result.errors.forEach(function(error) {
+                    errorMessage += '<li>' + error + '</li>';
+                });
+                errorMessage += '</ul>';
+            } else if (result.message) {
+                errorMessage = result.message;
+            }
+
+            $('#searchResultContainer').html(
+                '<div class="alert alert-danger">' +
+                '<i class="fas fa-exclamation-circle me-2"></i>' +
+                errorMessage +
+                '</div>'
+            );
+
+            // Optionally reload the student list after error
+            setTimeout(function() {
+                $('#btnSearch').click(); // Reload the student list
+            }, 3000);
+        }
+    }
+
+    // Handle update error - UPDATED VERSION
+    function handleUpdateError(xhr, status, error) {
+        // Hide blur overlay on error
+        $('#pageBlurOverlay').fadeOut(200);
+        $('#searchResultContainer').removeClass('updating-container');
+
+        var errorMessage = 'An error occurred while updating students';
+
+        if (xhr.responseJSON && xhr.responseJSON.message) {
+            errorMessage = xhr.responseJSON.message;
+        } else if (xhr.responseText) {
+            try {
+                var response = JSON.parse(xhr.responseText);
+                if (response.message) {
+                    errorMessage = response.message;
+                }
+            } catch (e) {
+                console.error('Error parsing response:', e);
+            }
+        }
+
+        // Show error in the same container as student list
+        $('#searchResultContainer').html(
+            '<div class="alert alert-danger">' +
+            '<i class="fas fa-times-circle me-2"></i>' +
+            errorMessage +
+            '</div>'
+        );
+
+        // Reload the student list after 3 seconds
+        setTimeout(function() {
+            $('#btnSearch').click(); // Reload the student list
+        }, 3000);
+
+        console.error('Update error:', xhr, status, error);
+    }
+
+    // Batch load multiple dropdowns (optional optimization)
+    function preloadMultipleDropdowns(columnNames) {
+        var dynamicColumns = columnNames.filter(function(col) {
+            return columnConfig[col] && columnConfig[col].dynamic;
+        });
+
+        if (dynamicColumns.length > 0) {
+            $.ajax({
+                url: '@Url.Action("GetMultipleDropdownData", "BulkUpdate")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(dynamicColumns),
+                success: function(response) {
+                    if (response.success && response.data) {
+                        // Cache all dropdown data
+                        $.each(response.data, function(columnName, options) {
+                            dropdownCache[columnName] = options;
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    // Optional: Preload common dropdowns on page load
+    var commonDropdowns = ['Gender', 'BloodGroup', 'Category', 'FeeCategory'];
+    preloadMultipleDropdowns(commonDropdowns);
+});
+</script>

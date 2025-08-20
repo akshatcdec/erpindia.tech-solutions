@@ -1,0 +1,290 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<div class="breadcrumbs-area">
+    <h3>Service</h3>
+    <ul>
+        <li>
+            <a href="@Url.Action("", "SiteMap")">Home</a>
+        </li>
+        <li>Services</li>
+    </ul>
+</div>
+<div class="card height-auto">
+    <div class="card-body">
+        <div class="heading-layout1">
+            <div class="item-title">
+                <h3>Add New Class</h3>
+            </div>
+        </div>
+        <form id="userForm" class="new-added-form">
+            <div class="row">
+                <input type="hidden" id="userId">
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <label> First *</label>
+                    <input type="text" id="First" placeholder="" class="form-control">
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <label>Last  *</label>
+                    <input type="text" id="Last" placeholder="" class="form-control">
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <label>Contact No *</label>
+                    <input type="text" id="Contact" placeholder="" class="form-control">
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <label>Email  *</label>
+                    <textarea id="Email" rows="3" class="form-control"></textarea>
+
+                </div>
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" id="submitBtn" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark">Save</button>
+                    <button type="button" id="cancelBtntn" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card height-auto">
+    <div class="card-body">
+        <div class="heading-layout1">
+            <div class="item-title">
+                <h3>Class List</h3>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="customerDatatable" class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Id</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Contact</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be populated here -->
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+<div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+
+
+<script>
+    // Function to handle form submission (both create and update)
+    $(document).ready(function () {
+        // Form submit handler
+        $('#userForm').submit(function (e) {
+            e.preventDefault();
+
+            // Get form data
+            var customer = {
+                FirstName: $('#First').val(),
+                LastName: $('#Last').val(),
+                Contact: $('#Contact').val(),
+                Email: $('#Email').val(),
+                DateOfBirth: '01/01/01'
+            };
+
+            // Check if we're updating (userId has a value) or creating new
+            var isUpdate = $('#userId').val() !== '';
+
+            if (isUpdate) {
+                customer.Id = $('#userId').val();
+                updateCustomer(customer);
+            } else {
+                createCustomer(customer);
+            }
+        });
+
+        // Cancel button handler
+        $('#cancelBtntn').click(function () {
+            resetForm();
+        });
+    });
+
+    // Function to reset the form
+    function resetForm() {
+        $('#userForm')[0].reset();
+        $('#userId').val('');
+        $('#submitBtn').text('Save');
+    }
+
+    // Function to load customer data into the form for editing
+    function EditCustomer(id) {
+        // Scroll to form
+        $('html, body').animate({
+            scrollTop: $("#userForm").offset().top - 100
+        }, 500);
+
+        // Get customer data by ID
+        $.ajax({
+            url: '/Customer/GetCustomerById',
+            type: 'GET',
+            data: { id: id },
+            success: function (data) {
+                if (data) {
+                    // Populate the form with customer data
+                    $('#userId').val(data.Id);
+                    $('#First').val(data.FirstName);
+                    $('#Last').val(data.LastName);
+                    $('#Contact').val(data.Contact);
+                    $('#Email').val(data.Email);
+
+                    // Change button text to indicate update
+                    $('#submitBtn').text('Update');
+                } else {
+                    showNotification('Customer not found.', 'error');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error fetching customer data:', error);
+                showNotification('An error occurred while fetching customer data.', 'error');
+            }
+        });
+    }
+
+    // Function to create a new customer
+    function createCustomer(customer) {
+        $.ajax({
+            url: '/Customer/InsertCustomer',
+            type: 'POST',
+            data: customer,
+            success: function (result) {
+                if (result.success) {
+                    // Reset form
+                    resetForm();
+
+                    // Refresh the data table
+                    if ($.fn.DataTable.isDataTable('#customerDatatable')) {
+                        $('#customerDatatable').DataTable().ajax.reload(null, false);
+                    }
+
+                    // Show success message
+                    showNotification(result.message, 'success');
+                } else {
+                    // Show error message
+                    showNotification(result.message || 'Failed to create customer.', 'error');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Create error:', error);
+                showNotification('An error occurred while creating the customer.', 'error');
+            }
+        });
+    }
+
+    // Function to update an existing customer
+    function updateCustomer(customer) {
+        $.ajax({
+            url: '/Customer/UpdateCustomer',
+            type: 'POST',
+            data: customer,
+            success: function (result) {
+                if (result.success) {
+                    // Reset form
+                    resetForm();
+
+                    // Refresh the data table
+                    if ($.fn.DataTable.isDataTable('#customerDatatable')) {
+                        $('#customerDatatable').DataTable().ajax.reload(null, false);
+                    }
+
+                    // Show success message
+                    showNotification(result.message, 'success');
+                } else {
+                    // Show error message
+                    showNotification(result.message || 'Failed to update customer.', 'error');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Update error:', error);
+                showNotification('An error occurred while updating the customer.', 'error');
+            }
+        });
+    }
+</script>
+<script>
+    // Function to open edit modal and populate with customer data
+ 
+    
+    
+    function Delete(id) {
+        if (confirm("Are you sure you want to delete this customer?")) {
+            $.ajax({
+                url: '@Url.Action("DeleteCustomer", "Customer")',
+                type: 'POST',
+                data: { id: id },
+                success: function (result) {
+                    if (result.success) {
+                        // Refresh the data table or remove the row
+                        if ($.fn.DataTable.isDataTable('#customerDatatable')) {
+                            $('#customerDatatable').DataTable().ajax.reload(null, false);
+                        }
+                        // Show success message
+                        showNotification(result.message, 'success');
+                    } else {
+                        // Show error message
+                        showNotification(result.message || 'Failed to delete customer.', 'error');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Delete error:', error);
+                    showNotification('An error occurred while deleting the customer.', 'error');
+                }
+            });
+        }
+    }
+    $(document).ready(function () {
+
+
+
+     $("#customerDatatable").DataTable({
+         "processing": true,
+         "serverSide": true,
+         "filter": true,
+         "ajax": {
+            "url": '@Url.Action("GetCustomers", "Customer")',
+             "type": "POST",
+             "datatype": "json"
+         },
+         "columnDefs": [{
+             "targets": [0],
+             "visible": false,
+             "searchable": false
+         }],
+         "columns": [
+             { data: 'Id', visible: false },
+             { "data": "FirstName", "name": "First Name", "autoWidth": true },
+             { "data": "LastName", "name": "Last Name", "autoWidth": true },
+             { "data": "Contact", "name": "Country", "autoWidth": true },
+             { "data": "Email", "name": "Email", "autoWidth": true },
+             {
+                 data: null, render: function (data, type, row) {
+                     return "<a href='#' class='btn btn-primary btn-sm fa fa-edit' onclick=EditCustomer('" + row.Id + "');></a>";
+                 }
+             },
+             {
+                 data: null, render: function (data, type, row) {
+                     return "<a href='#' class='btn btn-danger btn-sm fa fa-trash' onclick=Delete('" + row.Id + "'); ></a>";
+                 }
+             },
+         ],
+         responsive: true,
+         dom: 'Bfrtip',
+         buttons: [
+             'copy', 'csv', 'excel', 'pdf', 'print'
+         ],
+     });
+        if ($('#notification-container').length === 0) {
+            $('body').append('<div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>');
+        }
+ });
+
+</script>

@@ -1,0 +1,88 @@
+﻿@using ERPIndia.Models;
+@using ERPIndia.Class.Helper;
+
+<aside class="main-sidebar">
+    <section class="sidebar">
+        <div class="user-panel">
+            <div class="pull-left image">
+                <img src="@Url.Content(AppLogic.GetProfilePicture())" class="img-circle" alt="User Image">
+            </div>
+            <div class="pull-left info">
+                <p>@CommonLogic.GetSessionValue(StringConstants.FullName)</p>
+                <a>@CommonLogic.GetSessionValue(StringConstants.RoleName)</a>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            @if (ViewBag.MenuList != null && ViewBag.MenuList.Count > 0)
+            {
+                List<SiteMenuModel> siteMenuList = ViewBag.MenuList;
+                List<SiteMenuModel> mainMenuList = siteMenuList.FindAll(m => m.ParentMenuId == 0);
+
+                if (mainMenuList != null && mainMenuList.Count > 0)
+                {
+                    for (int i = 0; i < mainMenuList.Count; i++)
+                    {
+                        List<SiteMenuModel> subMenuList = siteMenuList.FindAll(sm => sm.ParentMenuId == mainMenuList[i].MenuId);
+
+                        if (subMenuList != null && subMenuList.Count > 0)
+                        {
+                            <li id="@mainMenuList[i].MenuPageName.ToLower()" class="treeview">
+                                <a href="#"><i class="fa @mainMenuList[i].MenuImageName"></i><span>@mainMenuList[i].MenuName</span><span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span></a>
+                                <ul class="treeview-menu">
+                                    @for (int j = 0; j < subMenuList.Count; j++)
+                                    {
+                                        <li id="@subMenuList[j].MenuPageName">
+                                            <a href="@Url.Action("", subMenuList[j].MenuPageName)"><i class="fa @subMenuList[j].MenuImageName"></i>@subMenuList[j].MenuName</a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li id="@mainMenuList[i].MenuPageName.ToLower()">
+                                <a href="@Url.Action("", mainMenuList[i].MenuPageName)"><i class="fa @mainMenuList[i].MenuImageName"></i><span>@mainMenuList[i].MenuName</span></a>
+                            </li>
+                        }
+                    }
+                }
+            }
+
+        </ul>
+    </section>
+</aside>
+
+
+<script type="text/javascript">
+
+    function GetSelectedPageId() {
+        var selectId = "sitemap";
+
+        var pageName = window.location.pathname.substring(window.location.pathname.lastIndexOf("/") + 1);
+        pageName = pageName.toLowerCase();
+
+        selectId = pageName.replace(".aspx", "");
+
+        if (selectId == "") selectId = "sitemap";
+
+        return selectId;
+    }
+
+    function SetActiveMenu() {
+
+        var selectId = GetSelectedPageId();
+        //console.log("selectId in : " + selectId);
+        var selectedItem = $(".sidebar-menu " + "#" + selectId);
+
+        var parent = selectedItem.parents('ul').first();
+        var parent_li = selectedItem.parent("li");
+
+        selectedItem.slideDown(500, function () {
+            //Add the class active to the parent li
+            parent.addClass('menu-open');
+            //parent.find('li.active').removeClass('active');
+            selectedItem.addClass('active');
+            selectedItem.parents('ul').first().parent().addClass('active');
+        });
+    }
+</script>

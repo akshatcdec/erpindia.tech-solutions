@@ -1,0 +1,452 @@
+@model List<ERPIndia.Models.ServiceModel>
+
+
+<div class="breadcrumbs-area">
+    <h3>Service</h3>
+    <ul>
+        <li>
+            <a href="@Url.Action("", "SiteMap")">Home</a>
+        </li>
+        <li>Services</li>
+    </ul>
+</div>
+
+    <div class="card height-auto">
+        <div class="card-body">
+            <div class="heading-layout1">
+                <div class="item-title">
+                    <h3>Add New Class</h3>
+                </div>
+            </div>
+            <form class="new-added-form">
+                <div class="row">
+                    <div class="col-xl-3 col-lg-6 col-12 form-group">
+                        <label> Name *</label>
+                        <input type="text" placeholder="" class="form-control">
+                    </div>
+                    <div class="col-xl-3 col-lg-6 col-12 form-group">
+                        <label>Order No *</label>
+                        <input type="text" placeholder="" class="form-control">
+                    </div>
+                    <div class="col-xl-3 col-lg-6 col-12 form-group">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card height-auto">
+        <div class="card-body">
+            <div class="heading-layout1">
+                <div class="item-title">
+                    <h3>Class List</h3>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table id="customerDatatable" class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Id</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <table style="display:none" id="dgList" class="table table-striped table-hover table-bordered table-hd">
+                <thead>
+                    <tr class="gridheader">
+                        <td valign="middle" align="center" style="width: 2%;">
+                            <input id="chkAll" onclick="javascript: checkAll();" type="checkbox" name="chkAll" />
+                        </td>
+                        <td class="search_field" search_field_value="BedName">Service Name</td>
+                        @*<td style="width: 10%;" class="search_field text-center" search_field_value="IsAvailable">Bed Status</td>*@
+                        <td style="width: 5%;" class="text-center search_field" search_field_value="IsActive">Status</td>
+                        <td style="width: 5%;" class="text-center">Edit</td>
+                        <td style="width: 5%;" class="text-center">Delete</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Count > 0)
+             {
+                 for (int i = 0; i < Model.Count; i++)
+                 {
+                    <tr>
+                        <td valign="middle" align="center" style="width: 2%;">
+                            <input id="chkBox" name="chkBox" type="checkbox" onclick="javascript: checkManual();" value="@Model[i].ServiceId" />
+                        </td>
+                        <td>@Model[i].ServiceName</td>
+                        @*<td style="width: 10%;" class="text-center">
+                        <span class="label @(Model[i].IsAvailable ? "label-success" : "label-danger")">
+                            @(Model[i].IsAvailable ? "Available" : "Alloted")
+                        </span>
+
+                    </td>*@
+                        <td style="width: 5%;" class="text-center">
+                            @if (@Model[i].IsActive)
+                             {
+                            <a onclick="return SetActiveInactive(this);" class="SetStatusClick" name="imgInactive" title="Click to make inactive" id="imgInactive" style="text-decoration: none" href="javascript:void(0)"><i class='fa fa-check'></i></a>
+                             }
+                             else
+                             {
+                            <a onclick="return SetActiveInactive(this);" class="SetStatusClick" name="imgActive" title="Click to make active" id="imgActive" style="text-decoration: none" href="javascript:void(0)"><i class="fa fa-ban"></i></a>
+                             }
+                        </td>
+                        <td style="width: 5%;" class="text-center">
+                            <a href="@Url.Action("Add", "Service", routeValues: new { id = @Model[i].ServiceId })" title="Click here to edit"><i class="fa fa-edit"></i></a>
+                        </td>
+                        <td style="width: 5%;" class="text-center">
+                            <a onclick="return SetActiveInactive(this);" class="SetStatusClick" name="imgDelete" title="Click here to delete" id="imgDelete" style="text-decoration: none" href="javascript:void(0)"><i class="fa fa-trash-o"></i></a>
+                        </td>
+                    </tr>
+                 }
+             }
+                </tbody>
+            </table>
+            @if (Model == null || Model.Count == 0)
+     {
+            @Html.Partial("_UCNoRecordsMsg")
+     }
+        </div>
+    </div>
+
+    <script>
+        // Wait for the document to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the form elements
+    const form = document.querySelector('.new-added-form');
+    const nameInput = form.querySelector('.col-xl-3:nth-child(1) input');
+    const orderNoInput = form.querySelector('.col-xl-3:nth-child(2) input');
+    const saveButton = form.querySelector('.btn-fill-lg');
+
+    // Add a hidden field for record ID to track if we're editing existing record
+    let recordIdField = document.createElement('input');
+    recordIdField.type = 'hidden';
+    recordIdField.name = 'record_id';
+    form.appendChild(recordIdField);
+
+    // Set up edit buttons in the data table
+    setupEditButtons();
+
+    // Add submit event listener to form
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Reset previous validation messages
+        clearValidationMessages();
+
+        // Validate input fields
+        let isValid = true;
+
+        if (!nameInput.value.trim()) {
+            showValidationMessage(nameInput, 'Name is required');
+            isValid = false;
+        }
+
+        if (!orderNoInput.value.trim()) {
+            showValidationMessage(orderNoInput, 'Order No is required');
+            isValid = false;
+        }
+
+        if (!isValid) {
+            return;
+        }
+
+        // Prepare data for sending
+        const formData = {
+            FirstName: nameInput.value.trim(),
+            LastName: orderNoInput.value.trim(),
+            Contact: '',
+            Email: '',
+            DateOfBirth: '01/01/01'
+        };
+
+        // If we have a record ID, add it to indicate this is an update
+        if (recordIdField.value) {
+            formData.id = recordIdField.value;
+        }
+
+
+
+
+// Send AJAX request
+
+
+        // Show loading state
+        saveButton.disabled = true;
+        const originalButtonText = saveButton.innerHTML;
+        saveButton.innerHTML = 'Saving...';
+
+        // Send AJAX request
+       fetch('@Url.Action("InsertCustomer", "Customer")',  {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            return response.json().then(data => {
+                if (!response.ok || (data && data.success === false)) {
+                    throw { status: response.status, data: data };
+                }
+                return data;
+            });
+        })
+        .then(data => {
+            // Handle successful response
+            const message = recordIdField.value ? 'Class updated successfully!' : 'Class saved successfully!';
+            showNotification(message, 'success');
+
+            // Clear the form and reset editing state
+            form.reset();
+            recordIdField.value = '';
+            saveButton.innerHTML = 'Save';
+
+            // Refresh the data table if available
+            if (typeof refreshDataTable === 'function') {
+                refreshDataTable();
+            }
+        })
+        .catch(error => {
+            console.error('Error saving class:', error);
+
+            // Handle validation errors from server
+            if (error.data && error.data.errors) {
+                // Display server validation errors from Laravel-style validation
+                Object.keys(error.data.errors).forEach(field => {
+                    const input = field === 'name' ? nameInput :
+                                  field === 'order_no' ? orderNoInput : null;
+
+                    if (input) {
+                        showValidationMessage(input, error.data.errors[field][0]);
+                    }
+                });
+            } else if (error.data && error.data.success === false && error.data.message) {
+                // Handle specific error format: {"success":false,"message":"error message"}
+                showNotification(error.data.message, 'error');
+            } else {
+                // Generic error message
+                showNotification('Failed to save class. Please try again.', 'error');
+            }
+        })
+        .finally(() => {
+            // Reset button state
+            saveButton.disabled = false;
+            saveButton.innerHTML = originalButtonText;
+        });
+    });
+
+    // Helper function to show validation messages under inputs
+    function showValidationMessage(inputElement, message) {
+        // Check if message element already exists
+        let messageElement = inputElement.parentElement.querySelector('.validation-message');
+
+        if (!messageElement) {
+            // Create message element if it doesn't exist
+            messageElement = document.createElement('div');
+            messageElement.className = 'validation-message';
+            messageElement.style.color = '#dc3545';
+            messageElement.style.fontSize = '12px';
+            messageElement.style.marginTop = '5px';
+            inputElement.parentElement.appendChild(messageElement);
+        }
+
+        // Add red border to input
+        inputElement.style.borderColor = '#dc3545';
+
+        // Set message text
+        messageElement.textContent = message;
+    }
+
+    // Helper function to clear validation messages
+    function clearValidationMessages() {
+        // Remove all validation messages
+        document.querySelectorAll('.validation-message').forEach(el => el.remove());
+
+        // Reset input borders
+        form.querySelectorAll('input').forEach(input => {
+            input.style.borderColor = '';
+        });
+    }
+
+    // Helper function to show notification
+    function showNotification(message, type) {
+        // Check if notification container exists, if not create one
+        let notificationContainer = document.getElementById('notification-container');
+        if (!notificationContainer) {
+            notificationContainer = document.createElement('div');
+            notificationContainer.id = 'notification-container';
+            notificationContainer.style.position = 'fixed';
+            notificationContainer.style.top = '20px';
+            notificationContainer.style.right = '20px';
+            notificationContainer.style.maxWidth = '350px';
+            notificationContainer.style.zIndex = '9999';
+            document.body.appendChild(notificationContainer);
+        }
+
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.style.padding = '15px 20px';
+        notification.style.marginBottom = '10px';
+        notification.style.borderRadius = '4px';
+        notification.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+        notification.style.animation = 'fadeIn 0.3s ease-out';
+
+        // Set styling based on type
+        if (type === 'error') {
+            notification.style.backgroundColor = '#f8d7da';
+            notification.style.color = '#721c24';
+            notification.style.borderLeft = '4px solid #dc3545';
+        } else {
+            notification.style.backgroundColor = '#d4edda';
+            notification.style.color = '#155724';
+            notification.style.borderLeft = '4px solid #28a745';
+        }
+
+        // Set message text
+        notification.textContent = message;
+
+        // Add to container
+        notificationContainer.appendChild(notification);
+
+        // Automatically remove notification after 5 seconds
+        setTimeout(() => {
+            notification.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 5000);
+    }
+
+    // Function to set up edit buttons in the data table
+    function setupEditButtons() {
+        // Find all edit buttons in the data table
+        document.querySelectorAll('.edit-btn, [data-action="edit"], button.edit, a.edit').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Get the record ID from data attribute or closest row
+                const recordId = this.dataset.id ||
+                                this.closest('tr').dataset.id ||
+                                this.closest('tr').querySelector('td:first-child').textContent;
+
+                if (!recordId) {
+                    showNotification('Could not determine record ID', 'error');
+                    return;
+                }
+
+                // Fetch record data
+                fetch(`/api/classes/${recordId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Populate form with record data
+                    nameInput.value = data.name || '';
+                    orderNoInput.value = data.order_no || '';
+                    recordIdField.value = data.id || recordId;
+
+                    // Change button text to indicate update
+                    saveButton.innerHTML = 'Update';
+
+                    // Scroll to form if it's not visible
+                    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                })
+                .catch(error => {
+                    console.error('Error fetching record:', error);
+                    showNotification('Failed to load record data', 'error');
+                });
+            });
+        });
+    }
+
+    // Function to refresh the data table (to be implemented or connected to your existing data table)
+    function refreshDataTable() {
+        // If you have an existing function to refresh your data table, call it here
+        // Or implement a basic reload functionality
+
+        // Example implementation (uncomment if needed):
+        // fetch('/api/classes')
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         // Update your table with new data
+        //         updateTableWithData(data);
+        //     })
+        //     .catch(error => {
+        //         console.error('Error refreshing data table:', error);
+        //     });
+
+        // Re-attach edit button handlers after refresh
+        setTimeout(setupEditButtons, 500);
+    }
+
+    // Add CSS for animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @@keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+        .edit-btn, [data-action="edit"], button.edit, a.edit {
+            cursor: pointer;
+        }
+    `;
+    document.head.appendChild(style);
+});
+
+    // Wait for the document to be fully loaded
+
+    </script>
+
+    <script>
+
+    $(document).ready(function () {
+        $("#customerDatatable").DataTable({
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "ajax": {
+               "url": '@Url.Action("GetCustomers", "Customer")',
+                "type": "POST",
+                "datatype": "json"
+            },
+            "columnDefs": [{
+                "targets": [0],
+                "visible": false,
+                "searchable": false
+            }],
+            "columns": [
+                { "data": "Id", "name": "Id", "autoWidth": true },
+                { "data": "FirstName", "name": "First Name", "autoWidth": true },
+                { "data": "LastName", "name": "Last Name", "autoWidth": true },
+                { "data": "Contact", "name": "Country", "autoWidth": true },
+                { "data": "Email", "name": "Email", "autoWidth": true },
+                {
+                    "render": function (data, row) { return "<a href='#' class='btn btn-danger' onclick=DeleteCustomer('" + row.id + "'); >Delete</a>"; }
+                },
+                {
+                    "render": function (data, row) { return "<a href='#' class='btn btn-danger' onclick=DeleteCustomer('" + row.id + "'); >Delete</a>"; }
+                },
+            ]
+        });
+    });
+
+    </script>

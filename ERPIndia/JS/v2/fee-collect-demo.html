@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fee Collection System Demo</title>
+    <link rel="stylesheet" href="FeeCollect.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .header p {
+            margin: 0;
+            color: #666;
+        }
+        
+        .student-info {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .student-info h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .student-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .student-detail {
+            min-width: 200px;
+            flex: 1;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .detail-value {
+            padding: 8px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+        
+        .options-panel {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .options-panel h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .option-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .option-item {
+            min-width: 200px;
+            flex: 1;
+        }
+        
+        .option-label {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .option-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .fee-collect-section {
+            margin-bottom: 20px;
+        }
+        
+        .validation-panel {
+            background-color: #fff;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .validation-panel h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .action-button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        
+        .validate-button {
+            background-color: #3498db;
+        }
+        
+        .clear-button {
+            background-color: #e74c3c;
+        }
+        
+        .save-button {
+            background-color: #2ecc71;
+        }
+        
+        .validation-result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .validation-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .validation-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .validation-error ul {
+            margin-top: 5px;
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+        
+        .payment-data {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .payment-data pre {
+            margin: 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .log-panel {
+            background-color: #fff;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-panel h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+            font-family: monospace;
+        }
+        
+        .log-entry:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Fee Collection System Demo</h1>
+            <p>A complete demonstration of the FeeCollect.js library with all features</p>
+        </div>
+        
+        <div class="student-info">
+            <h2>Student Information</h2>
+            <div class="student-details">
+                <div class="student-detail">
+                    <span class="detail-label">Name</span>
+                    <div class="detail-value">John Doe</div>
+                </div>
+                <div class="student-detail">
+                    <span class="detail-label">ID</span>
+                    <div class="detail-value">STU001</div>
+                </div>
+                <div class="student-detail">
+                    <span class="detail-label">Class</span>
+                    <div class="detail-value">Grade 10</div>
+                </div>
+                <div class="student-detail">
+                    <span class="detail-label">Section</span>
+                    <div class="detail-value">A</div>
+                </div>
+                <div class="student-detail">
+                    <span class="detail-label">Previous Balance</span>
+                    <div class="detail-value">₹2500</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="options-panel">
+            <h2>Fee Collection Options</h2>
+            <div class="option-row">
+                <div class="option-item">
+                    <span class="option-label">Show Fine/Discount</span>
+                    <select id="showFineDiscount" class="option-input">
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
+                <div class="option-item">
+                    <span class="option-label">Auto-update Received Amount</span>
+                    <select id="autoUpdateReceived" class="option-input">
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
+                <div class="option-item">
+                    <span class="option-label">Set Balance</span>
+                    <input type="text" id="balanceAmount" class="option-input" value="2500">
+                </div>
+            </div>
+            <div class="option-row">
+                <div class="option-item">
+                    <span class="option-label">Maximum Concession (%)</span>
+                    <input type="text" id="maxConcession" class="option-input" value="20">
+                </div>
+                <div class="option-item">
+                    <span class="option-label">Currency Symbol</span>
+                    <input type="text" id="currencySymbol" class="option-input" value="₹">
+                </div>
+                <div class="option-item">
+                    <button id="applyOptions" class="action-button save-button">Apply Options</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="fee-collect-section" id="feeCollectContainer"></div>
+        
+        <div class="validation-panel">
+            <h2>Payment Processing</h2>
+            <div class="button-group">
+                <button id="validateButton" class="action-button validate-button">Validate</button>
+                <button id="clearButton" class="action-button clear-button">Clear Fees</button>
+                <button id="saveDataButton" class="action-button save-button">View Payment Data</button>
+            </div>
+            
+            <div id="validationResult" class="validation-result"></div>
+            <div id="paymentData" class="payment-data">
+                <pre id="paymentDataContent"></pre>
+            </div>
+        </div>
+        
+        <div class="log-panel">
+            <h2>Event Log</h2>
+            <div id="eventLog"></div>
+        </div>
+    </div>
+    
+    <script src="FeeCollect.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sample fee data
+            const feeData = {
+                feeData: [
+                    {
+                        id: 1,
+                        name: "EXAM FEE",
+                        amounts: [0, 0, 0, 0, 500, 0, 0, 500, 0, 0, 500, 0],
+                        fines: [0, 0, 0, 0, 50, 0, 0, 0, 0, 0, 25, 0],
+                        discounts: [0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 0, 0]
+                    },
+                    {
+                        id: 2,
+                        name: "TUITION FEE",
+                        amounts: [500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500],
+                        fines: [0, 30, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0],
+                        discounts: [0, 0, 0, 100, 0, 0, 0, 0, 0, 50, 0, 0]
+                    },
+                    {
+                        id: 3,
+                        name: "ADMISSION FEE",
+                        amounts: [400, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        fines: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        discounts: [50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    },
+                    {
+                        id: 4,
+                        name: "LIBRARY FEE",
+                        amounts: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100],
+                        fines: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        discounts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    },
+                    {
+                        id: 5,
+                        name: "COMPUTER FEE",
+                        amounts: [200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200],
+                        fines: [0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        discounts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    }
+                ],
+                studentInfo: {
+                    name: "John Doe",
+                    id: "STU001",
+                    class: "Grade 10",
+                    section: "A",
+                    balance: 2500
+                }
+            };
+            
+            // Event log function
+            function logEvent(message) {
+                const log = document.getElementById('eventLog');
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                log.appendChild(entry);
+                log.scrollTop = log.scrollHeight;
+            }
+            
+            // Initialize FeeCollect
+            const feeCollect = new FeeCollect('#feeCollectContainer', feeData, {
+                currency: '₹',
+                showFineDiscount: true,
+                autoUpdateReceived: true,
+                callbacks: {
+                    onInit: function() {
+                        logEvent('FeeCollect initialized');
+                    },
+                    onFeeSelect: function(fee) {
+                        logEvent(`Fee selected: ${fee.name} for ${fee.month} - ₹${fee.amount}${fee.fine ? ' +' + fee.fine : ''}${fee.discount ? ' -' + fee.discount : ''} = ${fee.netAmount}`);
+                    },
+                    onFeeBulkSelect: function(data) {
+                        logEvent(`Bulk selected ${data.count} fees for ${data.month}`);
+                    },
+                    onFeeRemove: function(fee) {
+                        logEvent(`Fee removed: ${fee.name} for ${fee.month}`);
+                    },
+                    onPaymentMethodChange: function(method) {
+                        logEvent(`Payment method changed to: ${method}`);
+                    },
+                    onPaymentComplete: function(data) {
+                        logEvent(`Payment completed: ₹${data.received} received, ₹${data.remaining} remaining`);
+                        
+                        // Show payment data
+                        document.getElementById('paymentDataContent').textContent = JSON.stringify(data, null, 2);
+                        document.getElementById('paymentData').style.display = 'block';
+                    }
+                }
+            });
+            
+            // Apply options button
+            document.getElementById('applyOptions').addEventListener('click', function() {
+                const showFineDiscount = document.getElementById('showFineDiscount').value === 'true';
+                const autoUpdateReceived = document.getElementById('autoUpdateReceived').value === 'true';
+                const balance = parseInt(document.getElementById('balanceAmount').value) || 0;
+                const currency = document.getElementById('currencySymbol').value || '₹';
+                
+                // Apply new options
+                feeCollect.setOptions({
+                    showFineDiscount: showFineDiscount,
+                    autoUpdateReceived: autoUpdateReceived,
+                    currency: currency
+                });
+                
+                // Set balance
+                feeCollect.setBalance(balance);
+                
+                logEvent(`Options updated: Fine/Discount=${showFineDiscount}, Auto-update=${autoUpdateReceived}, Balance=${balance}, Currency=${currency}`);
+            });
+            
+            // Validate button
+            document.getElementById('validateButton').addEventListener('click', function() {
+                const maxConcession = parseFloat(document.getElementById('maxConcession').value) / 100 || 0.2;
+                
+                // Validate payment
+                const validationResult = feeCollect.validate({
+                    maxConcession: maxConcession
+                });
+                
+                const resultElement = document.getElementById('validationResult');
+                resultElement.style.display = 'block';
+                
+                if (validationResult.valid) {
+                    resultElement.className = 'validation-result validation-success';
+                    resultElement.innerHTML = 'Validation successful! Ready to process payment.';
+                    
+                    // Hide payment data if shown
+                    document.getElementById('paymentData').style.display = 'none';
+                } else {
+                    resultElement.className = 'validation-result validation-error';
+                    resultElement.innerHTML = 'Validation failed:<ul>' + 
+                        validationResult.errors.map(error => `<li>${error}</li>`).join('') + 
+                        '</ul>';
+                }
+                
+                logEvent(`Validation: ${validationResult.valid ? 'Passed' : 'Failed with ' + validationResult.errors.length + ' errors'}`);
+            });
+            
+            // Clear button
+            document.getElementById('clearButton').addEventListener('click', function() {
+                feeCollect.clearSelectedFees();
+                
+                // Hide validation result and payment data
+                document.getElementById('validationResult').style.display = 'none';
+                document.getElementById('paymentData').style.display = 'none';
+                
+                logEvent('All selected fees cleared');
+            });
+            
+            // View payment data button
+            document.getElementById('saveDataButton').addEventListener('click', function() {
+                const paymentDetails = feeCollect.getPaymentDetails();
+                const selectedFees = feeCollect.getSelectedFees();
+                
+                const paymentData = {
+                    payment: paymentDetails,
+                    fees: selectedFees
+                };
+                
+                // Show payment data
+                document.getElementById('paymentDataContent').textContent = JSON.stringify(paymentData, null, 2);
+                document.getElementById('paymentData').style.display = 'block';
+                
+                logEvent('Payment data extracted for database storage');
+            });
+        });
+    </script>
+</body>
+</html>

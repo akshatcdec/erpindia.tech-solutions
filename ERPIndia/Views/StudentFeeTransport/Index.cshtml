@@ -1,0 +1,368 @@
+﻿@{
+    ViewBag.Title = "Transport Fee Months";
+}
+<!-- Add these in your <head> section or at the end of your layout file -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-bus me-2"></i>Transport Fee Months</h5>
+                </div>
+                <div class="card-body">
+                    <form id="transportFeeForm">
+                        <input type="hidden" id="configId" name="configId">
+
+                        <!-- Hidden inputs for the months -->
+                        <input type="hidden" id="aprilFee" name="aprilFee" value="0">
+                        <input type="hidden" id="mayFee" name="mayFee" value="0">
+                        <input type="hidden" id="juneFee" name="juneFee" value="0">
+                        <input type="hidden" id="julyFee" name="julyFee" value="0">
+                        <input type="hidden" id="augustFee" name="augustFee" value="0">
+                        <input type="hidden" id="septemberFee" name="septemberFee" value="0">
+                        <input type="hidden" id="octoberFee" name="octoberFee" value="0">
+                        <input type="hidden" id="novemberFee" name="novemberFee" value="0">
+                        <input type="hidden" id="decemberFee" name="decemberFee" value="0">
+                        <input type="hidden" id="januaryFee" name="januaryFee" value="0">
+                        <input type="hidden" id="februaryFee" name="februaryFee" value="0">
+                        <input type="hidden" id="marchFee" name="marchFee" value="0">
+
+                        <!-- Month selection section -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">Select Months for Transport Fee</h6>
+                                        <div>
+                                            <button type="button" id="btnSelectAll" class="btn btn-sm btn-outline-primary me-2">
+                                                <i class="fas fa-check-double me-1"></i>Select All
+                                            </button>
+                                            <button type="button" id="btnClearAll" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-times me-1"></i>Clear All
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex flex-row month-container">
+                                            <div class="month-card" data-month="april">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">April</span>
+                                            </div>
+                                            <div class="month-card" data-month="may">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">May</span>
+                                            </div>
+                                            <div class="month-card" data-month="june">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">June</span>
+                                            </div>
+                                            <div class="month-card" data-month="july">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">July</span>
+                                            </div>
+                                            <div class="month-card" data-month="august">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">August</span>
+                                            </div>
+                                            <div class="month-card" data-month="september">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">September</span>
+                                            </div>
+                                            <div class="month-card" data-month="october">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">October</span>
+                                            </div>
+                                            <div class="month-card" data-month="november">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">November</span>
+                                            </div>
+                                            <div class="month-card" data-month="december">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">December</span>
+                                            </div>
+                                            <div class="month-card" data-month="january">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">January</span>
+                                            </div>
+                                            <div class="month-card" data-month="february">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">February</span>
+                                            </div>
+                                            <div class="month-card" data-month="march">
+                                                <i class="fas fa-calendar-check month-icon"></i>
+                                                <span class="month-label">March</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action buttons -->
+                        <div class="row mt-3">
+                            <div class="col-12 d-flex justify-content-between">
+                                <button type="button" id="btnSave" class="btn btn-success">
+                                    <i class="fas fa-save me-2"></i>Save Configuration
+                                </button>
+                                <button style="display:none" type="button" id="btnApply" class="btn btn-primary">
+                                    <i class="fas fa-sync me-2"></i>Apply to Students
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+
+<style>
+    .month-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .month-card {
+        cursor: pointer;
+        transition: all 0.2s;
+        padding: 15px;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+        text-align: center;
+        min-width: 90px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+        .month-card:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+    .month-selected {
+        background-color: #e7f1ff;
+        border: 1px solid #0d6efd;
+        color: #0d6efd;
+        font-weight: bold;
+    }
+
+    .month-label {
+        display: block;
+        margin-top: 5px;
+        font-size: 14px;
+    }
+
+    .month-icon {
+        font-size: 18px;
+        margin-bottom: 5px;
+        color: #6c757d;
+    }
+
+    .month-selected .month-icon {
+        color: #0d6efd;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.7);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+
+
+
+<script>
+  $(document).ready(function() {
+    // Load initial configuration when page loads
+    loadTransportFeeConfig();
+
+    // Handle month card click
+    $('.month-card').on('click', function() {
+        const month = $(this).data('month');
+        const hiddenInput = $('#' + month + 'Fee');
+
+        // Toggle the value between 0 and 1
+        const currentValue = hiddenInput.val();
+        const newValue = currentValue === "1" ? "0" : "1";
+        hiddenInput.val(newValue);
+
+        // Toggle the visual selection
+        $(this).toggleClass('month-selected');
+    });
+
+    // Select All button click
+    $('#btnSelectAll').on('click', function() {
+        $('.month-card').each(function() {
+            const month = $(this).data('month');
+            $('#' + month + 'Fee').val("1");
+            $(this).addClass('month-selected');
+        });
+    });
+
+    // Clear All button click
+    $('#btnClearAll').on('click', function() {
+        $('.month-card').each(function() {
+            const month = $(this).data('month');
+            $('#' + month + 'Fee').val("0");
+            $(this).removeClass('month-selected');
+        });
+    });
+
+    // Save Configuration button click
+    $('#btnSave').on('click', function() {
+        saveConfiguration();
+    });
+
+    // Apply to Students button click
+    $('#btnApply').on('click', function() {
+        if (confirm('Are you sure you want to apply these month settings to all students with transport? This will update fee records.')) {
+            applyFeesToStudents();
+        }
+    });
+
+    // Load configuration from database
+    function loadTransportFeeConfig() {
+        showLoading();
+
+        $.ajax({
+            url: '@Url.Action("GetTransportFeeConfig", "StudentFeeTransport")',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                hideLoading();
+
+                if (response.success && response.data) {
+                    updateMonthDisplay(response.data);
+                } else {
+                    // Show error if loading failed
+                    toastr.error(response.message || 'Failed to load configuration');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideLoading();
+                toastr.error('Error loading configuration: ' + error);
+            }
+        });
+    }
+
+    // Save configuration to database
+    function saveConfiguration() {
+        showLoading();
+
+        // Prepare form data
+        const formData = {
+            id: $('#configId').val(),
+            aprilFee: $('#aprilFee').val() === "1",
+            mayFee: $('#mayFee').val() === "1",
+            juneFee: $('#juneFee').val() === "1",
+            julyFee: $('#julyFee').val() === "1",
+            augustFee: $('#augustFee').val() === "1",
+            septemberFee: $('#septemberFee').val() === "1",
+            octoberFee: $('#octoberFee').val() === "1",
+            novemberFee: $('#novemberFee').val() === "1",
+            decemberFee: $('#decemberFee').val() === "1",
+            januaryFee: $('#januaryFee').val() === "1",
+            februaryFee: $('#februaryFee').val() === "1",
+            marchFee: $('#marchFee').val() === "1"
+        };
+
+        $.ajax({
+            url: '@Url.Action("SaveTransportFeeConfig", "StudentFeeTransport")',
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    toastr.success(response.message || 'Configuration saved successfully');
+                    // Reload to ensure we display the latest data
+                    loadTransportFeeConfig();
+                } else {
+                    hideLoading();
+                    toastr.error(response.message || 'Failed to save configuration');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideLoading();
+                toastr.error('Error saving configuration: ' + error);
+            }
+        });
+    }
+
+    // Apply fees to students
+    function applyFeesToStudents() {
+        showLoading();
+
+        $.ajax({
+            url: '@Url.Action("ApplyFeesToStudents", "StudentFeeTransport")',
+            type: 'POST',
+            success: function(response) {
+                hideLoading();
+
+                if (response.success) {
+                    toastr.success(response.message || 'Fees applied successfully to students');
+                } else {
+                    toastr.error(response.message || 'Failed to apply fees');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideLoading();
+                toastr.error('Error applying fees: ' + error);
+            }
+        });
+    }
+
+    // Update the month display based on data from server
+    function updateMonthDisplay(config) {
+        if (config) {
+            // Set the config ID
+            $('#configId').val(config.Id || '');
+
+            // Update each month
+            const months = ['april', 'may', 'june', 'july', 'august', 'september',
+                            'october', 'november', 'december', 'january', 'february', 'march'];
+
+            months.forEach(month => {
+                const fieldName = month.charAt(0).toUpperCase() + month.slice(1) + 'Fee';
+                const value = config[fieldName] ? "1" : "0";
+                $('#' + month + 'Fee').val(value);
+
+                // Update visual selection
+                const monthCard = $('.month-card[data-month="' + month + '"]');
+                if (value === "1") {
+                    monthCard.addClass('month-selected');
+                } else {
+                    monthCard.removeClass('month-selected');
+                }
+            });
+        }
+    }
+
+    // Show loading overlay
+    function showLoading() {
+        $('#loadingOverlay').show();
+    }
+
+    // Hide loading overlay
+    function hideLoading() {
+        $('#loadingOverlay').hide();
+    }
+});
+</script>
+

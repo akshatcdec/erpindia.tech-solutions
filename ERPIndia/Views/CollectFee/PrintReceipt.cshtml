@@ -1,0 +1,386 @@
+﻿@model ERPIndia.Models.CollectFee.DTOs.ReceiptData
+@{
+    ViewBag.Title = "Fee Receipt";
+    Layout = null; // No layout for printing
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fee Receipt #@Model.ReceiptNo</title>
+    <style>
+        @@media print {
+            @@page {
+                size: auto;
+                margin: 0mm;
+            }
+
+            html, body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .print-button {
+                display: none;
+            }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .receipt-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+            .header h1 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: bold;
+            }
+
+            .header h2 {
+                margin: 5px 0;
+                font-size: 16px;
+            }
+
+        .divider {
+            border-top: 1px solid #000;
+            margin: 10px 0;
+        }
+
+        .receipt-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .student-info {
+            width: 60%;
+        }
+
+        .receipt-details {
+            width: 35%;
+            text-align: right;
+        }
+
+        .info-row {
+            margin-bottom: 5px;
+        }
+
+            .info-row strong {
+                display: inline-block;
+                width: 120px;
+            }
+
+        .receipt-details .info-row strong {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f5f5f5;
+        }
+
+        .totals {
+            text-align: right;
+            margin-top: 10px;
+        }
+
+            .totals div {
+                margin-bottom: 5px;
+            }
+
+            .totals strong {
+                display: inline-block;
+                width: 150px;
+                text-align: right;
+                margin-right: 10px;
+            }
+
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 60px;
+        }
+
+        .signature-box {
+            width: 45%;
+            text-align: center;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            padding-top: 5px;
+        }
+
+        .print-button {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+            .print-button button {
+                padding: 10px 20px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+        .note {
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* Summary section styling */
+        .fee-summary {
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #000;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .summary-title {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+        }
+
+        .summary-label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="header">
+            <h1>@Model.PrintTitle </h1>
+            <h2>Fee Receipt</h2>
+            <div>@Model.Line1</div>
+            <div>@Model.Line2</div>
+            <div>@Model.Line3</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="receipt-info">
+            <div class="student-info">
+                <div class="info-row">
+                    <strong>Student Name:</strong> @Model.StudentName
+                </div>
+                <div class="info-row">
+                    <strong>Admission No:</strong> @Model.AdmissionNo
+                </div>
+                <div class="info-row">
+                    <strong>Father's Name:</strong> @Model.FatherName
+                </div>
+                <div class="info-row">
+                    <strong>Class / Section:</strong> @(Model.Class + " - " + Model.Section)
+
+                </div>
+                <div class="info-row">
+                    <strong>Roll No:</strong> @Model.RollNo
+                </div>
+            </div>
+
+            <div class="receipt-details">
+                <div class="info-row">
+                    <strong>Receipt No:</strong> @Model.ReceiptNo
+                </div>
+                <div class="info-row">
+                    <strong>Date:</strong> @Model.ReceiptDate.ToString("dd-MMM-yyyy")
+                </div>
+                <div class="info-row">
+                    <strong>Previous Balance:</strong> ₹@Model.OldBalance.ToString("0.00")
+                </div>
+            </div>
+        </div>
+
+        <table style="display:none">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Fee Type</th>
+                    <th>Month</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int srNo = 1;
+
+                    // Remove previous balance from table since it's now in the header
+                    // if (Model.OldBalance > 0)
+                    // {
+                    //     <tr>
+                    //         <td>@(srNo++)</td>
+                    //         <td>Previous Balance</td>
+                    //         <td>-</td>
+                    //         <td>₹@Model.OldBalance.ToString("0.00")</td>
+                    //     </tr>
+                    // }
+
+                    // Add fee items
+                    foreach (var item in Model.FeeItems)
+                    {
+                        <tr>
+                            <td>@(srNo++)</td>
+                            <td>@item.Name</td>
+                            <td>@item.Month</td>
+                            <td>₹@item.Amount.ToString("0.00")</td>
+                        </tr>
+                    }
+
+                    // Add transport items
+                    foreach (var item in Model.TransportItems)
+                    {
+                        <tr>
+                            <td>@(srNo++)</td>
+                            <td>Transport (@item.RouteName)</td>
+                            <td>@item.Month</td>
+                            <td>₹@item.Amount.ToString("0.00")</td>
+                        </tr>
+                    }
+
+                    // Add late fee if present
+                    if (Model.LateFee > 0)
+                    {
+                        <tr>
+                            <td>@(srNo++)</td>
+                            <td>Late Fee</td>
+                            <td>-</td>
+                            <td>₹@Model.LateFee.ToString("0.00")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        @{
+            // Calculate summary by fee type
+            var feeTypeSummary = new Dictionary<string, decimal>();
+
+            // Add regular fees to summary
+            foreach (var item in Model.FeeItems)
+            {
+                string key = item.Name;
+                if (!feeTypeSummary.ContainsKey(key))
+                {
+                    feeTypeSummary[key] = 0;
+                }
+                feeTypeSummary[key] += item.Amount;
+            }
+
+            // Add transport fees to summary
+            decimal transportTotal = 0;
+            foreach (var item in Model.TransportItems)
+            {
+                transportTotal += item.Amount;
+            }
+            if (transportTotal > 0)
+            {
+                feeTypeSummary["Transport"] = transportTotal;
+            }
+
+            // Add late fee to summary
+            if (Model.LateFee > 0)
+            {
+                feeTypeSummary["Late Fee"] = Model.LateFee;
+            }
+
+            // Add previous balance to summary - still including in summary even though it's displayed in header
+            if (Model.OldBalance > 0)
+            {
+                feeTypeSummary["Previous Balance"] = Model.OldBalance;
+            }
+        }
+
+        <!-- Fee Summary by Type -->
+        <div class="fee-summary">
+            <div class="summary-title">Fee Summary</div>
+
+            @foreach (var item in feeTypeSummary)
+            {
+                if ("Previous Balance" != item.Key)
+                {
+                    <div class="summary-row">
+                        <div class="summary-label">@item.Key:</div>
+                        <div>₹@item.Value.ToString("0.00")</div>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="totals">
+            <div><strong>Total Amount:</strong> ₹@Model.TotalFee.ToString("0.00")</div>
+            <div><strong>Total Conc:</strong> ₹@Model.ConcessinAuto.ToString("0.00")</div>
+            <div><strong>Received Amount:</strong> ₹@Model.Received.ToString("0.00")</div>
+            <div><strong>Balance:</strong> ₹@Model.Remain.ToString("0.00")</div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Note))
+        {
+            <div class="note">
+                <strong>Note:</strong> @Model.Note
+            </div>
+        }
+
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line">Parent's Signature</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line">Authorized Signature</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="print-button">
+        <button onclick="window.print()">Print Receipt</button>
+    </div>
+
+    <script>
+        window.onload = function () {
+            setTimeout(function () {
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

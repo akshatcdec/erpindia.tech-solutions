@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="FeeReceipt">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="ReceiptNumber" type="xs:string" />
+				<xs:element name="SequenceNumber" type="xs:int" />
+				<xs:element name="SessionId" type="xs:string" minOccurs="0" />
+				<xs:element name="PaymentDate" type="xs:date" minOccurs="0" />
+				<xs:element name="SubTotalAmount" type="xs:decimal" minOccurs="0" />
+				<xs:element name="LateFeeAmount" type="xs:decimal" minOccurs="0" />
+				<xs:element name="Total" type="xs:decimal" minOccurs="0" />
+				<xs:element name="ReceiveAmt" type="xs:decimal" minOccurs="0" />
+				<xs:element name="Remain" type="xs:decimal" minOccurs="0" />
+				<xs:element name="PaymentMethod" type="xs:string" minOccurs="0" />
+				<xs:element name="Note" type="xs:string" minOccurs="0" />
+				<xs:element name="Balance" type="xs:decimal" minOccurs="0" />
+				<xs:element name="Discount" type="xs:decimal" minOccurs="0" />
+				<xs:element name="LateFee" type="xs:decimal" minOccurs="0" />
+				<xs:element name="Subtotal" type="xs:decimal" minOccurs="0" />
+				<xs:element name="FirstName" type="xs:string" />
+				<xs:element name="Class" type="xs:string" minOccurs="0" />
+				<xs:element name="Section" type="xs:string" minOccurs="0" />
+				<xs:element name="FName" type="xs:string" minOccurs="0" />
+				<xs:element name="Mobile" type="xs:string" minOccurs="0" />
+				<xs:element name="AdmsnNo" type="xs:string" minOccurs="0" />
+				<xs:element name="StCurrentAddress" type="xs:string" minOccurs="0" />
+				<xs:element name="TenantName" type="xs:string" minOccurs="0" />
+				<xs:element name="Address1" type="xs:string" minOccurs="0" />
+				<xs:element name="Address2" type="xs:string" minOccurs="0" />
+				<xs:element name="Email" type="xs:string" minOccurs="0" />
+				<xs:element name="PrintName" type="xs:string" minOccurs="0" />
+				<xs:element name="SessionName" type="xs:string" minOccurs="0" />
+				<xs:element name="OldBalance" type="xs:decimal" minOccurs="0" />
+				<xs:element name="Months" type="xs:string" minOccurs="0" />
+				<xs:element name="D1" type="xs:string" minOccurs="0" />
+				<xs:element name="D2" type="xs:string" minOccurs="0" />
+				<xs:element name="D3" type="xs:string" minOccurs="0" />
+				<xs:element name="D4" type="xs:string" minOccurs="0" />
+				<xs:element name="D5" type="xs:string" minOccurs="0" />
+				<xs:element name="D6" type="xs:string" minOccurs="0" />
+				<xs:element name="D7" type="xs:string" minOccurs="0" />
+				<xs:element name="D8" type="xs:string" minOccurs="0" />
+				<xs:element name="D9" type="xs:string" minOccurs="0" />
+				<xs:element name="D10" type="xs:string" minOccurs="0" />
+				<xs:element name="D11" type="xs:string" minOccurs="0" />
+				<xs:element name="D12" type="xs:string" minOccurs="0" />
+				<xs:element name="D13" type="xs:string" minOccurs="0" />
+				<xs:element name="D14" type="xs:string" minOccurs="0" />
+				<xs:element name="D15" type="xs:string" minOccurs="0" />
+				<xs:element name="D16" type="xs:string" minOccurs="0" />
+				<xs:element name="D17" type="xs:string" minOccurs="0" />
+				<xs:element name="D18" type="xs:string" minOccurs="0" />
+				<xs:element name="D19" type="xs:string" minOccurs="0" />
+				<xs:element name="D20" type="xs:string" minOccurs="0" />
+				<xs:element name="D21" type="xs:string" minOccurs="0" />
+				<xs:element name="D22" type="xs:string" minOccurs="0" />
+				<xs:element name="D23" type="xs:string" minOccurs="0" />
+				<xs:element name="D24" type="xs:string" minOccurs="0" />
+				<xs:element name="D25" type="xs:string" minOccurs="0" />
+				<xs:element name="D26" type="xs:string" minOccurs="0" />
+				<xs:element name="D27" type="xs:string" minOccurs="0" />
+				<xs:element name="D28" type="xs:string" minOccurs="0" />
+				<xs:element name="D29" type="xs:string" minOccurs="0" />
+				<xs:element name="D30" type="xs:string" minOccurs="0" />
+				<xs:element name="D31" type="xs:string" minOccurs="0" />
+				<xs:element name="D32" type="xs:string" minOccurs="0" />
+				<xs:element name="D33" type="xs:string" minOccurs="0" />
+				<xs:element name="D34" type="xs:string" minOccurs="0" />
+				<xs:element name="D35" type="xs:string" minOccurs="0" />
+				<xs:element name="D36" type="xs:string" minOccurs="0" />
+				<xs:element name="D37" type="xs:string" minOccurs="0" />
+				<xs:element name="D38" type="xs:string" minOccurs="0" />
+				<xs:element name="D39" type="xs:string" minOccurs="0" />
+				<xs:element name="D40" type="xs:string" minOccurs="0" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

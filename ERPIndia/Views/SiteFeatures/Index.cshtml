@@ -1,0 +1,197 @@
+﻿@model ERPIndia.Models.SettingModel
+@using ERPIndia.Class.Helper
+
+<section class="content-header">
+    <h1>Site Features  <small></small></h1>
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("", "SiteMap")"><i class="fa fa-home"></i> Home</a></li>
+        <li class="active">Site Features </li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <div class="message-box"></div>
+                </div>
+                <div class="box-body">
+                    @using (Ajax.BeginForm("Index", "", new AjaxOptions() { HttpMethod = "POST", UpdateTargetId = "divPageBody", OnBegin = "onBeginSubmit", OnSuccess = "onSuccess" }, new { @class = "form-horizontal" }))
+                    {
+                @Html.AntiForgeryToken()
+                        <section>
+                            <h4 class="page-header">General Settings</h4>
+                            <div class="form-body" id="mainform">
+                                <!-- BEGIN FORM-->
+                                <div id="divSiteTitle" class="form-group">
+                                    <label class="col-md-2 control-label">@Html.LabelFor(model => model.SiteTitle) <span class="required">*</span></label>
+                                    <div class="col-md-4">
+                                        <div>
+                                            @Html.TextBoxFor(model => model.SiteTitle, new { @class = "form-control", @maxlength = "100" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @Html.ValidationMessageFor(model => model.SiteTitle)
+                                    </div>
+                                </div>
+                                <div id="divCopyrightText" class="form-group">
+                                    <label class="col-md-2 control-label">Copyright Text <span class="required">*</span></label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                            @Html.TextBoxFor(model => model.CopyrightText, new { @class = "form-control", @maxlength = "100" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @Html.ValidationMessageFor(model => model.CopyrightText)
+                                    </div>
+                                </div>
+                                <div id="divAdminEmail" class="form-group">
+                                    <label class="col-md-2 control-label">Admin Email <span class="required">*</span></label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                            @Html.TextBoxFor(model => model.AdminEmail, new { @class = "form-control", @maxlength = "50" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @Html.ValidationMessageFor(model => model.AdminEmail)
+                                    </div>
+                                </div>
+                                <div id="divSupportEmail" class="form-group">
+                                    <label class="col-md-2 control-label">Support Email </label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                            @Html.TextBoxFor(model => model.SupportEmail, new { @class = "form-control", @maxlength = "50" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @Html.ValidationMessageFor(model => model.SupportEmail)
+                                    </div>
+                                </div>
+                                <div id="divContactEmail" class="form-group">
+                                    <label class="col-md-2 control-label">Contact Email </label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                            @Html.TextBoxFor(model => model.ContactEmail, new { @class = "form-control", @maxlength = "50" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @Html.ValidationMessageFor(model => model.ContactEmail)
+                                    </div>
+                                </div>
+                                <div id="divTollFreeNo" class="form-group">
+                                    <label class="col-md-2 control-label">Toll Free No </label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                            @Html.TextBoxFor(model => model.TollFreeNo, new { @class = "form-control", @maxlength = "20", @onkeypress = "javascript:return KeyPhone(event);" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @Html.ValidationMessageFor(model => model.TollFreeNo)
+                                    </div>
+                                </div>
+                                <div id="divContactNo" class="form-group">
+                                    <label class="col-md-2 control-label">Contact No </label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                            @Html.TextBoxFor(model => model.ContactNo, new { @class = "form-control", @maxlength = "20", @onkeypress = "javascript:return KeyPhone(event);" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @Html.ValidationMessageFor(model => model.ContactNo)
+                                    </div>
+                                </div>
+                                <div id="divDefaultPageSize" class="form-group">
+                                    <label class="col-md-2 control-label">Default Page Size </label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                            @Html.DropDownListFor(model => model.PageSize, CommonLogic.GetPageDropDownList(string.Empty, string.Empty), new { @cssclass = "form-control" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- END FORM-->
+                            </div>
+                        </section>
+                        <section>
+                            <h4 class="page-header">SMTP Settings</h4>
+                            <div class="form-body">
+                                <div id="divSMTPHost" class="form-group">
+                                    <label class="col-md-2 control-label">SMTP Host <span class="required">*</span></label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                            @Html.TextBoxFor(model => model.SMTPHost, new { @class = "form-control", @maxlength = "100" })
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @Html.ValidationMessageFor(model => model.SMTPHost)
+                                    </div>
+                                </div>
+                                <div id="divSMTPPort" class="form-group">
+                                    <label class="col-md-2 control-label">SMTP Port <span class="required">*</span></label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                            @Html.TextBoxFor(model => model.SMTPPort, new { @class = "form-control", @maxlength = "5", @onkeypress = "javascript:return KeyPhone(event);" })                                            
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        @Html.ValidationMessageFor(model => model.SMTPPort)
+                                    </div>
+                                </div>
+                                <div id="divSMTPUserName" class="form-group">
+                                    <label class="col-md-2 control-label">SMTP UserName </label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                            @Html.TextBoxFor(model => model.SMTPUserName, new { @class = "form-control", @maxlength = "50" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="divSMTPPassword" class="form-group">
+                                    <label class="col-md-2 control-label">SMTP Password </label>
+                                    <div class="col-md-4">
+                                        <div class="input-icon right">
+                                           @Html.TextBoxFor(model => model.SMTPPassword, new { @class = "form-control", @maxlength = "50" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+
+
+                        <div class="form-actions">
+                            <div class="row">
+                                <div class="col-md-offset-2 col-md-9">
+                                    <button type="submit" class="btn btn-success btn-flat"><i class="fa fa-save"></i>&nbsp;&nbsp;Save</button>
+                                    <button type="reset" class="btn  btn-primary btn-flat" onclick="$(this).resetValidation()"><i class="fa fa-undo"></i>&nbsp;&nbsp;Reset</button>
+                                    <a class="btn btn-primary btn-flat" href="@Url.Action("", "Sitemap")"><i class="fa fa-ban"></i>&nbsp;&nbsp;Cancel</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script type="text/javascript">
+    $(this.document).ready(function () {
+        if ('@ViewBag.ErrorMsg' != null && '@ViewBag.ErrorMsg' != '') {
+            notificationMessage('@ViewBag.ErrorMsg', 'danger')
+        }
+
+        if ('@ViewBag.SuccessMsg' != null && '@ViewBag.SuccessMsg' != '') {
+            notificationMessage('@ViewBag.SuccessMsg', 'success')
+        }
+    });
+
+    var onBeginSubmit = function () {
+        HRN.showLoader();
+    };
+
+    function onSuccess() {
+        if ('@ViewBag.ErrorMsg' == null || '@ViewBag.ErrorMsg' == '') {
+            HRN.hideLoader();
+        }
+    }
+</script>

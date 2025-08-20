@@ -1,0 +1,260 @@
+﻿@model ERPK12Models.ViewModel.GatePass.GatePassViewModel
+
+<style>
+    .required-field1 {
+        border-left: 4px solid #dc3545 !important;
+        transition: border-left-color 0.3s ease;
+    }
+
+        .required-field1:focus {
+            border-left-color: #007bff !important;
+            box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+        }
+</style>
+
+@using (Html.BeginForm("Edit", "GatePass", FormMethod.Post, new { @class = "form-horizontal", id = "editGatePassForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(m => m.GatePass.Id)
+    @Html.HiddenFor(m => m.GatePass.PassNo)
+
+    <div class="modal-body">
+        <!-- Pass Information -->
+        <h5 class="text-primary mb-3"><i class="fas fa-id-card"></i> Gate Pass Information</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.PassNo, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.PassNo, new { @class = "form-control", @readonly = "readonly", style = "font-weight: bold; color: #007bff;" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.Date, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.Date, "{0:yyyy-MM-dd}", new
+                    {
+                        @class = "form-control required-field1",
+                        type = "date",
+                        autocomplete = "off"
+                    })
+                    @Html.ValidationMessageFor(m => m.GatePass.Date, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.TimeOut, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.TimeOut, new
+                    {
+                        @class = "form-control",
+                        @type = "time",
+                        @Value = (Model.GatePass.TimeOut != null ? Model.GatePass.TimeOut.Value.ToString(@"hh\:mm") : string.Empty)
+                    })
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Information -->
+        <h5 class="text-primary mb-3 mt-4"><i class="fas fa-user"></i> Student Information</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.StudentName, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.StudentName, new { @class = "form-control required-field1", placeholder = "Student name" })
+                    @Html.ValidationMessageFor(m => m.GatePass.StudentName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.Father, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.Father, new { @class = "form-control", placeholder = "Father's name" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.Mother, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.Mother, new { @class = "form-control", placeholder = "Mother's name" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.ClassId, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.GatePass.ClassId, Model.ClassList, new { @class = "form-control required-field1", id = "classDropdown" })
+                    @Html.HiddenFor(m => m.GatePass.Class, new { id = "className" })
+                    @Html.ValidationMessageFor(m => m.GatePass.ClassId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.Address, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.Address, new { @class = "form-control", placeholder = "Student address" })
+                </div>
+            </div>
+        </div>
+
+        <!-- Guardian Information -->
+        <h5 class="text-primary mb-3 mt-4"><i class="fas fa-user-shield"></i> Guardian Information</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.ParentGuardianName, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.ParentGuardianName, new { @class = "form-control required-field1", placeholder = "Name of person picking up" })
+                    @Html.ValidationMessageFor(m => m.GatePass.ParentGuardianName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.GuardianMobile, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.GuardianMobile, new
+                    {
+                        @class = "form-control required-field1",
+                        placeholder = "10 digit mobile",
+                        @type = "tel",
+                        pattern = "[0-9]{10}",
+                        maxlength = "10",
+                        onkeypress = "return isNumberKey(event)"
+                    })
+                    @Html.ValidationMessageFor(m => m.GatePass.GuardianMobile, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.RelationshipToStudent, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.GatePass.RelationshipToStudent, ViewBag.RelationshipList as SelectList, "Select", new { @class = "form-control required-field1" })
+                    @Html.ValidationMessageFor(m => m.GatePass.RelationshipToStudent, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.ReasonForLeave, new { @class = "control-label" })
+                    @if (ViewBag.ReasonList != null && ((SelectList)ViewBag.ReasonList).Any(x => x.Text == Model.GatePass.ReasonForLeave))
+                    {
+                        @Html.DropDownListFor(m => m.GatePass.ReasonForLeave, ViewBag.ReasonList as SelectList, "Select Reason", new { @class = "form-control required-field1", id = "reasonDropdown" })
+                        @Html.TextBoxFor(m => m.GatePass.ReasonForLeave, new { @class = "form-control mt-2", placeholder = "Specify reason...", id = "reasonText", style = "display:none;" })
+                    }
+                    else
+                    {
+                        @Html.DropDownListFor(m => m.GatePass.ReasonForLeave, ViewBag.ReasonList as SelectList, "Select Reason", new { @class = "form-control required-field1", id = "reasonDropdown", @Value = "Other" })
+                        @Html.TextBoxFor(m => m.GatePass.ReasonForLeave, new { @class = "form-control mt-2", placeholder = "Specify reason...", id = "reasonText" })
+                    }
+                    @Html.ValidationMessageFor(m => m.GatePass.ReasonForLeave, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <!-- Time In field -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.TimeIn, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.TimeIn, new
+                    {
+                       @class = "form-control",
+                       @type = "time",
+                       @Value = (Model.GatePass.TimeIn != null ? Model.GatePass.TimeIn.Value.ToString(@"hh\:mm") : string.Empty)
+                    })
+
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label class="control-label">Print Information</label>
+                    <div class="form-control-static">
+                        @if (Model.GatePass.PrintTime.HasValue)
+                        {
+                            <span class="text-muted">First printed: @Model.GatePass.PrintTime.Value.ToString("dd MMM yyyy HH:mm")</span>
+                        }
+                        @if (Model.GatePass.PrintCount > 0)
+                        {
+                            <span class="badge bg-info ms-2">Printed @Model.GatePass.PrintCount time(s)</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal" data-bs-dismiss="modal" onclick="closeModal()">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Update
+        </button>
+    </div>
+}
+
+<script>
+    // Function to allow only numbers
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+        return true;
+    }
+
+    $(document).ready(function () {
+        // Update class name hidden field when class is selected
+        $('#classDropdown').on('change', function() {
+            var selectedText = $(this).find('option:selected').text();
+            $('#className').val(selectedText);
+        });
+
+        // Handle reason dropdown change
+        $('#reasonDropdown').on('change', function() {
+            if ($(this).val() === 'Other') {
+                $('#reasonText').show().focus();
+            } else {
+                $('#reasonText').hide().val('');
+            }
+        });
+
+        // Check if current reason is custom (not in dropdown)
+        var currentReason = '@Model.GatePass.ReasonForLeave';
+        var reasonInList = $('#reasonDropdown option').filter(function() {
+            return $(this).text() === currentReason;
+        }).length > 0;
+
+        if (!reasonInList && currentReason) {
+            $('#reasonDropdown').val('Other');
+            $('#reasonText').show();
+        }
+
+        // Form validation
+        $('#editGatePassForm').on('submit', function(e) {
+            // If reason is "Other", use the text input value
+            if ($('#reasonDropdown').val() === 'Other') {
+                var otherReason = $('#reasonText').val().trim();
+                if (!otherReason) {
+                    e.preventDefault();
+                    alert('Please specify the reason for leave');
+                    $('#reasonText').focus();
+                    return false;
+                }
+                // Update the dropdown value to be submitted
+                $('#reasonDropdown').val(otherReason);
+            }
+
+            return true;
+        });
+    });
+
+    // Function to close modal properly
+    function closeModal() {
+        $('#modalContent').html('');
+        $('#gatePassModal').modal('hide');
+
+        setTimeout(function() {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+            $('body').css('padding-right', '');
+        }, 300);
+    }
+</script>

@@ -1,0 +1,344 @@
+﻿@model ERPIndia.FeeSummary.DTO.FeeSummaryViewModel
+@using ERPIndia.Class.Helper
+@{
+    ViewBag.Title = "Fee Summary Class-Wise";
+    string code = CommonLogic.GetSessionValue(StringConstants.TenantCode);
+    string session = CommonLogic.GetSessionValue(StringConstants.ActiveSessionPrint);
+    string formattedDate = Model.ReportDate.ToString("d-MMM-yyyy");
+    string formattedTime = Model.ReportDate.ToString("h:mm:sstt");
+}
+
+<!-- Hidden fields for exports -->
+<input type="hidden" id="sessionYear" value="@session" />
+<input type="hidden" id="reportTitle" value="Fee Summary Class-Wise (@session)" />
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                            <i class="ti ti-file-invoice fs-16"></i>
+                        </span>
+                        <h4 class="text-dark mb-0">@ViewBag.Title - Session: @session</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <!-- Filter Form -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        @using (Html.BeginForm("Index", "FeeSummary", FormMethod.Get, new { id = "filterForm", @class = "row g-3" }))
+                        {
+                            <div class="col-md-3">
+                                <label for="ClassId" class="form-label">Class</label>
+                                @Html.DropDownListFor(m => m.SelectedClass, Model.ClassList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-3">
+                                <label for="SectionId" class="form-label">Section</label>
+                                @Html.DropDownListFor(m => m.SelectedSection, Model.SectionList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-3 align-self-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter me-2"></i>Apply Filter
+                                </button>
+                                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-redo me-2"></i>Reset
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.FeeSummaries != null && Model.FeeSummaries.Count > 0)
+                {
+                    <!-- View Type Selector -->
+                    <div class="mb-3">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary active" id="basicViewBtn">Basic View</button>
+                            <button type="button" class="btn btn-outline-primary" id="detailedViewBtn">Detailed View</button>
+                        </div>
+                    </div>
+
+                    <!-- Basic View -->
+                    <div class="table-responsive" id="basicView">
+                        <table class="table table-bordered table-striped" id="feeSummaryBasicTable">
+                            <thead>
+                                <tr>
+                                    <th>Seq.</th>
+                                    <th>Roll No.</th>
+                                    <th>SR No.</th>
+                                    <th>Student Name</th>
+                                    <th>Father Name</th>
+                                    <th>Class Name</th>
+                                    <th>Mobile</th>
+                                    <th class="text-end">Gross Total</th>
+                                    <th class="text-end">Total Discount</th>
+                                    <th class="text-end">Net Total</th>
+                                    <th class="text-end">Total Paid</th>
+                                    <th class="text-end">Net Payable</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var fee in Model.FeeSummaries)
+                                {
+                                    <tr>
+                                        <td>@fee.Seq</td>
+                                        <td>@fee.RollNo</td>
+                                        <td>@fee.SRNo</td>
+                                        <td>@fee.StudentName</td>
+                                        <td>@fee.FatherName</td>
+                                        <td>@fee.ClassName</td>
+                                        <td>@fee.MobileNo</td>
+                                        <td class="text-end">@fee.GrossTotal.ToString("N2")</td>
+                                        <td class="text-end text-success">@fee.TotalDiscount.ToString("N2")</td>
+                                        <td class="text-end text-primary">@fee.NetTotal.ToString("N2")</td>
+                                        <td class="text-end text-info">@fee.TotalPaid.ToString("N2")</td>
+                                        <td class="text-end @(fee.NetPayable > 0 ? "text-danger" : "text-success")">@fee.NetPayable.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-light fw-bold">
+                                    <td colspan="7" class="text-end">Total:</td>
+                                    <td class="text-end">@Model.FeeSummaries.Sum(f => f.GrossTotal).ToString("N2")</td>
+                                    <td class="text-end text-success">@Model.FeeSummaries.Sum(f => f.TotalDiscount).ToString("N2")</td>
+                                    <td class="text-end text-primary">@Model.FeeSummaries.Sum(f => f.NetTotal).ToString("N2")</td>
+                                    <td class="text-end text-info">@Model.FeeSummaries.Sum(f => f.TotalPaid).ToString("N2")</td>
+                                    <td class="text-end @(Model.FeeSummaries.Sum(f => f.NetPayable) > 0 ? "text-danger" : "text-success")">@Model.FeeSummaries.Sum(f => f.NetPayable).ToString("N2")</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Detailed View (Hidden by default) -->
+                    <div class="table-responsive" id="detailedView" style="display: none;">
+                        <table class="table table-bordered table-striped" id="feeSummaryDetailedTable">
+                            <thead>
+                                <tr>
+                                    <th>Seq.</th>
+                                    <th>Roll No.</th>
+                                    <th>Student Name</th>
+                                    <th>Class</th>
+                                    <th class="text-end">Opening Bal.</th>
+                                    <th class="text-end">Regular Fee</th>
+                                    <th class="text-end">Transport Fee</th>
+                                    <th class="text-end">Late Fee</th>
+                                    <th class="text-end">Gross Total</th>
+                                    <th class="text-end">Monthly Disc.</th>
+                                    <th class="text-end">Headwise Disc.</th>
+                                    <th class="text-end">Additional Conc.</th>
+                                    <th class="text-end">Total Discount</th>
+                                    <th class="text-end">Net Total</th>
+                                    <th class="text-end">Total Paid</th>
+                                    <th class="text-end">Net Payable</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var fee in Model.FeeSummaries)
+                                {
+                                    <tr>
+                                        <td>@fee.Seq</td>
+                                        <td>@fee.RollNo</td>
+                                        <td>@fee.StudentName</td>
+                                        <td>@fee.ClassName</td>
+                                        <td class="text-end">@fee.OpeningBalance.ToString("N2")</td>
+                                        <td class="text-end">@fee.RegularFee.ToString("N2")</td>
+                                        <td class="text-end">@fee.TransportFee.ToString("N2")</td>
+                                        <td class="text-end">@fee.LateFee.ToString("N2")</td>
+                                        <td class="text-end fw-bold">@fee.GrossTotal.ToString("N2")</td>
+                                        <td class="text-end">@fee.MonthlyDiscount.ToString("N2")</td>
+                                        <td class="text-end">@fee.HeadwiseDiscount.ToString("N2")</td>
+                                        <td class="text-end">@fee.AdditionalConcession.ToString("N2")</td>
+                                        <td class="text-end text-success fw-bold">@fee.TotalDiscount.ToString("N2")</td>
+                                        <td class="text-end text-primary fw-bold">@fee.NetTotal.ToString("N2")</td>
+                                        <td class="text-end text-info fw-bold">@fee.TotalPaid.ToString("N2")</td>
+                                        <td class="text-end fw-bold @(fee.NetPayable > 0 ? "text-danger" : "text-success")">@fee.NetPayable.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-light fw-bold">
+                                    <td colspan="4" class="text-end">Total:</td>
+                                    <td class="text-end">@Model.FeeSummaries.Sum(f => f.OpeningBalance).ToString("N2")</td>
+                                    <td class="text-end">@Model.FeeSummaries.Sum(f => f.RegularFee).ToString("N2")</td>
+                                    <td class="text-end">@Model.FeeSummaries.Sum(f => f.TransportFee).ToString("N2")</td>
+                                    <td class="text-end">@Model.FeeSummaries.Sum(f => f.LateFee).ToString("N2")</td>
+                                    <td class="text-end">@Model.FeeSummaries.Sum(f => f.GrossTotal).ToString("N2")</td>
+                                    <td class="text-end">@Model.FeeSummaries.Sum(f => f.MonthlyDiscount).ToString("N2")</td>
+                                    <td class="text-end">@Model.FeeSummaries.Sum(f => f.HeadwiseDiscount).ToString("N2")</td>
+                                    <td class="text-end">@Model.FeeSummaries.Sum(f => f.AdditionalConcession).ToString("N2")</td>
+                                    <td class="text-end text-success">@Model.FeeSummaries.Sum(f => f.TotalDiscount).ToString("N2")</td>
+                                    <td class="text-end text-primary">@Model.FeeSummaries.Sum(f => f.NetTotal).ToString("N2")</td>
+                                    <td class="text-end text-info">@Model.FeeSummaries.Sum(f => f.TotalPaid).ToString("N2")</td>
+                                    <td class="text-end @(Model.FeeSummaries.Sum(f => f.NetPayable) > 0 ? "text-danger" : "text-success")">@Model.FeeSummaries.Sum(f => f.NetPayable).ToString("N2")</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Page Footer -->
+                    <div class="mt-3 small text-muted">
+                        <p><strong>Legend:</strong></p>
+                        <ul class="mb-0">
+                            <li><strong>Opening Bal.</strong> - Previous balance from previous academic term</li>
+                            <li><strong>Regular Fee</strong> - Total regular tuition fees for selected months</li>
+                            <li><strong>Transport Fee</strong> - Total transport fees for selected months</li>
+                            <li><strong>Late Fee</strong> - Total late fee charges</li>
+                            <li><strong>Gross Total</strong> - Sum of all fees and charges before discounts</li>
+                            <li><strong>Monthly Disc.</strong> - Fixed monthly discounts</li>
+                            <li><strong>Headwise Disc.</strong> - Fee structure based discounts</li>
+                            <li><strong>Additional Conc.</strong> - Extra concessions given at payment time</li>
+                            <li><strong>Net Total</strong> - Amount to be paid after all discounts</li>
+                            <li><strong>Total Paid</strong> - Amount already paid</li>
+                            <li><strong>Net Payable</strong> - Amount still due (negative value means overpayment)</li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <!-- No Records Message -->
+                    <div class="alert alert-info text-center my-4">
+                        <i class="fas fa-info-circle me-2"></i> No fee records found for the selected criteria.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.FeeSummaries != null && Model.FeeSummaries.Count > 0)
+{
+    <script>
+        $(document).ready(function () {
+            // Get session information from hidden fields
+            var sessionYear = $('#sessionYear').val();
+            var reportTitle = $('#reportTitle').val();
+
+            // Initialize basic view table
+            var basicTable = $('#feeSummaryBasicTable').DataTable({
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "pageLength": 10,
+                "order": [[0, "asc"]], // Order by sequence number ascending
+                "dom": 'Blfrtip',
+                "scrollX": true,
+                "buttons": [
+                    {
+                        extend: 'copy',
+                        className: 'btn btn-sm btn-secondary'
+                    },
+                    {
+                        extend: 'csv',
+                        className: 'btn btn-sm btn-secondary',
+                        title: reportTitle
+                    },
+                    {
+                        extend: 'excel',
+                        className: 'btn btn-sm btn-secondary',
+                        title: reportTitle,
+                        messageTop: 'Session: ' + sessionYear
+                    },
+                    {
+                        extend: 'pdf',
+                        className: 'btn btn-sm btn-secondary',
+                        title: reportTitle,
+                        messageTop: 'Session: ' + sessionYear,
+                        orientation: 'landscape'
+                    },
+                    {
+                        extend: 'print',
+                        className: 'btn btn-sm btn-secondary',
+                        customize: function (win) {
+                            $(win.document.body).find('h1').css('text-align', 'center');
+                            $(win.document.body).prepend(
+                                '<div class="text-center mb-3">' +
+                                '<h3>:: ' + reportTitle + 'SESSION: ' + sessionYear+'::</h3>' +
+                                '<p>@formattedDate @formattedTime</p>' +
+                                '</div>'
+                            );
+                        }
+                    }
+                ]
+            });
+
+            // Initialize detailed view table
+            var detailedTable = $('#feeSummaryDetailedTable').DataTable({
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "pageLength": 10,
+                "order": [[0, "asc"]], // Order by sequence number ascending
+                "dom": 'Blfrtip',
+                "scrollX": true,
+                "buttons": [
+                    {
+                        extend: 'copy',
+                        className: 'btn btn-sm btn-secondary'
+                    },
+                    {
+                        extend: 'csv',
+                        className: 'btn btn-sm btn-secondary',
+                        title: reportTitle + ' (Detailed)'
+                    },
+                    {
+                        extend: 'excel',
+                        className: 'btn btn-sm btn-secondary',
+                        title: reportTitle + ' (Detailed)',
+                        messageTop: 'Session: ' + sessionYear
+                    },
+                    {
+                        extend: 'pdf',
+                        className: 'btn btn-sm btn-secondary',
+                        title: reportTitle + ' (Detailed)',
+                        messageTop: 'Session: ' + sessionYear,
+                        orientation: 'landscape'
+                    },
+                    {
+                        extend: 'print',
+                        className: 'btn btn-sm btn-secondary',
+                        customize: function (win) {
+                            $(win.document.body).find('h1').css('text-align', 'center');
+                            $(win.document.body).prepend(
+                                '<div class="text-center mb-3">' +
+                                '<h3>:: ' + reportTitle + 'SESSION: ' + sessionYear + '  (DETAILED) ::</h3>' +
+                                '<p>@formattedDate @formattedTime</p>' +
+                                '</div>'
+                            );
+                        }
+                    }
+                ]
+            });
+
+            // View toggle buttons
+            $('#basicViewBtn').click(function() {
+                $(this).addClass('active');
+                $('#detailedViewBtn').removeClass('active');
+                $('#basicView').show();
+                $('#detailedView').hide();
+                basicTable.columns.adjust().draw();
+            });
+
+            $('#detailedViewBtn').click(function() {
+                $(this).addClass('active');
+                $('#basicViewBtn').removeClass('active');
+                $('#basicView').hide();
+                $('#detailedView').show();
+                detailedTable.columns.adjust().draw();
+            });
+        });
+    </script>
+}

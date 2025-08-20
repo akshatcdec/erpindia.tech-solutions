@@ -1,0 +1,831 @@
+﻿@model ERPIndia.Controllers.StudentMarksViewModel
+@{
+    ViewBag.Title = "Student Marks Entry";
+}
+
+<style>
+    .marks-entry-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .marks-entry-table thead th {
+            background: linear-gradient(to bottom, #69c1f7, #39a9f2);
+            color: #212529;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px 10px;
+            border: 1px solid #ddd !important;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .marks-entry-table tbody tr:nth-child(odd) {
+            background-color: #e3e8ed !important;
+        }
+
+        .marks-entry-table tbody tr:nth-child(even) {
+            background-color: #ffffff !important;
+        }
+
+        .marks-entry-table tbody tr.selected-row {
+            background-color: #e3f2fd !important;
+        }
+
+        .marks-entry-table tbody tr.modified-row {
+            background-color: #fff3cd !important;
+        }
+
+        .marks-entry-table tbody td {
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            text-align: center;
+            background-color: transparent !important;
+        }
+
+    .student-info-cell {
+        text-align: left !important;
+        font-size: 13px;
+    }
+
+    .marks-input {
+        width: 60px;
+        text-align: center;
+        border: 1px solid #cbd5e0;
+        border-radius: 3px;
+        padding: 3px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+        .marks-input:focus {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            outline: none;
+        }
+
+        .marks-input.is-invalid {
+            border-color: #dc3545 !important;
+            background-color: #fff5f5;
+        }
+
+        .marks-input.absent-mark {
+            background-color: #f0f0f0;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .marks-input.pass-mark {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .marks-input.fail-mark {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+    .search-button {
+        background: linear-gradient(to bottom, #E53E3E, #C53030);
+        color: white;
+        padding: 0.5rem 1rem;
+        font-size: 14px;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease;
+    }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+    .save-button {
+        background: linear-gradient(to right, #48BB78, #38A169);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        font-size: 14px;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .save-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    /* Toast Notification Styles */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+    }
+
+    .toast {
+        min-width: 300px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease-in-out;
+    }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+    .toast-success {
+        background-color: #d4edda;
+        border-left: 4px solid #28a745;
+        color: #155724;
+    }
+
+    .toast-error {
+        background-color: #f8d7da;
+        border-left: 4px solid #dc3545;
+        color: #721c24;
+    }
+
+    .toast-warning {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        color: #856404;
+    }
+
+    .toast-body {
+        padding: 10px 15px;
+    }
+
+    /* Page blur overlay styles */
+    .page-blur-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        z-index: 9998;
+        display: none;
+    }
+
+    .subject-header {
+        font-size: 12px;
+        font-weight: bold;
+        background: linear-gradient(to bottom, #ffc107, #ff9800) !important;
+    }
+
+        .subject-header .max-marks {
+            font-size: 10px;
+            color: #444;
+            display: block;
+            margin-top: 2px;
+        }
+
+    .quick-actions {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 100;
+    }
+
+    .quick-action-btn {
+        display: block;
+        margin-top: 10px;
+        padding: 10px 15px;
+        background: linear-gradient(to right, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+    .marks-summary {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 11px;
+        margin-left: 10px;
+    }
+
+    .spinner-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+    }
+
+    .validation-tooltip {
+        position: absolute;
+        background: #333;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        z-index: 1000;
+        display: none;
+    }
+
+    .absent-option {
+        background-color: #f0f0f0;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 11px;
+        color: #666;
+        margin-top: 5px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-edit me-2"></i>Student Marks Entry
+                    </h5>
+                    <div class="absent-option">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Enter 'D' for Absent (will save as -1)
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div id="validationMessage" class="alert alert-warning d-none">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Please select all required fields before searching.
+                    </div>
+                    <form id="searchForm" class="needs-validation" novalidate>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="ddlClass" class="form-label">
+                                    Class <span class="text-danger">*</span>
+                                </label>
+                                @Html.DropDownListFor(x => x.Classes, Model.Classes, "Select a class", new { @class = "form-select", id = "ddlClass" })
+                            </div>
+                            <div class="col-md-3">
+                                <label for="ddlSection" class="form-label">
+                                    Section <span class="text-danger">*</span>
+                                </label>
+                                @Html.DropDownListFor(x => x.Sections, Model.Sections, "Select a section", new { @class = "form-select", id = "ddlSection" })
+                            </div>
+                            <div class="col-md-3">
+                                <label for="ddlExam" class="form-label">
+                                    Exam <span class="text-danger">*</span>
+                                </label>
+                                @Html.DropDownListFor(x => x.ExamTypes, Model.ExamTypes, "Select an exam", new { @class = "form-select", id = "ddlExam" })
+                            </div>
+                            <div class="col-md-3 align-self-end">
+                                <button type="button" class="btn search-button w-100" id="btnSearch">
+                                    <i class="fas fa-search me-2"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="marksEntryContainer" class="mt-4">
+        <!-- Marks entry grid will be loaded here -->
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Page Blur Overlay -->
+<div class="page-blur-overlay" id="pageBlurOverlay"></div>
+
+<!-- Validation Tooltip -->
+<div class="validation-tooltip" id="validationTooltip"></div>
+
+<!-- Quick Actions -->
+<div class="quick-actions" id="quickActions" style="display:none;">
+    <button class="quick-action-btn" id="btnQuickSave">
+        <i class="fas fa-save me-2"></i>Quick Save
+    </button>
+    <button class="quick-action-btn" id="btnClearAll">
+        <i class="fas fa-eraser me-2"></i>Clear All
+    </button>
+</div>
+
+<!-- JavaScript section -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    var isUpdating = false;
+    var currentClassId = '';
+    var currentSectionId = '';
+    var currentExamId = '';
+    var studentsData = [];
+    var subjectsData = [];
+    var gradeConfigs = {};
+    var originalMarks = {};
+    var modifiedMarks = {};
+
+    // Toast notification function
+    function showToast(message, type, duration) {
+        type = type || 'success';
+        duration = duration || 3000;
+
+        var toastId = 'toast-' + Date.now();
+        var iconMap = {
+            'success': 'fas fa-check-circle',
+            'error': 'fas fa-times-circle',
+            'warning': 'fas fa-exclamation-triangle',
+            'info': 'fas fa-info-circle'
+        };
+
+        var toastHtml =
+            '<div id="' + toastId + '" class="toast toast-' + type + '">' +
+                '<div class="toast-body">' +
+                    '<i class="' + iconMap[type] + ' me-2"></i>' +
+                    message +
+                '</div>' +
+            '</div>';
+
+        $('#toastContainer').append(toastHtml);
+
+        setTimeout(function() {
+            $('#' + toastId).addClass('show');
+        }, 10);
+
+        setTimeout(function() {
+            closeToast(toastId);
+        }, duration);
+    }
+
+    // Close toast function
+    window.closeToast = function(toastId) {
+        $('#' + toastId).removeClass('show');
+        setTimeout(function() {
+            $('#' + toastId).remove();
+        }, 300);
+    };
+
+    // Search button click handler
+    $('#btnSearch').click(function() {
+        $('#validationMessage').addClass('d-none');
+
+        var classId = $('#ddlClass').val();
+        var sectionId = $('#ddlSection').val();
+        var examId = $('#ddlExam').val();
+
+        currentClassId = classId;
+        currentSectionId = sectionId;
+        currentExamId = examId;
+
+        var errors = [];
+        if (!classId) errors.push('Please select a class');
+        if (!sectionId) errors.push('Please select a section');
+        if (!examId) errors.push('Please select an exam');
+
+        if (errors.length > 0) {
+            showToast(errors.join(', '), 'warning');
+            $('#validationMessage').html(
+                '<i class="fas fa-exclamation-triangle me-2"></i>' + errors.join(', ')
+            ).removeClass('d-none');
+            return;
+        }
+
+        loadStudentMarksData(classId, sectionId, examId);
+    });
+
+    // Load student marks data
+    function loadStudentMarksData(classId, sectionId, examId) {
+        $('#marksEntryContainer').html(
+            '<div class="spinner-container">' +
+                '<div class="spinner-border text-primary" role="status">' +
+                    '<span class="visually-hidden">Loading...</span>' +
+                '</div>' +
+                '<div class="mt-3">Loading student marks data...</div>' +
+            '</div>'
+        );
+
+        $.ajax({
+            url: '@Url.Action("GetStudentMarksData", "StudentMarks")',
+            type: 'POST',
+            data: {
+                classId: classId,
+                sectionId: sectionId,
+                examTypeId: examId
+            },
+            success: function(data) {
+                if (data.success) {
+                    studentsData = data.students;
+                    subjectsData = data.subjects;
+                    gradeConfigs = data.gradeConfigs;
+                    originalMarks = {};
+                    modifiedMarks = {};
+
+                    // Store original marks
+                    if (data.existingMarks) {
+                        $.each(data.existingMarks, function(i, mark) {
+                            var key = mark.StudentID + '_' + mark.SubjectID;
+                            originalMarks[key] = mark.MarksObtained;
+                        });
+                    }
+
+                    displayMarksEntryGrid(data);
+                    //$('#quickActions').show();
+                    showToast('Student marks data loaded successfully', 'success');
+                } else {
+                    $('#marksEntryContainer').html(
+                        '<div class="alert alert-danger">' +
+                            '<i class="fas fa-exclamation-circle me-2"></i>' +
+                            (data.message || 'Failed to load data') +
+                        '</div>'
+                    );
+                    showToast(data.message || 'Failed to load data', 'error');
+                }
+            },
+            error: function() {
+                $('#marksEntryContainer').html(
+                    '<div class="alert alert-danger">' +
+                        '<i class="fas fa-times-circle me-2"></i>' +
+                        'An error occurred while loading student marks data' +
+                    '</div>'
+                );
+                showToast('An error occurred while loading data', 'error');
+            }
+        });
+    }
+
+    // Display marks entry grid
+    function displayMarksEntryGrid(data) {
+        if (!data.students || data.students.length === 0) {
+            $('#marksEntryContainer').html(
+                '<div class="alert alert-info">' +
+                    '<i class="fas fa-info-circle me-2"></i>' +
+                    'No students found for the selected criteria' +
+                '</div>'
+            );
+            return;
+        }
+
+        var gridHtml =
+            '<div class="card">' +
+                '<div class="card-header bg-light">' +
+                    '<div class="d-flex justify-content-between align-items-center">' +
+                        '<h6 class="mb-0">' +
+                            '<i class="fas fa-users me-2"></i>Students: ' + data.students.length +
+                            '<span class="marks-summary badge bg-info ms-2" id="entrySummary">0 entries</span>' +
+                            '<span class="marks-summary badge bg-warning ms-2" id="modifiedSummary">0 modified</span>' +
+                        '</h6>' +
+                        '<button type="button" class="btn save-button" id="btnSaveMarks">' +
+                            '<i class="fas fa-save me-2"></i>Save All Marks' +
+                        '</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="card-body p-3">' +
+                    '<div class="table-responsive">' +
+                        '<table class="table marks-entry-table mb-0">' +
+                            '<thead>' +
+                                '<tr>' +
+                                    '<th style="width: 50px;">SR</th>' +
+                                    '<th style="width: 80px;">Roll</th>' +
+                                    '<th style="width: 80px;">Exam</th>' +
+                                    '<th style="width: 150px;">Name</th>' +
+                                    '<th style="width: 150px;">Father</th>';
+
+        // Add subject columns
+        $.each(data.subjects, function(i, subject) {
+            var config = gradeConfigs[subject.SubjectID] || { MaxMarks: 100, MinimumGrade: 33 };
+            gridHtml += '<th class="subject-header">' +
+                        subject.SubjectName +
+                        '<span class="max-marks">Max: ' + config.MaxMarks + '</span>' +
+                        '</th>';
+        });
+
+        gridHtml += '</tr></thead><tbody>';
+
+        // Add student rows
+        $.each(data.students, function(index, student) {
+            gridHtml += '<tr data-studentid="' + student.StudentID + '">' +
+                       '<td class="student-info-cell">' + (index + 1) + '</td>' +
+                       '<td class="student-info-cell">' + (student.RollNumber || '-') + '</td>' +
+                       '<td class="student-info-cell">' + data.examName + '</td>' +
+                       '<td class="student-info-cell"><strong>' + student.StudentName + '</strong></td>' +
+                       '<td class="student-info-cell">' + (student.FatherName || '-') + '</td>';
+
+            // Add input fields for each subject
+            $.each(data.subjects, function(j, subject) {
+                var key = student.StudentID + '_' + subject.SubjectID;
+                var existingMark = originalMarks[key] || '';
+                var config = gradeConfigs[subject.SubjectID] || { MaxMarks: 100, MinimumGrade: 33 };
+
+                // Display 'D' for -1 (absent)
+                var displayValue = existingMark;
+                if (existingMark === -1) {
+                    displayValue = 'D';
+                }
+
+                gridHtml += '<td>' +
+                           '<input type="text" ' +
+                           'class="marks-input" ' +
+                           'data-studentid="' + student.StudentID + '" ' +
+                           'data-subjectid="' + subject.SubjectID + '" ' +
+                           'data-maxmarks="' + config.MaxMarks + '" ' +
+                           'data-mingrade="' + config.MinimumGrade + '" ' +
+                           'value="' + displayValue + '" ' +
+                           'maxlength="4" ' +
+                           'placeholder="-">' +
+                           '</td>';
+            });
+
+            gridHtml += '</tr>';
+        });
+
+        gridHtml += '</tbody></table></div></div>' +
+                   '<div class="card-footer text-muted">' +
+                       '<small>' +
+                           '<i class="fas fa-info-circle me-1"></i>' +
+                           'Enter marks for each subject. Use "D" for absent students (saves as -1). ' +
+                           'Marks are validated against max marks and minimum grade settings.' +
+                       '</small>' +
+                   '</div>' +
+               '</div>';
+
+        $('#marksEntryContainer').html(gridHtml);
+        bindMarksEntryEvents();
+    }
+
+    // Bind marks entry events
+    function bindMarksEntryEvents() {
+        // Mark input change handler
+        $('.marks-input').on('input blur', function() {
+            var $input = $(this);
+            var value = $input.val().trim().toUpperCase();
+            var studentId = $input.data('studentid');
+            var subjectId = $input.data('subjectid');
+            var maxMarks = parseInt($input.data('maxmarks'));
+            var minGrade = parseInt($input.data('mingrade'));
+            var key = studentId + '_' + subjectId;
+
+            // Handle 'D' for absent
+            if (value === 'D') {
+                $input.val('D');
+                $input.removeClass('is-invalid pass-mark fail-mark').addClass('absent-mark');
+                modifiedMarks[key] = -1;
+                markRowAsModified($input);
+                updateSummary();
+                return;
+            }
+
+            // Clear if empty
+            if (value === '') {
+                $input.removeClass('is-invalid pass-mark fail-mark absent-mark');
+                delete modifiedMarks[key];
+                checkRowModification($input);
+                updateSummary();
+                return;
+            }
+
+            // Validate numeric input
+            var marks = parseInt(value);
+            if (isNaN(marks)) {
+                $input.addClass('is-invalid');
+                showValidationTooltip($input, 'Please enter a valid number or "D" for absent');
+                return;
+            }
+
+            // Validate range
+            if (marks < 0 || marks > maxMarks) {
+                $input.addClass('is-invalid');
+                showValidationTooltip($input, 'Marks must be between 0 and ' + maxMarks);
+                return;
+            }
+
+            // Valid input
+            $input.removeClass('is-invalid absent-mark');
+            $input.val(marks);
+
+            // Apply pass/fail styling
+            if (marks >= minGrade) {
+                $input.removeClass('fail-mark').addClass('pass-mark');
+            } else {
+                $input.removeClass('pass-mark').addClass('fail-mark');
+            }
+
+            modifiedMarks[key] = marks;
+            markRowAsModified($input);
+            updateSummary();
+        });
+
+        // Enter key navigation
+        $('.marks-input').on('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                var $inputs = $('.marks-input:visible');
+                var currentIndex = $inputs.index($(this));
+
+                // Move to next input
+                if (currentIndex < $inputs.length - 1) {
+                    $inputs.eq(currentIndex + 1).focus().select();
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                navigateVertical($(this), 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                navigateVertical($(this), -1);
+            }
+        });
+
+        // Save button handler
+        $('#btnSaveMarks, #btnQuickSave').off('click').on('click', saveAllMarks);
+
+        // Clear all button
+        $('#btnClearAll').off('click').on('click', function() {
+            if (confirm('Clear all entered marks? This will reset the form.')) {
+                $('.marks-input').val('').removeClass('is-invalid pass-mark fail-mark absent-mark');
+                modifiedMarks = {};
+                $('.modified-row').removeClass('modified-row');
+                updateSummary();
+                showToast('All marks cleared', 'info');
+            }
+        });
+    }
+
+    // Navigate vertically in grid
+    function navigateVertical($input, direction) {
+        var subjectId = $input.data('subjectid');
+        var $currentRow = $input.closest('tr');
+        var $targetRow = direction > 0 ? $currentRow.next('tr') : $currentRow.prev('tr');
+
+        if ($targetRow.length > 0) {
+            var $targetInput = $targetRow.find('[data-subjectid="' + subjectId + '"]');
+            if ($targetInput.length > 0) {
+                $targetInput.focus().select();
+            }
+        }
+    }
+
+    // Show validation tooltip
+    function showValidationTooltip($input, message) {
+        var offset = $input.offset();
+        $('#validationTooltip')
+            .text(message)
+            .css({
+                top: offset.top - 30,
+                left: offset.left
+            })
+            .fadeIn(200);
+
+        setTimeout(function() {
+            $('#validationTooltip').fadeOut(200);
+        }, 3000);
+    }
+
+    // Mark row as modified
+    function markRowAsModified($input) {
+        $input.closest('tr').addClass('modified-row');
+    }
+
+    // Check if row should remain modified
+    function checkRowModification($input) {
+        var $row = $input.closest('tr');
+        var studentId = $row.data('studentid');
+        var hasModifications = false;
+
+        $row.find('.marks-input').each(function() {
+            var subjectId = $(this).data('subjectid');
+            var key = studentId + '_' + subjectId;
+            if (modifiedMarks.hasOwnProperty(key)) {
+                hasModifications = true;
+            }
+        });
+
+        if (!hasModifications) {
+            $row.removeClass('modified-row');
+        }
+    }
+
+    // Update summary
+    function updateSummary() {
+        var entryCount = Object.keys(modifiedMarks).length;
+        var modifiedRowCount = $('.modified-row').length;
+
+        $('#entrySummary').text(entryCount + ' entries');
+        $('#modifiedSummary').text(modifiedRowCount + ' modified');
+
+        // Enable/disable save button
+        $('#btnSaveMarks, #btnQuickSave').prop('disabled', entryCount === 0);
+    }
+
+    // Save all marks
+    function saveAllMarks() {
+        if (isUpdating) return;
+
+        var marksToSave = [];
+
+        // Validate all modified marks
+        var hasErrors = false;
+        $.each(modifiedMarks, function(key, value) {
+            var parts = key.split('_');
+            var studentId = parts[0];
+            var subjectId = parts[1];
+
+            var $input = $('[data-studentid="' + studentId + '"][data-subjectid="' + subjectId + '"]');
+            if ($input.hasClass('is-invalid')) {
+                hasErrors = true;
+            }
+
+            marksToSave.push({
+                StudentID: studentId,
+                SubjectID: subjectId,
+                MarksObtained: value,
+                ExamTypeID: currentExamId
+            });
+        });
+
+        if (hasErrors) {
+            showToast('Please fix validation errors before saving', 'error');
+            return;
+        }
+
+        if (marksToSave.length === 0) {
+            showToast('No marks to save', 'warning');
+            return;
+        }
+
+        if (!confirm('Save marks for ' + marksToSave.length + ' entries?')) {
+            return;
+        }
+
+        isUpdating = true;
+        $('#pageBlurOverlay').fadeIn(200);
+        $('#btnSaveMarks, #btnQuickSave').prop('disabled', true)
+            .html('<i class="fas fa-spinner fa-spin me-2"></i>Saving...');
+
+        $.ajax({
+            url: '@Url.Action("SaveStudentMarks", "StudentMarks")',
+            type: 'POST',
+            data: JSON.stringify({
+                marks: marksToSave,
+                classId: currentClassId,
+                sectionId: currentSectionId,
+                examTypeId: currentExamId
+            }),
+            contentType: 'application/json',
+            success: function(result) {
+                if (result.success) {
+                    showToast(result.message || 'Marks saved successfully!', 'success');
+
+                    // Update original marks
+                    $.each(modifiedMarks, function(key, value) {
+                        originalMarks[key] = value;
+                    });
+
+                    // Reset modified tracking
+                    modifiedMarks = {};
+                    $('.modified-row').removeClass('modified-row');
+                    updateSummary();
+
+                    $('#pageBlurOverlay').fadeOut(200);
+                } else {
+                    $('#pageBlurOverlay').fadeOut(200);
+                    showToast(result.message || 'Failed to save marks', 'error', 5000);
+                }
+            },
+            error: function() {
+                $('#pageBlurOverlay').fadeOut(200);
+                showToast('An error occurred while saving marks', 'error');
+            },
+            complete: function() {
+                isUpdating = false;
+                $('#btnSaveMarks').html('<i class="fas fa-save me-2"></i>Save All Marks');
+                $('#btnQuickSave').html('<i class="fas fa-save me-2"></i>Quick Save');
+                $('#btnSaveMarks, #btnQuickSave').prop('disabled', false);
+            }
+        });
+    }
+});
+</script>

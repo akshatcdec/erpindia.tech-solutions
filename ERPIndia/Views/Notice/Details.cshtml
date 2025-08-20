@@ -1,0 +1,88 @@
+﻿@model  ERPK12Models.DTO.Acc.NoticeViewModel
+@{
+    ViewBag.Title = "Details Notice";
+}
+
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h3 class="page-title">Notice Details</h3>
+            <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Dashboard")">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Index")">Notice Board</a></li>
+                <li class="breadcrumb-item active">Details</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h4 class="mb-3">@Model.Title</h4>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <span class="badge @Model.TypeBadgeClass">@Model.NoticeType</span>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">
+                                    <i class="far fa-calendar"></i> @Model.PublishedDate.ToString("dd MMM yyyy")
+                                </small>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">
+                                    <i class="far fa-user"></i> @Model.PublishedBy
+                                </small>
+                            </div>
+                            <div class="col-md-3">
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge badge-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger">Inactive</span>
+                                }
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="description-section">
+                            <h5>Description</h5>
+                            <p>@Html.Raw(Model.Description.Replace("\n", "<br />"))</p>
+                        </div>
+
+                        @if (Model.ExpiryDate.HasValue)
+                        {
+                            <div class="mt-4">
+                                <h5>Expiry Date</h5>
+                                <p>@Model.ExpiryDate.Value.ToString("dd MMM yyyy")</p>
+                            </div>
+                        }
+
+                        <div class="mt-4">
+                            <h5>Additional Information</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Days Ago:</strong> @Model.DaysAgo days</li>
+                                <li><strong>Icon Class:</strong> @Model.IconClass</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions mt-4">
+                    <a href="@Url.Action("Edit", new { id = Model.NoticeId })" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

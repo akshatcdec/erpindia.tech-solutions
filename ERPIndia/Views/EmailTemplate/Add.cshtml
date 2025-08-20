@@ -1,0 +1,157 @@
+@model ERPIndia.Models.EmailTemplateModel
+
+<section class="content-header">
+    <h1>Email Templates</h1>
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("", "SiteMap")"><i class="fa fa-home"></i> Home</a></li>
+        <li><a href="@Url.Action("", "EmailTemplate")">Email Templates</a></li>
+        <li class="active">@ViewBag.Heading</li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header"><div class="message-box"></div></div>
+                <div class="box-body">
+                    @using (Ajax.BeginForm("Add", "", new AjaxOptions() { HttpMethod = "POST", OnBegin = "onBeginSubmit", UpdateTargetId = "divPageBody", OnSuccess = "onSuccess" }, new { @class = "form-horizontal" }))
+                    {
+                @Html.AntiForgeryToken()
+                        <div class="form-body" id="mainform">
+                            <!-- BEGIN FORM-->
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">
+                                    @Html.LabelFor(model => model.Code) <span class="required">*</span>
+                                </label>
+
+                                <div class="col-md-4">
+                                    <div class="input-icon right">
+                                        @Html.TextBoxFor(model => model.Code, new { @maxlength = "50", @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Code)
+                                        @Html.HiddenFor(model => model.EmailTemplateId)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">
+                                    @Html.LabelFor(model => model.Title) <span class="required">*</span>
+                                </label>
+
+                                <div class="col-md-4">
+                                    <div class="input-icon right">
+                                        @Html.TextBoxFor(model => model.Title, new { @maxlength = "100", @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Title, "")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">
+                                    @Html.LabelFor(model => model.Subject) <span class="required">*</span>
+                                </label>
+
+                                <div class="col-md-4">
+                                    <div class="input-icon right">
+                                        @Html.TextBoxFor(model => model.Subject, new { @maxlength = "100", @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Subject, "")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">
+                                    @Html.LabelFor(model => model.FromEmail) <span class="required">*</span>
+                                </label>
+
+                                <div class="col-md-4">
+                                    <div class="input-icon right">
+                                        @Html.TextBoxFor(model => model.FromEmail, new { @maxlength = "100", @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.FromEmail, "")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">
+                                    @Html.LabelFor(model => model.Message) <span class="required">*</span>
+                                </label>
+
+                                <div class="col-md-10">
+                                    <div class="input-icon right">
+                                        @Html.TextAreaFor(model => model.Message, new {  @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Message, "")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">
+                                    @Html.LabelFor(model => model.Signature) <span class="required">*</span>
+                                </label>
+
+                                <div class="col-md-10">
+                                    <div class="input-icon right">
+                                        @Html.TextAreaFor(model => model.Signature, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.Signature, "")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label">
+                                    @Html.LabelFor(model => model.IsActive)
+                                </label>
+
+                                <div class="col-md-4">
+                                    <div class="radio-list">
+                                        <label class="radio-inline">
+                                            @Html.RadioButtonFor(model => model.IsActive, "true", new { @checked = true })Active
+                                        </label>
+                                        <label class="radio-inline">
+                                            @Html.RadioButtonFor(model => model.IsActive, "false")Inactive
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <div class="row">
+                                    <div class="col-md-offset-2 col-md-9">
+                                        <button type="submit" class="btn btn-success btn-flat"><i class="fa fa-save"></i>&nbsp;&nbsp;Save</button>
+                                        <button type="reset" class="btn  btn-primary btn-flat" onclick="$(this).resetValidation()"><i class="fa fa-undo"></i>&nbsp;&nbsp;Reset</button>
+                                        <a class="btn btn-primary btn-flat" href="@Url.Action("", "EmailTemplate")"><i class="fa fa-ban"></i>&nbsp;&nbsp;Cancel</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section pageLelvelScripts
+{
+@Scripts.Render("~/bundles/editorPluginJS")
+}
+
+<script type="text/javascript">
+    $(this.document).ready(function () {
+        if ('@ViewBag.ErrorMsg' != null && '@ViewBag.ErrorMsg' != '') {
+            notificationMessage('@ViewBag.ErrorMsg', 'danger')
+            HRN.hideLoader();
+        }
+
+        CKEDITOR.replace('Message');
+        CKEDITOR.replace('Signature');
+    });
+
+    var onBeginSubmit = function () {
+        HRN.showLoader();
+    };
+
+    function onSuccess() {
+        if ('@ViewBag.ErrorMsg' == null || '@ViewBag.ErrorMsg' == '') {
+            HRN.hideLoader();
+            window.location.href = '@Url.Action("Index")?status=s';
+        }
+    }
+
+</script>

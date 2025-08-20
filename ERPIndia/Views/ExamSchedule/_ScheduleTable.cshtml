@@ -1,0 +1,211 @@
+﻿@model ERPIndia.Controllers.ExamScheduleViewModel
+
+@if (Model.ScheduleEntries != null && Model.ScheduleEntries.Count > 0)
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list-alt me-2"></i>Subject Schedule Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("SaveSchedule", "ExamSchedule", FormMethod.Post, new { id = "scheduleForm", @class = "needs-validation", novalidate = "novalidate" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <!-- Hidden fields to maintain state -->
+                        @Html.HiddenFor(m => m.SelectedClass)
+                        @Html.HiddenFor(m => m.SelectedSection)
+                        @Html.HiddenFor(m => m.SelectedExam)
+                        @Html.HiddenFor(m => m.TenantId)
+                        @Html.HiddenFor(m => m.SessionId)
+
+                        if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> At least one subject must have an exam date. Time is required only for subjects with exam dates.
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="10%">S.No</th>
+                                        <th width="30%">Subject</th>
+                                        <th width="25%">Date</th>
+                                        <th width="15%">Day</th>
+                                        <th width="20%">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.ScheduleEntries.Count; i++)
+                                    {
+                                        <tr>
+                                            <td class="text-center">
+                                                @Model.ScheduleEntries[i].Sr
+                                                @Html.HiddenFor(m => m.ScheduleEntries[i].Sr)
+                                            </td>
+                                            <td>
+                                                @Html.HiddenFor(m => m.ScheduleEntries[i].SubjectId)
+                                                @Html.TextBoxFor(m => m.ScheduleEntries[i].Subject, new { @class = "form-control-plaintext", @readonly = "readonly" })
+                                            </td>
+                                            <td>
+                                                @Html.TextBoxFor(m => m.ScheduleEntries[i].Date, "{0:yyyy-MM-dd}", new
+                                                {
+                                                    @class = "form-control date-input",
+                                                    type = "date",
+                                                    data_row_index = i
+                                                })
+                                                <div class="invalid-feedback">
+                                                    Date is required for at least one subject
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @Html.TextBoxFor(m => m.ScheduleEntries[i].Day, new
+                                                {
+                                                    @class = "form-control",
+                                                    @readonly = "readonly",
+                                                    placeholder = "Auto-filled"
+                                                })
+                                            </td>
+                                            <td>
+                                                @Html.TextBoxFor(m => m.ScheduleEntries[i].Time, new
+                                           {
+                                               @class = "form-control time-input",
+                                               placeholder = "e.g., 10:00 AM - 1:00 PM",
+                                               maxlength = "50",
+                                               data_row_index = i
+                                           })
+                                                <div class="invalid-feedback">
+                                                    Time is required when date is selected
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12 text-end">
+                                <button type="button" class="btn btn-secondary me-2" onclick="clearSchedule()">
+                                    <i class="fas fa-times me-2"></i>Clear
+                                </button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save me-2"></i>Save Schedule
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-populate day when date is selected
+        $('input[type="date"]').on('change', function () {
+            var selectedDate = $(this).val();
+            var rowIndex = $(this).data('row-index');
+
+            if (selectedDate) {
+                var date = new Date(selectedDate);
+                var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                var dayName = days[date.getDay()];
+
+                // Find the corresponding day input
+                $('input[id="ScheduleEntries_' + rowIndex + '__Day"]').val(dayName);
+
+                // Make time required for this row
+                var timeInput = $('input[id="ScheduleEntries_' + rowIndex + '__Time"]');
+                timeInput.attr('required', 'required');
+
+                // Clear any previous validation errors
+                $(this).removeClass('is-invalid');
+                timeInput.removeClass('is-invalid');
+            } else {
+                // Clear day and remove time requirement if date is cleared
+                $('input[id="ScheduleEntries_' + rowIndex + '__Day"]').val('');
+                $('input[id="ScheduleEntries_' + rowIndex + '__Time"]').removeAttr('required');
+            }
+        });
+
+        // Clear schedule function
+        function clearSchedule() {
+            if (confirm('Are you sure you want to clear the schedule? This will reset the form.')) {
+                $('#scheduleTableContainer').empty();
+            }
+        }
+
+        // Form validation
+        $('#scheduleForm').on('submit', function (e) {
+            var isValid = true;
+            var hasAtLeastOneDate = false;
+
+            // Clear all validation errors
+            $('.is-invalid').removeClass('is-invalid');
+
+            // Check each row
+            $('.date-input').each(function (index) {
+                var dateValue = $(this).val();
+                var timeInput = $('.time-input[data-row-index="' + $(this).data('row-index') + '"]');
+
+                if (dateValue) {
+                    hasAtLeastOneDate = true;
+
+                    // If date is entered, time is required
+                    if (!timeInput.val()) {
+                        timeInput.addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+            });
+
+            // Check if at least one date is entered
+            if (!hasAtLeastOneDate) {
+                e.preventDefault();
+                alert('Please enter at least one exam date.');
+
+                // Highlight first date input
+                $('.date-input').first().addClass('is-invalid').focus();
+                return false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please enter time for all subjects that have exam dates.');
+                return false;
+            }
+        });
+
+        // Remove validation error on input
+        $('.time-input').on('input', function () {
+            if ($(this).val()) {
+                $(this).removeClass('is-invalid');
+            }
+        });
+    </script>
+}
+else
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>No subjects found for the selected class and section. Please verify your selection.
+            </div>
+        </div>
+    </div>
+}

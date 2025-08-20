@@ -1,0 +1,8 @@
+﻿@using ERPIndia.Class.Helper;
+
+<footer class="main-footer">
+    <div class="pull-right hidden-xs">
+        <b>Version</b> 1.0.0
+    </div>
+    @ERPIndia.ERPIndiaApplication.Setting.CopyrightText.Replace("##YEAR##", DateTime.Now.Year.ToString()).Replace("&copy;", "©")
+</footer>

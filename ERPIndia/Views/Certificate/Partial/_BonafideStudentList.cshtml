@@ -1,0 +1,233 @@
+﻿@model IEnumerable<ERPIndia.Models.CollectFee.DTOs.FeeCollectionDto>
+@using ERPIndia.Class.Helper
+@{
+    Layout = null;
+}
+<link href="/Content/model.css" rel="stylesheet" />
+<!-- Add this to your existing <style> section -->
+<style>
+    /* Existing styles... */
+
+    /* Alternating row colors */
+    
+
+   
+</style>
+<style>
+    .btn-bonafide {
+        background: linear-gradient(135deg, #ff6a00, #ffa500); /* Orange Gradient */
+        color: white;
+        padding: 4px 18px; /* 👈 कम ऊँचाई */
+        font-size: 12px; /* 👈 छोटा टेक्स्ट */
+        border: none;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        transition: background 0.3s ease, transform 0.2s;
+    }
+
+        .btn-bonafide:hover {
+            background: linear-gradient(135deg, #e65c00, #ff9900);
+            transform: translateY(-1px);
+        }
+
+        .btn-bonafide i {
+            font-size: 16px; /* आइकन का साइज़ */
+        }
+
+    .btn-dob {
+        background-color: #1565c0;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 5px 10px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        cursor: pointer;
+        font-size: 12px;
+        margin: 2px;
+    }
+
+    .btn-cc {
+        background-color: #6a1b9a;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 5px 10px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        cursor: pointer;
+        font-size: 12px;
+        margin: 2px;
+    }
+
+    .btn-dob:hover {
+        background-color: #0d47a1;
+    }
+
+    .btn-cc:hover {
+        background-color: #4a148c;
+    }
+
+    #certificateTable th {
+        background-color: #e3f2fd;
+        position: sticky;
+        color: black;
+        top: 0;
+        z-index: 10;
+        font-weight: bold;
+        text-align: center;
+        border: 1px solid #dee2e6;
+    }
+
+
+    #certificateTable tbody tr:nth-child(even) td {
+        background-color: #e9ecef;
+    }
+
+
+    #certificateTable td {
+        border: 1px solid #dee2e6;
+        vertical-align: middle;
+    }
+
+    #certificateTable {
+        width: 100%;
+    }
+
+    .certificate-actions {
+        white-space: nowrap;
+        text-align: center;
+    }
+</style>
+
+@if (Model != null && Model.Any())
+{
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-print"></i> Certificate Printing
+                    </h5>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="certificateTable" class="table table-bordered display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th width="15%">Certificates</th>
+                            <th>Adm No</th>
+                            <th>Class</th>
+                            <th>Sec</th>
+                            <th>Student Name</th>
+                            <th>Father Name</th>
+                            <th>Gender</th>
+                            <th>Category</th>
+                            <th>Mobile</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model)
+                        {
+                            <tr data-student-id="@student.StudentId">
+                                <td class="certificate-actions">
+                                    <button onclick="printCertificate('@student.StudentId', 'bonafide', '@student.AdmsnNo')"
+                                            class="btn-bonafide" title="Print Bonafide Certificate">
+                                        <i class="fas fa-file-alt"></i>
+                                        Bonafide
+                                    </button>
+                                </td>
+                                <td>@student.AdmsnNo</td>
+                                <td>@student.ClassName</td>
+                                <td>@student.SectionName</td>
+                                <td>@student.FirstName</td>
+                                <td>@(student.FatherName ?? "")</td>
+                                <td>@(student.Gender ?? "")</td>
+                                <td>@(student.CategoryName ?? "")</td>
+                                <td>@student.Mobile</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    $(function () {
+        // Initialize DataTable
+        var table = $('#certificateTable').DataTable({
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "pageLength": 10,
+            "order": [[2, "asc"], [3, "asc"]], // Order by Class and Section
+            "scrollX": false,
+            "responsive": true,
+            "dom": 'Blfrtip',
+            "buttons": [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'csv',
+                    title: 'CertificateStudentList',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'excel',
+                    title: 'CertificateStudentList',
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'pdf',
+                    title: 'CertificateStudentList',
+                    className: 'btn btn-sm btn-secondary',
+                    orientation: 'landscape'
+                },
+                {
+                    extend: 'print',
+                    title: 'CertificateStudentList',
+                    className: 'btn btn-sm btn-secondary'
+                }
+            ]
+        });
+    });
+
+    function toTitleCase(str) {
+        return str
+            // turn camelCase or PascalCase into words with spaces
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            // turn dashes/underscores into spaces
+            .replace(/[-_]+/g, ' ')
+            .toLowerCase()
+            .replace(/\b\w/g, ch => ch.toUpperCase());
+    }
+
+    // Function to print certificates
+    function printCertificate(studentId, certificateType, admissionNo) {
+        var schoolCode = '@ERPIndia.Class.Helper.CommonLogic.GetSessionValue(ERPIndia.Class.Helper.StringConstants.TenantCode)';
+        var url = '';
+
+        switch(certificateType) {
+            case 'bonafide':
+                url = '@Url.Action("PrintBonafide", "Certificate")' + '?studentId=' + studentId + '&admissionNo=' + admissionNo + '&code=' + schoolCode;
+                break;
+            case 'dob':
+                url = '@Url.Action("PrintDOB", "Certificate")' + '?studentId=' + studentId + '&admissionNo=' + admissionNo + '&code=' + schoolCode;
+                break;
+            case 'cc':
+                url = '@Url.Action("PrintCharacter", "Certificate")' + '?studentId=' + studentId + '&admissionNo=' + admissionNo + '&code=' + schoolCode;
+                break;
+        }
+        openModal('', url, toTitleCase(certificateType) +' Certificate');
+    }
+</script>

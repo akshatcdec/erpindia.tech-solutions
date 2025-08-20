@@ -1,0 +1,95 @@
+﻿@model ERPIndia.Models.ImportDataModel
+<!-- BEGIN PAGE HEADER-->
+<section class="content-header">
+    <h1>Import <small>Student Data</small></h1>
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("", "SiteMap")"><i class="fa fa-home"></i> Home</a></li>
+        <li class="active">Student Data</li>
+    </ol>
+</section>
+<!-- END PAGE HEADER-->
+<section class="content">
+    <div class="row">
+        @using (Html.BeginForm("Index", "ImportData", FormMethod.Post, new { enctype = "multipart/form-data", onsubmit = "onBeginSubmit()" }))
+        {
+            @Html.AntiForgeryToken()
+            <div class="col-sm-6">
+                <div class="panel panel-white border-left-xlg  border-left-info">
+                    <div class="panel-heading">
+                        <h4 class="panel-title"><span class="icon-cloud-upload2" style="color:orange;padding-right: 4px;font-size: 20px;"></span>Student Import</h4>
+                    </div>
+                    <div class="panel-body">
+                        <div class="panel-body">
+                            <div id="overlaygif" style="display:none;"></div>
+                            <div class="form-group">
+                                <label for="reg_input_name" class="req">Browse File</label>
+                                <input type="file" name="ProfileImg" id="ProfileImg" />
+                                @Html.HiddenFor(model => model.ProfilePic)
+                            </div>
+                            <br />
+                            @Html.ValidationMessageFor(m => m.ExcelFile)
+                        </div>
+                        <div class="row">
+                            <button type="submit" class="btn btn-success btn-flat"><i class="fa fa-save"></i>&nbsp;&nbsp;Upload</button>
+                            <button type="reset" class="btn  btn-primary btn-flat" onclick="$(this).resetValidation()"><i class="fa fa-undo"></i>&nbsp;&nbsp;Reset</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="panel panel-white border-left-xlg  border-left-info">
+                    <div class="panel-heading">
+                        <h4 class="panel-title"><span class="icon-info22" style="color:orange;padding-right: 4px"></span>Instructions</h4>
+                        <div class="heading-elements" align="right">
+                            <a href=" /img/sample.xlsx" class="btn bg-teal-400 btn-labeled" align="left" data-popup="tooltip" title="" data-placement="bottom" data-trigger="hover" data-content="" data-original-title="click to download"><b><i class="icon-file-excel"></i></b>Student Excel</a>
+                        </div>
+                        <a class="heading-elements-toggle"><i class="icon-menu"></i></a>
+                    </div>
+                    <div class="panel-body">
+                        <p><span style="font-size: 14px; color: #cc0000;padding-right: 4px;">*</span>Download the excel template from the above link.</p>
+                        <p><span style="font-size: 14px; color: #cc0000;padding-right: 4px;">*</span> For a successful data import, the data in the import file must be formatted correctly and must match data in ERP for master data's. <a href="#masterdata">click here</a> to see all master data</p>
+                        <p><span style="font-size: 14px; color: #cc0000;padding-right: 4px;">*</span>Please make sure all the mandatory fields have values in the excel.</p>
+                        <p><span style="font-size: 14px; color: #cc0000;padding-right: 4px;">*</span>All the date format should be in dd/mm/yyyy(ex:21/12/2022).</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+
+            </div>
+        }
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box box-primary">
+                <div class="box-body">
+                    @Html.Raw(HttpUtility.HtmlDecode(Html.ValidationMessageFor(m => m.ProfilePic).ToHtmlString()))
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+    $(this.document).ready(function () {
+        if ('@ViewBag.ErrorMsg' != null && '@ViewBag.ErrorMsg' != '') {
+            notificationMessage('@ViewBag.ErrorMsg', 'danger')
+            HRN.hideLoader();
+        }
+
+        if ('@ViewBag.SuccessMsg' != null && '@ViewBag.SuccessMsg' != '') {
+            notificationMessage('@ViewBag.SuccessMsg', 'success')
+            HRN.hideLoader();
+        }
+
+        //checkValidation();
+    });
+
+    var onBeginSubmit = function () {
+       // HRN.showLoader();
+    };
+
+    function onSuccess() {
+        if ('@ViewBag.ErrorMsg' == null || '@ViewBag.ErrorMsg' == '') {
+            HRN.hideLoader();
+        }
+    }
+</script>

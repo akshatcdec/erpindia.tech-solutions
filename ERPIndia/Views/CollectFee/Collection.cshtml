@@ -1,0 +1,523 @@
+﻿@model ERPIndia.Models.CollectFee.DTOs.FeeCollectionViewModel
+@{
+    ViewBag.Title = "Fee Collection";
+    string StudentId = Model.StudentId;
+    string SessionID = Model.SessionID;
+    string TenantID = Model.TenantID;
+    string TenantCode = Model.TenantCode;
+    string SessionYear = Model.SessionYear;
+   
+}
+<style>
+    /* Enhanced table responsiveness */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  margin-bottom: 1rem;
+}
+
+/* Make sure table takes full width of its container */
+.table-responsive table {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+/* Ensure the fee details table is properly wrapped */
+#fee-details {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Fix for specific tables that need horizontal scroll */
+.dt-container.dt-empty-footer {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Ensure fee details and other tables maintain their structure */
+#fee-details th,
+#fee-details td,
+#added-fees th,
+#added-fees td {
+  white-space: nowrap;
+  min-width: 100px; /* Give cells a minimum width */
+}
+
+/* For smaller screens, ensure the payment fields stack properly */
+@@media (max-width: 768px) {
+  .payment-totals-row {
+    flex-direction: column;
+  }
+
+  .payment-field {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
+/* Optional: Make sure month cells have consistent width */
+.month-cell {
+  min-width: 80px;
+}
+</style>
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-body">
+            <ul class="nav nav-tabs nav-tabs-top mb-3" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" href="#top-tab1" data-bs-toggle="tab" aria-selected="true" role="tab">Student Information</a>
+                </li>
+                <li class="ms-auto" role="presentation">
+                    @Html.ActionLink("Edit Student", "Edit", "Student", new { id = StudentId }, new { @class = "btn btn-sm btn-outline-primary" })
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active show" id="top-tab1" role="tabpanel">
+                    <div class="row mb-4" id="personalInfoCard">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="student-panel">
+                                        <div class="student-info" style="background: #e9edf4">
+                                            @if (!string.IsNullOrEmpty(Model.StudentInfo.Photo))
+                                            {
+                                                string path = string.Format(@"/documents/{0}/StudentProfile/{1}_stu.jpg", TenantCode, Model.StudentInfo.AdmsnNo);
+                                                <img src="@path" alt="Student Photo" class="student-photo" />
+                                            }
+                                            else
+                                            {
+                                                <img src="https://placehold.co/180x210/1a56db/FFF?text=Photo" alt="Student Photo" class="student-photo">
+                                            }
+                                            <div class="info-container">
+                                                <div class="info-column">
+                                                    <div class="info-item">
+                                                        <div class="info-label">Name</div>
+                                                        <div class="info-value">@Model.StudentInfo.FirstName</div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">Class</div>
+                                                        <div class="info-value">@Model.StudentInfo.ClassName</div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">Section</div>
+                                                        <div class="info-value">@Model.StudentInfo.SectionName</div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">Father</div>
+                                                        <div class="info-value">@Model.StudentInfo.FatherName</div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">Mother</div>
+                                                        <div class="info-value">@Model.StudentInfo.MotherName</div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">Gender</div>
+                                                        <div class="info-value">@Model.StudentInfo.Gender</div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">DOB</div>
+                                                        <div class="info-value">
+                                                            @(Model.StudentInfo != null && Model.StudentInfo.DOBUI.HasValue
+      ? Model.StudentInfo.DOBUI.Value.ToString("dd-MMM-yyyy")
+      : "-")
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="info-column">
+                                                    <div class="info-item">
+                                                        <div class="info-label">Adm No.</div>
+                                                        <div class="info-value">@Model.StudentInfo.AdmsnNo</div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">Roll No.</div>
+                                                        <div class="info-value">@Model.StudentInfo.RollNo</div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">SR No.</div>
+                                                        <div class="info-value">@Model.StudentInfo.SrNo</div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">Mobile No.</div>
+                                                        <div class="info-value">@Model.StudentInfo.Mobile</div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">Fee Cat.</div>
+                                                        <div class="info-value"><span class="badge badge-primary">@Model.StudentInfo.CategoryName</span></div>
+                                                    </div>
+
+                                                    <div class="info-item">
+                                                        <div class="info-label">Dis. Cat.</div>
+                                                        <div class="info-value"><span class="badge badge-success">@Model.StudentInfo.DiscountName</span></div>
+                                                    </div>
+                                                    @if (!String.IsNullOrWhiteSpace(Model.StudentInfo.PickupName))
+                                                    {
+                                                        <div class="info-item">
+                                                            <div class="info-label">Pickup Point</div>
+                                                            <div class="info-value"><span class="badge badge-warning">@Model.StudentInfo.PickupName</span></div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="hiddenStudentId" value="@StudentId">
+                                    <input type="hidden" id="hiddenSessionID" value="@SessionID">
+                                    <input type="hidden" id="hiddenTenantID" value="@TenantID">
+                                    <input type="hidden" id="hiddenTenantCode" value="@TenantCode">
+                                    <input type="hidden" id="hiddenSessionYear" value="@SessionYear">
+                                    <input type="hidden" id="hiddenAdmNo" value="@Model.StudentInfo.AdmsnNo">
+                                    <input type="hidden" id="hiddenpickupname" value="@Model.StudentInfo.PickupName">
+                                   
+                                    <br />
+                                    <div class="table-responsive">
+                                        <table id="fee-details" class="dt-container dt-empty-footer">
+                                            <thead>
+                                                <tr>
+                                                    <th>SN</th>
+                                                    <th>Fee Name</th>
+                                                    @foreach (var month in new[] { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" })
+                                                    {
+                                                        <th>@month</th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody id="fee-details-body">
+                                                @if (Model.FeeDetails != null && Model.FeeDetails.Any())
+                                                {
+                                                    int srNo = 1;
+                                                    foreach (var fee in Model.FeeDetails)
+                                                    {
+                                                        <tr data-fee-id="@fee.Id">
+                                                            @if (@fee.Name != "Fixed Monthly Discount")
+                                                            {
+                                                                <td>@(srNo++)</td>
+                                                            }
+
+                                                            @if (@fee.Name != "Fixed Monthly Discount")
+                                                            {
+                                                                <td>@fee.Name</td>
+                                                            }
+
+
+                                                            @foreach (var month in new[] { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" })
+                                                            {
+                                                                decimal regamount = fee.regularAmounts != null && fee.regularAmounts.ContainsKey(month) ? fee.regularAmounts[month] : 0;
+                                                                decimal monthamount = fee.Months != null && fee.Months.ContainsKey(month) ? fee.Months[month] : 0;
+
+                                                                decimal discount = fee.Discounts != null && fee.Discounts.ContainsKey(month) ? fee.Discounts[month] : 0;
+                                                                if (@fee.Name != "Fixed Monthly Discount")
+                                                                {
+                                                                    <td class="month-cell" data-month="@month" data-amount="@monthamount">
+                                                                        @if (regamount > 0)
+                                                                        {
+                                                                            <div class="fee-amount">@regamount</div>
+                                                                            if (discount > 0)
+                                                                            {
+                                                                                <div class="discount-value">-@discount</div>
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <span>0</span>
+                                                                        }
+                                                                    </td>
+                                                                }
+
+                                                            }
+                                                        </tr>
+                                                    }
+
+                                                    <tr>
+                                                        <td colspan="1"></td>
+                                                        <td>
+                                                            <b>  Conc.  Month</b>
+                                                        </td>
+
+                                                        @foreach (var month in new[] { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" })
+                                                        {
+                                                           
+                                                            decimal discountTotal = 0;
+                                                            foreach (var fee in Model.FeeDetails)
+                                                            {
+
+                                                                if (fee.Discounts != null && fee.Discounts.ContainsKey(month))
+                                                                {
+                                                                    discountTotal = fee.Discounts[month];
+                                                                }
+
+                                                            }
+
+                                                            <td class="month-cell">
+                                                                <div>@discountTotal.ToString("0.00")</div>
+                                                            </td>
+                                                        }
+                                                    </tr>
+                                                    <!-- Monthly Totals Row -->
+                                                    <tr class="monthly-totals-row">
+                                                        <td colspan="1"></td>
+                                                        <td class="click-cell">
+                                                            Click <i class="fas fa-plus-square"></i>
+                                                        </td>
+
+                                                        @foreach (var month in new[] { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" })
+                                                        {
+                                                            decimal monthlyTotal = 0;
+                                                            decimal discountTotal = 0;
+                                                            decimal finalAmount = 0;
+                                                            bool isMonthPaid = false;
+
+                                                            // First, check if ANY fee for this month has been paid
+                                                            foreach (var fee in Model.FeeDetails)
+                                                            {
+                                                                if (fee.paidAmounts != null && fee.paidAmounts.ContainsKey(month) && fee.paidAmounts[month] > 0)
+                                                                {
+                                                                    isMonthPaid = true;
+                                                                    break; // Exit the loop as soon as we find one paid fee
+                                                                }
+                                                            }
+
+                                                            // Then calculate the totals
+                                                            foreach (var fee in Model.FeeDetails)
+                                                            {
+                                                                if (fee.Months != null && fee.Months.ContainsKey(month))
+                                                                {
+                                                                    monthlyTotal += fee.regularAmounts[month];
+
+                                                                    if (fee.Discounts != null && fee.Discounts.ContainsKey(month))
+                                                                    {
+                                                                        discountTotal += fee.Discounts[month];
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            finalAmount = monthlyTotal - discountTotal;
+
+                                                            <td class="month-cell">
+                                                                <button type="button"
+                                                                        class="add-month-btn @(isMonthPaid ? "disabled" : "")"
+                                                                        data-month="@month"
+                                                                        data-final="@finalAmount.ToString("0.00")"
+                                                                        data-amount="@monthlyTotal.ToString("0.00")"
+                                                                        data-discount="@discountTotal.ToString("0.00")"
+                                                                        @(isMonthPaid ? "disabled" : "")
+                                                                        aria-label="Add @month fees">
+                                                                    <i class="fas @(isMonthPaid ? "fa-check-square" : "fa-plus-square")"></i>
+                                                                </button>
+                                                                <div>@finalAmount.ToString("0.00")</div>
+                                                            </td>
+                                                        }
+                                                    </tr>
+                                                }
+                                                else
+                                                {
+                                                    <tr>
+                                                        <td colspan="14" class="loading-row">No fee details available.</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                        <div class="card p-3">
+                                            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                                <div class="d-flex align-items-center me-3">
+                                                    <span class="badge bg-primary rounded-pill me-2">OLD BALANCE</span>
+                                                    <span class="badge bg-success rounded-pill" id="spnOldBalance">0.00</span>
+                                                </div>
+                                                <div class="d-flex align-items-center me-3">
+                                                    <span class="badge bg-primary rounded-pill me-2">Auto Conc.</span>
+                                                    <span class="badge bg-success rounded-pill" id="spnDiscount">0.00</span>
+                                                </div>
+                                                <div class="d-flex align-items-center me-3">
+                                                    <span class="badge bg-primary rounded-pill me-2">LATE FEE</span>
+                                                    <span class="badge bg-success rounded-pill" id="spnLateFee">0.00</span>
+                                                </div>
+                                                <div class="d-flex align-items-center me-3">
+                                                    <span class="badge bg-primary rounded-pill me-2">SUB TOTAL</span>
+                                                    <span class="badge bg-success rounded-pill" id="spnSubTotal">0.00</span>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="badge bg-primary rounded-pill me-2">TOTAL</span>
+                                                    <span class="badge bg-success rounded-pill" id="spnTotal">0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card mt-4">
+                                            <div class="card-body">
+                                                <div class="added-fees-container">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered" id="added-fees">
+                                                               <thead class="thead-light">
+                                                                    <tr>
+                                                                        <th>S.No</th>
+                                                                        <th>Month</th>
+                                                                        <th>Fee Name</th>
+                                                                        <th>Amount</th>
+                                                                        <th>Action</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody id="added-fees-body">
+                                                                    <!-- Added fees will be inserted here by JavaScript -->
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Payment Totals -->
+                                                    <div class="payment-totals-container mt-4">
+                                                        <div class="payment-totals-row">
+                                                            <div class="payment-field" style="display:none">
+                                                                <label for="previous-balance">
+                                                                    <span class="text-info">
+                                                                        <strong>Old Balance:</strong>
+                                                                    </span>
+                                                                </label>
+                                                                <input type="number" id="previous-balance" readonly class="form-control" value="@Model.StudentInfo.OldBalance" min="0" step="1">
+                                                            </div>
+                                                            <div class="payment-field" style="display:none">
+                                                                <label for="discount-amount">Auto Conc.:</label>
+                                                                <input type="number" id="discount-amount" class="form-control" value="0" min="0" step="1" readonly>
+                                                            </div>
+                                                            <div class="payment-field" style="display:none">
+                                                                <label for="late-fee-amount">Late Fee:</label>
+                                                                <input type="number" id="late-fee-amount" class="form-control" value="0" min="0" step="1">
+                                                            </div>
+                                                            <div class="payment-field" style="display:none">
+                                                                <label for="subtotal-amount">Subtotal:</label>
+                                                                <input type="number" id="subtotal-amount" class="form-control" value="0.00" readonly>
+                                                            </div>
+                                                            <div class="payment-field" style="display:none">
+                                                                <label for="total-amount">Total:</label>
+                                                                <input type="number" id="total-amount" class="form-control" value="0.00" readonly>
+                                                            </div>
+
+                                                            <div class="payment-field">
+                                                                <label for="additional-discount">Add Conc:</label>
+                                                                <input type="number" onblur="updateTotals()" id="additional-discount" class="form-control" value="0.00" min="0" step="0.01">
+                                                            </div>
+                                                            <div class="payment-field">
+                                                                <label for="other-charges">Other Charges:</label>
+                                                                <input type="number" onblur="updateTotals()" id="other-charges" class="form-control" value="0.00" min="0" step="0.01">
+                                                            </div>
+                                                            <div class="payment-field">
+                                                                <label for="received-amount">Received:</label>
+                                                                <input type="number" onblur="updateTotals()" id="received-amount" class="form-control" value="0.00" min="0" step="0.01">
+                                                            </div>
+                                                            <div class="payment-field">
+                                                                <label for="remain-amount">Remaining:</label>
+                                                                <input type="number" id="remain-amount" class="form-control" value="0.00" readonly>
+                                                            </div>
+                                                            <div class="payment-field">
+                                                                <label for="receipt-date">Receipt Date:</label>
+                                                                <input type="date" id="receipt-date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")">
+                                                            </div>
+                                                            <div class="payment-field">
+                                                                <div class="form-group">
+                                                                    <label for="paymentMethod">Payment Mode</label>
+                                                                    <select class="form-control" id="paymentMethod">
+                                                                        <option value="">Select Mode</option>
+                                                                        <option value="cash">Cash</option>
+                                                                        <option value="bank">Bank</option>
+                                                                        <option value="cheque">Cheque</option>
+                                                                        <option value="upi">UPI</option>
+                                                                        <option value="paytm">PayTM</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="payment-totals-row">
+                                                            <div class="col-md-3">
+                                                                <div class="form-group">
+                                                                    <label for="note" style="color:white; font-weight:bold">Note/Remarks</label>
+                                                                    <textarea id="note" class="form-control" rows="1"></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-check mb-2 ml-3">
+                                                                <input class="form-check-input" type="checkbox" id="chkHindi">
+                                                                <label class="form-check-label" style="color: white; font-weight: bold" for="chkHindi">
+                                                                    Hindi SMS
+                                                                </label>
+                                                            </div>
+                                                            <div class="form-check mb-2 ml-3">
+                                                                <input class="form-check-input" type="checkbox" id="chkEng">
+                                                                <label class="form-check-label" style="color: white; font-weight: bold" for="chkEng">
+                                                                    English SMS
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Note and Submit Button -->
+                                                    <div class="row mt-3">
+                                                        <div class="col-md-6 text-end">
+                                                            <button type="button" id="save-payment-btn" class="btn btn-primary mt-4">
+                                                                <i class="fas fa-save me-1"></i> Save Payment
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<link href="/Content/collectfee/fee-collection.css?t=@DateTime.Now.ToLongTimeString()" rel="stylesheet" />
+<script src="/Content/collectfee/fee-collection.js?t=@DateTime.Now.ToLongTimeString()"></script>
+<script>
+    // Add this script to your page to enhance table responsiveness
+    document.addEventListener('DOMContentLoaded', function () {
+        // Make sure all tables with class dt-container have proper responsive wrapping
+        const tables = document.querySelectorAll('.dt-container');
+
+        tables.forEach(function (table) {
+            // Check if the table is already wrapped in a responsive div
+            if (!table.parentElement.classList.contains('table-responsive')) {
+                // If not, wrap it in a responsive div
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-responsive';
+                table.parentNode.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            }
+        });
+
+        // Ensure all payment field containers stack properly on mobile
+        const adjustResponsiveness = function () {
+            const paymentRows = document.querySelectorAll('.payment-totals-row');
+            if (window.innerWidth <= 768) {
+                paymentRows.forEach(row => {
+                    row.style.flexDirection = 'column';
+                });
+            } else {
+                paymentRows.forEach(row => {
+                    row.style.flexDirection = 'row';
+                });
+            }
+        };
+
+        // Apply responsive adjustments on load and resize
+        adjustResponsiveness();
+        window.addEventListener('resize', adjustResponsiveness);
+    });
+
+</script>
+

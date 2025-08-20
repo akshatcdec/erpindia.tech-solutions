@@ -1,0 +1,228 @@
+﻿@model ERPK12Models.ViewModel.GatePass.GatePassListViewModel
+
+<div class="card">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>Gate Pass Records
+                <span class="badge bg-primary ms-2">@Model.GatePasses.Count() records found</span>
+            </h5>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (Model.GatePasses.Any())
+        {
+            <!-- Data Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover" id="studentGridTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="8%" class="text-center">Print</th>
+                            <th width="12%" class="text-center">Adm No.</th>
+                            <th width="12%" class="text-center">Class</th>
+                            <th width="20%">Student</th>
+                            <th width="20%">Father</th>
+                            <th width="20%">Mother</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model.GatePasses)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-success"
+                                            onclick="openHistoryModal('@student.StudentId')"
+                                            title="View Gate Pass History">
+                                        <i class="fas fa-history"></i>
+                                    </button>
+                                </td>
+
+                                <td class="text-center">
+                                    @student.AdmNo
+                                </td>
+                               <td class="text-center">
+                                    <span class="badge bg-purple">@(student.Class ?? "N/A")</span>
+                                </td>
+
+                                <td>
+                                    @student.StudentName
+                                </td>
+                                <td>
+                                   @(student.Father ?? "N/A")
+                                </td>
+
+                                <td>
+                                 @(student.Mother ?? "N/A")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+
+            <!-- Pagination -->
+            if (Model.Pagination.TotalPages > 1)
+            {
+                <nav aria-label="Page navigation" class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(Model.Pagination.HasPreviousPage ? "" : "disabled")">
+                            <a class="page-link" href="#" onclick="changePage(@(Model.Pagination.CurrentPage - 1))">Previous</a>
+                        </li>
+
+                        @for (int i = 1; i <= Model.Pagination.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="#" onclick="changePage(@i)">@i</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.Pagination.HasNextPage ? "" : "disabled")">
+                            <a class="page-link" href="#" onclick="changePage(@(Model.Pagination.CurrentPage + 1))">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-id-card fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No gate passes found</h5>
+                <p class="text-muted">Try adjusting your search criteria and search again.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    $(function () {
+        // Initialize DataTable
+        var table = $('#gatePassResultsTable').DataTable({
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "pageLength": 10,
+            "scrollX": false,
+            "responsive": true,
+            "order": [[2, "desc"], [3, "desc"]], // Sort by date and time
+            "dom": 'Blfrtip',
+            "buttons": [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: ':not(.no-print)'
+                    }
+                },
+                {
+                    extend: 'csv',
+                    title: 'GatePassList',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: ':not(.no-print)'
+                    }
+                },
+                {
+                    extend: 'excel',
+                    title: 'GatePassList',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: ':not(.no-print)'
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    title: 'GatePassList',
+                    className: 'btn btn-sm btn-secondary',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: ':not(.no-print)'
+                    }
+                },
+                {
+                    extend: 'print',
+                    title: 'Gate Pass List',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: ':not(.no-print)'
+                    }
+                }
+            ]
+        });
+    });
+
+    function changePage(page) {
+        // Implement pagination logic
+        var form = $('#searchForm');
+        form.append('<input type="hidden" name="page" value="' + page + '" />');
+        form.submit();
+    }
+</script>
+
+<style>
+    .pass-number {
+        font-weight: bold;
+        color: #007bff;
+        font-size: 13px;
+    }
+
+    .student-info {
+        color: #333;
+        font-size: 14px;
+    }
+
+    .time-badge {
+        background-color: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .reason-text {
+        font-style: italic;
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.075);
+    }
+
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+        .table {
+            font-size: 12px;
+        }
+    }
+
+    /* DataTable button styling */
+    .dt-buttons {
+        margin-bottom: 10px;
+    }
+
+    .dt-button {
+        margin-right: 5px;
+    }
+
+    /* Badge colors */
+    .badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    /* Hover effect for history link */
+    .btn-link:hover {
+        text-decoration: underline;
+    }
+
+    /* Print count badge */
+    .btn-info .badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        font-size: 10px;
+        padding: 2px 5px;
+    }
+</style>

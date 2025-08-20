@@ -1,0 +1,252 @@
+@model ERPIndia.ViewModel.InvoiceViewModel
+<div class="breadcrumbs-area">
+    <h3>Invoice</h3>
+    <ul>
+        <li>
+            <a href="@Url.Action("", "SiteMap")"><i class="fa fa-home"></i> Home</a>
+        </li>
+        <li>@ViewBag.Heading</li>
+    </ul>
+</div>
+
+<div class="card height-auto">
+    @using (Ajax.BeginForm("Add",null, new AjaxOptions() { HttpMethod = "POST", OnBegin = "onBeginSubmit", UpdateTargetId = "dashboard-content-one", OnSuccess = "onSuccess" }, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+    <div class="card-body">
+        <div class="row">
+            @Html.HiddenFor(model => model.Invoice.InvoiceId)
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                <label>Company Name</label>
+                @Html.DropDownListFor(model => model.Invoice.InvoiceStatus, new List<SelectListItem>
+                                                 {
+                                                     new SelectListItem{ Text="CMP1", Value = "CMP1" },
+                                                     new SelectListItem{ Text="CMP2", Value = "CMP2" }
+                                                  
+                                                 }, new { @class = "form-control" })
+            </div>
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                <label>Client Name *</label>
+                @Html.DropDownListFor(model => model.Invoice.ClientId, new SelectList(Model.Clients, "ClientId", "ClientName"), "-- Select Client Name --", new { style = "", @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Invoice.ClientId)
+            </div>
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                <label>Invoice Date *</label>
+                @Html.TextBoxFor(model => model.Invoice.InvoiceDate, "{0:dd-MMM-yyyy}", new { @class = "form-control", @maxlength = "50" })
+                @Html.ValidationMessageFor(model => model.Invoice.InvoiceDate)
+            </div>
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                @Html.LabelFor(model => model.Invoice.DueDate)
+                @Html.TextBoxFor(model => model.Invoice.InvoiceDate, "{0:dd-MMM-yyyy}", new { @class = "form-control", @maxlength = "50" })
+                @Html.ValidationMessageFor(model => model.Invoice.InvoiceDate)
+            </div>
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                <label>Invoice Status *</label>
+                @Html.DropDownListFor(model => model.Invoice.InvoiceStatus, new List<SelectListItem>
+                                                 {
+                                                     new SelectListItem{ Text="Advance", Value = "A" },
+                                                     new SelectListItem{ Text="Pending", Value = "P" },
+                                                      new SelectListItem{ Text="FullPay", Value = "F" },
+                                                       new SelectListItem{ Text="Renewal", Value = "R" },
+                                                 }, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Invoice.InvoiceStatus)
+            </div>
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                <label>Invoice Type *</label>
+                @Html.DropDownListFor(model => model.Invoice.TaxId, new SelectList(Model.Taxes, "TaxId", "TaxName"), "-- Select Invoice Type --", new { style = "", @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Invoice.TaxId)
+            </div>
+        </div>
+        <hr />
+        <fieldset>
+            <legend>Client Details</legend>
+            <div class="row">
+                <div class="col-xl-3 col-lg-6 col-12 form-group">
+                    @Html.TextBoxFor(model => model.Invoice.ClientId, new { @class = "form-control", @maxlength = "50" })
+                </div>
+            </div>
+                    Reference NO,
+                    Customer ID,
+                    Address,
+                    Manager Name,
+                    Principal Name,
+                    Contact No,
+                    E-Mail,
+                    Website,
+                    AMC,
+                    Increments,
+                    Login Link,
+                    Usernam,
+                    Password,
+                    Client code,
+                    Session Year
+                    <div class="row">
+                        <div class="col-xl-3 col-lg-6 col-12 form-group">
+                            <label>Active Date *</label>
+                            @Html.TextBoxFor(model => model.Invoice.ActiveDate, "{0:dd-MMM-yyyy}", new { @class = "form-control", @maxlength = "50" })
+                            @Html.ValidationMessageFor(model => model.Invoice.ActiveDate)
+                        </div>
+                        <div class="col-xl-3 col-lg-6 col-12 form-group">
+                            <label>Exp  Date *</label>
+                            @Html.TextBoxFor(model => model.Invoice.ExpDate, "{0:dd-MMM-yyyy}", new { @class = "form-control", @maxlength = "50" })
+                            @Html.ValidationMessageFor(model => model.Invoice.ExpDate)
+                        </div>
+                        <div class="col-xl-3 col-lg-6 col-12 form-group">
+                            <label>Payment  Mode *</label>
+                            @Html.DropDownListFor(model => model.Invoice.InvoiceStatus, new List<SelectListItem>
+                                                                       {
+                                                                           new SelectListItem{ Text="Annual", Value = "A" },
+                                                                           new SelectListItem{ Text="Monthly", Value = "M" },
+                                                                           new SelectListItem{ Text="Quarterly", Value = "Q" },
+                                                                             new SelectListItem{ Text="HalfYearly", Value = "H" },
+                                                                       }, new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.Invoice.ExpDate)
+                        </div>
+                        <div class="col-xl-3 col-lg-6 col-12 form-group">
+                            <label>Amount *</label>
+                            @Html.TextBoxFor(model => model.Invoice.AMCAnnual, new { @class = "form-control", @maxlength = "50" })
+                            @Html.ValidationMessageFor(model => model.Invoice.AMCAnnual)
+                        </div>
+                        <div class="col-xl-3 col-lg-6 col-12 form-group">
+                            <label>Incremennts </label>
+                            @Html.TextBoxFor(model => model.Invoice.Increments, new { @class = "form-control", @maxlength = "50" })
+                            @Html.ValidationMessageFor(model => model.Invoice.Increments)
+                        </div>
+                        <div class="col-xl-3 col-lg-6 col-12 form-group">
+                            <label>Module </label>
+                            @Html.TextBoxFor(model => model.Invoice.ActiveModules, new { @class = "form-control", @maxlength = "500" })
+                            @Html.ValidationMessageFor(model => model.Invoice.ActiveModules)
+                        </div>
+                    </div>
+        </fieldset>
+            <hr />
+        <div class="row">
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                <label>Website Name *</label>
+                @Html.TextBoxFor(model => model.Invoice.WebsiteName, new { @class = "form-control", @maxlength = "50" })
+                @Html.ValidationMessageFor(model => model.Invoice.WebsiteName)
+            </div>
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                <label>User Name *</label>
+                @Html.TextBoxFor(model => model.Invoice.UserName, new { @class = "form-control", @maxlength = "50" })
+                @Html.ValidationMessageFor(model => model.Invoice.UserName)
+            </div>
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                <label>Password*</label>
+                @Html.TextBoxFor(model => model.Invoice.Password, new { @class = "form-control", @maxlength = "50" })
+                @Html.ValidationMessageFor(model => model.Invoice.Password)
+            </div>
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                <label>SchoolCode </label>
+                @Html.TextBoxFor(model => model.Invoice.SchoolCode, new { @class = "form-control", @maxlength = "50" })
+                @Html.ValidationMessageFor(model => model.Invoice.SchoolCode)
+            </div>
+            <div class="col-xl-3 col-lg-6 col-12 form-group">
+                <label>School Year </label>
+                @Html.TextBoxFor(model => model.Invoice.SchoolYear, new { @class = "form-control", @maxlength = "50" })
+                @Html.ValidationMessageFor(model => model.Invoice.SchoolYear)
+            </div>
+        </div>
+        <hr />
+        <div class="box">
+            <div class="box-header">Service Detail</div>
+            <div class="box-body">
+                <div class="form-group test-header">
+                    <label class="col-md-2 control-label"></label>
+                    <label class="col-md-2">Service Name</label>
+                    <label class="col-md-2">Amount</label>
+                    <label class="col-md-4">Remarks</label>
+                    <label class="col-md-2">Delete</label>
+                </div>
+
+
+                <div id="testRows">
+                    @if (Model.PatientTestDetails != null)
+                    {
+                        foreach (var testDetail in Model.PatientTestDetails)
+                        {
+                            Html.RenderPartial("LabTestRow", testDetail);
+                        }
+                    }
+                </div>
+                <div class="form-group">
+                    <div class="col-md-2"></div>
+                    <div class="col-md-4">
+                        <a id="addItem" class="btn btn-primary btn-flat btn-sm" href="@Url.Action("BlankEditorRow","ClientService")"><i class="fa fa-plus"></i>&nbsp;&nbsp;Add Service</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="col-12 form-group mg-t-8">
+            <button type="submit" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark">Save</button>
+            <button type="reset" class="btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="$(this).resetValidation()">Reset</button>
+        </div>
+    </div>
+    }
+</div>
+<script type="text/javascript">
+    $(this.document).ready(function () {
+        if ('@ViewBag.ErrorMsg' != null && '@ViewBag.ErrorMsg' != '') {
+            notificationMessage('@ViewBag.ErrorMsg', 'danger')
+            HRN.hideLoader();
+        }
+
+        //jQuery('#Invoice_InvoiceDate').datepicker({
+        //    showOn: 'button',
+        //    format: 'dd-M-yyyy',
+        //    maxDate: "+24M +10D",
+        //    autoclose: true,
+        //    todayHighlight: true,
+        //    pickTime: false,
+        //});
+
+        //jQuery('#Invoice_DueDate').datepicker({
+        //    showOn: 'button',
+        //    format: 'dd-M-yyyy',
+        //    maxDate: "+24M +10D",
+        //    autoclose: true,
+        //    todayHighlight: true,
+        //    pickTime: false,
+        //});
+
+        hideShowHeaderRow();
+
+        $("#addItem").click(function () {
+            alert(this.href);
+            $.ajax({
+                url: this.href,
+                cache: false,
+                success: function (html) { $("#testRows").append(html); $(":checkbox").uniform({ resetSelector: true }); hideShowHeaderRow(); }
+            });
+            return false;
+        });
+        $("a.deleteRow").live("click", function () {
+            $(this).parents("div.testRow:first").remove();
+            hideShowHeaderRow();
+            return false;
+        });
+
+    });
+
+    function hideShowHeaderRow() {
+        if ($(".testRow").length > 0) {
+            $(".test-header").show();
+        }
+        else {
+            $(".test-header").hide();
+        }
+    }
+
+    var onBeginSubmit = function () {
+        HRN.showLoader();
+    };
+
+    function onSuccess() {
+        if ('@ViewBag.ErrorMsg' == null || '@ViewBag.ErrorMsg' == '') {
+            HRN.hideLoader();
+            window.location.href = '@Url.Action("Index")?status=s';
+        }
+    }
+
+</script>

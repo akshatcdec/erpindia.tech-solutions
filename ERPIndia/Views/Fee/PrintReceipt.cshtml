@@ -1,0 +1,570 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Fee Receipt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .receipt-container {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 20px;
+        }
+
+        .receipt {
+            width: 48%;
+            border: 1px solid #000;
+            padding: 10px;
+            position: relative;
+        }
+
+        .institute-header {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .institute-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .institute-address {
+            font-size: 14px;
+        }
+
+        .institute-contact {
+            font-size: 12px;
+        }
+
+        .session-info {
+            text-align: center;
+            border: 1px solid #000;
+            padding: 2px;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+
+        .receipt-title-box {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .receipt-number {
+            width: 30%;
+            text-align: left;
+        }
+
+        .receipt-title {
+            width: 40%;
+            text-align: center;
+            font-weight: bold;
+            border: 2px solid #000;
+            padding: 5px;
+        }
+
+        .receipt-date {
+            width: 30%;
+            text-align: right;
+        }
+
+        .student-info {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .student-field {
+            width: 50%;
+            margin: 2px 0;
+        }
+
+        .field-label {
+            font-weight: bold;
+        }
+
+        .paid-for-month {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        .fees-table {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+            .fees-table th, .fees-table td {
+                padding: 3px;
+                text-align: left;
+            }
+
+        .fees-row {
+            display: flex;
+        }
+
+        .fees-label {
+            width: 50%;
+        }
+
+        .fees-value {
+            width: 50%;
+            text-align: right;
+        }
+
+        .transport-section {
+            margin: 10px 0;
+        }
+
+        .amount-received {
+            text-align: center;
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        .footer-notes {
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        .footer-note {
+            margin: 2px 0;
+        }
+
+        .signature {
+            text-align: right;
+            margin-top: 20px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+        }
+
+        .website-info {
+            text-align: center;
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .received-amount {
+            display: flex;
+            align-items: center;
+            border: 1px solid #000;
+            margin: 10px 0;
+            padding: 5px;
+        }
+
+        .rupee-symbol {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 0 10px;
+            border-right: 1px solid #000;
+        }
+
+        .amount-value {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 0 10px;
+        }
+
+        .institute-logo {
+            width: 50px;
+            height: 50px;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ccc;
+        }
+
+        .scissors {
+            position: absolute;
+            top: 50%;
+            right: -20px;
+            font-size: 24px;
+            transform: rotate(90deg);
+        }
+
+        /* Print-specific styles */
+        @@media print {
+            .print-button, .print-instructions {
+                display: none !important;
+            }
+
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            /* This is the key CSS to remove browser's default header and footer */
+            @@page {
+                margin: 0;
+                size: auto;
+            }
+
+            /* Additional print styling improvements */
+            html, body {
+                width: 210mm;
+                height: 297mm;
+            }
+
+            .receipt-container {
+                padding-top: 10px;
+                padding-left: 10px;
+                page-break-inside: avoid;
+                padding-bottom: 10px;
+            }
+
+            .scissors {
+                display: block;
+            }
+        }
+    </style>
+    <script>
+        // Function to handle printing the page
+        function printReceipt() {
+            // Store the original page title
+            const originalTitle = document.title;
+
+            // Change the page title for the print
+            document.title = "Fee Receipt - " + document.querySelector(".student-field:first-child").textContent.trim();
+
+            // Trigger the print dialog
+            window.print();
+
+            // After printing, restore the original title
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 1000); // Small delay to ensure print completes
+        }
+
+        // Create a print button and add it to the page
+        function addPrintButton() {
+            const printButton = document.createElement('button');
+            printButton.innerText = 'Print Receipt';
+            printButton.className = 'print-button';
+            printButton.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 10px 15px;
+                    background-color: #0066cc;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    z-index: 1000;
+                `;
+
+            printButton.addEventListener('click', printReceipt);
+            document.body.appendChild(printButton);
+
+            // Add hover effect
+            printButton.addEventListener('mouseover', function () {
+                this.style.backgroundColor = '#0052a3';
+            });
+
+            printButton.addEventListener('mouseout', function () {
+                this.style.backgroundColor = '#0066cc';
+            });
+        }
+
+        // Initialize when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            addPrintButton();
+
+            // Add print instructions text
+            const instructionText = document.createElement('div');
+            instructionText.className = 'print-instructions';
+            instructionText.style.cssText = `
+                    text-align: center;
+                    margin-top: 10px;
+                    margin-bottom: 20px;
+                    padding: 10px;
+                    background-color: #f8f8f8;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    color: #555;
+                `;
+            instructionText.innerHTML = 'Click the "Print Receipt" button in the top right corner to print this receipt or press Ctrl+P (Cmd+P on Mac).';
+
+            document.body.insertBefore(instructionText, document.body.firstChild);
+        });
+
+        // You can also add a keyboard shortcut for printing
+        document.addEventListener('keydown', function (event) {
+            // Ctrl+P or Command+P
+            if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
+                event.preventDefault(); // Prevent the browser's print dialog
+                printReceipt(); // Use our custom print function instead
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="receipt-container">
+        <!-- STUDENT COPY -->
+        <div class="receipt">
+            <div class="institute-header">
+                <div class="institute-logo">
+                    <div style="font-size: 10px; text-align: center;">LOGO</div>
+                </div>
+                <div class="institute-name">GK COMPUTER INSTITUTE</div>
+                <div class="institute-address">Begusarai, Bihar</div>
+                <div class="institute-contact">Mob. :- +91-8292837870, +91-</div>
+            </div>
+            <div class="session-info">SESSION : (2024-25)</div>
+
+            <div class="receipt-title-box">
+                <div class="receipt-number">Rcpt. No. : 958</div>
+                <div class="receipt-title">FEES RECEIPT</div>
+                <div class="receipt-date">DATE : 19-Mar-2025</div>
+            </div>
+
+            <div class="student-info">
+                <div class="student-field">
+                    <span class="field-label">Name :</span> Komal
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Roll No. :</span> 03 | <span class="field-label">SR No. :</span>
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Father :</span>
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Class :</span> 1st - (A)
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Mother :</span>
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Admsn No. :</span> 1003 | <span class="field-label">DOB :</span> 21-02-2014
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Mobile :</span>
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Category :</span> GENERAL | <span class="field-label">Gender :</span> FEMALE
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Address :</span>
+                </div>
+            </div>
+
+            <div class="paid-for-month">
+                <div><span class="field-label">Paid For Month :</span> September,</div>
+                <div><span class="field-label">Old Bal :</span> 550.00</div>
+            </div>
+
+            <table class="fees-table">
+                <tr>
+                    <th>FEES DETAILS</th>
+                    <th>AMOUNT</th>
+                </tr>
+                <tr>
+                    <td>• Monthly Fee</td>
+                    <td>1150.00</td>
+                </tr>
+            </table>
+
+            <div class="transport-section">
+                <div>• Transport : Van</div>
+                <div>Month :</div>
+                <div>Amount :</div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between;">
+                <div style="width: 45%;">
+                    <div class="received-amount">
+                        <div class="rupee-symbol">₹</div>
+                        <div class="amount-value">1600</div>
+                    </div>
+                    <div style="text-align: center;">RECEIVED AMOUNT</div>
+                </div>
+                <div style="width: 45%;">
+                    <div class="fees-row">
+                        <div class="fees-label">Total</div>
+                        <div class="fees-value">1700.00</div>
+                    </div>
+                    <div class="fees-row">
+                        <div class="fees-label">Consession</div>
+                        <div class="fees-value">100.00</div>
+                    </div>
+                    <div class="fees-row">
+                        <div class="fees-label">Other Charge</div>
+                        <div class="fees-value">0.00</div>
+                    </div>
+                    <div class="fees-row">
+                        <div class="fees-label">Remain</div>
+                        <div class="fees-value">0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size: 12px; text-align: center; margin: 5px 0;">Cash Mar 19 2025 10:58PM -Admin</div>
+
+            <div class="amount-received">Amount Received : One Thousand Six Hundred Rupees only</div>
+
+            <div style="display: flex; justify-content: space-between;">
+                <div>Received by</div>
+                <div class="signature">Signature with Stamp</div>
+            </div>
+
+            <div class="footer-notes">
+                <div class="footer-note">* Payment once paid not refundable.</div>
+                <div class="footer-note">* Cheques are subject to realisation.</div>
+                <div class="footer-note">* One month notice must be given prior to the withdrawal<br>of the the child from the school.</div>
+            </div>
+
+            <div class="website-info">
+                Website:- www.hma.http.svnpublicschool1992.com | Email Id:- svnssm1992@gmail.com
+            </div>
+
+            <div class="scissors">✂</div>
+        </div>
+
+        <!-- SCHOOL COPY -->
+        <div class="receipt">
+            <div class="institute-header">
+                <div class="institute-logo">
+                    <div style="font-size: 10px; text-align: center;">LOGO</div>
+                </div>
+                <div class="institute-name">GK COMPUTER INSTITUTE</div>
+                <div class="institute-address">Begusarai, Bihar</div>
+                <div class="institute-contact">Mob. :- +91-8292837870, +91-</div>
+            </div>
+            <div class="session-info">SESSION : (2024-25)</div>
+
+            <div class="receipt-title-box">
+                <div class="receipt-number">Rcpt. No. : 958</div>
+                <div class="receipt-title">FEES RECEIPT</div>
+                <div class="receipt-date">DATE : 19-Mar-2025</div>
+            </div>
+
+            <div class="student-info">
+                <div class="student-field">
+                    <span class="field-label">Name :</span> Komal
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Roll No. :</span> 03 | <span class="field-label">SR No. :</span>
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Father :</span>
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Class :</span> 1st - (A)
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Mother :</span>
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Admsn No. :</span> 1003 | <span class="field-label">DOB :</span> 21-02-2014
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Mobile :</span>
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Category :</span> GENERAL | <span class="field-label">Gender :</span> FEMALE
+                </div>
+                <div class="student-field">
+                    <span class="field-label">Address :</span>
+                </div>
+            </div>
+
+            <div class="paid-for-month">
+                <div><span class="field-label">Paid For Month :</span> September,</div>
+                <div><span class="field-label">Old Bal :</span> 550.00</div>
+            </div>
+
+            <table class="fees-table">
+                <tr>
+                    <th>FEES DETAILS</th>
+                    <th>AMOUNT</th>
+                </tr>
+                <tr>
+                    <td>• Monthly Fee</td>
+                    <td>1150.00</td>
+                </tr>
+            </table>
+
+            <div class="transport-section">
+                <div>• Transport : Van</div>
+                <div>Month :</div>
+                <div>Amount :</div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between;">
+                <div style="width: 45%;">
+                    <div class="received-amount">
+                        <div class="rupee-symbol">₹</div>
+                        <div class="amount-value">1600</div>
+                    </div>
+                    <div style="text-align: center;">RECEIVED AMOUNT</div>
+                </div>
+                <div style="width: 45%;">
+                    <div class="fees-row">
+                        <div class="fees-label">Total</div>
+                        <div class="fees-value">1700.00</div>
+                    </div>
+                    <div class="fees-row">
+                        <div class="fees-label">Consession</div>
+                        <div class="fees-value">100.00</div>
+                    </div>
+                    <div class="fees-row">
+                        <div class="fees-label">Other Charge</div>
+                        <div class="fees-value">0.00</div>
+                    </div>
+                    <div class="fees-row">
+                        <div class="fees-label">Remain</div>
+                        <div class="fees-value">0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size: 12px; text-align: center; margin: 5px 0;">Cash Mar 19 2025 10:58PM -Admin</div>
+
+            <div class="amount-received">Amount Received : One Thousand Six Hundred Rupees only</div>
+
+            <div style="display: flex; justify-content: space-between;">
+                <div>Received</div>
+                <div class="signature">Signature with Stamp</div>
+            </div>
+
+            <div class="footer-notes">
+                <div class="footer-note">* Payment once paid not refundable.</div>
+                <div class="footer-note">* Cheques are subject to realisation.</div>
+                <div class="footer-note">* One month notice must be given prior to the withdrawal<br>of the the child from the school.</div>
+            </div>
+
+            <div class="website-info">
+                Website:- www.hma.http.svnpublicschool1992.com | Email Id:- svnssm1992@gmail.com
+            </div>
+        </div>
+    </div>
+</body>
+</html>

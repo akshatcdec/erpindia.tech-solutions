@@ -1,0 +1,1281 @@
+﻿@model TenantModel
+@{
+    ViewBag.Title = "Edit School Profile";
+    string schoolcode = Model.TenantCode.ToString();
+}
+
+<div class="card mb-4">
+    <div class="card-header p-0">
+        <ul class="nav nav-tabs" id="tenantTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic-tab-pane" type="button" role="tab" aria-controls="basic-tab-pane" aria-selected="true">
+                    <i class="fa fa-building me-1"></i> Basic Info
+                </button>
+            </li>
+            <li class="nav-item" role="presentation" style="display:none">
+                <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane" type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">
+                    <i class="fa fa-address-book me-1"></i> Contact Details
+                </button>
+            </li>
+            <li class="nav-item" role="presentation" style="display:none">
+                <button class="nav-link" id="serial-tab" data-bs-toggle="tab" data-bs-target="#serial-tab-pane" type="button" role="tab" aria-controls="serial-tab-pane" aria-selected="false">
+                    <i class="fa fa-hashtag me-1"></i> Serial Numbers
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="print-tab" data-bs-toggle="tab" data-bs-target="#print-tab-pane" type="button" role="tab" aria-controls="print-tab-pane" aria-selected="false">
+                    <i class="fa fa-print me-1"></i> Print Settings
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="fee-tab" data-bs-toggle="tab" data-bs-target="#fee-tab-pane" type="button" role="tab" aria-controls="fee-tab-pane" aria-selected="false">
+                    <i class="fa fa-money-bill me-1"></i> Note Setting
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="branding-tab" data-bs-toggle="tab" data-bs-target="#branding-tab-pane" type="button" role="tab" aria-controls="branding-tab-pane" aria-selected="false">
+                    <i class="fa fa-image me-1"></i> Branding
+                </button>
+            </li>
+            <li class="nav-item" role="presentation" style="display:none">
+                <button class="nav-link" id="school-info-tab" data-bs-toggle="tab" data-bs-target="#school-info-tab-pane" type="button" role="tab" aria-controls="school-info-tab-pane" aria-selected="false">
+                    <i class="fa fa-info-circle me-1"></i> Additional Info
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body">
+        @using (Html.BeginForm("Index", "SchoolProfile", FormMethod.Post, new { id = "tenant-form", @class = "form-horizontal", enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.TenantID)
+
+            <div id="alertContainer">
+                @if (ViewBag.ErrorMsg != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>Error!</strong> @ViewBag.ErrorMsg
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (ViewBag.SuccessMsg != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <strong>Success!</strong> @ViewBag.SuccessMsg
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+            </div>
+
+            <div class="tab-content" id="tenantTabsContent">
+                <!-- Basic Information Tab -->
+                <div class="tab-pane fade show active" id="basic-tab-pane" role="tabpanel" aria-labelledby="basic-tab" tabindex="0">
+                    <div class="box-body">
+                        <div class="row" style="padding:10px;">
+                            <div class="col-md-6">
+                                <label for="schoolName" class="control-label">
+                                    Topbar School Name  <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-white">
+                                        <i class="fas fa-school"></i>
+                                    </span>
+                                    @Html.TextBoxFor(model => model.TopBarName, new { @class = "form-control", placeholder = "Topbar School Name ", maxlength = "100", required = "required" })
+                                    @Html.ValidationMessageFor(model => model.TopBarName, "", new { @class = "text-danger" })
+
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="schoolName" class="control-label">
+                                    Topbar School Address  <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-white">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </span>
+                                    @Html.TextBoxFor(model => model.TopBarAddress, new { @class = "form-control", placeholder = "Topbar School Address ", maxlength = "100", required = "required" })
+                                    @Html.ValidationMessageFor(model => model.TopBarAddress, "", new { @class = "text-danger" })
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="padding:10px;">
+                            <div class="col-md-6">
+                                <label for="schoolName" class="control-label">
+                                    Mobile (Auto Send SMS)<span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-white">
+                                        <i class="fas fa-phone-alt"></i>
+                                    </span>
+                                    @Html.TextBoxFor(model => model.Phone, new { @class = "form-control", placeholder = "Mobile", maxlength = "10", required = "required" })
+                                    @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="schoolName" class="control-label">
+                                    Password Recovery E‑mail <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-white">
+                                        <i class="fas fa-envelope text-white"></i> 
+                                    </span>
+                                    @Html.TextBoxFor(model => model.Email, new { @class = "form-control", placeholder = "Mobile", maxlength = "10", required = "required" })
+                                    @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="padding:10px;">
+                            <div class="col-md-6">
+                                <label for="schoolName" class="control-label">
+                                    Single Fee Mode  <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-white">
+                                        <i class="fas fa-receipt"></i>
+                                    </span>
+                                    @Html.DropDownListFor(m => m.IsSingleFee, new List<SelectListItem> { new SelectListItem { Text = "Y", Value = "Y", Selected = Model.IsSingleFee == 'Y' }, new SelectListItem { Text = "N", Value = "N", Selected = Model.IsSingleFee == 'N' } }, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.IsSingleFee, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="schoolName" class="control-label">
+                                    Online Fee Allow  <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-white">
+                                        &#8377;
+                                    </span>
+                                    @Html.DropDownListFor(m => m.EnableOnlineFee, new List<SelectListItem> { new SelectListItem { Text = "Y", Value = "Y", Selected = Model.IsSingleFee == 'Y' }, new SelectListItem { Text = "N", Value = "N", Selected = Model.IsSingleFee == 'N' } }, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(m => m.EnableOnlineFee, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row" style="display:none">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    @Html.LabelFor(model => model.TenantName, new { @class = "control-label" }) <span class="required">*</span>
+                                    @Html.TextBoxFor(model => model.TenantName, new { @class = "form-control", placeholder = "School Name", maxlength = "500", required = "required" })
+                                    @Html.ValidationMessageFor(model => model.TenantName, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" style="display:none">
+                                <div class="form-group mb-3">
+                                    @Html.LabelFor(model => model.TenantCode, new { @class = "control-label" }) <span class="required">*</span>
+                                    @Html.TextBoxFor(model => model.TenantCode, new { @class = "form-control", placeholder = "School Code", required = "required" })
+                                    @Html.ValidationMessageFor(model => model.TenantCode, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6" style="display:none">
+                                <div class="form-group mb-3">
+                                    @Html.LabelFor(model => model.IsActive, new { @class = "control-label" })
+                                    <div>
+                                        <div class="radio-list">
+                                            <label class="radio-inline me-3">
+                                                @Html.RadioButtonFor(model => model.IsActive, true, new { @checked = Model.IsActive }) Active
+                                            </label>
+                                            <label class="radio-inline">
+                                                @Html.RadioButtonFor(model => model.IsActive, false, new { @checked = !Model.IsActive }) Inactive
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Details Tab -->
+                <div class="tab-pane fade" id="contact-tab-pane" style="display:none" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.Address1, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.Address1, new { @class = "form-control", placeholder = "Address Line 1", maxlength = "250", required = "required" })
+                                @Html.ValidationMessageFor(model => model.Address1, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.Address2, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.Address2, new { @class = "form-control", placeholder = "Address Line 2", maxlength = "250" })
+                                @Html.ValidationMessageFor(model => model.Address2, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.City, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.City, new { @class = "form-control", placeholder = "City", maxlength = "50", required = "required" })
+                                @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.State, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.State, new { @class = "form-control", placeholder = "State", maxlength = "50", required = "required" })
+                                @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.ZipCode, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.ZipCode, new { @class = "form-control", placeholder = "Zip Code", maxlength = "20", required = "required" })
+                                @Html.ValidationMessageFor(model => model.ZipCode, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.Fax, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.Fax, new { @class = "form-control", placeholder = "Fax", maxlength = "20" })
+                                @Html.ValidationMessageFor(model => model.Fax, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Serial Numbers Tab -->
+                <div class="tab-pane fade" id="serial-tab-pane" style="display:none" role="tabpanel" aria-labelledby="serial-tab" tabindex="0">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.FeeSrNo, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.FeeSrNo, new { @class = "form-control", placeholder = "Fee Serial No", type = "number" })
+                                @Html.ValidationMessageFor(model => model.FeeSrNo, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.TCSrNo, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.TCSrNo, new { @class = "form-control", placeholder = "TC Serial No", type = "number" })
+                                @Html.ValidationMessageFor(model => model.TCSrNo, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.CCSrNo, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.CCSrNo, new { @class = "form-control", placeholder = "CC Serial No", type = "number" })
+                                @Html.ValidationMessageFor(model => model.CCSrNo, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Print Settings Tab -->
+                <div class="tab-pane fade" id="print-tab-pane" role="tabpanel" aria-labelledby="print-tab" tabindex="0">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.PrintTitle, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.PrintTitle, new { @class = "form-control", placeholder = "Print Title", maxlength = "200", required = "required" })
+                                @Html.ValidationMessageFor(model => model.PrintTitle, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.Line1, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.Line1, new { @class = "form-control", placeholder = "Line 1", maxlength = "200" })
+                                @Html.ValidationMessageFor(model => model.Line1, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.Line2, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.Line2, new { @class = "form-control", placeholder = "Line 2", maxlength = "200" })
+                                @Html.ValidationMessageFor(model => model.Line2, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.Line3, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.Line3, new { @class = "form-control", placeholder = "Line 3", maxlength = "200" })
+                                @Html.ValidationMessageFor(model => model.Line3, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.Line4, new { @class = "control-label" }) <span class="required">*</span>
+                                @Html.TextBoxFor(model => model.Line4, new { @class = "form-control", placeholder = "Line 4", maxlength = "200" })
+                                @Html.ValidationMessageFor(model => model.Line4, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fee Print Settings Tab -->
+                <div class="tab-pane fade" id="fee-tab-pane" role="tabpanel" aria-labelledby="fee-tab" tabindex="0">
+                    <h4 class="mb-3">Receipt Note</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.FeeNote1, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.FeeNote1, new { @class = "form-control", placeholder = "Fee Note 1", maxlength = "70" })
+                                @Html.ValidationMessageFor(model => model.FeeNote1, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.FeeNote2, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.FeeNote2, new { @class = "form-control", placeholder = "Fee Note 2", maxlength = "70" })
+                                @Html.ValidationMessageFor(model => model.FeeNote2, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.FeeNote3, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.FeeNote3, new { @class = "form-control", placeholder = "Fee Note 3", maxlength = "70" })
+                                @Html.ValidationMessageFor(model => model.FeeNote3, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4" style="display:none">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.FeeNote4, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.FeeNote4, new { @class = "form-control", placeholder = "Fee Note 4", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.FeeNote4, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4" style="display:none">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.FeeNote5, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.FeeNote5, new { @class = "form-control", placeholder = "Fee Note 5", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.FeeNote5, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <h4 class="mb-3">Admit Card Note</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.admitnote1, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.admitnote1, new { @class = "form-control", placeholder = "Admit Card Note 1", maxlength = "140" })
+                                @Html.ValidationMessageFor(model => model.admitnote1, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.admitnote2, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.admitnote2, new { @class = "form-control", placeholder = "Admit Card Note 2", maxlength = "140" })
+                                @Html.ValidationMessageFor(model => model.admitnote2, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.admitnote3, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.admitnote3, new { @class = "form-control", placeholder = "Admit Card Note 3", maxlength = "140" })
+                                @Html.ValidationMessageFor(model => model.admitnote3, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.admitnote4, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.admitnote4, new { @class = "form-control", placeholder = "Admit Card Note 4", maxlength = "140" })
+                                @Html.ValidationMessageFor(model => model.admitnote4, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.admitnote5, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.admitnote5, new { @class = "form-control", placeholder = "Admit Card Note 5", maxlength = "140" })
+                                @Html.ValidationMessageFor(model => model.admitnote5, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branding Tab -->
+                <div class="tab-pane fade" id="branding-tab-pane" role="tabpanel" aria-labelledby="branding-tab" tabindex="0">
+                    <!-- Document Banners Section -->
+                    <h5 class="mb-4">
+                        Report Banner
+                    </h5>
+                    <div class="row">
+                        <!-- School Logo -->
+                        <div class="col-md-4">
+                            <div class="upload-control logo-upload">
+                                <div class="form-group">
+                                    <label class="control-label">01) School Logo</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="logoImage" id="logoImage" class="form-control image-upload" accept="image/*"
+                                               data-width="200" data-height="200" data-preview="logoImage-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 200x200 pixels (Auto-resized)</div>
+                                    <div class="error-message" id="logoImage-error"></div>
+                                    <div class="success-message" id="logoImage-success"></div>
+                                    <div class="image-preview-container" id="logoImage-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="logoImage">Remove</button>
+                                    </div>
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.LOGOImg)"
+                                                 alt="School Logo" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.LOGOImg)
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Receipt Banner -->
+                        <div class="col-md-4">
+                            <div class="upload-control receipt-upload">
+                                <div class="form-group">
+                                    <label class="control-label">02) Receipt Banner</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="receiptBanner" id="receiptBanner" class="form-control image-upload"
+                                               accept="image/jpeg,image/jpg" data-width="1460" data-height="100" data-preview="receiptBanner-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 1460x100 pixels (Auto-resized)</div>
+                                    <div class="error-message" id="receiptBanner-error"></div>
+                                    <div class="success-message" id="receiptBanner-success"></div>
+                                    <div class="image-preview-container" id="receiptBanner-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="receiptBanner">Remove</button>
+                                    </div>
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ReceiptBannerImg)"
+                                                 alt="Receipt Banner" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.ReceiptBannerImg)
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Admit Card Banner -->
+                        <div class="col-md-4">
+                            <div class="upload-control admit-upload">
+                                <div class="form-group">
+                                    <label class="control-label">03) Admit Card Banner</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="admitCardBanner" id="admitCardBanner" class="form-control image-upload"
+                                               accept="image/jpeg,image/jpg" data-width="1740" data-height="270" data-preview="admitCardBanner-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 1740x270 pixels (Auto-resized)</div>
+                                    <div class="error-message" id="admitCardBanner-error"></div>
+                                    <div class="success-message" id="admitCardBanner-success"></div>
+                                    <div class="image-preview-container" id="admitCardBanner-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="admitCardBanner">Remove</button>
+                                    </div>
+                                    
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content("~/Documents/" + Html.Encode(schoolcode) + "/SchoolProfile/" + Model.AdmitCardBannerImg)"
+                                                 alt="Admit Card Banner" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.AdmitCardBannerImg)
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Report Card Banner -->
+                        <div class="col-md-4">
+                            <div class="upload-control report-upload">
+                                <div class="form-group">
+                                    <label class="control-label">04) Report Card Banner</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="reportCardBanner" id="reportCardBanner" class="form-control image-upload"
+                                               accept="image/jpeg,image/jpg" data-width="2480" data-height="230" data-preview="reportCardBanner-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 2480x230 pixels (Auto-resized)</div>
+                                    <div class="error-message" id="reportCardBanner-error"></div>
+                                    <div class="success-message" id="reportCardBanner-success"></div>
+                                    <div class="image-preview-container" id="reportCardBanner-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="reportCardBanner">Remove</button>
+                                    </div>
+                                    
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content("~/Documents/" + Html.Encode(schoolcode) + "/SchoolProfile/" + Model.ReportCardBannerImg)"
+                                                 alt="Report Card Banner" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.ReportCardBannerImg)
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transfer Certificate Banner -->
+                        <div class="col-md-4">
+                            <div class="upload-control transfer-upload">
+                                <div class="form-group">
+                                    <label class="control-label">05) Transfer Certificate</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="transferCertBanner" id="transferCertBanner" class="form-control image-upload"
+                                               accept="image/jpeg,image/jpg" data-width="2400" data-height="410" data-preview="transferCertBanner-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 2400x410 pixels (Auto-resized)</div>
+                                    <div class="error-message" id="transferCertBanner-error"></div>
+                                    <div class="success-message" id="transferCertBanner-success"></div>
+                                    <div class="image-preview-container" id="transferCertBanner-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="transferCertBanner">Remove</button>
+                                    </div>
+                                    
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.TransferCertBannerImg)"
+                                                 alt="Transfer Certificate" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.TransferCertBannerImg)
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Salary Slip Banner -->
+                        <div class="col-md-4">
+                            <div class="upload-control salary-upload">
+                                <div class="form-group">
+                                    <label class="control-label">06) Salary Slip</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="salarySlipBanner" id="salarySlipBanner" class="form-control image-upload"
+                                               accept="image/jpeg,image/jpg" data-width="1670" data-height="108" data-preview="salarySlipBanner-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 1670x108 pixels (Auto-resized)</div>
+                                    <div class="error-message" id="salarySlipBanner-error"></div>
+                                    <div class="success-message" id="salarySlipBanner-success"></div>
+                                    <div class="image-preview-container" id="salarySlipBanner-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="salarySlipBanner">Remove</button>
+                                    </div>
+                                   
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.SalarySlipBannerImg)"
+                                                 alt="Salary Slip" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.SalarySlipBannerImg)
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- I-Card School Name Banner -->
+                        <div class="col-md-4">
+                            <div class="upload-control icard-name-upload">
+                                <div class="form-group">
+                                    <label class="control-label">07) I-Card School Top</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="icardNameBanner" id="icardNameBanner" class="form-control image-upload"
+                                               accept="image/jpeg,image/jpg" data-width="1000" data-height="176" data-preview="icardNameBanner-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 1000x176 pixels (Auto-resized)</div>
+                                    <div class="error-message" id="icardNameBanner-error"></div>
+                                    <div class="success-message" id="icardNameBanner-success"></div>
+                                    <div class="image-preview-container" id="icardNameBanner-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="icardNameBanner">Remove</button>
+                                    </div>
+                                    
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ICardNameBannerImg)"
+                                                 alt="I-Card Name Banner" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.ICardNameBannerImg)
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- I-Card School Address Banner -->
+                        <div class="col-md-4">
+                            <div class="upload-control icard-address-upload">
+                                <div class="form-group">
+                                    <label class="control-label">08) I-Card School Bottom</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="icardAddressBanner" id="icardAddressBanner" class="form-control image-upload"
+                                               accept="image/jpeg,image/jpg" data-width="1000" data-height="52" data-preview="icardAddressBanner-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 1000x52  pixels (Auto-resized)</div>
+                                    <div class="error-message" id="icardAddressBanner-error"></div>
+                                    <div class="success-message" id="icardAddressBanner-success"></div>
+                                    <div class="image-preview-container" id="icardAddressBanner-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="icardAddressBanner">Remove</button>
+                                    </div>
+                                    
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ICardAddressBannerImg)"
+                                                 alt="I-Card Address Banner" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.ICardAddressBannerImg)
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Principal Signature -->
+                        <div class="col-md-4">
+                            <div class="upload-control principal-upload">
+                                <div class="form-group">
+                                    <label class="control-label">09) Principal Signature</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="principalSign" id="principalSign" class="form-control image-upload"
+                                               accept="image/jpeg,image/jpg" data-width="260" data-height="170" data-preview="principalSign-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 260x170 pixels (Auto-resized)</div>
+                                    <div class="error-message" id="principalSign-error"></div>
+                                    <div class="success-message" id="principalSign-success"></div>
+                                    <div class="image-preview-container" id="principalSign-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="principalSign">Remove</button>
+                                    </div>
+                                   
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.PrincipalSignImg)"
+                                                 alt="Principal Signature" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.PrincipalSignImg)
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Receipt Signature -->
+                        <div class="col-md-4">
+                            <div class="upload-control receipt-sign-upload">
+                                <div class="form-group">
+                                    <label class="control-label">10) Receipt Signature</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="receiptSign" id="receiptSign" class="form-control image-upload"
+                                               accept="image/jpeg,image/jpg" data-width="200" data-height="130" data-preview="receiptSign-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 200x130 pixels (Auto-resized)</div>
+                                    <div class="error-message" id="receiptSign-error"></div>
+                                    <div class="success-message" id="receiptSign-success"></div>
+                                    <div class="image-preview-container" id="receiptSign-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="receiptSign">Remove</button>
+                                    </div>
+                                    
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ReceiptSignImg)"
+                                                 alt="Receipt Signature" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.ReceiptSignImg)
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Header Image -->
+                        <div class="col-md-4">
+                            <div class="upload-control header-upload">
+                                <div class="form-group">
+                                    <label class="control-label">11) Header Image</label>
+                                    <div class="custom-file">
+                                        <input type="file" name="idHeaderImg" id="idHeaderImg" class="form-control image-upload"
+                                               accept="image/jpeg,image/jpg" data-preview="idHeaderImg-preview" />
+                                    </div>
+                                    <div class="banner-info">Size: 480x133 pixels (Auto-resized)</div>
+                                    <div class="error-message" id="idHeaderImg-error"></div>
+                                    <div class="success-message" id="idHeaderImg-success"></div>
+                                    <div class="image-preview-container" id="idHeaderImg-preview" style="display:none;">
+                                        <img src="" alt="Preview" class="img-thumbnail preview-img" />
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="idHeaderImg">Remove</button>
+                                    </div>
+                                   
+                                        <div class="mt-2 existing-image">
+                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.HeaderImg)"
+                                                 alt="Header Image" class="img-thumbnail" style="max-height: 100px;" />
+                                            @Html.HiddenFor(model => model.HeaderImg)
+                                        </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                    /* Custom colors for each upload control */
+                    .upload-control {
+                        padding: 20px;
+                        border-radius: 10px;
+                        margin-bottom: 20px;
+                        transition: all 0.3s ease;
+                    }
+
+                    /* 1. School Logo - Soft Pink */
+                    .logo-upload {
+                        background-color: #FFE4E1;
+                        border: 1px solid #FFB6C1;
+                    }
+
+                    /* 2. Receipt Banner - Light Purple */
+                    .receipt-upload {
+                        background-color: #E6E6FA;
+                        border: 1px solid #DDA0DD;
+                    }
+
+                    /* 3. Admit Card Banner - Mint Green */
+                    .admit-upload {
+                        background-color: #E0F2E9;
+                        border: 1px solid #98D8AA;
+                    }
+
+                    /* 4. Report Card Banner - Sky Blue */
+                    .report-upload {
+                        background-color: #E0F7FA;
+                        border: 1px solid #81D4FA;
+                    }
+
+                    /* 5. Transfer Certificate - Peach */
+                    .transfer-upload {
+                        background-color: #FFEAA7;
+                        border: 1px solid #FDCB6E;
+                    }
+
+                    /* 6. Salary Slip - Lavender */
+                    .salary-upload {
+                        background-color: #DDD6F3;
+                        border: 1px solid #B794F6;
+                    }
+
+                    /* 7. I-Card School Portrait - Coral */
+                    .icard-name-upload {
+                        background-color: #FFE5CC;
+                        border: 1px solid #FFB088;
+                    }
+
+                    /* 8. I-Card School Landscape - Aqua */
+                    .icard-address-upload {
+                        background-color: #D4F1EE;
+                        border: 1px solid #7FCDCD;
+                    }
+
+                    /* 9. Principal Signature - Light Yellow */
+                    .principal-upload {
+                        background-color: #FFF9C4;
+                        border: 1px solid #FFD54F;
+                    }
+
+                    /* 10. Receipt Signature - Rose */
+                    .receipt-sign-upload {
+                        background-color: #FADADD;
+                        border: 1px solid #F8BBD0;
+                    }
+
+                    /* 11. Header Image - Light Teal */
+                    .header-upload {
+                        background-color: #E0F2F1;
+                        border: 1px solid #80CBC4;
+                    }
+
+                    /* Common styling */
+                    .upload-control:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                    }
+
+                    .form-control {
+                        background-color: rgba(255,255,255,0.8);
+                        border: 1px solid rgba(0,0,0,0.1);
+                    }
+
+                    .banner-info {
+                        font-size: 0.85em;
+                        color: #666;
+                        margin-top: 5px;
+                    }
+
+                    .control-label {
+                        font-weight: 600;
+                        color: #333;
+                        margin-bottom: 10px;
+                        display: block;
+                    }
+
+                    .img-thumbnail {
+                        background-color: white;
+                        padding: 5px;
+                    }
+
+                    .error-message {
+                        color: #dc3545;
+                        font-size: 0.875em;
+                        margin-top: 5px;
+                    }
+
+                    .success-message {
+                        color: #28a745;
+                        font-size: 0.875em;
+                        margin-top: 5px;
+                    }
+
+                    /* Preview styles */
+                    .image-preview-container {
+                        margin-top: 10px;
+                        padding: 10px;
+                        background: #f8f9fa;
+                        border-radius: 5px;
+                        text-align: center;
+                    }
+
+                    .preview-img {
+                        max-width: 100%;
+                        max-height: 150px;
+                        display: block;
+                        margin: 0 auto 10px;
+                    }
+
+                    .remove-preview {
+                        margin-top: 5px;
+                    }
+
+                    .existing-image {
+                        opacity: 0.6;
+                        transition: opacity 0.3s;
+                    }
+                </style>
+
+                <!-- Additional Info Tab -->
+                <div class="tab-pane fade" style="display:none" id="school-info-tab-pane" role="tabpanel" aria-labelledby="school-info-tab" tabindex="0">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.MgrName, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.MgrName, new { @class = "form-control", placeholder = "Manager Name", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.MgrName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.ManagerContactNo, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.ManagerContactNo, new { @class = "form-control", placeholder = "Manager Contact", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.ManagerContactNo, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.DiseCode, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.DiseCode, new { @class = "form-control", placeholder = "U-DISE Code", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.DiseCode, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.RegNo, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.RegNo, new { @class = "form-control", placeholder = "Registration Number", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.RegNo, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.website, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.website, new { @class = "form-control", placeholder = "Website URL", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.website, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5 class="mt-3 mb-3">School Notes</h5>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.schoolnote1, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.schoolnote1, new { @class = "form-control", placeholder = "School Note 1", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.schoolnote1, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.schoolnote2, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.schoolnote2, new { @class = "form-control", placeholder = "School Note 2", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.schoolnote2, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.schoolnote3, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.schoolnote3, new { @class = "form-control", placeholder = "School Note 3", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.schoolnote3, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.schoolnote4, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.schoolnote4, new { @class = "form-control", placeholder = "School Note 4", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.schoolnote4, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                @Html.LabelFor(model => model.schoolnote5, new { @class = "control-label" })
+                                @Html.TextBoxFor(model => model.schoolnote5, new { @class = "form-control", placeholder = "School Note 5", maxlength = "100" })
+                                @Html.ValidationMessageFor(model => model.schoolnote5, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons - Common to all tabs -->
+            <div class="form-actions mt-4">
+                <div class="row text-center">
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-success btn-flat" id="submitBtn">
+                            <i class="fa fa-save"></i>&nbsp;&nbsp;Save Changes
+                        </button>
+                        <button type="reset" class="btn btn-primary btn-flat" id="resetBtn">
+                            <i class="fa fa-undo"></i>&nbsp;&nbsp;Reset
+                        </button>
+                        <a class="btn btn-primary btn-flat" href="@Url.Action("Index", "AdminDashboard")">
+                            <i class="fa fa-ban"></i>&nbsp;&nbsp;Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .required {
+        color: #dc3545;
+    }
+
+    /* Tabs */
+    .nav-tabs .nav-link {
+        padding: 12px 20px;
+        font-weight: 500;
+    }
+
+        .nav-tabs .nav-link.active {
+            font-weight: 600;
+        }
+
+    /* Radio buttons */
+    .radio-list {
+        display: flex;
+        align-items: center;
+        margin-top: 0.5rem;
+    }
+
+    /* File upload preview */
+    .img-thumbnail {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        margin-top: 10px;
+    }
+
+    /* Banner upload styles */
+    .banner-info {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .success-message {
+        color: #28a745;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    /* Loader styles */
+    .loader-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .loader {
+        border: 5px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 5px solid #3498db;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<!-- Add loader HTML -->
+<div class="loader-overlay" id="loaderOverlay">
+    <div class="loader"></div>
+</div>
+
+<script>
+    // Loader functions
+    function showLoader() {
+        document.getElementById('loaderOverlay').style.display = 'flex';
+    }
+
+    function hideLoader() {
+        document.getElementById('loaderOverlay').style.display = 'none';
+    }
+
+    // Image resize function using Canvas API
+    function resizeImage(file, maxWidth, maxHeight, callback) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const img = new Image();
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                let width = img.width;
+                let height = img.height;
+
+                // Determine output format - preserve PNG for transparency
+                const outputFormat = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+
+                // Calculate new dimensions
+                if (maxWidth && maxHeight) {
+                    // Option 1: Fit within bounds (maintains aspect ratio, no cropping)
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    const newWidth = Math.round(width * ratio);
+                    const newHeight = Math.round(height * ratio);
+
+                    // Set canvas to exact required dimensions
+                    canvas.width = maxWidth;
+                    canvas.height = maxHeight;
+
+                    // Center the resized image
+                    const x = (maxWidth - newWidth) / 2;
+                    const y = (maxHeight - newHeight) / 2;
+
+                    // For PNG or if you want transparent background
+                    if (outputFormat === 'image/png') {
+                        // Clear canvas (transparent)
+                        ctx.clearRect(0, 0, maxWidth, maxHeight);
+                    } else {
+                        // Fill background with white for JPEG
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, maxWidth, maxHeight);
+                    }
+
+                    // Enable image smoothing for better quality
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+
+                    // Draw the image
+                    ctx.drawImage(img, x, y, newWidth, newHeight);
+                } else {
+                    // No specific dimensions, keep original
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0);
+                }
+
+                // Convert to blob with higher quality
+                const quality = outputFormat === 'image/jpeg' ? 0.95 : undefined; // 95% quality for JPEG
+
+                canvas.toBlob(function (blob) {
+                    callback(blob, canvas.toDataURL(outputFormat, quality));
+                }, outputFormat, quality);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Process image upload with resize
+    function processImageUpload(input) {
+        const file = input.files[0];
+        const inputId = input.id;
+        const errorDiv = $('#' + inputId + '-error');
+        const successDiv = $('#' + inputId + '-success');
+        const previewContainer = $('#' + $(input).data('preview'));
+        const previewImg = previewContainer.find('img');
+
+        // Reset messages
+        errorDiv.hide();
+        successDiv.hide();
+
+        if (!file) {
+            previewContainer.hide();
+            return;
+        }
+
+        // Check file type
+        if (!file.type.match(/^image\/(jpeg|jpg|png|gif)$/i)) {
+            errorDiv.text('Please upload only image files (JPG, PNG, GIF).').show();
+            input.value = '';
+            return;
+        }
+
+        // Check file size (max 10MB before resize)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            errorDiv.text('File size must be less than 10MB.').show();
+            input.value = '';
+            return;
+        }
+
+        // Get required dimensions
+        const requiredWidth = $(input).data('width');
+        const requiredHeight = $(input).data('height');
+
+        // Show processing message
+        successDiv.text('Processing image...').show();
+
+        // Resize and preview
+        resizeImage(file, requiredWidth, requiredHeight, function(blob, dataUrl) {
+            // Update preview
+            previewImg.attr('src', dataUrl);
+            previewContainer.show();
+
+            // Hide existing image if any
+            $(input).closest('.form-group').find('.existing-image').css('opacity', '0.3');
+
+            // Create new file from blob
+            const newFile = new File([blob], file.name, { type: 'image/jpeg' });
+
+            // Replace the file in the input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(newFile);
+            input.files = dataTransfer.files;
+
+            // Show success message
+            successDiv.text('Image processed successfully! ' +
+                (requiredWidth && requiredHeight ?
+                    `Resized to ${requiredWidth}x${requiredHeight} pixels.` :
+                    'Ready for upload.')).show();
+            errorDiv.hide();
+        });
+    }
+
+    $(document).ready(function () {
+        // Handle validation errors and success messages
+        @if (ViewBag.ErrorMsg != null)
+        {
+            <text>
+            toastr.error('@Html.Raw(ViewBag.ErrorMsg)');
+            </text>
+        }
+
+        @if (ViewBag.SuccessMsg != null)
+        {
+            <text>
+            toastr.success('@Html.Raw(ViewBag.SuccessMsg)');
+            </text>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            toastr.success('Record saved successfully!');
+            setTimeout(function() {
+                window.location.href = '@Url.Action("Logout", "Account")';
+            }, 1000);
+            </text>
+        }
+
+        // Restore active tab if validation failed
+        @if (ViewBag.ActiveTab != null)
+        {
+            <text>
+            var activeTab = '@ViewBag.ActiveTab';
+            var tabTrigger = document.querySelector('#' + activeTab + '-tab');
+            if (tabTrigger) {
+                var tab = new bootstrap.Tab(tabTrigger);
+                tab.show();
+            }
+            </text>
+        }
+
+        // Remember active tab on form submit
+        $('#tenant-form').on('submit', function() {
+            var activeTabId = $('.nav-tabs .nav-link.active').attr('id');
+            if (activeTabId) {
+                $('<input>').attr({
+                    type: 'hidden',
+                    name: 'activeTab',
+                    value: activeTabId.replace('-tab', '')
+                }).appendTo(this);
+            }
+            showLoader();
+        });
+
+        // Reset button functionality
+        $('#resetBtn').on('click', function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to reset all changes?')) {
+                $('#tenant-form')[0].reset();
+                $('.error-message').hide();
+                $('.success-message').hide();
+                $('.text-danger').text('');
+                $('.image-preview-container').hide();
+                $('.existing-image').css('opacity', '1');
+            }
+        });
+
+        // Image upload with auto-resize
+        $('.image-upload').on('change', function() {
+            processImageUpload(this);
+        });
+
+        // Remove preview button
+        $('.remove-preview').on('click', function() {
+            const inputId = $(this).data('input');
+            const input = $('#' + inputId);
+            const previewContainer = $(this).closest('.image-preview-container');
+
+            // Clear the input
+            input.val('');
+
+            // Hide preview
+            previewContainer.hide();
+
+            // Show existing image if any
+            input.closest('.form-group').find('.existing-image').css('opacity', '1');
+
+            // Clear messages
+            $('#' + inputId + '-error').hide();
+            $('#' + inputId + '-success').hide();
+        });
+    });
+</script>
+
+<!-- Include toastr CSS and JS if not already included -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>

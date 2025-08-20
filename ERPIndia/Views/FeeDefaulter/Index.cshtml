@@ -1,0 +1,75 @@
+﻿@model ERPIndia.Controllers.StudentFeeLedgerViewModel
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Fee Defaulters</h5>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("RefreshFeeDefaulterReport", "FeeDefaulter", FormMethod.Post, new { id = "searchForm", @class = "needs-validation", novalidate = "novalidate" }))
+                    {
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.ClassList, "Class", new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.SelectedClass, Model.ClassList, new { @class = "form-control" })
+
+                            </div>
+
+                            <div class="col-md-3">
+                                @Html.LabelFor(m => m.SelectedSection, "Section", new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.SelectedSection, Model.SectionList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-4">
+                                @Html.LabelFor(m => m.SelectedMonth, "Months", new { @class = "form-label" })
+                                @Html.DropDownListFor(m => m.SelectedMonth, Model.MonthList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-2 align-self-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fa-solid fa-filter"></i>&nbsp;&nbsp; Filter
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchResultContainer" class="mt-4">
+        <!-- Search results will be loaded here -->
+    </div>
+</div>
+
+
+<script>
+        $(document).ready(function() {
+            // Form submission via AJAX
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: '@Url.Action("RefreshFeeDefaulterReport", "FeeDefaulter")',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    beforeSend: function() {
+                        // Show loading indicator
+                        $('#searchResultContainer').html(
+                            '<div class="text-center"><div class="spinner-border text-primary" role="status">' +
+                            '<span class="visually-hidden">Loading...</span></div></div>'
+                        );
+                    },
+                    success: function(result) {
+                        // Load partial view results
+                        $('#searchResultContainer').html(result);
+                    },
+                    error: function() {
+                        $('#searchResultContainer').html(
+                            '<div class="alert alert-danger">An error occurred while searching.</div>'
+                        );
+                    }
+                });
+            });
+        });
+</script>

@@ -1,0 +1,237 @@
+﻿@using ERPIndia.Class.Helper;
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>@ERPIndia.ERPIndiaApplication.Setting.SiteTitle</title>
+    <title>Add Student</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="~/Assests/img/favicon.png">
+    <!-- Normalize CSS -->
+    <link rel="stylesheet" href="~/Assests/css/normalize.css">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="~/Assests/css/main.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/Assests/css/bootstrap.min.css">
+    <!-- Fontawesome CSS -->
+    <link rel="stylesheet" href="~/Assests/css/all.min.css">
+    <!-- Flaticon CSS -->
+    <link rel="stylesheet" href="~/Assests/fonts/flaticon.css">
+    <!-- Date Picker CSS -->
+    <link rel="stylesheet" href="~/Assests/css/datepicker.min.css">
+    <!-- Full Calender CSS -->
+    <link rel="stylesheet" href="~/Assests/css/essential.css">
+    <link rel="stylesheet" href="~/Assests/css/fullcalendar.min.css">
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="~/Assests/css/animate.min.css">
+    <!-- Select 2 CSS -->
+    <link rel="stylesheet" href="~/Assests/css/select2.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/Assests/css/style.css">
+    <!-- Data Table CSS -->
+   
+    <link href="~/template/assets/DataTables/datatables.css" rel="stylesheet" />
+    <link href="~/template/assets/DataTables/buttons.dataTables.css" rel="stylesheet" />
+    <!-- file Uploads -->
+    <link href="~/Assests/css/dropify.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="~/Assests/css/font-awesome.css">
+    @Styles.Render("~/plugins/alerts/jAlertCSS")
+    <!-- Modernize js -->
+    <script src="~/Assests/js/modernizr-3.6.0.min.js"></script>
+    @Scripts.Render("~/bundles/jquery")
+
+    <style type="text/css">
+        .field-validation-error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Preloader Start Here -->
+    <div id="preloader"></div>
+    <!-- Preloader End Here -->
+    <div id="wrapper" class="wrapper bg-ash">
+        @Html.Partial("_UCNav")
+        <!-- Page Area Start Here -->
+        <div class="dashboard-page-one">
+            @Html.Partial("_UCSideNav")
+            <div class="dashboard-content-one" id="divPageBody">
+                <!-- Breadcubs Area Start Here -->
+                @RenderBody()
+                <!-- Google Map Area End Here -->
+            </div>
+        </div>
+        <!-- Page Area End Here -->
+    </div>
+    @Scripts.Render("~/bundles/jqueryPlugins")
+    @RenderSection("pageLelvelScripts", required: false)
+
+    @Scripts.Render("~/bundles/datepickerJS")
+
+    @Scripts.Render("~/bundles/jalert")
+
+    @Scripts.Render("~/bundles/utilityPluginJS")
+
+    @Scripts.Render("~/bundles/appJS")
+
+    @RenderSection("specificScripts", required: false)
+    <!-- jquery-->
+    <!-- Plugins js -->
+    <!-- Popper js -->
+    <script src="~/Assests/js/popper.min.js"></script>
+    <!-- Bootstrap js -->
+    <script src="~/Assests/js/bootstrap.min.js"></script>
+    <!-- Date Picker Js -->
+    <!-- Counterup Js -->
+    <script src="~/Assests/js/jquery.counterup.min.js"></script>
+    <!-- Select 2 Js -->
+    <script src="~/Assests/js/select2.min.js"></script>
+    <!-- Moment Js -->
+    <script src="~/Assests/js/moment.min.js"></script>
+    <!-- Waypoints Js -->
+    <script src="~/Assests/js/jquery.waypoints.min.js"></script>
+    <!-- Scroll Up Js -->
+    <script src="~/Assests/js/jquery.scrollUp.min.js"></script>
+    <!-- Full Calender Js -->
+    <script src="~/Assests/js/fullcalendar.min.js"></script>
+    <!-- Chart Js -->
+    <script src="~/Assests/js/Chart.min.js"></script>
+    <!-- Data Table Js -->
+    <script src="~/Assests/js/jquery.dataTables.min.js"></script>
+    <script src="~/template/assets/DataTables/buttons.dataTables.js"></script>
+    <script src="~/template/assets/DataTables/Export/pdfmake-0.1.36/pdfmake.js"></script>
+    <script src="~/template/assets/DataTables/Export/pdfmake-0.1.36/vfs_fonts.js"></script>
+    <script src="~/template/assets/DataTables/Export/Buttons-1.6.5/js/buttons.html5.min.js"></script>
+    <script src="~/template/assets/DataTables/Export/Buttons-1.6.5/js/buttons.print.min.js"></script>
+    <!-- Custom Js -->
+    <script src="~/Assests/js/main.js"></script>
+    <script>
+         function pageLoad() {
+                pageLoadEvents();
+            }
+
+            function pageLoadEvents() {
+
+                $(":checkbox").uniform();
+
+                alertTitle = jQuery('.page-alert-title').html();
+
+                // listing page status(active/inactive) and delete button event
+                $("#imgActive, #imgInactive, #imgDelete").click(function () {
+                    if (!IsCheckBoxChecked()) {
+                        if (this.name == "imgDelete") {
+                            jAlert('@string.Format(StringConstants.MultiProcessValidation, "delete")', alertTitle);
+                        }
+                        else {
+                            jAlert('@string.Format(StringConstants.MultiProcessValidation, "change status")', alertTitle);
+                        }
+                    }
+                    else {
+                        ActionClickEvent(this.id, this.name);
+                    }
+                });
+            }
+         function callPageAction(url, postData, action) {
+                //showLoading();
+                HRN.showLoader();
+                $.ajax({
+                    url: url,
+                    data: postData,
+                    type: 'POST',
+                    success: function (response) {
+                        if (response.IsError) {
+                            notificationMessage(response.ErrorMsg, 'danger')
+                            HRN.hideLoader();
+                            return;
+
+                        }
+                        else {
+                            $('#divPageBody').html(response);
+                        }
+
+                        $('#divPageBody').html(response);
+                        console.log(response);
+                        if (action == 'MultiProcess') {
+                            var arrcheckedCount = checkedValues.split(',');
+
+                            if (multiProcessMode == 'Active') {
+                                notificationMessage('@StringConstants.RecordActive'.replace('{0}', arrcheckedCount.length), 'success');
+                            }
+                            else if (multiProcessMode == 'Inactive') {
+                                notificationMessage('@StringConstants.RecordInactive'.replace('{0}', arrcheckedCount.length), 'success');
+                            }
+                            else {
+                                notificationMessage('@StringConstants.RecordDelete'.replace('{0}', arrcheckedCount.length), 'success');
+                            }
+                        }
+                        else if (action == 'Sorting' || action == 'Searching') {
+                            if (searchField != '' && searchValue != '') {
+                                var msg = '@Html.Raw(StringConstants.RecordSearch)';
+                                msg = msg.replace('{1}', itemListCount);
+
+                                if (searchField == 'IsActive' || searchField == 'Status') {
+                                    msg = msg.replace('{0}', $("#ddlStatus option:selected").text());
+                                }
+                                else {
+                                    msg = msg.replace('{0}', searchValue);
+                                }
+
+                                notificationMessage(msg, 'info')
+                            }
+                        }
+                        else if (action == 'ViewAll') {
+                            $('#ddlStatus').hide();
+                            $('#txtSearchField').show();
+                            $('#txtSearchField').val('');
+                            $('#ddlStatus').val('1');
+                            $("#ddlFilter")[0].selectedIndex = 0;
+                        }
+
+                        HRN.hideLoader();
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        HRN.hideLoader();
+                        $('#divPageBody').html(jqXHR.responseText);
+                    }
+                });
+            }
+        function ActionClickEvent(clickId, clickName) {
+                var confirmMsg = '@StringConstants.MultiProcessConfirmation'.replace("{0}", clickName.replace('img', '').toLowerCase());
+
+                checkedValues = '';
+                $('input[name="chkBox"]:checked').each(function () {
+                    checkedValues += this.value + ",";
+                });
+
+                if (checkedValues.length > 0) {
+                    checkedValues = checkedValues.substring(0, checkedValues.length - 1);
+                    jConfirm(confirmMsg, alertTitle, function (r) {
+                        if (r == true) {
+                            multiProcessMode = clickName.replace('img', '');
+                            var postData = { "page": pageNo, "pageSize": pageSize, "searchField": searchField, "searchValue": searchValue, "sortField": sortField, "sortOrder": sortOrder, "ids": checkedValues, "mode": multiProcessMode };
+                            console.log("Post data" + postData);
+                            callPageAction(currentSiteUrl, postData, 'MultiProcess');
+                        }
+
+                        //UnCheck();
+                    });
+                }
+            }
+
+            function InitDatePicker(clickId, isCreate) {
+                if (isCreate)
+                    $("#" + clickId).datepicker();
+                else
+                    $("#" + clickId).datepicker('remove');
+            }
+    </script>
+
+</body>
+</html>
+
+
+

@@ -1,0 +1,107 @@
+﻿@model ERPIndia.ViewModel.LedgerViewModel
+@{
+    Layout = "~/Views/Shared/_NewLayout.cshtml";
+}
+<!-- Breadcubs Area Start Here -->
+<div class="breadcrumbs-area">
+    <h3>Payment Details</h3>
+    <ul>
+        <li>
+            <a href="index.html">Home</a>
+        </li>
+        <li>@ViewBag.Heading</li>
+    </ul>
+</div>
+<div class="card height-auto">
+    @using (Ajax.BeginForm("Add", "", new AjaxOptions() { HttpMethod = "POST", OnBegin = "onBeginSubmit", UpdateTargetId = "dashboard-content-one", OnSuccess = "onSuccess" }, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+    <div class="card-body">
+        <div class="heading-layout1">
+            <div class="item-title">
+                <h3>Payment Details</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xl-4 col-lg-6 col-12 form-group">
+                @Html.LabelFor(model => model.AccountId)
+                @Html.DropDownListFor(model => model.AccountId, new SelectList(Model.Accounts, "ClientId", "ClientName"), "-- Select Client Name --", new { style = "", @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.AccountId)
+                @Html.HiddenFor(model => model.LedgerId)
+            </div>
+            <div class="col-xl-4 col-lg-6 col-12 form-group">
+                @Html.LabelFor(model => model.@LDate)
+                @Html.TextBoxFor(model => model.LDate, new { @maxlength = "200", @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.LDate)
+            </div>
+            <div class="col-xl-4 col-lg-6 col-12 form-group">
+                @Html.LabelFor(model => model.@RefNo)
+                @Html.TextBoxFor(model => model.RefNo, new { @maxlength = "200", @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.RefNo)
+            </div>
+            <div class="col-xl-4 col-lg-6 col-12 form-group">
+                @Html.LabelFor(model => model.Amount)
+                @Html.TextBoxFor(model => model.Amount, new { @maxlength = "200", @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Amount)
+            </div>
+            <div class="col-xl-4 col-lg-6 col-12 form-group">
+                @Html.LabelFor(model => model.LPayMode)
+                @Html.DropDownListFor(model => model.LPayMode, new List<SelectListItem>
+                            {
+                                new SelectListItem{ Text="CASH", Value = "CASH" },
+                                new SelectListItem{ Text="OTHER", Value = "OTHER" },
+                            }, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.LPayMode)
+            </div>
+            <div class="col-xl-4 col-lg-6 col-12 form-group">
+                @Html.LabelFor(model => model.LVoucherType)
+                @Html.DropDownListFor(model => model.LVoucherType, new List<SelectListItem>
+                          {
+                              new SelectListItem{ Text="ADVANCEPAYMENT", Value = "ADVANCE" },
+                              new SelectListItem{ Text="PAYMENT", Value = "PAYMENT" },
+                          }, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.LVoucherType)
+            </div>
+            <div class="col-xl-6 col-lg-6 col-12 form-group">
+                @Html.LabelFor(model => model.LRemarks)
+                @Html.TextAreaFor(model => model.LRemarks, new { @maxlength = "1000", @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.LRemarks)
+            </div>
+        </div>
+        <hr />
+        <div class="col-12 form-group mg-t-8">
+            <button type="submit" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark">Save</button>
+            <button type="reset" class="btn-fill-lg bg-blue-dark btn-hover-yellow" onclick="$(this).resetValidation()">Reset</button>
+        </div>
+    </div>
+    }
+</div>
+<script type="text/javascript">
+        $(this.document).ready(function () {
+            if ('@ViewBag.ErrorMsg' != null && '@ViewBag.ErrorMsg' != '') {
+                notificationMessage('@ViewBag.ErrorMsg', 'danger')
+                HRN.hideLoader();
+            }
+            jQuery('#LDate').datepicker({
+                showOn: 'button',
+                format: 'dd-M-yyyy',
+                maxDate: "+24M +10D",
+                autoclose: true,
+                todayHighlight: true,
+                pickTime: false,
+            });
+        });
+
+        var onBeginSubmit = function () {
+            HRN.showLoader();
+        };
+
+        function onSuccess() {
+            if ('@ViewBag.ErrorMsg' == null || '@ViewBag.ErrorMsg' == '') {
+                HRN.hideLoader();
+                window.location.href = '@Url.Action("Index")?status=s';
+            }
+        }
+
+</script>
+

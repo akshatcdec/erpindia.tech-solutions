@@ -1,0 +1,579 @@
+﻿@model ERPIndia.Controllers.DocumentStatusViewModel
+@{
+    ViewBag.Title = "Document Status Viewer";
+}
+
+<style>
+    /* Using same CSS as BulkPhotoUpload */
+    /* Mobile responsive wrapper */
+    .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+    }
+
+    .photo-upload-table {
+        width: 100%;
+        min-width: 1200px;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    /* Mobile specific styles */
+    @@media (max-width: 768px) {
+        .table-responsive-wrapper {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+
+        .photo-upload-table {
+            font-size: 12px;
+        }
+
+            .photo-upload-table th,
+            .photo-upload-table td {
+                padding: 8px 4px;
+            }
+
+        .photo-circle {
+            width: 50px;
+            height: 50px;
+        }
+
+        .doc-status {
+            padding: 2px 6px;
+            font-size: 10px;
+        }
+
+        .class-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+        }
+        /* Sticky first column for better mobile experience */
+        .photo-upload-table td:first-child,
+        .photo-upload-table th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background-color: white;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        /* Override background for header sticky column */
+        .photo-upload-table thead th:first-child {
+            background-color: #5BC0DE !important;
+        }
+        /* Apply alternating colors to sticky column */
+        .photo-upload-table tbody tr:nth-child(even) td:first-child {
+            background-color: #e9ecef !important;
+        }
+
+        .photo-upload-table tbody tr:nth-child(odd) td:first-child {
+            background-color: #ffffff !important;
+        }
+        /* Add visual scroll indicator */
+        .scroll-indicator {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 12px;
+            animation: bounce 2s infinite;
+        }
+
+        @@keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(0);
+            }
+
+            40% {
+                transform: translateX(-10px);
+            }
+
+            60% {
+                transform: translateX(-5px);
+            }
+        }
+    }
+
+    .photo-upload-table thead th {
+        background: #5BC0DE !important;
+        color: white !important;
+        font-weight: 500;
+        text-align: center;
+        padding: 12px 8px;
+        border: none;
+        font-size: 14px;
+    }
+
+        .photo-upload-table thead th:first-child {
+            background: #5BC0DE !important;
+            color: white !important;
+        }
+
+    .photo-upload-table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+    }
+
+        /* Add alternating row colors */
+        .photo-upload-table tbody tr:nth-child(even) {
+            background-color: #e9ecef;
+        }
+
+        .photo-upload-table tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .photo-upload-table tbody tr:hover {
+            background-color: #dee2e6 !important;
+        }
+
+    .photo-upload-table tbody td {
+        padding: 12px 8px;
+        text-align: left;
+        vertical-align: middle;
+        font-size: 14px;
+    }
+
+    .photo-circle {
+        width: 60px;
+        height: 60px;
+        border: 2px dashed #dee2e6;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        overflow: hidden;
+        margin: 0 auto;
+        position: relative;
+    }
+
+        .photo-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-circle.uploaded {
+            border: 2px solid #28a745;
+            background: white;
+        }
+
+        .photo-circle i {
+            font-size: 24px;
+            color: #6c757d;
+        }
+
+    /* Document status badges - NEW for this form */
+    .doc-status {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+        .doc-status.yes {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .doc-status.no {
+            background-color: #dc3545;
+            color: white;
+        }
+
+    .class-badge {
+        background: #7B3FF2;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .search-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .search-btn {
+        background: linear-gradient(to right, #6A5AE0, #A134B8);
+        color: white;
+        border: none;
+        padding: 8px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .search-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(106, 90, 224, 0.4);
+        }
+
+    .table-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .student-name {
+        text-align: left;
+        font-weight: 500;
+    }
+
+    .father-name {
+        text-align: left;
+        color: #6c757d;
+    }
+
+    .gender-mobile {
+        color: #495057;
+    }
+
+    .table-responsive-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-responsive-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .table-responsive-wrapper::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+        .table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+    /* DataTable button styling */
+    .dt-buttons {
+        margin-bottom: 10px;
+    }
+
+        .dt-buttons .btn {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>Document Status Viewer
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="searchForm">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Class <span class="text-danger">*</span></label>
+                                @Html.DropDownListFor(x => x.SelectedClass, Model.Classes, "Select a class", new { @class = "form-select", id = "ddlClass" })
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Section</label>
+                                @Html.DropDownListFor(x => x.SelectedSection, Model.Sections, "All Sections", new { @class = "form-select", id = "ddlSection" })
+                            </div>
+                            <div class="col-md-4 align-self-end">
+                                <button type="button" class="btn search-btn w-100" id="btnSearch">
+                                    <i class="fas fa-search me-2"></i><span class="d-none d-sm-inline">Load Students</span><span class="d-inline d-sm-none">Load Students</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div id="searchResultContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var dataTable = null;
+
+    // Search button click - SAME AS ORIGINAL
+    $('#btnSearch').click(function() {
+        const className = $('#ddlClass').val();
+
+        if (!className) {
+            alert('Please select a class');
+            return;
+        }
+
+        $('#searchResultContainer').html(
+            '<div class="text-center py-5">' +
+            '<div class="spinner-border text-primary"></div>' +
+            '<p class="mt-2">Loading students...</p>' +
+            '</div>'
+        );
+
+        $.ajax({
+            url: '@Url.Action("GetStudentDocumentStatus", "DocumentStatus")',
+            type: 'POST',
+            data: {
+                className: className,
+                section: $('#ddlSection').val() || ''
+            },
+            success: function(response) {
+                if (response.success) {
+                    displayStudents(response.data);
+                } else {
+                    $('#searchResultContainer').html(
+                        '<div class="alert alert-danger">No students found</div>'
+                    );
+                }
+            },
+            error: function() {
+                $('#searchResultContainer').html(
+                    '<div class="alert alert-danger">Error loading students</div>'
+                );
+            }
+        });
+    });
+
+    // Display students with DataTable support - MODIFIED FOR DOCUMENTS
+    function displayStudents(students) {
+        if (!students || students.length === 0) {
+            $('#searchResultContainer').html(
+                '<div class="alert alert-info">No students found</div>'
+            );
+            return;
+        }
+
+        let html = '<div class="table-container">';
+
+        if (window.innerWidth <= 768) {
+            html += '<div class="scroll-indicator"><i class="fas fa-arrows-alt-h"></i> Swipe left/right to see all columns</div>';
+        }
+
+        // Table with same structure as original
+        html += '<div class="table-responsive-wrapper">' +
+                '<table id="studentDataTable" class="photo-upload-table">' +
+                '<thead><tr>' +
+                '<th>Adm No.</th>' +
+                '<th>Class</th>' +
+                '<th>Student Name</th>' +
+                '<th>Guardian</th>' +
+                '<th>S. Pic</th>' +
+                '<th>F. Pic</th>' +
+                '<th>M. Pic</th>' +
+                '<th>G. Pic</th>' +
+                '<th>Docs1</th>' +
+                '<th>Docs2</th>' +
+                '<th>Docs3</th>' +
+                '<th>Docs4</th>' +
+                '</tr></thead><tbody>';
+
+        students.forEach(student => {
+            html += '<tr data-student-id="' + student.StudentId + '" data-admission-no="' + student.AdmNo + '">' +
+                   '<td>' + student.AdmNo + '</td>' +
+                   '<td><span class="class-badge">' + student.Class + '</span></td>' +
+                   '<td class="student-name">' + student.StudentName + '</td>' +
+                   '<td>' +
+                   '<div style="font-size: 12px;">' +
+                   '<strong>Father:</strong> ' + (student.FatherName || '') + '<br>' +
+                   '<strong>Mother:</strong> ' + (student.MotherName || '') + '<br>' +
+                   '<strong>Mob:</strong> ' + (student.Mobile || '') +
+                   '</div>' +
+                   '</td>';
+
+            // Photo cells - View Only (no upload)
+            html += createPhotoCell(student.StudentPhoto, 'student');
+            html += createPhotoCell(student.FatherPhoto, 'father');
+            html += createPhotoCell(student.MotherPhoto, 'mother');
+            html += createPhotoCell(student.GuardianPhoto, 'guardian');
+
+            // Document status cells - NEW
+            html += createDocStatusCell(student.Docs1);
+            html += createDocStatusCell(student.Docs2);
+            html += createDocStatusCell(student.Docs3);
+            html += createDocStatusCell(student.Docs4);
+
+            html += '</tr>';
+        });
+
+        html += '</tbody></table></div></div>';
+        $('#searchResultContainer').html(html);
+
+        // Initialize DataTable after rendering - SAME AS ORIGINAL
+        setTimeout(function() {
+            initializeDataTable();
+        }, 100);
+
+        if ('ontouchstart' in window) {
+            addTouchScrolling();
+        }
+    }
+
+    // Create photo cell - SIMPLIFIED (no upload functionality)
+    function createPhotoCell(photoPath, photoType) {
+        let html = '<td>';
+
+        if (photoPath) {
+            html += '<div class="photo-circle uploaded">' +
+                   '<img src="' + photoPath + '?t=' + new Date().getTime() + '" alt="' + photoType + '" ' +
+                   'onerror="this.style.display=\'none\'; this.parentElement.querySelector(\'.fa-user\').style.display=\'block\';">' +
+                   '<i class="fas fa-user" style="display:none;"></i>' +
+                   '</div>';
+        } else {
+            html += '<div class="photo-circle">' +
+                   '<i class="fas fa-user"></i>' +
+                   '</div>';
+        }
+
+        html += '</td>';
+        return html;
+    }
+
+    // Create document status cell - NEW
+    function createDocStatusCell(status) {
+        let html = '<td style="text-align: center;">';
+
+        if (status && status.toLowerCase() === 'yes') {
+            html += '<span class="doc-status yes">YES</span>';
+        } else if (status && status.toLowerCase() === 'no') {
+            html += '<span class="doc-status no">NO</span>';
+        } else {
+            html += '<span class="doc-status no">NO</span>';
+        }
+
+        html += '</td>';
+        return html;
+    }
+
+    // Initialize DataTable - SAME AS ORIGINAL
+    function initializeDataTable() {
+        // Check if DataTable exists
+        if (!$.fn.DataTable) {
+            console.log('DataTable not loaded, skipping initialization');
+            return;
+        }
+
+        // Destroy existing DataTable if it exists
+        if (dataTable && $.fn.DataTable.isDataTable('#studentDataTable')) {
+            dataTable.destroy();
+        }
+
+        // Initialize DataTable with export buttons
+        dataTable = $('#studentDataTable').DataTable({
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "pageLength": 25,
+            "order": [[0, "asc"]], // Order by Adm No
+            "scrollX": true,
+            "responsive": false,
+            "dom": 'Blfrtip',
+            "buttons": [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 8, 9, 10, 11] // Export only text columns
+                    }
+                },
+                {
+                    extend: 'csv',
+                    title: 'StudentDocumentStatus',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 8, 9, 10, 11]
+                    }
+                },
+                {
+                    extend: 'excel',
+                    title: 'StudentDocumentStatus',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 8, 9, 10, 11]
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    title: 'StudentDocumentStatus',
+                    className: 'btn btn-sm btn-secondary',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 8, 9, 10, 11]
+                    }
+                },
+                {
+                    extend: 'print',
+                    title: 'StudentDocumentStatus',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 8, 9, 10, 11]
+                    }
+                }
+            ],
+            "language": {
+                "lengthMenu": "Show _MENU_ students",
+                "zeroRecords": "No students found",
+                "info": "Showing _START_ to _END_ of _TOTAL_ students",
+                "infoEmpty": "No students available",
+                "infoFiltered": "(filtered from _MAX_ total students)",
+                "search": "Search students:"
+            }
+        });
+    }
+
+    // Add touch scrolling support for mobile - SAME AS ORIGINAL
+    function addTouchScrolling() {
+        const tableWrapper = $('.table-responsive-wrapper');
+        let isScrolling = false;
+        let startX;
+        let scrollLeft;
+
+        tableWrapper.on('touchstart', function(e) {
+            isScrolling = true;
+            startX = e.originalEvent.touches[0].pageX - this.offsetLeft;
+            scrollLeft = this.scrollLeft;
+        });
+
+        tableWrapper.on('touchend', function() {
+            isScrolling = false;
+        });
+
+        tableWrapper.on('touchmove', function(e) {
+            if (!isScrolling) return;
+            e.preventDefault();
+            const x = e.originalEvent.touches[0].pageX - this.offsetLeft;
+            const walk = (x - startX) * 2;
+            this.scrollLeft = scrollLeft - walk;
+        });
+    }
+
+    // Handle responsive - SAME AS ORIGINAL
+    function handleMobileView() {
+        if (window.innerWidth <= 768) {
+            // Mobile specific adjustments if needed
+        }
+    }
+
+    // Add resize listener - SAME AS ORIGINAL
+    $(window).on('resize', function() {
+        handleMobileView();
+    });
+
+    // Initial mobile setup
+    handleMobileView();
+});
+</script>

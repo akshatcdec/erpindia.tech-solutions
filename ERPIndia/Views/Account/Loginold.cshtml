@@ -1,0 +1,104 @@
+﻿@model ERPIndia.Models.LoginModel
+@{
+    Layout = null;
+}
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!-- BEGIN HEAD -->
+<head>
+    <meta charset="utf-8" />
+    <title id="lblSiteTitle">@ERPIndia.ERPIndiaApplication.Setting.SiteTitle</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="~/Assests/img/favicon.png" />
+    <!-- Normalize CSS -->
+    <link rel="stylesheet" href="~/Assests/css/normalize.css" />
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="~/Assests/css/main.css" />
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/Assests/css/bootstrap.min.css" />
+    <!-- Fontawesome CSS -->
+    <link rel="stylesheet" href="~/Assests/css/all.min.css" />
+    <!-- Flaticon CSS -->
+    <link rel="stylesheet" href="~/Assests/fonts/flaticon.css" />
+    <!-- Animate CSS -->
+    <link rel="stylesheet" href="~/Assests/css/animate.min.css" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/Assests/css/style-login.css" />
+    <!-- Modernize js -->
+    <script src="~/Assests/js/modernizr-3.6.0.min.js"></script>
+    <style>
+        .field-validation-error
+        {
+            color:red;
+        }
+    </style>
+</head>
+<!-- END HEAD -->
+<!-- BEGIN BODY -->
+<body>
+    <div id="preloader"></div>
+    <div class="login-page-wrap">
+        <div class="login-page-content">
+            <div class="login-box">
+                <div class="item-logo">
+                    <img src="~/img/erplogo.png" alt="logo" />
+                </div>
+                @using (Html.BeginForm("Login", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "login-form", @novalidate = "novalidate", @id = "frmLogin" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-group">
+                        <label>Username</label>
+                        @Html.TextBoxFor(model => model.UserName, new { @class = "form-control placeholder-no-fix", @placeholder = "Username", @maxlength = "50" })
+                        @Html.ValidationMessageFor(model => model.UserName)
+                        <i class="far fa-envelope"></i>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        @Html.PasswordFor(model => model.Password, new { @class = "form-control placeholder-no-fix", @placeholder = "Password", @maxlength = "50" })
+                        @Html.ValidationMessageFor(model => model.Password)
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="form-group">
+                        <div id="dvmsg"></div>
+                        <button type="submit" class="login-btn">Login</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="copyright text-center">
+        <label>@ERPIndia.ERPIndiaApplication.Setting.CopyrightText.Replace("##YEAR##", DateTime.Now.Year.ToString()).Replace("&copy;", "©")</label>
+    </div>
+
+    <script src="~/Assests/js/jquery-3.3.1.min.js"></script>
+    <!-- Plugins js -->
+    <script src="~/Assests/js/plugins.js"></script>
+    <!-- Popper js -->
+    <script src="~/Assests/js/popper.min.js"></script>
+    <!-- Bootstrap js -->
+    <script src="~/Assests/js/bootstrap.min.js"></script>
+    <!-- Scroll Up Js -->
+    <script src="~/Assests/js/jquery.scrollUp.min.js"></script>
+    <!-- Custom Js -->
+    <script src="~/Assests/js/main.js"></script>
+    <script type="text/javascript">
+
+
+        $(this.document).ready(function () {
+            if ('@ViewBag.ErrorMsg' != null && '@ViewBag.ErrorMsg' != '') {
+                alert('@ViewBag.ErrorMsg');
+                $('#dvmsg').show();
+                $('#dvmsg').val('@ViewBag.ErrorMsg');
+            }
+            else {
+                $('#dvmsg').hide();
+                $('#dvmsg').val('');
+            }
+        });
+    </script>
+    <!-- END BODY -->
+</body>
+</html>

@@ -1,0 +1,70 @@
+﻿@model TransportStudentSearchRequest
+<link href="/Content/model.css" rel="stylesheet" />
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        Search Criteria
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="validationMessage" class="alert alert-warning d-none">
+                        Please select all required fields before searching.
+                    </div>
+                    @using (Html.BeginForm("BusWiseList", "Student", FormMethod.Post, new { id = "searchForm", @class = "needs-validation", novalidate = "novalidate" }))
+                    {
+
+                        <div class="row g-3">
+                            <div class="col-md-2">
+                                <label for="ClassId" class="form-label">Class</label>
+                                @Html.DropDownListFor(m => m.SelectedClass, Model.ClassList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-2">
+                                <label for="SectionId" class="form-label">Section</label>
+                                @Html.DropDownListFor(m => m.SelectedSection, Model.SectionList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-2">
+                                <label for="SectionId" class="form-label">Route</label>
+                                @Html.DropDownListFor(m => m.SelectedRoute, Model.RouteList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-2 align-self-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search me-2"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+  $(document).ready(function(){
+    $('#searchForm').on('submit', function(e){
+      e.preventDefault();
+
+      // grab values
+      var selectedClass   = $('#SelectedClass').val();
+      var selectedSection = $('#SelectedSection').val();
+      var SelectedRoute   = $('#SelectedRoute').val();
+
+      // hide warning
+      $('#validationMessage').addClass('d-none');
+
+
+      // build URL for your BusWiseList action
+      var url = '@Url.Action("RouteWiseListSearch", "Student")'
+              + '?classId='   + encodeURIComponent(selectedClass)
+              + '&sectionId=' + encodeURIComponent(selectedSection)
+              + '&routeId=' + encodeURIComponent(SelectedRoute);
+
+      // open modal with the results
+      openModal('-1', url, '', 'RouteWiseList');
+    });
+  });
+</script>
+

@@ -1,0 +1,18 @@
+﻿<!-- Modal for Ledger/Sibling Ledger -->
+<div class="modal fade" id="ledgerModal" tabindex="-1" role="dialog" aria-labelledby="ledgerModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <!-- Close button with proper styling -->
+                <button type="button" class="modal-close btn btn-danger" data-dismiss="modal" aria-label="Close" onclick="closeModal()" style="position: absolute; top: 10px; right: 10px; background-color: red; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <div id="loadingIndicator" class="loading-container">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Loading student data...</div>
+                </div>
+                <iframe id="contentIframe" class="modal-iframe" src=""></iframe>
+            </div>
+        </div>
+    </div>
+</div>

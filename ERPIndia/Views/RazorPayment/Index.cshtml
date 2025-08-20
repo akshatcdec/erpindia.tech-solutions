@@ -1,0 +1,59 @@
+﻿@model ERPIndia.Models.RazorPay.PaymentRequest
+
+
+    @using (Html.BeginForm("ProcessRequestOrder", "RazorPayment", FormMethod.Post, new { enctype = "multipart/form-data", id = "contact_form",  @class="well form-horizontal" }))
+    {
+        <center><h2><b>Razorpay Payment Gateway Integration</b></h2></center>
+        <div class="form-group">
+            <label class="col-md-4 control-label">Customer Name</label>
+            <div class="col-md-4 inputGroupContainer">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-user"></i></span>
+                    <input placeholder="Name" class="form-control" type="text" name="Name" id="Name" autocomplete="off" required>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-md-4 control-label">E-Mail</label>
+            <div class="col-md-4 inputGroupContainer">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-envelope" style="font-size:11px"></i></span>
+                    <input placeholder="E-Mail Address" class="form-control" type="text" id="Email" name="Email" autocomplete="off" required>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-md-4 control-label">Phone Number</label>
+            <div class="col-md-4 inputGroupContainer">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-phone"></i></span>
+                    <input placeholder="Phone" class="form-control" type="text" id="PhoneNumber" name="PhoneNumber" autocomplete="off" required>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-md-4 control-label">Address</label>
+            <div class="col-md-4 inputGroupContainer">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-address-book-o" style="font-size:11px"></i></span>
+                    <input placeholder="Address" class="form-control" type="text" id="Address" name="Address" autocomplete="off" required>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-md-4 control-label">Amount (INR)</label>
+            <div class="col-md-4 inputGroupContainer">
+                <div class="input-group">
+                    <span class="input-group-addon"><i class="fa fa-inr" style="font-size:19px"></i></span>
+                    <input placeholder="Amount (INR)" class="form-control" type="text" id="Amount" name="Amount" autocomplete="off" required>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-md-4 control-label"></label>
+            <div class="col-md-4" style="text-align:center;">
+                <button type="submit" class="btn btn-warning">SUBMIT <span class="glyphicon glyphicon-send"></span></button>
+            </div>
+        </div>
+    }
+

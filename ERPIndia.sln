@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPIndia", "ERPIndia\ERPIndia.csproj", "{78EA656B-43A6-442B-B318-C9614A6015A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPK12Models", "ERPK12Models\ERPK12Models.csproj", "{BBA2E388-3401-41C8-9BF9-DA22A703A1B9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{78EA656B-43A6-442B-B318-C9614A6015A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78EA656B-43A6-442B-B318-C9614A6015A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78EA656B-43A6-442B-B318-C9614A6015A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78EA656B-43A6-442B-B318-C9614A6015A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBA2E388-3401-41C8-9BF9-DA22A703A1B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBA2E388-3401-41C8-9BF9-DA22A703A1B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBA2E388-3401-41C8-9BF9-DA22A703A1B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBA2E388-3401-41C8-9BF9-DA22A703A1B9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FA10F58B-9B95-4E74-8B8C-48A7D4EC490A}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,1628 @@
+﻿@model ERPIndia.Models.DTOs.FeeCollectionViewModel
+@{
+    ViewBag.Title = "Fee Category Management";
+    string StudentId = Model.StudentId;
+}
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-body">
+            <ul class="nav nav-tabs nav-tabs-top mb-3" role="tablist">
+                <li class="nav-item" role="presentation"><a class="nav-link active" href="#top-tab1" data-bs-toggle="tab" aria-selected="true" role="tab" tabindex="-1">Student Information</a></li>
+                <li class="nav-item" role="presentation"><a class="nav-link" href="#top-tab2" data-bs-toggle="tab" aria-selected="false" role="tab">Ledger</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active show" id="top-tab1" role="tabpanel">
+                    <div class="row mb-4" id="personalInfoCard">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <input type="hidden" id="hiddenStudentId" value="@StudentId">
+                                        <!-- Student Photo -->
+                                        <div class="col-md-3 text-center mb-2" id="studentPhotoContainer">
+                                            <div class="profile-image d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                                                <i class="ti ti-user fs-1 text-muted"></i>
+                                            </div>
+                                        </div>
+
+                                        <!-- Student Data -->
+                                        <div class="col-md-9">
+                                            <div class="student-info-grid">
+                                                <div class="info-row">
+                                                    <div class="info-label"><b>Admission No</b></div>
+                                                    <div class="info-value" id="studentAdmissionNo">@Model.StudentInfo.AdmNo</div>
+                                                </div>
+                                                <div class="info-row">
+                                                    <div class="info-label"><b>Name</b></div>
+                                                    <div class="info-value" id="studentName">@Model.StudentInfo.Name</div>
+                                                </div>
+                                                <div class="info-row">
+                                                    <div class="info-label"><b>Class</b></div>
+                                                    <div class="info-value" id="studentClass">@Model.StudentInfo.Class</div>
+                                                </div>
+                                                <div class="info-row">
+                                                    <div class="info-label"><b>Section</b></div>
+                                                    <div class="info-value" id="studentSection">@Model.StudentInfo.Section</div>
+                                                </div>
+                                                <div class="info-row">
+                                                    <div class="info-label"><b>Roll No</b></div>
+                                                    <div class="info-value" id="studentRollNo">@(Model.StudentInfo.RollNo ?? "1001")</div>
+                                                </div>
+                                                <div class="info-row">
+                                                    <div class="info-label"><b>Father's Name</b></div>
+                                                    <div class="info-value" id="studentFatherName">@Model.StudentInfo.Father</div>
+                                                </div>
+                                                <div class="info-row">
+                                                    <div class="info-label"><b>Mobile</b></div>
+                                                    <div class="info-value" id="studentMobile">@Model.StudentInfo.Contact</div>
+                                                </div>
+                                                <div class="info-row">
+                                                    <div class="info-label"><b>Discount Category</b></div>
+                                                    <div class="info-value" id="studentDiscountCategory">@Model.StudentInfo.DiscountCategory</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <table id="fee-details" class="table-responsive">
+                                        <thead>
+                                            <tr>
+                                                <th>SN</th>
+                                                <th>Fee Name</th>
+                                                @foreach (var month in new[] { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" })
+                                                {
+                                                    <th>@month</th>
+                                                }
+                                            </tr>
+                                        </thead>
+                                        <tbody id="fee-details-body">
+                                            @if (Model.FeeDetails != null && Model.FeeDetails.Any())
+                                            {
+                                                int srNo = 1;
+                                                foreach (var fee in Model.FeeDetails)
+                                                {
+                                                    <tr data-fee-id="@fee.Id">
+                                                        <td>@(srNo++)</td>
+                                                        <td>@fee.Name</td>
+
+                                                        @foreach (var month in new[] { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" })
+                                                        {
+                                                            decimal amount = fee.Months != null && fee.Months.ContainsKey(month) ? fee.Months[month] : 0;
+                                                            decimal discount = fee.Discounts != null && fee.Discounts.ContainsKey(month) ? fee.Discounts[month] : 0;
+
+                                                            <td class="month-cell" data-month="@month">
+                                                                @if (amount > 0)
+                                                                {
+                                                                    <div class="fee-amount">@amount</div>
+                                                                    if (discount > 0)
+                                                                    {
+                                                                        <div class="discount-value">-@discount</div>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span>0</span>
+                                                                }
+                                                            </td>
+                                                        }
+                                                    </tr>
+                                                }
+
+                                                <!-- Monthly Totals Row -->
+                                                <tr class="monthly-totals-row">
+                                                    <td colspan="1"></td>
+                                                    <td class="click-cell">
+                                                        Click <i class="fas fa-plus-square"></i>
+                                                    </td>
+
+                                                    @foreach (var month in new[] { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" })
+                                                    {
+                                                        decimal monthlyTotal = 0;
+                                                        decimal discountTotal = 0; // Initialize discount total for this month
+                                                        decimal firstPaidAmount = 0; // Initialize first paid amount for this month
+                                                        bool foundFirstPayment = false;  // Initialize paid total for this month
+
+                                                        // Calculate monthly total, discount, and paid amount separately for each month
+                                                        foreach (var fee in Model.FeeDetails)
+                                                        {
+                                                            if (fee.Months != null && fee.Months.ContainsKey(month))
+                                                            {
+                                                                // Add the full amount
+                                                                monthlyTotal += fee.Months[month];
+
+                                                                // Track discount for this fee and month
+                                                                if (fee.Discounts != null && fee.Discounts.ContainsKey(month))
+                                                                {
+                                                                    discountTotal += fee.Discounts[month];
+                                                                }
+
+                                                                // Track paid amount for this fee and month
+                                                                if (!foundFirstPayment && fee.paidAmounts != null && fee.paidAmounts.ContainsKey(month))
+                                                                {
+                                                                    firstPaidAmount = fee.paidAmounts[month];
+                                                                    foundFirstPayment = true; // Set flag so we don't pick up any more payments
+                                                                }
+                                                            }
+                                                        }
+
+                                                        // Calculate remaining balance after paid amount
+                                                        decimal netAmount = monthlyTotal - discountTotal;
+                                                        decimal remainingBalance = netAmount - firstPaidAmount;
+
+                                                        <td class="month-cell">
+                                                            <button type="button" class="add-month-btn @(firstPaidAmount > 0 ? "disabled" : "")"
+                                                                    data-month="@month"
+                                                                    data-amount="@monthlyTotal.ToString("0.00")"
+                                                                    data-discount="@discountTotal.ToString("0.00")"
+                                                                    data-paid="@firstPaidAmount.ToString("0.00")"
+                                                                    @(firstPaidAmount > 0 ? "disabled" : "")
+                                                                    aria-label="Add @month fees">
+                                                                <i class="fas @(firstPaidAmount > 0 ? "fa-check-square" : "fa-plus-square")"></i>
+                                                            </button>
+                                                            <div>@monthlyTotal.ToString("0.00")</div>
+                                                            @if (firstPaidAmount > 0)
+                                                            {
+                                                                @*<div class="remaining-balance">Balance: @remainingBalance.ToString("0.00")</div>*@
+                                                            }
+                                                        </td>
+                                                    }
+                                                </tr>
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="14" class="loading-row">No fee details available.</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    <div class="card mt-4">
+                                        <div class="card-body">
+                                            <div class="added-fees-container">
+                                                <table class="table table-bordered" id="added-fees">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th>S.No</th>
+                                                            <th>Month</th>
+                                                            <th>Fee Name</th>
+                                                            <th>Amount</th>
+                                                            <th>Discount</th>
+                                                            <th>Final</th>
+                                                            <th>Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="added-fees-body">
+                                                        <!-- Added fees will be inserted here by JavaScript -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <!-- Payment Totals - Single Row Format -->
+                                            <div class="payment-totals-container mt-4">
+                                                <div class="payment-totals-row">
+                                                    <div class="payment-field">
+                                                        <label for="previous-balance">
+
+                                                            @if (@Model.StudentInfo.BalanceType == "Balance")
+                                                            {
+                                                                <span class="text-info">
+                                                                    <strong>Last Balance:</strong>
+                                                                </span>
+                                                            }
+                                                            else if (@Model.StudentInfo.BalanceType == "OldYearBalance")
+                                                            {
+                                                                <span class="text-warning">
+                                                                    <strong>Old Year Balance:</strong>
+                                                                </span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-success">
+                                                                    <strong>No Balance Due</strong>
+                                                                </span>
+                                                            }
+
+                                                        </label>
+                                                        <input type="number" id="previous-balance" readonly class="form-control" value="@Model.StudentInfo.OldYearBalance" min="0" step="1">
+                                                    </div>
+                                                    <div class="payment-field">
+                                                        <label for="discount-amount">Discount:</label>
+                                                        <input type="number" id="discount-amount" class="form-control" value="0" min="0" step="1">
+                                                    </div>
+                                                    <div class="payment-field">
+                                                        <label for="late-fee-amount">Late Fee:</label>
+                                                        <input type="number" id="late-fee-amount" class="form-control" value="0" min="0" step="1">
+                                                    </div>
+                                                    <div class="payment-field">
+                                                        <label for="subtotal-amount">Subtotal:</label>
+                                                        <input type="number" id="subtotal-amount" class="form-control" value="0.00" readonly>
+                                                    </div>
+                                                    <div class="payment-field">
+                                                        <label for="total-amount">Total:</label>
+                                                        <input type="number" id="total-amount" class="form-control" value="0.00" readonly>
+                                                    </div>
+                                                    <div class="payment-field">
+                                                        <label for="received-amount">Received:</label>
+                                                        <input type="number" id="received-amount" onblur="updateTotals()" class="form-control" value="0.00" min="0" step="0.01">
+                                                    </div>
+                                                    <div class="payment-field">
+                                                        <label for="remain-amount">Remaining:</label>
+                                                        <input type="number" id="remain-amount" class="form-control" value="0.00" readonly>
+                                                    </div>
+                                                    <div class="payment-field">
+                                                        <label for="receipt-date">Receipt Date:</label>
+                                                        <input type="date" id="receipt-date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Note -->
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="note">Note</label>
+                                                        <textarea id="note" class="form-control" rows="1"></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 text-end">
+                                                    <button type="button" id="received-fee-btn" class="btn btn-primary mt-4">
+                                                        <i class="fas fa-save me-1"></i> Save Payment
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="top-tab2" role="tabpanel">
+                    Tab content 2
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+
+</div>
+
+<!-- Styles -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    /* Common Styles */
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Student Info Styles */
+    .student-info-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .info-row {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        align-items: center;
+    }
+
+    /* Fee Table Styles */
+    .fee-table-container {
+        overflow-x: auto;
+        margin-bottom: 1.5rem;
+    }
+
+    #fee-details {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+        #fee-details th,
+        #fee-details td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+        }
+
+        #fee-details th {
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+    /* Month Cell Styles */
+    .month-cell {
+        position: relative;
+        min-width: 70px;
+    }
+
+    .fee-amount {
+        font-weight: 500;
+    }
+
+    .discount-value {
+        color: #dc3545;
+        font-size: 12px;
+    }
+
+    .monthly-totals-row {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+
+    .click-cell {
+        text-align: center;
+        color: #495057;
+    }
+
+    /* Add Month Button Styles */
+    .add-month-btn {
+        background: none;
+        border: none;
+        color: #28a745;
+        cursor: pointer;
+        padding: 0;
+        font-size: 16px;
+    }
+
+        .add-month-btn:hover {
+            color: #218838;
+        }
+
+        .add-month-btn.disabled {
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+    /* Amount Display Styles */
+    .amount-bubble {
+        display: inline-block;
+        background-color: #e9ecef;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+        line-height: 24px;
+        text-align: center;
+        margin-left: 5px;
+    }
+
+    /* Added Fees Table Styles */
+    .added-fees-container {
+        max-height: 250px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+    }
+
+    #added-fees {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        #added-fees th,
+        #added-fees td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+        }
+
+        #added-fees th {
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+    /* Cancel Button Styles */
+    .btn-cancel {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 0;
+    }
+
+        .btn-cancel:hover {
+            color: #c82333;
+        }
+
+    /* Fee Summary Styles */
+    .fee-summary {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .summary-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+        .summary-icon.add {
+            background-color: #d4edda;
+            color: #28a745;
+        }
+
+        .summary-icon.subtract {
+            background-color: #f8d7da;
+            color: #dc3545;
+        }
+
+    .amount-circle {
+        display: inline-block;
+        background-color: #e9ecef;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+        line-height: 32px;
+        text-align: center;
+    }
+
+    /* Payment Totals Styles */
+    .payment-totals-container {
+        overflow-x: auto;
+    }
+
+    .payment-totals-row {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+        background-color: #f8f9fa;
+        padding: 12px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .payment-field {
+        margin-right: 12px;
+        min-width: 120px;
+    }
+
+        .payment-field:last-child {
+            margin-right: 0;
+        }
+
+        .payment-field label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .payment-field input {
+            width: 100%;
+            height: 38px;
+        }
+
+    @@media (max-width: 992px) {
+        .payment-totals-row {
+            flex-wrap: wrap;
+        }
+
+        .payment-field {
+            flex: 0 0 30%;
+            margin-bottom: 10px;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .payment-field {
+            flex: 0 0 45%;
+        }
+    }
+
+    /* Responsive adjustments */
+    @@media (min-width: 768px) {
+        .student-info-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 767px) {
+        .fee-table-container {
+            margin-left: -15px;
+            margin-right: -15px;
+            width: calc(100% + 30px);
+        }
+    }
+</style>
+
+<!-- Scripts -->
+<script>
+    // Configuration constants
+    const CONFIG = {
+        MONTHS: [
+            { short: "Apr", long: "April" },
+            { short: "May", long: "May" },
+            { short: "Jun", long: "June" },
+            { short: "Jul", long: "July" },
+            { short: "Aug", long: "August" },
+            { short: "Sep", long: "September" },
+            { short: "Oct", long: "October" },
+            { short: "Nov", long: "November" },
+            { short: "Dec", long: "December" },
+            { short: "Jan", long: "January" },
+            { short: "Feb", long: "February" },
+            { short: "Mar", long: "March" }
+        ],
+        MAX_VISIBLE_ROWS: 5
+    };
+    const state = {
+        addedFees: [],
+        feeCounter: 1
+    };
+    function updateElementValue(elementId, value) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.value = value;
+        }
+    }
+    /**
+  * Update all total calculations without auto-populating received amount
+  */
+    function updateTotals() {
+        // Sum of all added fees (original amount before any discounts)
+        const feeOriginalTotal = state.addedFees.reduce((sum, fee) => sum + fee.regularAmount, 0);
+
+        // Sum of individual discounts already applied to specific months
+        const individualDiscounts = state.addedFees.reduce((sum, fee) => sum + fee.discount, 0);
+
+        // Sum of all added fees (final amount after individual discounts)
+        const feeTotal = state.addedFees.reduce((sum, fee) => sum + fee.finalAmount, 0);
+
+        // Get previous balance
+        const previousBalanceElement = document.querySelector('input[id^="previous-balance"]');
+        const previousBalance = previousBalanceElement ? parseFloat(previousBalanceElement.value) || 0 : 0;
+
+        // Get late fee
+        const lateFeeElement = document.getElementById('late-fee-amount');
+        const lateFee = lateFeeElement ? parseFloat(lateFeeElement.value) || 0 : 0;
+
+        // Get discount
+        const discountElement = document.getElementById('discount-amount');
+        const discount = discountElement ? parseFloat(discountElement.value) || 0 : 0;
+
+        // Calculate subtotal (fees + previous balance + late fee)
+        const subtotal = feeTotal + previousBalance + lateFee;
+
+        // Calculate total (after discount)
+        const total = Math.max(0, subtotal - discount);
+
+        // Update UI elements
+        updateElementValue('subtotal-amount', subtotal.toFixed(2));
+        updateElementValue('total-amount', total.toFixed(2));
+
+        // IMPORTANT: Do NOT auto-update received amount here
+        // This was causing the textbox to reset to total value
+
+        // Update remaining calculation
+        updateRemaining();
+    }
+
+    // Initialize the application when the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', initFeeManager);
+    function updateRemaining() {
+        const totalElement = document.getElementById('total-amount');
+        const receivedElement = document.getElementById('received-amount');
+        const remainElement = document.getElementById('remain-amount');
+
+        if (totalElement && receivedElement && remainElement) {
+            const total = parseFloat(totalElement.value) || 0;
+            const received = parseFloat(receivedElement.value) || 0;
+            const remaining = Math.max(0, total - received);
+
+            remainElement.value = remaining.toFixed(2);
+
+            // Log values for debugging
+            console.log("Total:", total, "Received:", received, "Remaining:", remaining);
+
+            // Check if we need to validate months based on payment amount
+            validateMonthsBasedOnPayment(total, received);
+        }
+    }
+    function validateMonthsBasedOnPayment(totalAmount, receivedAmount) {
+        console.log("Validating payment - Total:", totalAmount, "Received:", receivedAmount);
+        const saveButton = document.getElementById('received-fee-btn');
+
+        if (!saveButton) {
+            console.error("Save button not found in validateMonthsBasedOnPayment");
+            return false;
+        }
+
+        const previousBalanceElement = document.querySelector('#previous-balance');
+        const previousBalance = previousBalanceElement ? parseFloat(previousBalanceElement.value) || 0 : 0;
+
+        console.log("Previous balance:", previousBalance);
+        console.log("Added fees count:", window.feeManagerState?.addedFees?.length || 0);
+
+       
+
+        // If received amount covers the total, enable the save button
+        if (receivedAmount >= totalAmount) {
+            saveButton.disabled = false;
+            console.log("Validation passed: Full payment");
+            return true;
+        }
+
+        // If there's previous balance and received amount is enough to cover it
+        if (previousBalance > 0 && receivedAmount >= previousBalance) {
+            saveButton.disabled = false;
+            console.log("Validation passed: Covers previous balance");
+            return true;
+        }
+        if (window.feeManagerState && window.feeManagerState.addedFees !== null) {
+            // If partial payment but no months added, require months
+            if (window.feeManagerState.addedFees.length === 0) {
+                saveButton.disabled = true;
+                console.log("Validation failed: No fees added for partial payment");
+                return false;
+            }
+        }
+
+        // If we have added fees, allow partial payment
+        saveButton.disabled = false;
+        console.log("Validation passed: Partial payment with added fees");
+        return true;
+    }
+    /**
+     * Initialize the Fee Manager
+     */
+    function initFeeManager() {
+        // Initialize state
+
+
+        // Set up event listeners
+        setupEventListeners();
+        setupReceivedAmountListener();
+        /**
+         * Set up all event listeners
+         */
+        function setupEventListeners() {
+            // Add month buttons
+            document.querySelectorAll('.add-month-btn').forEach(btn => {
+                btn.addEventListener('click', handleAddMonthClick);
+            });
+
+            // Click cell for ROA (Add all monthly totals)
+            const clickCell = document.querySelector('.click-cell');
+            if (clickCell) {
+                clickCell.addEventListener('click', handleRoaClick);
+            }
+
+            // Previous Balance input
+            const previousBalanceInput = document.querySelector('input[id^="previous-balance"]');
+            if (previousBalanceInput) {
+                previousBalanceInput.addEventListener('input', function () {
+                    this.value = parseFloat(this.value) || 0;
+                    updateTotals();
+                });
+            }
+
+            // Discount amount input
+            const discountInput = document.getElementById('discount-amount');
+            if (discountInput) {
+                discountInput.addEventListener('input', handleDiscountChange);
+            }
+
+            // Late fee amount input
+            const lateFeeInput = document.getElementById('late-fee-amount');
+            if (lateFeeInput) {
+                lateFeeInput.addEventListener('input', handleLateFeeChange);
+            }
+
+            // Received amount input
+            const receivedInput = document.getElementById('received-amount');
+            if (receivedInput) {
+                receivedInput.addEventListener('input', updateRemaining);
+            }
+
+            // Payment submission button
+            const submitBtn = document.getElementById('received-fee-btn');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', handlePaymentSubmission);
+            }
+        }
+
+
+        /**
+         * Handle ROA click - add fees for all months
+         */
+        function handleRoaClick(event) {
+            event.preventDefault();
+
+            // Get all month buttons that are not disabled
+            const availableMonthButtons = Array.from(document.querySelectorAll('.add-month-btn:not(.disabled)'));
+
+            // Exit if no active month buttons are available
+            if (availableMonthButtons.length === 0) {
+                showNotification('All fees have already been added.', 'warning');
+                return;
+            }
+
+            // Add all available month fees
+            let totalAdded = 0;
+            availableMonthButtons.forEach(button => {
+                // Get month and total amount
+                const month = button.dataset.month;
+                const amount = parseFloat(button.dataset.amount || 0);
+
+                // Skip months with zero amount
+                if (amount <= 0) return;
+
+                // Simulate a click on this month button
+                button.click();
+                totalAdded++;
+            });
+
+            if (totalAdded === 0) {
+                showNotification('No additional fees available to add.', 'info');
+            } else {
+                showNotification(`Added fees for ${totalAdded} month(s).`, 'success');
+            }
+        }
+        /**
+ * Initialize the received amount field when adding the first fee item
+ * only if it hasn't been manually set by the user
+ */
+        function initializeReceivedAmountIfEmpty() {
+            const receivedElement = document.getElementById('received-amount');
+            const totalElement = document.getElementById('total-amount');
+
+            /*if (receivedElement && totalElement) {
+                const receivedValue = parseFloat(receivedElement.value) || 0;
+
+                // Only set the received value if it's currently zero and we have fees added
+                if (receivedValue === 0 && state.addedFees.length === 1) {
+                    const totalValue = parseFloat(totalElement.value) || 0;
+                    receivedElement.value = totalValue.toFixed(2);
+                    updateRemaining();
+                }
+            }
+            */
+        }
+        /**
+         * Handle discount amount changes
+         */
+        function handleDiscountChange() {
+            this.value = parseFloat(this.value) || 0;
+            updateTotals();
+        }
+
+        /**
+         * Handle late fee amount changes
+         */
+        function handleLateFeeChange() {
+            this.value = parseFloat(this.value) || 0;
+            updateTotals();
+        }
+        /**
+  * Remove all fees for a specific month
+  */
+        function removeAllFeesForMonth(month) {
+            console.log(`Removing all fees for month: ${month}`);
+
+            // Find all rows in the table for this month and remove them
+            const rows = document.querySelectorAll(`#added-fees-body tr`);
+            rows.forEach(row => {
+                const rowMonth = row.querySelector('td:nth-child(2)').textContent;
+                if (rowMonth === month) {
+                    row.remove();
+                }
+            });
+
+            // Remove all fees for this month from the state array
+            state.addedFees = state.addedFees.filter(fee => fee.month !== month);
+
+            // Log the current state for debugging
+            console.log("Remaining fees:", state.addedFees);
+
+            // Update totals
+            updateTotals();
+
+            // Re-enable the month button
+            enableMonthButton(month);
+
+            // Update row numbers after deletion
+            updateRowNumbers();
+        }
+        
+
+        /**
+         * Add fees for a selected month
+         */
+        function handleAddMonthClick(event) {
+            event.preventDefault();
+
+            const month = this.dataset.month;
+            const feeRows = document.querySelectorAll('#fee-details-body tr:not(.monthly-totals-row)');
+            let feesAdded = 0;
+
+            // Process each fee row
+            feeRows.forEach(row => {
+                const feeName = row.querySelector('td:nth-child(2)').textContent;
+                const feeHeadId = row.getAttribute('data-fee-id'); // Get feeHeadId from the data-fee-id attribute
+                const monthCell = row.querySelector(`td[data-month="${month}"]`);
+
+                if (monthCell) {
+                    const feeAmountElement = monthCell.querySelector('.fee-amount');
+
+                    if (feeAmountElement) {
+                        const amount = parseFloat(feeAmountElement.textContent);
+
+                        // Check for duplicates
+                        const isDuplicate = state.addedFees.some(fee =>
+                            fee.name === feeName && fee.month === month
+                        );
+
+                        if (!isDuplicate && amount > 0) {
+                            // Get discount if available
+                            const discountElement = monthCell.querySelector('.discount-value');
+                            const discount = discountElement ?
+                                parseFloat(discountElement.textContent.replace('-', '')) : 0;
+
+                            // Add fee to the table (now including feeHeadId)
+                            addFeeToTable(feeName, month, amount, discount, amount - discount, feeHeadId);
+                            feesAdded++;
+                        }
+                    }
+                }
+            });
+
+            if (feesAdded === 0) {
+                showNotification(`All fees for ${month} are already added.`, 'warning');
+            }
+        }
+
+        /**
+         * Add a fee to the added fees table
+         */
+        function addFeeToTable(feeName, month, regularAmount, discount, finalAmount, feeHeadId) {
+            const tableBody = document.getElementById('added-fees-body');
+            if (!tableBody) {
+                console.error('added-fees-body element not found');
+                return;
+            }
+
+            // Check for duplicates
+            const isDuplicate = state.addedFees.some(fee =>
+                fee.name === feeName && fee.month === month
+            );
+
+            if (isDuplicate) {
+                showNotification(`${feeName} for ${month} is already added.`, 'warning');
+                return;
+            }
+
+            // Create a new row
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+        <td>${state.feeCounter}</td>
+        <td>${month}</td>
+        <td>${feeName}</td>
+        <td>${regularAmount.toFixed(2)}</td>
+        <td class="discount-value">-${discount.toFixed(2)}</td>
+        <td>${finalAmount.toFixed(2)}</td>
+        <td>
+            <button type="button" class="btn-cancel" data-id="${state.feeCounter}" data-month="${month}" aria-label="Remove fee">
+                <i class="fas fa-times"></i>
+            </button>
+        </td>
+    `;
+
+            // Store the feeHeadId as a data attribute (optional, helps with debugging)
+            newRow.setAttribute('data-fee-head-id', feeHeadId);
+
+            // Add to the table
+            tableBody.appendChild(newRow);
+
+            // Add to the tracking array (now including feeHeadId)
+            state.addedFees.push({
+                id: state.feeCounter,
+                month: month,
+                name: feeName,
+                regularAmount: regularAmount,
+                discount: discount,
+                finalAmount: finalAmount,
+                feeHeadId: feeHeadId  // Store the FeeHeadId
+            });
+
+            // Increment counter
+            state.feeCounter++;
+
+            // Set up the cancel button
+            const cancelBtn = newRow.querySelector('.btn-cancel');
+            cancelBtn.addEventListener('click', function () {
+                const feeMonth = this.dataset.month;
+                // Remove all fees for this month
+                removeAllFeesForMonth(feeMonth);
+            });
+
+            // Update totals
+            updateTotals();
+
+            // Initialize received amount only when adding the first fee
+            if (state.addedFees.length === 1) {
+                initializeReceivedAmountIfEmpty();
+            }
+
+            // Check if all fees for this month are added
+            checkMonthCompletionStatus(month);
+        }
+        /**
+ * Update row numbers in the table after deletion
+ */
+        function updateRowNumbers() {
+            const rows = document.querySelectorAll('#added-fees-body tr');
+
+            // Update the visible row numbers in the table
+            rows.forEach((row, index) => {
+                const numberCell = row.querySelector('td:first-child');
+                if (numberCell) {
+                    numberCell.textContent = index + 1;
+                }
+            });
+        }
+        /**
+         * Remove a fee from the added fees table
+         */
+        function removeFee(id, rowElement, month) {
+            console.log(`Removing fee with ID: ${id}, Month: ${month}`);
+
+            // Remove from DOM
+            rowElement.remove();
+
+            // Find the specific fee in the state array by ID
+            const index = state.addedFees.findIndex(fee => fee.id === id);
+
+            // Only remove if found
+            if (index !== -1) {
+                // Remove only that specific fee
+                state.addedFees.splice(index, 1);
+
+                // Log the current state for debugging
+                console.log("Remaining fees:", state.addedFees);
+
+                // Update totals
+                updateTotals();
+
+                // Check if month button should be re-enabled
+                const monthHasFees = state.addedFees.some(fee => fee.month === month);
+                if (!monthHasFees) {
+                    enableMonthButton(month);
+                }
+
+                // Update row numbers after deletion
+                updateRowNumbers();
+            } else {
+                console.error(`Fee with ID ${id} not found in state`);
+            }
+        }
+
+        /**
+         * Check if all fees for a month are added and update UI accordingly
+         */
+        function checkMonthCompletionStatus(month) {
+            const feeRows = document.querySelectorAll('#fee-details-body tr:not(.monthly-totals-row)');
+            let availableFees = 0;
+            let addedFees = 0;
+
+            // Count available and added fees
+            feeRows.forEach(row => {
+                const monthCell = row.querySelector(`td[data-month="${month}"]`);
+                if (monthCell) {
+                    const feeAmountElement = monthCell.querySelector('.fee-amount');
+                    if (feeAmountElement && parseFloat(feeAmountElement.textContent) > 0) {
+                        const feeName = row.querySelector('td:nth-child(2)').textContent;
+                        availableFees++;
+
+                        // Check if already added
+                        if (state.addedFees.some(fee => fee.name === feeName && fee.month === month)) {
+                            addedFees++;
+                        }
+                    }
+                }
+            });
+
+            // Update button state
+            if (availableFees > 0 && addedFees >= availableFees) {
+                disableMonthButton(month);
+            }
+        }
+
+        /**
+         * Disable the add button for a month
+         */
+        function disableMonthButton(month) {
+            const button = document.querySelector(`.add-month-btn[data-month="${month}"]`);
+            if (button) {
+                button.disabled = true;
+                button.classList.add('disabled');
+
+                const icon = button.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-plus-square');
+                    icon.classList.add('fa-check-square');
+                }
+            }
+        }
+
+        /**
+         * Enable the add button for a month
+         */
+        function enableMonthButton(month) {
+            const button = document.querySelector(`.add-month-btn[data-month="${month}"]`);
+            if (button) {
+                button.disabled = false;
+                button.classList.remove('disabled');
+
+                const icon = button.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-check-square');
+                    icon.classList.add('fa-plus-square');
+                }
+            }
+        }
+
+
+        /**
+         * Update discount summary display
+         */
+        function updateDiscountSummary(totalDiscount) {
+            const discountCircle = document.querySelector('#fee-summary .summary-item:first-child .amount-circle');
+            if (discountCircle) {
+                discountCircle.textContent = Math.round(totalDiscount);
+            }
+        }
+
+        /**
+         * Update late fee display
+         */
+        function updateLateFeeDisplay(lateFee) {
+            const lateFeeCircle = document.querySelector('#fee-summary .summary-item:nth-child(2) .amount-circle');
+            if (lateFeeCircle) {
+                lateFeeCircle.textContent = Math.round(lateFee);
+            }
+        }
+
+        /**
+         * Update remaining amount calculation
+         */
+
+
+        function validateMonthsBasedOnPayment(totalAmount, receivedAmount) {
+            const saveButton = document.getElementById('received-fee-btn');
+            const previousBalanceElement = document.querySelector('input[id^="previous-balance"]');
+            const previousBalance = previousBalanceElement ? parseFloat(previousBalanceElement.value) || 0 : 0;
+
+            // If received amount covers the total, enable the save button
+            if (receivedAmount >= totalAmount) {
+                if (saveButton) {
+                    saveButton.disabled = false;
+                }
+                return true;
+            }
+
+            // If there's previous balance and received amount is enough to cover it
+            if (previousBalance > 0 && receivedAmount >= previousBalance) {
+                if (saveButton) {
+                    saveButton.disabled = false;
+                }
+                return true;
+            }
+
+            // If partial payment but no months added, require months
+            if (state.addedFees.length === 0) {
+                if (saveButton) {
+                    saveButton.disabled = true;
+                }
+                return false;
+            }
+
+            // If we have added fees, allow partial payment
+            if (saveButton) {
+                saveButton.disabled = false;
+            }
+            return true;
+        }
+        /**
+         * Handle payment submission
+         */
+        function handlePaymentSubmission(event) {
+            event.preventDefault();
+
+            // Get balance and received amounts
+            const totalAmount = parseFloat(document.getElementById('total-amount').value) || 0;
+            const previousAmount = parseFloat(document.getElementById('previous-balance').value) || 0;
+            const receivedAmount = parseFloat(document.getElementById('received-amount').value) || 0;
+            const remainingAmount = parseFloat(document.getElementById('remain-amount').value) || 0;
+            if (totalAmount < receivedAmount) {
+                showNotification('Please add more fee months to proceed payment.', 'warning');
+                return;
+            }
+            // Check if there are enough months added based on received amount
+            if (state.addedFees.length === 0) {
+                // If no fees added yet, check if there's a balance to pay
+                if (previousAmount > 0 && receivedAmount > 0) {
+                    // If there's a previous balance and received amount can cover it
+                    if (receivedAmount <= previousAmount) {
+                        // Allow payment without adding months since received amount covers the balance
+                        const paymentDetails = collectPaymentDetails();
+                        submitPaymentToServer(paymentDetails, event.currentTarget);
+                        return;
+                    } else {
+                        // Need to add months since received amount doesn't cover the balance
+                        showNotification('Please add fee months to proceed with partial payment.', 'warning');
+                        return;
+                    }
+                } else {
+                    showNotification('Please add at least one fee before proceeding.', 'error');
+                    return;
+                }
+            }
+
+            // For cases with added fees, validate received amount
+            if (receivedAmount <= 0) {
+                showNotification('Please enter a valid received amount.', 'error');
+                return;
+            }
+
+            // Get payment details
+            const paymentDetails = collectPaymentDetails();
+
+            // Show processing state
+            const submitButton = event.currentTarget;
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Processing...';
+            }
+
+            // Submit payment to server
+            submitPaymentToServer(paymentDetails, submitButton);
+        }
+
+        /**
+         * Collect all payment details
+         */
+        function collectPaymentDetails() {
+            const previousBalanceInput = document.querySelector('input[id^="previous-balance"]');
+            const previousBalance = previousBalanceInput ? parseFloat(previousBalanceInput.value) || 0 : 0;
+
+            return {
+                studentId: document.getElementById('hiddenStudentId').value,
+                addedFees: state.addedFees,
+                previousBalance: previousBalance,
+                subtotal: parseFloat(document.getElementById('subtotal-amount').value) || 0,
+                discount: parseFloat(document.getElementById('discount-amount').value) || 0,
+                lateFee: parseFloat(document.getElementById('late-fee-amount').value) || 0,
+                total: parseFloat(document.getElementById('total-amount').value) || 0,
+                received: parseFloat(document.getElementById('received-amount').value) || 0,
+                remaining: parseFloat(document.getElementById('remain-amount').value) || 0,
+                note: document.getElementById('note').value,
+                receiptDate: document.getElementById('receipt-date').value
+            };
+        }
+        function submitPaymentToServer(paymentDetails, submitButton) {
+            // Format the fee items for API
+            const formattedFees = paymentDetails.addedFees.map(fee => ({
+                Month: fee.month,
+                RegularAmount: fee.regularAmount,
+                Discount: fee.discount,
+                FinalAmount: fee.finalAmount,
+                FeeHeadId: fee.feeHeadId  // Include FeeHeadId in the API call
+            }));
+
+            // Prepare the payment data object
+            const paymentData = {
+                StudentId: paymentDetails.studentId,
+                Fees: formattedFees,
+                PreviousBalance: paymentDetails.previousBalance,
+                SubtotalAmount: paymentDetails.subtotal,
+                DiscountAmount: paymentDetails.discount,
+                LateFeeAmount: paymentDetails.lateFee,
+                TotalAmount: paymentDetails.total,
+                ReceivedAmount: paymentDetails.received,
+                RemainAmount: paymentDetails.remaining,
+                PaymentMethod: "Cash", // Default to Cash, can be customized
+                ReceiptTemplate: "FeeReceipt", // Default template ID, can be customized
+                SendSms: true, // Can be made configurable
+                Note: paymentDetails.note,
+                Date: paymentDetails.receiptDate
+            };
+
+            console.log("Sending payment data with FeeHeadIds:", paymentData);
+
+            // Send AJAX request to the server
+            fetch('/Fee/SubmitPayment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(paymentData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Reset processing state
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-save me-1"></i> Save Payment';
+                    }
+
+                    if (data.success) {
+                        // Show success message
+                        showNotification('Payment successfully processed! Receipt: ' + data.data.receiptNumber, 'success');
+                        promptToPrintReceiptAndRefresh(data.data.receiptNumber);
+                    } else {
+                        // Show error message
+                        showNotification('Error: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting payment:', error);
+
+                    // Reset processing state
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-save me-1"></i> Save Payment';
+                    }
+
+                    // Show error message
+                    showNotification('An error occurred while processing the payment.', 'error');
+                });
+        }
+
+        // STEP 4: Add a debug function to help verify FeeHeadId is being captured correctly
+        function debugAddedFees() {
+            console.log("Current added fees:", state.addedFees);
+            console.log("FeeHeadIds:", state.addedFees.map(fee => fee.feeHeadId));
+        }
+        /**
+         * Helper function to update an element's value
+         */
+
+
+        /**
+         * Show a notification message
+         */
+        function showNotification(message, type = 'info') {
+            // In a real application, you might use a toast notification library
+            // For simplicity, we'll just use alert for now
+            alert(message);
+        }
+    }
+
+    function promptToPrintReceiptAndRefresh(receiptNumber) {
+        // Create modal elements
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+
+        const modalContainer = document.createElement('div');
+        modalContainer.className = 'modal-container';
+
+        // Create modal content
+        modalContainer.innerHTML = `
+    <div class="modal-header">
+        <h5>Payment Processed Successfully</h5>
+    </div>
+    <div class="modal-body">
+        <p>Receipt #${receiptNumber} has been generated.</p>
+        <p>Would you like to print the receipt?</p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="print-no-btn">No</button>
+        <button type="button" class="btn btn-primary" id="print-yes-btn">Yes, Print Receipt</button>
+    </div>
+    `;
+
+        // Add modal to document
+        modalOverlay.appendChild(modalContainer);
+        document.body.appendChild(modalOverlay);
+
+        // Add event listeners
+        document.getElementById('print-yes-btn').addEventListener('click', function () {
+            // Open receipt in new tab for printing
+            openReceiptInNewTab(receiptNumber);
+
+            // Remove modal and refresh page
+            document.body.removeChild(modalOverlay);
+            refreshPage();
+        });
+
+        document.getElementById('print-no-btn').addEventListener('click', function () {
+            // Close the modal and refresh page
+            document.body.removeChild(modalOverlay);
+            refreshPage();
+        });
+
+        // Add styles for the modal if they don't exist
+        addModalStyles();
+    }
+    function setupReceivedAmountListener() {
+        const receivedInput = document.getElementById('received-amount');
+        if (receivedInput) {
+            // Remove any existing event listeners to prevent duplicates
+            receivedInput.removeEventListener('input', updateRemaining);
+            receivedInput.removeEventListener('change', updateRemaining);
+
+            // Add event listeners for both input and change events
+            receivedInput.addEventListener('input', updateRemaining);
+            receivedInput.addEventListener('change', updateRemaining);
+
+            console.log("Event listeners attached to received-amount input");
+        } else {
+            console.error("received-amount element not found");
+        }
+    }
+    /**
+     * Show a custom modal to ask user about printing the receipt
+     */
+    function showPrintConfirmationModal(receiptNumber) {
+        // Create modal elements
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+
+        const modalContainer = document.createElement('div');
+        modalContainer.className = 'modal-container';
+
+        // Create modal content
+        modalContainer.innerHTML = `
+        <div class="modal-header">
+            <h5>Payment Processed Successfully</h5>
+        </div>
+        <div class="modal-body">
+            <p>Receipt #${receiptNumber} has been generated.</p>
+            <p>Would you like to print the receipt?</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="print-no-btn">No</button>
+            <button type="button" class="btn btn-primary" id="print-yes-btn">Yes, Print Receipt</button>
+        </div>
+    `;
+
+        // Add modal to document
+        modalOverlay.appendChild(modalContainer);
+        document.body.appendChild(modalOverlay);
+
+        // Add event listeners
+        document.getElementById('print-yes-btn').addEventListener('click', function () {
+            // Open receipt in new tab for printing
+            openReceiptInNewTab(receiptNumber);
+
+            // Remove modal
+            document.body.removeChild(modalOverlay);
+        });
+
+        document.getElementById('print-no-btn').addEventListener('click', function () {
+            // Just close the modal
+            document.body.removeChild(modalOverlay);
+        });
+
+        // Add styles for the modal if they don't exist
+        addModalStyles();
+    }
+
+    /**
+     * Add CSS styles for the modal
+     */
+    function addModalStyles() {
+        // Check if styles already exist
+        if (document.getElementById('modal-styles')) {
+            return;
+        }
+
+        // Create style element
+        const styleElement = document.createElement('style');
+        styleElement.id = 'modal-styles';
+
+        // Add CSS rules
+        styleElement.textContent = `
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+        }
+
+        .modal-container {
+            background-color: white;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .modal-header h5 {
+            margin: 0;
+            color: #212529;
+        }
+
+        .modal-body {
+            padding: 15px;
+        }
+
+        .modal-footer {
+            padding: 15px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    `;
+
+        // Add styles to document
+        document.head.appendChild(styleElement);
+    }
+    function refreshPage() {
+        window.location.reload();
+    }
+    /**
+     * Open receipt in a new tab for printing
+     */
+    function openReceiptInNewTab(receiptNumber) {
+        const receiptUrl = `/Fee/PrintReceipt?receiptNumber=${receiptNumber}`;
+        window.open(receiptUrl, '_blank');
+    }
+
+    /**
+     * Show notification with custom implementation for different notification types
+     */
+    function showNotification(message, type = 'info') {
+        // Create a better notification than a simple alert
+        const notificationContainer = document.createElement('div');
+        notificationContainer.className = `notification notification-${type}`;
+
+        // Set icon based on notification type
+        let icon = 'info-circle';
+        if (type === 'success') icon = 'check-circle';
+        if (type === 'warning') icon = 'exclamation-triangle';
+        if (type === 'error') icon = 'times-circle';
+
+        // Set notification content
+        notificationContainer.innerHTML = `
+        <div class="notification-icon">
+            <i class="fas fa-${icon}"></i>
+        </div>
+        <div class="notification-message">${message}</div>
+        <button class="notification-close">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+        // Add notification to document
+        document.body.appendChild(notificationContainer);
+
+        // Add event listener to close button
+        const closeButton = notificationContainer.querySelector('.notification-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', function () {
+                document.body.removeChild(notificationContainer);
+            });
+        }
+
+        // Add styles for notifications if they don't exist
+        addNotificationStyles();
+
+        // Auto-remove notification after a delay
+        setTimeout(() => {
+            if (document.body.contains(notificationContainer)) {
+                document.body.removeChild(notificationContainer);
+            }
+        }, 5000);
+    }
+
+    /**
+     * Add CSS styles for the notifications
+     */
+    function addNotificationStyles() {
+        // Check if styles already exist
+        if (document.getElementById('notification-styles')) {
+            return;
+        }
+
+        // Create style element
+        const styleElement = document.createElement('style');
+        styleElement.id = 'notification-styles';
+
+        // Add CSS rules
+        styleElement.textContent = `
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            padding: 15px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1060;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @@keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification-info {
+            background-color: #cce5ff;
+            border-left: 4px solid #004085;
+            color: #004085;
+        }
+
+        .notification-success {
+            background-color: #d4edda;
+            border-left: 4px solid #155724;
+            color: #155724;
+        }
+
+        .notification-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #856404;
+            color: #856404;
+        }
+
+        .notification-error {
+            background-color: #f8d7da;
+            border-left: 4px solid #721c24;
+            color: #721c24;
+        }
+
+        .notification-icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .notification-message {
+            flex-grow: 1;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
+        }
+    `;
+
+        // Add styles to document
+        document.head.appendChild(styleElement);
+    }
+</script>

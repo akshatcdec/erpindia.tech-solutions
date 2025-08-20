@@ -1,0 +1,116 @@
+﻿@model ERPIndia.FeeSummary.DTO.FeeSummaryViewModel
+@using ERPIndia.Class.Helper
+@{
+    ViewBag.Title = "ID Card";
+    string code = CommonLogic.GetSessionValue(StringConstants.TenantCode);
+    string session = CommonLogic.GetSessionValue(StringConstants.ActiveSessionPrint);
+    string formattedDate = Model.ReportDate.ToString("d-MMM-yyyy");
+    string formattedTime = Model.ReportDate.ToString("h:mm:sstt");
+}
+<!-- Hidden fields for exports -->
+<input type="hidden" id="sessionYear" value="@session" />
+<input type="hidden" id="reportTitle" value="ID Card (@session)" />
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                            <i class="ti ti-file-invoice fs-16"></i>
+                        </span>
+                        <h4 class="text-dark mb-0">@ViewBag.Title - Session: @session</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+                <!-- Filter Form -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        @using (Html.BeginForm("RefreshReport", "Student", FormMethod.Post, new { id = "filterForm", @class = "row g-3" }))
+                        {
+                            <div class="col-md-3">
+                                <label for="ClassId" class="form-label">Class<span style="color:red">*</span></label>
+                                @Html.DropDownListFor(m => m.SelectedClass, Model.ClassList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-3">
+                                <label for="SectionId" class="form-label">Section<span style="color:red">*</span></label>
+                                @Html.DropDownListFor(m => m.SelectedSection, Model.SectionList, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-6 align-self-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-filter me-2"></i>Apply Filter
+                                </button>
+                                <a href="@Url.Action("IdCard", "Student")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-redo me-2"></i>Reset
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Report Container -->
+                <div id="reportContainer" class="mt-4">
+                    @if (Model.FeeSummaries != null && Model.FeeSummaries.Count > 0)
+                    {
+                        @Html.Partial("_IDViewer", Model)
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <strong>No data:</strong> Please apply filters to view ID cards.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script>
+        $(document).ready(function () {
+            // Handle filter form submission via AJAX
+            $("#filterForm").on("submit", function (e) {
+                e.preventDefault();
+
+                // Show loading indicator
+                $("#reportContainer").html('<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Loading report...</p></div>');
+
+                // Get form values
+                var selectedClass = $("#SelectedClass").val();
+                var selectedSection = $("#SelectedSection").val();
+
+                // Submit form via AJAX
+                $.ajax({
+                    url: $(this).attr("action"),
+                    type: "POST",
+                    data: {
+                        selectedClass: selectedClass,
+                        selectedSection: selectedSection
+                    },
+                    success: function (result) {
+                        // Update the report container with the partial view
+                        $("#reportContainer").html(result);
+                    },
+                    error: function (error) {
+                        $("#reportContainer").html('<div class="alert alert-danger">Error loading report: ' + error.statusText + '</div>');
+                    }
+                });
+            });
+        });
+    </script>

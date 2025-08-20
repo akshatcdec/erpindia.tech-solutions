@@ -1,0 +1,373 @@
+.fee-collect-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.old-balance {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.add-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.receipt-info {
+    display: flex;
+    justify-content: space-between;
+    background-color: #e9ecef;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.receipt-date {
+    position: relative;
+}
+
+.receipt-date i {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Fee table styles */
+.fee-table {
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #dee2e6;
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+/* Month cell styles */
+.month-cell {
+    position: relative;
+    min-height: 40px;
+    padding: 8px 5px !important;
+}
+
+/* Click cell style */
+.click-cell {
+    color: #007bff;
+    font-weight: bold;
+    text-align: left;
+}
+
+.click-cell i {
+    color: #007bff;
+    margin-left: 5px;
+}
+
+/* Add month button styles */
+.add-month-btn {
+    background: none;
+    border: none;
+    color: #28a745;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    display: inline-block;
+}
+
+.add-month-btn i {
+    color: #28a745;
+}
+
+.add-month-btn:hover i {
+    color: #218838;
+}
+
+/* Style for disabled add month button */
+.add-month-btn.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.add-month-btn.disabled i {
+    color: #28a745;
+}
+
+/* Style for check icon (indicating fee is added) */
+.add-month-btn i.fa-check-square {
+    color: #28a745;
+}
+
+/* Amount bubble styles */
+.amount-bubble {
+    background-color: #f8a100;
+    color: white;
+    border-radius: 20px;
+    padding: 2px 8px;
+    display: inline-block;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+/* Monthly totals row styles */
+.monthly-totals-row {
+    background-color: #f0f8ff;
+    border-top: 2px solid #ccc;
+}
+
+/* Fee summary section */
+.fee-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 20px;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.summary-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.summary-icon.add {
+    background-color: #28a745;
+}
+
+.summary-icon.subtract {
+    background-color: #dc3545;
+}
+
+.amount-circle {
+    background-color: #6c757d;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+/* Added fees section */
+.added-fees {
+    margin-bottom: 20px;
+}
+
+.added-fees-container {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+/* Cancel button */
+.btn-cancel {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    margin: 0 auto;
+}
+
+.btn-cancel:hover {
+    background-color: #c82333;
+}
+
+/* Totals section */
+.totals-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+    background-color: #f8a100;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.total-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.total-item label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.total-item.discount input {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.total-item.total {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.total-item.total label {
+    font-size: 1.1em;
+}
+
+.total-item.total input {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Style for discount values - displayed in red */
+.discount-value {
+    color: #dc3545;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+/* Form elements */
+input[type="text"], input[type="date"], .form-control {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    width: 100%;
+}
+
+/* Payment methods section */
+.payment-options {
+    margin-bottom: 20px;
+}
+
+.payment-methods {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.payment-method-option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.primary {
+    background-color: #28a745;
+    color: white;
+}
+
+.primary:hover {
+    background-color: #218838;
+}
+
+.secondary {
+    background-color: #007bff;
+    color: white;
+}
+
+.secondary:hover {
+    background-color: #0069d9;
+}
+
+/* Receipt templates section */
+.receipt-options {
+    margin-bottom: 20px;
+}
+
+.receipt-template {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.receipt-template-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+input[type="radio"], input[type="checkbox"] {
+    margin-right: 5px;
+    margin-top: 3px;
+}
+
+/* Loading indicator styles */
+.loading {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.loading-row {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .student-info {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .totals-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .payment-methods {
+        flex-direction: column;
+    }
+}

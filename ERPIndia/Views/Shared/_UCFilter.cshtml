@@ -1,0 +1,183 @@
+﻿@{
+    string controller = ViewContext.RouteData.Values["controller"].ToString();
+
+    bool isPagePostback = true;
+
+    if (Request.IsAjaxRequest())
+    {
+        isPagePostback = false;
+    }
+}
+
+<table cellspacing="0" cellpadding="0" style="width: 100%">
+    <tbody>
+        <tr>
+            <td width="60%">
+                <div class="col-md-12 col-sm-12 btn-margin-bottom action-buttons">
+                    <div class="btn-group" id="divAddNew">
+                        <a title="Add new" class="btn-fill-md text-light bg-red" href="@controller/Add"><span class="hide-on-mobile">Add New </span><i class="fa fa-plus"></i></a>
+                    </div>
+                    <div class="btn-group" id="divDelete">
+                        <a id="imgDelete" name="imgDelete" title="Delete" class="btn-fill-md text-light bg-dodger-blue"><span class="hide-on-mobile">Delete </span><i class="fa fa-trash-o"></i></a>
+                    </div>
+                    <div class="btn-group" id="divActive">
+                        <a id="imgActive" name="imgActive" title="Active" class="btn-fill-md text-light bg-dodger-blue"><span class="hide-on-mobile">Active </span><i class="fa fa-check"></i></a>
+                    </div>
+                    <div class="btn-group" id="divInactive">
+                        <a id="imgInactive" name="imgInactive" title="Inactive" class="btn-fill-md text-light bg-dodger-blue"><span class="hide-on-mobile">Inactive </span><i class="fa fa-ban"></i></a>
+                    </div>
+                    <div class="btn-group">
+                        <a title="Show All" class="btn-fill-md text-light bg-dodger-blue" onclick="showAllRecords();"><span class="hide-on-mobile">Show All&nbsp;&nbsp;</span><i class="fa fa-th-list"></i></a>
+                    </div>
+                </div>
+            </td>
+            <td width="40%" style="text-align:right">
+
+                <table style="width:100%">
+                    <tr>
+                        <td width="20%">
+                        </td>
+                        <td width="80%">
+                            <div class="row gutters-8">
+                                <div class="col-lg-6 col-12 form-group">
+                                    <select id="ddlFilter" onchange="return SearchOption();" class="ddlFilter form-control input-sm input-small input-inline">
+                                        <option value="-- Select --">-- Select --</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-4 col-12 form-group">
+                                    <input type="text" id="txtSearchField" class="form-control input-sm input-small input-inline" />
+                                    <select id="ddlStatus" class="form-control input-sm input-small input-inline">
+                                        <option value="1">Active</option>
+                                        <option value="0">Inactive</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-12 form-group">
+                                    <a title="Search" class="btn btn-primary btn-flat" onclick="SearchValidationForFilter();"><i class="fa fa-search"></i></a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<script type="text/javascript">
+    var pageNo = '@ViewBag.PageNo';
+    var pageSize = '@ViewBag.PageSize';
+    var searchField = '@ViewBag.SearchField';
+    var searchValue = '@ViewBag.SearchValue';
+    var sortField = '@ViewBag.SortField';
+    var sortOrder = '@ViewBag.SortOrder';
+    var itemListCount = '@(((ERPIndia.Class.Helper.IPagingParams)ViewBag.PagedList).TotalItemCount)';
+
+    $(document).ready(function () {
+
+        pageLoad();
+        if (searchField == "Status" || searchField == "IsActive") {
+            $('#ddlStatus').show();
+            $('#txtSearchField').hide();
+            $('#txtSearchField').val('');
+            $('#ddlStatus').val(searchValue);
+        }
+        else {
+            $('#ddlStatus').hide();
+            $('#txtSearchField').show();
+            $('#txtSearchField').val(searchValue);
+            $('#ddlStatus').val('1');
+        }
+
+        // filter drop down binging event
+        $('td.search_field').each(function () {
+            $('<option>').val($(this).attr('search_field_value')).text($(this).text()).appendTo('#ddlFilter');
+        });
+
+        if (searchField == '')
+        {
+            $('.ddlFilter').attr('selectedIndex', 0);
+        }
+        else
+        {
+            $('.ddlFilter').val(searchField);
+        }
+
+
+        });
+
+    // search filter event
+    function SearchValidationForFilter() {
+        if ($('#ddlFilter').val() == '-- Select --') {
+            jAlert('@ERPIndia.Class.Helper.StringConstants.SearchFieldValidation', alertTitle, function () {
+                $('#ddlFilter').focus();
+            });
+        }
+        else if ($('#txtSearchField').is(':visible') && $('#txtSearchField')) {
+            if (Trim($('#txtSearchField').val()) == '' && $('#ddlFilter').val() != 'IsStatus' && $('#ddlFilter').val() != 'Status') {
+                jAlert('@ERPIndia.Class.Helper.StringConstants.SearchValueValidation', alertTitle, function () {
+                    $('#txtSearchField').focus();
+                });
+            }
+            else {
+                searchValue = $('#txtSearchField').val();
+            }
+        }
+        else {
+            searchValue = $('#ddlStatus').val();
+        }
+
+        searchField = $('#ddlFilter').val();
+
+        if (searchValue != '') {
+            var postData = { "pageSize": pageSize, "searchField": searchField, "searchValue": searchValue, "sortField": sortField, "sortOrder": sortOrder };
+            callPageAction(currentSiteUrl, postData, 'Searching');
+        }
+    }
+
+    // show all button event
+    function showAllRecords() {
+        var postData = { "pageSize": pageSize, "sortField": sortField, "sortOrder": sortOrder };
+        callPageAction(currentSiteUrl, postData, 'ViewAll');
+    }
+</script>
+
+<script type="text/javascript">
+    var currentSiteUrl = '@Url.Action("index")';
+
+    $(document).ready(function () {
+
+        if ('@isPagePostback' == 'False') {
+            $(":checkbox").uniform({ resetSelector: true });
+        }
+
+        $('#ddlPageSize').val(pageSize);
+
+        var sortedElement = $('td[search_field_value="' + sortField + '"]');
+        sortOrder == 'ASC' ? sortedElement.addClass('ascending') : sortedElement.addClass('descending');
+
+        // listing page status(active/inactive) and delete grid button event
+        $(".SetStatusClick").click(function () {
+            ActionClickEvent(this.id, this.name);
+        });
+
+        //page size drop down change event
+        $('#ddlPageSize').change(function () {
+            var postData = { "pageSize": $(this).val(), "searchField": searchField, "searchValue": searchValue, "sortField": sortField, "sortOrder": sortOrder };
+            callPageAction(currentSiteUrl, postData, '');
+        });
+
+        //grid sorting event
+        $('td.search_field').click(function () {
+            sortField = $(this).attr('search_field_value');
+            sortOrder = sortOrder == 'ASC' ? 'DESC' : 'ASC';
+
+            var postData = { "pageSize": $('#ddlPageSize').val(), "searchField": searchField, "searchValue": searchValue, "sortField": sortField, "sortOrder": sortOrder };
+            callPageAction(currentSiteUrl, postData, '');
+        });
+
+        if ('@ViewBag.SuccessMsg' != null && '@ViewBag.SuccessMsg' != '') {
+            notificationMessage('@ViewBag.SuccessMsg', 'success')
+        }
+
+    });
+</script>

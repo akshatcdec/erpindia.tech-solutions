@@ -1,0 +1,612 @@
+﻿@using ERPIndia
+@{
+
+    ViewBag.Title = "Configuration Management";
+    // These would be passed from your controller
+    string keyName = ViewBag.KeyName;
+    string module = ViewBag.Module;
+    keyName = Utils.ToTitleCase(keyName);
+}
+<div class="card">
+    <div class="card-header bg-light">
+        <div class="d-flex align-items-center">
+            <h5 class="text-dark">@keyName Page</h5>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-xxl-3 col-xl-3">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h5 class="text-dark">Manage @keyName </h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="keyValueForm" class="new-added-form">
+                            <div class="row">
+                                <input type="hidden" id="configId">
+                                <input type="hidden" id="keyName" value="@keyName">
+                                <input type="hidden" id="module" value="@module">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>@keyName Name *</label>
+                                    <input type="text" id="keyValue" placeholder="" autocomplete="off" class="form-control required">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Sort Order</label>
+                                    <input type="number" id="sortOrder" placeholder="0" value="0" min="0" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <br />
+                                    <div class="btn-group" role="group">
+                                        <button type="submit" id="submitBtn" class="btn btn-primary">Save</button>&nbsp;
+                                        <button type="button" id="cancelBtn" class="btn btn-primary">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-9 col-xl-3">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h5 class="text-dark">@keyName List </h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" id="keyValueDatatable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Id</th>
+                                        <th>@keyName Name </th>
+                                        <th>Sort Order</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+
+    <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+    <!-- Simplified Key-Value Management App -->
+
+
+
+    <script>
+        // Function to set up the auto-generation of sort order
+        function setupAutoSortOrder() {
+            // Get references to the key name, module, and sort order fields
+            var keyNameField = document.getElementById('KeyName'); // Adjust ID as needed
+            var moduleField = document.getElementById('Module');   // Adjust ID as needed
+            var sortOrderField = document.getElementById('SortOrder'); // Adjust ID as needed
+
+            // Function to update the sort order based on current key name and module
+            function updateSortOrder() {
+                var keyName = keyNameField.value;
+                var module = moduleField.value;
+
+                // Only proceed if both key name and module have values
+                if (keyName && module) {
+                    $.ajax({
+                        url: '/Configuration/GetNextSortOrder',
+                        type: 'GET',
+                        data: {
+                            keyName: keyName,
+                            module: module
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                sortOrderField.value = response.nextSortOrder;
+                            } else {
+                                console.error('Error getting next sort order:', response.message);
+                                // Default to 1 if there's an error
+                                sortOrderField.value = 1;
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('AJAX error:', error);
+                            // Default to 1 if there's an error
+                            sortOrderField.value = 1;
+                        }
+                    });
+                }
+            }
+
+            // For new configuration form (not edit)
+            if (window.location.href.indexOf('Id=') === -1) {
+                // Set up event listeners for changes to key name or module
+                if (keyNameField) {
+                    keyNameField.addEventListener('change', updateSortOrder);
+                }
+
+                if (moduleField) {
+                    moduleField.addEventListener('change', updateSortOrder);
+                }
+
+                // If both fields are already populated (e.g., from ViewBag), update sort order immediately
+                if (keyNameField && moduleField && keyNameField.value && moduleField.value) {
+                    updateSortOrder();
+                }
+            }
+        }
+
+/**
+ * Key-Value Configuration Management Module
+ * A module pattern implementation for better encapsulation and organization
+ */
+const KeyValueManager = (function() {
+    // Private properties
+    const apiEndpoints = {
+        getAll: '@Url.Action("GetConfigurationsByKey", "Configuration")',
+        getById: '@Url.Action("GetConfigurationById", "Configuration")',
+        create: '@Url.Action("InsertConfiguration", "Configuration")',
+        update: '@Url.Action("UpdateConfiguration", "Configuration")',
+        delete: '@Url.Action("DeleteConfiguration", "Configuration")',
+        getValues: '@Url.Action("GetConfigurationValues", "Configuration")'
+    };
+
+    const elements = {
+        form: '#keyValueForm',
+        formTitle: '#formTitle',
+        idField: '#configId',
+        submitBtn: '#submitBtn',
+        cancelBtn: '#cancelBtn',
+        refreshBtn: '#refreshBtn',
+        datatable: '#keyValueDatatable',
+        requiredFields: '.required'
+    };
+
+    // Get the fixed key and module from hidden fields
+    const fixedKey = $('#keyName').val();
+    const fixedModule = $('#module').val();
+
+    let dataTable = null;
+
+    // Private methods
+    const initializeDataTable = function () {
+        // Get the fixed key and module values
+        const fixedKey = $('#keyName').val();
+        const fixedModule = $('#module').val();
+
+        console.log("Initializing DataTable with Key:", fixedKey, "Module:", fixedModule);
+
+        dataTable = $("#keyValueDatatable").DataTable({
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "ajax": {
+                "url": apiEndpoints.getAll,
+                "type": "POST",
+                "data": function (d) {
+                    // Add key and module parameters to all requests
+                    d.key = fixedKey;
+                    d.module = fixedModule;
+
+                    // Log the data being sent to server
+                    console.log("Sending request with data:", JSON.stringify(d));
+                    return d;
+                },
+                "datatype": "json",
+                "error": function (xhr, error, thrown) {
+                    console.error("DataTable AJAX error:", error, thrown);
+                    console.log("Response:", xhr.responseText);
+                    Notification.show("Failed to load configuration data. Please try again.", "error");
+                }
+            },
+            "columnDefs": [{
+                "targets": [0],
+                "visible": false,
+                "searchable": false
+            }],
+            "columns": [
+                { data: 'Id', visible: false },
+                { "data": "KeyValue", "name": "KeyValue", "autoWidth": true },
+                { "data": "SortOrder", "name": "SortOrder", "autoWidth": true },
+                {
+                    data: null,
+                    orderable: false,
+                    className: 'text-center',
+                    width: "100px",
+                    render: function (data, type, row) {
+                        return `
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary btn-sm edit-btn" data-id="${row.Id}" title="Edit">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" data-id="${row.Id}" title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                },
+            ],
+            "order": [[2, "asc"]], // Default sort by SortOrder
+            responsive: true,
+            dom: "<'row'<'col-sm-6'B><'col-sm-3'l><'col-sm-3'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            buttons: [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ]
+            ,
+            "language": {
+                "emptyTable": `No configurations found for ${fixedModule}/${fixedKey}`,
+                "zeroRecords": `No matching configurations found for ${fixedModule}/${fixedKey}`
+            }
+        });
+    };
+
+    // Check if the value already exists for the same key and module
+    const checkForDuplicateValue = async function (keyValue, currentId = '') {
+        const keyName = $('#keyName').val();
+        const module = $('#module').val();
+
+        // Get the current data for this key and module
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: apiEndpoints.getValues,
+                type: 'GET',
+                data: { keyName: keyName, module: module },
+                success: function (result) {
+                    if (result.success) {
+                        // Check if the value already exists (excluding the current record if we're editing)
+                        const isDuplicate = result.data.some(item => {
+                            return item.KeyValue === keyValue && item.Id.toString() !== currentId.toString();
+                        });
+
+                        resolve(isDuplicate);
+                    } else {
+                        reject(result.message || 'Error checking for duplicates');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error checking for duplicates:", error);
+                    console.log("Response:", xhr.responseText);
+                    reject(error);
+                }
+            });
+        });
+    };
+
+    const getFormData = function () {
+        return {
+            KeyName: $('#keyName').val(),
+            KeyValue: $('#keyValue').val().trim(),
+            Module: $('#module').val(),
+            SortOrder: parseInt($('#sortOrder').val()) || 0
+        };
+    };
+
+    const bindEvents = function() {
+        // Form submission
+        $(elements.form).on('submit', async function(e) {
+            e.preventDefault();
+
+            // Disable submit button to prevent double submission
+            $(elements.submitBtn).prop('disabled', true);
+
+            try {
+                const isValid = await validateForm();
+
+                if (isValid) {
+                    saveConfiguration();
+                } else {
+                    // Re-enable submit button if validation fails
+                    $(elements.submitBtn).prop('disabled', false);
+                }
+            } catch (error) {
+                console.error("Validation error:", error);
+                Notification.show("An error occurred during validation. Please try again.", "error");
+                $(elements.submitBtn).prop('disabled', false);
+            }
+        });
+
+        // Cancel button
+        $(elements.cancelBtn).on('click', resetForm);
+
+        // Refresh button
+        $(elements.refreshBtn).on('click', function() {
+            refreshDataTable();
+        });
+
+        // Edit button (delegated event for dynamic elements)
+        $(elements.datatable).on('click', '.edit-btn', function() {
+            const configId = $(this).data('id');
+            loadConfigurationForEdit(configId);
+        });
+
+        // Delete button (delegated event for dynamic elements)
+        $(elements.datatable).on('click', '.delete-btn', function() {
+            const configId = $(this).data('id');
+            confirmDelete(configId);
+        });
+    };
+
+    const validateForm = async function() {
+        let isValid = true;
+
+        // Clear previous validation styling
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+
+        // Check required fields
+        $(elements.requiredFields).each(function() {
+            if (!$(this).val().trim()) {
+                isValid = false;
+                $(this).addClass('is-invalid');
+                $(this).after(`<div class="invalid-feedback">This field is required</div>`);
+            }
+        });
+
+        // If basic validation passes, check for duplicate values
+        if (isValid) {
+            try {
+                const keyValue = $('#keyValue').val().trim();
+                const currentId = $(elements.idField).val();
+
+                const isDuplicate = await checkForDuplicateValue(keyValue, currentId);
+
+                if (isDuplicate) {
+                    isValid = false;
+                    $('#keyValue').addClass('is-invalid');
+                    $('#keyValue').after(`<div class="invalid-feedback">This value already exists for this key and module</div>`);
+                }
+            } catch (error) {
+                console.error("Error checking for duplicates:", error);
+                // If there's an error checking duplicates, we'll let the server-side validation catch it
+            }
+        }
+
+        return isValid;
+    };
+
+
+    const resetForm = function() {
+        $('#keyValue').val('');
+        $('#sortOrder').val('0');
+        $(elements.idField).val('');
+        $(elements.submitBtn).text('Save');
+        $(elements.formTitle).text('Add New @keyName');
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+    };
+
+    const saveConfiguration = function() {
+        const config = getFormData();
+        const isUpdate = $(elements.idField).val() !== '';
+
+        if (isUpdate) {
+            config.Id = $(elements.idField).val();
+            performAjaxOperation(apiEndpoints.update, config, 'updating');
+        } else {
+            performAjaxOperation(apiEndpoints.create, config, 'creating');
+        }
+    };
+
+    const loadConfigurationForEdit = function(id) {
+        // Get configuration data by ID
+        $.ajax({
+            url: apiEndpoints.getById,
+            type: 'GET',
+            data: { id: id },
+            success: function(data) {
+                if (data) {
+                    // Populate the form with configuration data
+                    $(elements.idField).val(data.Id);
+                    $('#keyValue').val(data.KeyValue);
+                    $('#sortOrder').val(data.SortOrder);
+
+                    // Update UI to indicate edit mode
+                    $(elements.submitBtn).text('Update');
+                    $(elements.formTitle).text('Edit @keyName');
+
+                    // Scroll to form for better UX
+                    $('html, body').animate({
+                        scrollTop: $(elements.form).offset().top - 100
+                    }, 500);
+                } else {
+                    Notification.show('@keyName not found.', 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching @keyName data:', error);
+                Notification.show('An error occurred while fetching @keyName data.', 'error');
+            }
+        });
+    };
+
+    const confirmDelete = function(id) {
+        swal({
+            title: "Are you sure?",
+            text: "Once deleted, you will not be able to recover this @keyName!",
+            icon: "warning",
+            buttons: ["Cancel", "Delete"],
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                deleteConfiguration(id);
+            }
+        });
+    };
+
+    const deleteConfiguration = function(id) {
+        performAjaxOperation(apiEndpoints.delete, { id: id }, 'deleting');
+    };
+
+    const performAjaxOperation = function(url, data, operationType) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                // Disable buttons during operation
+                $(elements.submitBtn).prop('disabled', true);
+                $(elements.cancelBtn).prop('disabled', true);
+            },
+            success: function(result) {
+                if (result.success) {
+                    // Reset form if it's a create or update operation
+                    if (operationType !== 'deleting') {
+                        resetForm();
+                    }
+
+                    // Refresh the data table
+                    refreshDataTable();
+
+                    // Show success message
+                    Notification.show(result.message, 'success');
+                } else {
+                    // Show error message
+                    Notification.show(result.message || `Failed while ${operationType} the @keyName.`, 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`${operationType} error:`, error);
+                Notification.show(`An error occurred while ${operationType} the @keyName.`, 'error');
+            },
+            complete: function() {
+                // Re-enable buttons
+                $(elements.submitBtn).prop('disabled', false);
+                $(elements.cancelBtn).prop('disabled', false);
+            }
+        });
+    };
+
+    const refreshDataTable = function() {
+        if (dataTable) {
+            dataTable.ajax.reload();
+            return;
+        }
+
+        // Fallback if datatable reference is lost
+        if ($.fn.DataTable.isDataTable('#keyValueDatatable')) {
+            $('#keyValueDatatable').DataTable().ajax.reload();
+        }
+    };
+
+    // Public methods
+    return {
+        init: function() {
+            initializeDataTable();
+            bindEvents();
+        }
+    };
+})();
+
+/**
+ * Notification Module
+ * Handles all notifications in a consistent way
+ */
+const Notification = (function() {
+    return {
+        show: function(message, type) {
+            swal({
+                title: type === 'success' ? 'Success!' : 'Error!',
+                text: message,
+                icon: type,
+                button: "OK",
+            });
+        }
+    };
+})();
+
+// Initialize the application when the document is ready
+$(document).ready(function() {
+    setupAutoSortOrder();
+    const keyName = $('#keyName').val();
+    const module = $('#module').val();
+
+    console.log("Page loaded with Key:", keyName, "Module:", module);
+
+    if (!keyName || !module) {
+        console.error("Warning: Key or Module value is missing!");
+        Notification.show("Configuration key or module is missing. Some features may not work correctly.", "warning");
+    }
+
+    // Initialize the manager with these values
+    KeyValueManager.init();
+});
+    </script>
+
+    <style>
+        .invalid-feedback {
+            display: block;
+            color: #dc3545;
+            font-size: 80%;
+            margin-top: 0.25rem;
+        }
+
+        .is-invalid {
+            border-color: #dc3545;
+        }
+
+        .refresh-btn {
+            margin-bottom: 15px;
+        }
+
+        .dt-buttons {
+            margin-bottom: 15px;
+            display: block !important;
+        }
+
+        .dt-button {
+            margin-right: 5px;
+        }
+        /* Improve DataTable controls alignment */
+        div.dataTables_wrapper div.dataTables_filter {
+            text-align: right;
+        }
+
+        div.dt-buttons {
+            margin-bottom: 10px;
+        }
+
+        .dataTables_length {
+            padding-top: 5px;
+        }
+
+        /* Make buttons look consistent */
+        .dt-button {
+            padding: 5px 10px;
+            margin-right: 5px;
+            border: 1px solid #ddd;
+            background-color: #f8f8f8;
+            color: #333;
+            border-radius: 4px;
+        }
+
+            .dt-button:hover {
+                background-color: #e8e8e8;
+            }
+
+        /* Responsive adjustments */
+        @@media (max-width: 767px) {
+            div.dataTables_wrapper div.dataTables_filter,
+            div.dataTables_wrapper div.dataTables_length,
+            div.dt-buttons {
+                text-align: center;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>

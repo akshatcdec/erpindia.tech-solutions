@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+	<!-- Root element for list of students -->
+	<xs:element name="TransportStudents">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="TransportStudentInfo" maxOccurs="unbounded" minOccurs="0">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="StudentId"     type="xs:string"/>
+							<xs:element name="SchoolCode"    type="xs:int"/>
+							<xs:element name="ROUTE"         type="xs:string" minOccurs="0"/>
+							<xs:element name="Bus"           type="xs:string" minOccurs="0"/>
+							<xs:element name="PickupName"    type="xs:string" minOccurs="0"/>
+							<xs:element name="CLASS"         type="xs:string" minOccurs="0"/>
+							<xs:element name="Section"       type="xs:string" minOccurs="0"/>
+							<xs:element name="STUDENT"       type="xs:string"/>
+							<xs:element name="FATHER"        type="xs:string" minOccurs="0"/>
+							<xs:element name="MOTHER"        type="xs:string" minOccurs="0"/>
+							<xs:element name="CONTACT"       type="xs:string" minOccurs="0"/>
+							<xs:element name="DOB"           type="xs:string" minOccurs="0"/>
+							<xs:element name="GEN"           type="xs:string" minOccurs="0"/>
+							<xs:element name="ADDRESS"       type="xs:string" minOccurs="0"/>
+							<xs:element name="Pic"           type="xs:string" minOccurs="0"/>
+							<xs:element name="ClassId"       type="xs:string" minOccurs="0"/>
+							<xs:element name="SectionId"     type="xs:string" minOccurs="0"/>
+							<xs:element name="VechileId"     type="xs:string" minOccurs="0"/>
+							<xs:element name="PickupId"      type="xs:string" minOccurs="0"/>
+							<xs:element name="RouteId"       type="xs:string" minOccurs="0"/>
+							<xs:element name="VillegeId"     type="xs:string" minOccurs="0"/>
+
+							<!-- D1–D40 Fields -->
+							<xs:element name="D1" type="xs:string" minOccurs="0"/>
+							<xs:element name="D2" type="xs:string" minOccurs="0"/>
+							<xs:element name="D3" type="xs:string" minOccurs="0"/>
+							<xs:element name="D4" type="xs:string" minOccurs="0"/>
+							<xs:element name="D5" type="xs:string" minOccurs="0"/>
+							<xs:element name="D6" type="xs:string" minOccurs="0"/>
+							<xs:element name="D7" type="xs:string" minOccurs="0"/>
+							<xs:element name="D8" type="xs:string" minOccurs="0"/>
+							<xs:element name="D9" type="xs:string" minOccurs="0"/>
+							<xs:element name="D10" type="xs:string" minOccurs="0"/>
+							<xs:element name="D11" type="xs:string" minOccurs="0"/>
+							<xs:element name="D12" type="xs:string" minOccurs="0"/>
+							<xs:element name="D13" type="xs:string" minOccurs="0"/>
+							<xs:element name="D14" type="xs:string" minOccurs="0"/>
+							<xs:element name="D15" type="xs:string" minOccurs="0"/>
+							<xs:element name="D16" type="xs:string" minOccurs="0"/>
+							<xs:element name="D17" type="xs:string" minOccurs="0"/>
+							<xs:element name="D18" type="xs:string" minOccurs="0"/>
+							<xs:element name="D19" type="xs:string" minOccurs="0"/>
+							<xs:element name="D20" type="xs:string" minOccurs="0"/>
+							<xs:element name="D21" type="xs:string" minOccurs="0"/>
+							<xs:element name="D22" type="xs:string" minOccurs="0"/>
+							<xs:element name="D23" type="xs:string" minOccurs="0"/>
+							<xs:element name="D24" type="xs:string" minOccurs="0"/>
+							<xs:element name="D25" type="xs:string" minOccurs="0"/>
+							<xs:element name="D26" type="xs:string" minOccurs="0"/>
+							<xs:element name="D27" type="xs:string" minOccurs="0"/>
+							<xs:element name="D28" type="xs:string" minOccurs="0"/>
+							<xs:element name="D29" type="xs:string" minOccurs="0"/>
+							<xs:element name="D30" type="xs:string" minOccurs="0"/>
+							<xs:element name="D31" type="xs:string" minOccurs="0"/>
+							<xs:element name="D32" type="xs:string" minOccurs="0"/>
+							<xs:element name="D33" type="xs:string" minOccurs="0"/>
+							<xs:element name="D34" type="xs:string" minOccurs="0"/>
+							<xs:element name="D35" type="xs:string" minOccurs="0"/>
+							<xs:element name="D36" type="xs:string" minOccurs="0"/>
+							<xs:element name="D37" type="xs:string" minOccurs="0"/>
+							<xs:element name="D38" type="xs:string" minOccurs="0"/>
+							<xs:element name="D39" type="xs:string" minOccurs="0"/>
+							<xs:element name="D40" type="xs:string" minOccurs="0"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+</xs:schema>

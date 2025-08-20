@@ -1,0 +1,899 @@
+﻿@model ERPK12Models.ViewModel.GatePass.GatePassViewModel
+
+<!-- Add timepicker library -->
+
+<style>
+    .required-field1 {
+        border-left: 4px solid #dc3545 !important;
+        transition: border-left-color 0.3s ease;
+    }
+
+        .required-field1:focus {
+            border-left-color: #007bff !important;
+            box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+        }
+
+    .autocomplete-suggestion.selected {
+        background-color: #007bff;
+        color: white;
+    }
+
+        .autocomplete-suggestion.selected strong {
+            color: white;
+        }
+
+    .autocomplete-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 200px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 1000;
+        display: none;
+    }
+
+    .autocomplete-suggestion {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.2s;
+    }
+
+        .autocomplete-suggestion:hover {
+            background-color: #f8f9fa;
+        }
+
+        .autocomplete-suggestion.selected:hover {
+            background-color: #007bff;
+        }
+
+        .autocomplete-suggestion strong {
+            color: #007bff;
+        }
+
+    /* Error styling */
+    .is-invalid {
+        border-color: #dc3545 !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .invalid-feedback {
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .valid-feedback {
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #28a745;
+    }
+
+    .btn-loading {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+        .btn-loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: button-loading-spinner 1s ease infinite;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+    @@keyframes button-loading-spinner {
+        from {
+            transform: rotate(0turn);
+        }
+
+        to {
+            transform: rotate(1turn);
+        }
+    }
+</style>
+
+@using (Html.BeginForm("Create", "GatePass", FormMethod.Post, new { @class = "form-horizontal", id = "createGatePassForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="modal-body">
+        <!-- Pass Information -->
+        <h5 class="text-primary mb-3"><i class="fas fa-id-card"></i> Gate Pass Information</h5>
+        <div class="row">
+            <div class="col-md-4" style="display:none">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.PassNo, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.PassNo, new { @class = "form-control", @readonly = "readonly", style = "font-weight: bold; color: #007bff;" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.Date, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.Date, "{0:yyyy-MM-dd}", new
+                    {
+                        @class = "form-control required-field1",
+                        type = "date",
+                        autocomplete = "off"
+                    })
+                    @Html.ValidationMessageFor(m => m.GatePass.Date, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.TimeIn, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.TimeIn, new
+               {
+                   @class = "form-control timepicker",
+                   @id = "timeIn",
+                   maxlength = 8,
+                   @Value = "8:30 AM"
+               })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.TimeOut, new { maxlength = 8, @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.TimeOut, new
+               {
+                   @class = "form-control timepicker",
+                   @id = "timeOut",
+                        maxlength = 8
+               })
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Information -->
+        <h5 class="text-primary mb-3 mt-4"><i class="fas fa-user"></i> Student Information</h5>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group position-relative">
+                    @Html.LabelFor(m => m.GatePass.StudentName, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.StudentName, new
+                    {
+                        @class = "form-control required-field1",
+                        placeholder = "Type to search student...",
+                        autocomplete = "off",
+                        id = "studentSearch"
+                    })
+                    @Html.ValidationMessageFor(m => m.GatePass.StudentName, "", new { @class = "text-danger" })
+                    <div id="studentSuggestions" class="autocomplete-suggestions"></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="control-label">Admission No.</label>
+                    @Html.TextBoxFor(m => m.GatePass.AdmNo, new { @class = "form-control", id = "admissionNo", @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.Father, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.Father, new { @class = "form-control", id = "fatherName", @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.Mother, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.Mother, new { @class = "form-control", id = "motherName", @readonly = "readonly" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.Class, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.Class, new { @class = "form-control", id = "classSection", @readonly = "readonly", placeholder = "Class - Section" })
+                    @Html.HiddenFor(m => m.GatePass.ClassId)
+                    @Html.HiddenFor(m => m.GatePass.StudentId)
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.Address, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.Address, new { @class = "form-control", id = "studentAddress", @readonly = "readonly", placeholder = "Student address" })
+                </div>
+            </div>
+        </div>
+
+        <!-- Guardian Information -->
+        <h5 class="text-primary mb-3 mt-4"><i class="fas fa-user-shield"></i> Guardian Information</h5>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.ParentGuardianName, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.ParentGuardianName, new { maxlength = 40, @class = "form-control required-field1", placeholder = "Name of person picking up" })
+                    @Html.ValidationMessageFor(m => m.GatePass.ParentGuardianName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.GuardianMobile, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.GuardianMobile, new
+                    {
+                        @class = "form-control required-field1",
+                        placeholder = "10 digit mobile",
+                        @type = "tel",
+                        pattern = "[0-9]{10}",
+                        maxlength = "10",
+                        onkeypress = "return isNumberKey(event)"
+                    })
+                    @Html.ValidationMessageFor(m => m.GatePass.GuardianMobile, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    @Html.LabelFor(m => m.GatePass.RelationshipToStudent, new { @class = "control-label" })
+                    @Html.TextBoxFor(m => m.GatePass.RelationshipToStudent, new { maxlength = 30, @class = "form-control required-field1", placeholder = "Relationship To Student" })
+                    @Html.ValidationMessageFor(m => m.GatePass.RelationshipToStudent, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label class="control-label">Reason for Leave</label>
+                    <select id="reasonDropdown" name="GatePass.ReasonFor" class="form-control required-field1">
+                        <option value="">Select Reason</option>
+                        <option value="Medical Emergency">Medical Emergency</option>
+                        <option value="Family Emergency">Family Emergency</option>
+                        <option value="Personal Reason">Personal Reason</option>
+                        <option value="Home Emergency">Home Emergency</option>
+                        <option value="Religious Reason">Religious Reason</option>
+                        <option value="Request by Parent">Request by Parent</option>
+                        <option value="Transport Issue">Transport Issue</option>
+                        <option value="School Event">School Event</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    @Html.TextAreaFor(m => m.GatePass.ReasonForLeave, new
+               {
+                   @class = "form-control mt-2",
+                   placeholder = "Additional details or specify if 'Other'",
+                   id = "reasonText",
+                   maxlength = 80,
+                   rows = "1",
+                   style = "display:none;"
+               })
+                    <div class="invalid-feedback" id="reasonError"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden fields -->
+        @Html.HiddenFor(m => m.GatePass.PrintTime)
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary mr-2" data-dismiss="modal" data-bs-dismiss="modal" onclick="closeModal()">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+        &nbsp;
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-save"></i> Create & Print
+        </button>
+    </div>
+}
+
+
+
+<script>
+    // Prevent multiple submissions - ENHANCED
+    var isSubmitting = false;
+    var submissionLock = false; // Additional lock mechanism
+
+    // Function to allow only numbers
+    function isNumberKey(evt) {
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57))
+            return false;
+        return true;
+    }
+
+    // Initialize on document ready
+    $(document).ready(function () {
+        var searchTimeout;
+        var currentSuggestionIndex = -1;
+        var searchRequest = null;
+
+        // Initialize timepicker
+        $('.timepicker').timepicker({
+            timeFormat: 'h:i A',
+            interval: 15,
+            minTime: '6:00am',
+            maxTime: '8:00pm',
+            defaultTime: '8:30am',
+            startTime: '6:00am',
+            dynamic: false,
+            dropdown: true,
+            scrollbar: true
+        });
+
+        // Set current time for TimeOut
+        $('#timeOut').timepicker('setTime', new Date());
+
+        // Handle reason dropdown change
+        $('#reasonDropdown').on('change', function () {
+            var selectedValue = $(this).val();
+            var selectedText = $(this).find('option:selected').text();
+
+            $(this).removeClass('is-invalid');
+            $('#reasonError').text('');
+
+            if (selectedValue) {
+                if (selectedText === 'Other') {
+                    $('#reasonText')
+                        .val('')
+                        .attr('placeholder', 'Please specify other reason...')
+                        .show()
+                        .focus();
+                } else {
+                    var fullDescription = getReasonDescription(selectedValue);
+                    $('#reasonText')
+                        .val(fullDescription)
+                        .show();
+                }
+            } else {
+                $('#reasonText').hide().val('');
+            }
+        });
+
+        function getReasonDescription(reason) {
+            var descriptions = {
+                "Medical Emergency": "Student is not feeling well and needs to visit the doctor",
+                "Family Emergency": "Urgent family matter requiring the student's presence.",
+                "Personal Reason": "Leaving due to personal reasons (informed and approved by parent/guardian).",
+                "Home Emergency": "Unexpected situation at home – needs to leave early.",
+                "Religious Reason": "Going for religious observance or function.",
+                "Request by Parent": "Parent has requested early pickup due to travel/personal reason.",
+                "Transport Issue": "No transport available later – student needs to leave now.",
+                "School Event": "Leaving for an inter-school event/competition/workshop."
+            };
+            return descriptions[reason] || reason;
+        }
+
+        // Student search autocomplete
+        $('#studentSearch').on('input', function() {
+            clearTimeout(searchTimeout);
+            var searchTerm = $(this).val();
+            currentSuggestionIndex = -1;
+
+            if (searchRequest) {
+                searchRequest.abort();
+                searchRequest = null;
+            }
+
+            if (searchTerm.length < 2) {
+                $('#studentSuggestions').hide();
+                return;
+            }
+
+            searchTimeout = setTimeout(function() {
+                searchRequest = $.ajax({
+                    url: '@Url.Action("SearchStudents", "GatePass")',
+                    type: 'POST',
+                    data: { term: searchTerm },
+                    success: function(data) {
+                        searchRequest = null;
+                        var suggestions = $('#studentSuggestions');
+                        suggestions.empty();
+
+                        if (data && data.length > 0) {
+                            data.forEach(function(student, index) {
+                                var item = $('<div class="autocomplete-suggestion"></div>');
+                                item.attr('data-index', index);
+                                item.html('<strong>' + student.student + '</strong> - ' + student.father + ' - ' + student.class);
+                                item.data('student', student);
+
+                                item.on('click', function () {
+                                    console.log($(this).data('student'));
+                                    selectStudent($(this).data('student'));
+                                });
+
+                                item.on('mouseenter', function() {
+                                    $('.autocomplete-suggestion').removeClass('selected');
+                                    $(this).addClass('selected');
+                                    currentSuggestionIndex = parseInt($(this).attr('data-index'));
+                                });
+
+                                suggestions.append(item);
+                            });
+                            suggestions.show();
+                        } else {
+                            suggestions.hide();
+                        }
+                    },
+                    error: function(xhr) {
+                        searchRequest = null;
+                        if (xhr.statusText !== 'abort') {
+                            console.error('Search failed:', xhr.statusText);
+                        }
+                    }
+                });
+            }, 300);
+        });
+
+        // Keyboard navigation for student search
+        $('#studentSearch').on('keydown', function (e) {
+            var suggestions = $('.autocomplete-suggestion');
+            var visibleSuggestions = suggestions.filter(':visible');
+
+            if (visibleSuggestions.length === 0) return;
+
+            switch (e.keyCode) {
+                case 38: // Arrow Up
+                    e.preventDefault();
+                    currentSuggestionIndex--;
+                    if (currentSuggestionIndex < 0) {
+                        currentSuggestionIndex = visibleSuggestions.length - 1;
+                    }
+                    updateSuggestionSelection();
+                    break;
+
+                case 40: // Arrow Down
+                    e.preventDefault();
+                    currentSuggestionIndex++;
+                    if (currentSuggestionIndex >= visibleSuggestions.length) {
+                        currentSuggestionIndex = 0;
+                    }
+                    updateSuggestionSelection();
+                    break;
+
+                case 13: // Enter
+                    e.preventDefault();
+                    if (currentSuggestionIndex >= 0) {
+                        var selectedSuggestion = visibleSuggestions.eq(currentSuggestionIndex);
+                        if (selectedSuggestion.length > 0) {
+                            selectStudent(selectedSuggestion.data('student'));
+                        }
+                    }
+                    break;
+
+                case 27: // Escape
+                    $('#studentSuggestions').hide();
+                    currentSuggestionIndex = -1;
+                    break;
+            }
+        });
+
+        function updateSuggestionSelection() {
+            $('.autocomplete-suggestion').removeClass('selected');
+            if (currentSuggestionIndex >= 0) {
+                $('.autocomplete-suggestion').eq(currentSuggestionIndex).addClass('selected');
+
+                var selected = $('.autocomplete-suggestion.selected');
+                if (selected.length > 0) {
+                    var container = $('#studentSuggestions');
+                    var containerTop = container.scrollTop();
+                    var containerBottom = containerTop + container.height();
+                    var elemTop = selected.position().top + containerTop;
+                    var elemBottom = elemTop + selected.height();
+
+                    if (elemTop < containerTop) {
+                        container.scrollTop(elemTop);
+                    } else if (elemBottom > containerBottom) {
+                        container.scrollTop(elemBottom - container.height());
+                    }
+                }
+            }
+        }
+
+        // Hide suggestions when clicking outside
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('#studentSearch, #studentSuggestions').length) {
+                $('#studentSuggestions').hide();
+                currentSuggestionIndex = -1;
+            }
+        });
+
+        // Comprehensive form validation function
+        function validateForm() {
+            var errors = [];
+            var firstErrorField = null;
+
+            $('.form-control').removeClass('is-invalid');
+            $('.invalid-feedback').not('#reasonError').remove();
+
+            // Validation logic (same as before)
+            var dateValue = $('#GatePass_Date').val();
+            if (!dateValue) {
+                errors.push('Date is required');
+                addFieldError('#GatePass_Date', 'Date is required');
+                if (!firstErrorField) firstErrorField = '#GatePass_Date';
+            } else {
+                var selectedDate = new Date(dateValue);
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (selectedDate < today) {
+                    errors.push('Date cannot be in the past');
+                    addFieldError('#GatePass_Date', 'Date cannot be in the past');
+                    if (!firstErrorField) firstErrorField = '#GatePass_Date';
+                }
+            }
+
+            var timeInValue = $('#timeIn').val();
+            if (!timeInValue) {
+                errors.push('Time In is required');
+                addFieldError('#timeIn', 'Time In is required');
+                if (!firstErrorField) firstErrorField = '#timeIn';
+            }
+
+            var timeOutValue = $('#timeOut').val();
+            if (!timeOutValue) {
+                errors.push('Time Out is required');
+                addFieldError('#timeOut', 'Time Out is required');
+                if (!firstErrorField) firstErrorField = '#timeOut';
+            }
+
+            if (timeInValue && timeOutValue) {
+                var timeIn = parseTime(timeInValue);
+                var timeOut = parseTime(timeOutValue);
+                if (timeOut <= timeIn) {
+                    errors.push('Time Out must be after Time In');
+                    addFieldError('#timeOut', 'Time Out must be after Time In');
+                    if (!firstErrorField) firstErrorField = '#timeOut';
+                }
+            }
+
+            var studentName = $('#studentSearch').val().trim();
+            var studentId = $('#GatePass_StudentId').val();
+            if (!studentName) {
+                errors.push('Student name is required');
+                addFieldError('#studentSearch', 'Student name is required');
+                if (!firstErrorField) firstErrorField = '#studentSearch';
+            } else if (!studentId) {
+                errors.push('Please select a valid student from the search results');
+                addFieldError('#studentSearch', 'Please select a valid student from the search results');
+                if (!firstErrorField) firstErrorField = '#studentSearch';
+            }
+
+            var guardianName = $('#GatePass_ParentGuardianName').val().trim();
+            if (!guardianName) {
+                errors.push('Guardian/Parent name is required');
+                addFieldError('#GatePass_ParentGuardianName', 'Guardian/Parent name is required');
+                if (!firstErrorField) firstErrorField = '#GatePass_ParentGuardianName';
+            }
+
+            var guardianMobile = $('#GatePass_GuardianMobile').val().trim();
+            if (!guardianMobile) {
+                errors.push('Guardian mobile number is required');
+                addFieldError('#GatePass_GuardianMobile', 'Guardian mobile number is required');
+                if (!firstErrorField) firstErrorField = '#GatePass_GuardianMobile';
+            } else if (!/^\d{10}$/.test(guardianMobile)) {
+                errors.push('Guardian mobile must be exactly 10 digits');
+                addFieldError('#GatePass_GuardianMobile', 'Guardian mobile must be exactly 10 digits');
+                if (!firstErrorField) firstErrorField = '#GatePass_GuardianMobile';
+            }
+
+            var relationship = $('#GatePass_RelationshipToStudent').val().trim();
+            if (!relationship) {
+                errors.push('Relationship to student is required');
+                addFieldError('#GatePass_RelationshipToStudent', 'Relationship to student is required');
+                if (!firstErrorField) firstErrorField = '#GatePass_RelationshipToStudent';
+            }
+
+            var selectedReason = $('#reasonDropdown').val();
+            var reasonText = $('#reasonText').val().trim();
+
+            if (!selectedReason || selectedReason === '') {
+                errors.push('Please select a reason for leave');
+                $('#reasonDropdown').addClass('is-invalid');
+                $('#reasonError').text('Please select a reason for leave');
+                if (!firstErrorField) firstErrorField = '#reasonDropdown';
+            }
+
+            if ($('#reasonDropdown option:selected').text() === 'Other' && !reasonText) {
+                errors.push('Please specify the reason');
+                addFieldError('#reasonText', 'Please specify the reason');
+                if (!firstErrorField) firstErrorField = '#reasonText';
+            }
+
+            var classId = $('#GatePass_ClassId').val();
+            if (!classId) {
+                errors.push('Student class information is missing. Please reselect the student.');
+                addFieldError('#studentSearch', '');
+                if (!firstErrorField) firstErrorField = '#studentSearch';
+            }
+
+            return {
+                isValid: errors.length === 0,
+                errors: errors,
+                firstErrorField: firstErrorField
+            };
+        }
+
+        function addFieldError(fieldSelector, message) {
+            var field = $(fieldSelector);
+            field.addClass('is-invalid');
+            var errorDiv = $('<div class="invalid-feedback d-block"></div>').text(message);
+            field.closest('.form-group').append(errorDiv);
+        }
+
+        function parseTime(timeStr) {
+            var time = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+            if (!time) return 0;
+
+            var hours = parseInt(time[1]);
+            var minutes = parseInt(time[2]);
+            var period = time[3] ? time[3].toUpperCase() : '';
+
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+
+            return hours * 60 + minutes;
+        }
+
+        // ENHANCED FORM SUBMISSION HANDLER - FIXED DUPLICATE SUBMISSION ISSUES
+        $('#createGatePassForm').off('submit').on('submit', function (e) {
+            e.preventDefault();
+            e.stopImmediatePropagation(); // Prevent event bubbling
+
+            console.log('Form submission attempted. Current state - isSubmitting:', isSubmitting, 'submissionLock:', submissionLock);
+
+            // ENHANCED: Multiple layer protection against duplicate submissions
+            if (isSubmitting || submissionLock) {
+                console.log('Submission blocked - already in progress');
+                return false;
+            }
+
+            // Set both locks immediately
+            isSubmitting = true;
+            submissionLock = true;
+
+            console.log('Starting form validation...');
+
+            // Run validation
+            const validationResult = validateForm();
+
+            if (!validationResult.isValid) {
+                console.log('Validation failed:', validationResult.errors);
+
+                // Reset locks on validation failure
+                resetSubmissionState();
+
+                // Show validation errors
+                var errorHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">';
+                errorHtml += '<strong>Please fix the following errors:</strong><ul>';
+                validationResult.errors.forEach(function(error) {
+                    errorHtml += '<li>' + error + '</li>';
+                });
+                errorHtml += '</ul>';
+                errorHtml += '';
+                errorHtml += '</div>';
+
+                $('.modal-body').prepend(errorHtml);
+
+                if (validationResult.firstErrorField) {
+                    $(validationResult.firstErrorField).focus();
+                }
+
+                setTimeout(function() {
+                    $('.alert-danger').fadeOut('slow', function() {
+                        $(this).remove();
+                    });
+                }, 5000);
+
+                return false;
+            }
+
+            console.log('Validation passed. Proceeding with AJAX submission...');
+
+            // Update button UI immediately
+            const submitBtn = $('#submitBtn');
+            submitBtn.addClass('btn-loading')
+                    .prop('disabled', true)
+                    .html('<i class="fas fa-spinner fa-spin"></i> Creating...');
+
+            // Get form data
+            var formData = $(this).serialize();
+
+            console.log('Sending AJAX request...');
+
+            // ENHANCED: Add timeout and better error handling
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                timeout: 30000, // 30 second timeout
+                success: function(response) {
+                    console.log('AJAX Success:', response);
+
+                    if (response && response.success) {
+                        // Keep submission lock active during success operations
+                        $('#gatePassModal').modal('hide');
+                        showAlert(response.message, 'success');
+                        $('#searchForm').submit();
+
+                        if (response.gatePassId) {
+                            setTimeout(function() {
+                                printGatePass(response.gatePassId);
+                                // Reset state after print is initiated
+                                resetSubmissionState();
+                            }, 500);
+                        } else {
+                            resetSubmissionState();
+                        }
+                    } else {
+                        console.log('Server returned failure response');
+                        resetSubmissionState();
+                        showAlert(response.message || 'An error occurred while creating the gate pass', 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('AJAX Error:', status, error, xhr.responseText);
+                    resetSubmissionState();
+
+                    if (xhr.responseText && xhr.responseText.indexOf('form') !== -1) {
+                        $('#modalContent').html(xhr.responseText);
+                        bindFormSubmit('createGatePassForm');
+                    } else {
+                        var errorMessage = 'An error occurred while creating the gate pass. Please try again.';
+                        if (status === 'timeout') {
+                            errorMessage = 'Request timed out. Please check your connection and try again.';
+                        }
+                        showAlert(errorMessage, 'error');
+                    }
+                },
+                complete: function() {
+                    console.log('AJAX request completed');
+                    // Ensure state is reset if not already done
+                    if (isSubmitting || submissionLock) {
+                        setTimeout(resetSubmissionState, 1000); // Failsafe reset after 1 second
+                    }
+                }
+            });
+
+            return false;
+        });
+
+        // ENHANCED reset function with better state management
+        function resetSubmissionState() {
+            console.log('Resetting submission state...');
+            isSubmitting = false;
+            submissionLock = false;
+
+            var submitBtn = $('#submitBtn');
+            submitBtn.removeClass('btn-loading').prop('disabled', false);
+            submitBtn.html('<i class="fas fa-save"></i> Create & Print');
+        }
+
+        // Prevent accidental form resubmission on page refresh
+        $(window).on('beforeunload', function(e) {
+            if (isSubmitting) {
+                return 'A form submission is in progress. Are you sure you want to leave?';
+            }
+        });
+
+        // Initialize real-time validation
+        setupRealTimeValidation();
+
+        // Enhanced form reset function
+        window.resetGatePassForm = function() {
+            console.log('Resetting gate pass form...');
+            $('#createGatePassForm')[0].reset();
+            $('.form-control').removeClass('is-invalid');
+            $('.invalid-feedback, .valid-feedback, .alert').remove();
+            $('#GatePass_StudentId, #GatePass_ClassId').val('');
+            $('#reasonText').hide();
+            currentSuggestionIndex = -1;
+            $('#studentSuggestions').hide();
+            resetSubmissionState();
+        };
+
+        // Prevent double-click on submit button
+        $('#submitBtn').on('click', function(e) {
+            if (isSubmitting || submissionLock) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        });
+    });
+
+    // Function to select student
+    function selectStudent(student) {
+        $('#studentSearch').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+
+        $('#studentSearch').val(student.student);
+        $('#fatherName').val(student.father || '');
+        $('#motherName').val(student.mother || '');
+        $('#studentAddress').val(student.address || '');
+        $('#classSection').val(student.classSection || '');
+        $('#admissionNo').val(student.admNo || '');
+
+        $('#GatePass_ClassId').val(student.classId || '');
+        $('#GatePass_StudentId').val(student.studentId || '');
+
+        if (student.mobile1 && !$('#GatePass_GuardianMobile').val()) {
+            $('#GatePass_GuardianMobile').val(student.mobile1);
+        }
+
+        $('#studentSuggestions').hide();
+        currentSuggestionIndex = -1;
+
+        var successDiv = $('<div class="valid-feedback d-block">✓ Student selected successfully</div>');
+        $('#studentSearch').closest('.form-group').append(successDiv);
+        setTimeout(function() {
+            successDiv.fadeOut();
+        }, 2000);
+
+        $('#GatePass_ParentGuardianName').focus();
+    }
+
+    // Real-time validation helpers
+    function setupRealTimeValidation() {
+        $('#studentSearch').on('blur', function() {
+            var studentId = $('#GatePass_StudentId').val();
+            var studentName = $(this).val().trim();
+
+            $(this).removeClass('is-invalid');
+            $(this).closest('.form-group').find('.invalid-feedback').remove();
+        });
+
+        $('#GatePass_GuardianMobile').on('input', function() {
+            var mobile = $(this).val();
+            $(this).removeClass('is-invalid');
+            $(this).closest('.form-group').find('.invalid-feedback').remove();
+
+            if (mobile && !/^\d{0,10}$/.test(mobile)) {
+                $(this).val(mobile.replace(/\D/g, '').substring(0, 10));
+            }
+
+            if (mobile.length > 0 && mobile.length !== 10) {
+                addFieldError('#GatePass_GuardianMobile', 'Mobile number must be exactly 10 digits');
+            }
+        });
+
+        $('#GatePass_Date').on('change', function() {
+            var dateValue = $(this).val();
+            $(this).removeClass('is-invalid');
+            $(this).closest('.form-group').find('.invalid-feedback').remove();
+
+            if (dateValue) {
+                var selectedDate = new Date(dateValue);
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (selectedDate < today) {
+                    addFieldError('#GatePass_Date', 'Date cannot be in the past');
+                }
+            }
+        });
+
+        $('#reasonDropdown').on('change', function() {
+            $(this).removeClass('is-invalid');
+            $('#reasonError').text('');
+        });
+    }
+
+    function addFieldError(fieldSelector, message) {
+        var field = $(fieldSelector);
+        field.addClass('is-invalid');
+        var errorDiv = $('<div class="invalid-feedback d-block"></div>').text(message);
+        field.closest('.form-group').append(errorDiv);
+    }
+</script>

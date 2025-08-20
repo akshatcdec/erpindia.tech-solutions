@@ -1,0 +1,1144 @@
+﻿@using ERPIndia.Class.Helper;
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0" />
+    <meta name="description" content="School Management Software" />
+    <meta name="keywords" content="admin, estimates, bootstrap, business, html5, responsive, Projects" />
+    <meta name="author" content="ERP India technologies - School Management Software" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Dashboard</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="/img/erplogo.png">
+    <!-- Bootstrap CSS -->
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/template/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/template/assets/css/style.css">
+    https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js
+    <!-- Plugin CSS -->
+    <link rel="stylesheet" href="/template/assets/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="/template/assets/plugins/icons/feather/feather.css">
+    <link rel="stylesheet" href="/template/assets/plugins/tabler-icons/tabler-icons.css">
+    <link rel="stylesheet" href="/template/assets/plugins/daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="/template/assets/css/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="/template/assets/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="/template/assets/plugins/fontawesome/css/fontawesome.min.css">
+    <link rel="stylesheet" href="/template/assets/plugins/fontawesome/css/all.min.css">
+
+    <!-- CDN Plugin CSS -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.bootstrap5.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.0/css/buttons.bootstrap5.css">
+
+    <!-- Core JS -->
+    <script src="/template/assets/js/jquery-3.7.1.min.js"></script>
+    <script src="/template/assets/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Plugin JS -->
+    <script src="/template/assets/plugins/select2/js/select2.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.min.js"></script>
+
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.0/js/dataTables.buttons.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.0/js/buttons.bootstrap5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.0/js/buttons.html5.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.0/js/buttons.print.js"></script>
+    <script src="https://cdn.datatables.net/buttons/3.0.0/js/buttons.colVis.js"></script>
+    <style>
+        /* Existing styles */
+        .school-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-family: Arial, sans-serif;
+        }
+
+        /* School logo styles */
+        .school-logo {
+            color: #9a1212;
+            margin-right: 10px;
+        }
+
+        /* Welcome text styles */
+        .welcome-text {
+            color: #dd0000;
+            font-weight: bold;
+            font-size: 20px;
+            margin-right: 5px;
+        }
+
+        /* School name styles */
+        .school-name {
+            color: #006655;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        /* Address section styles */
+        .address-container {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        /* Location icon styles */
+        .location-icon {
+            color: #00c4a7;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        /* Address label styles */
+        .address-label {
+            color: #3388dd;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 5px;
+        }
+
+        /* Address text styles */
+        .address-text {
+            color: #cc5500;
+            font-size: 18px;
+        }
+
+        /* Responsive styles for smaller screens */
+        @@media (max-width: 768px) {
+            .school-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .address-container {
+                margin-top: 10px;
+            }
+        }
+
+        .student-panel {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .student-header {
+            background: linear-gradient(to right, #1a56db, #4285f4);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+            .student-header h1 {
+                font-size: 22px;
+                font-weight: 600;
+            }
+
+            .student-header .school-logo {
+                height: 40px;
+            }
+
+        .student-info {
+            display: flex;
+            padding: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .student-photo {
+            width: 180px;
+            height: 210px;
+            border: 2px solid #ddd;
+            object-fit: cover;
+            margin-right: 25px;
+        }
+
+        .info-container {
+            display: flex;
+            flex: 1;
+        }
+
+        .info-column {
+            flex: 1;
+            padding-right: 20px;
+        }
+
+        .info-item {
+            margin-bottom: 12px;
+            display: flex;
+        }
+
+        .info-label {
+            font-weight: 600;
+            width: 100px;
+            color: #4a4a4a;
+        }
+
+        .info-value {
+            flex: 1;
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-primary {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .badge-success {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+
+        .badge-warning {
+            background-color: #fff7ed;
+            color: #ea580c;
+        }
+
+        .badge-danger {
+            background-color: #fef2f2;
+            color: #dc2626;
+        }
+
+        .actions-bar {
+            display: flex;
+            padding: 15px 20px;
+            background-color: #f8fafc;
+            border-top: 1px solid #eaeaea;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: #1a56db;
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #d1d5db;
+            color: #4b5563;
+        }
+
+        @@media (max-width: 768px) {
+            .student-info {
+                flex-direction: column;
+            }
+
+            .student-photo {
+                width: 150px;
+                height: 180px;
+                margin-right: 0;
+                margin-bottom: 20px;
+                align-self: center;
+            }
+
+            .info-container {
+                flex-direction: column;
+            }
+
+            .info-column {
+                padding-right: 0;
+                margin-bottom: 15px;
+            }
+
+            .info-label {
+                width: 120px;
+            }
+        }
+
+        /* LOADING INDICATOR STYLES */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(26, 32, 41, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+            .loader-container.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        .circular-progress {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+            .circular-progress svg {
+                width: 100%;
+                height: 100%;
+                transform: rotate(-90deg);
+            }
+
+            .circular-progress circle {
+                fill: transparent;
+                stroke-width: 2;
+                stroke-linecap: round;
+            }
+
+            .circular-progress .background {
+                stroke: rgba(255, 255, 255, 0.1);
+            }
+
+            .circular-progress .progress {
+                stroke: #4dce97;
+                transition: stroke-dashoffset 0.3s;
+            }
+
+        .percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            font-weight: 500;
+            color: #4dce97;
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #8b9cb1;
+            letter-spacing: 1px;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1050;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+        }
+
+        .modal-dialog {
+            width: 95%;
+            max-width: 1100px;
+            margin: 20px auto;
+            position: relative;
+            pointer-events: all;
+            height: calc(100% - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Include all your other modal CSS here */
+
+        /* Loading Indicator Styles */
+        .loading-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+        /* Modal styles - updated */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1050;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+        }
+
+        .modal-dialog {
+            width: 95%;
+            max-width: 1100px;
+            margin: 20px auto;
+            position: relative;
+            pointer-events: all;
+            height: calc(100% - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            border-radius: 6px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            background-clip: padding-box;
+            outline: 0;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 15px;
+            border-bottom: 1px solid #e5e5e5;
+            background-color: #f8f9fa;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal-body {
+            position: relative;
+            padding: 15px;
+            flex-grow: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-footer {
+            padding: 15px;
+            text-align: right;
+            border-top: 1px solid #e5e5e5;
+            background-color: #f8f9fa;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1;
+            color: #000;
+            text-shadow: 0 1px 0 #fff;
+            opacity: 0.5;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+            .modal-close:hover {
+                opacity: 0.8;
+            }
+
+        .modal-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            flex-grow: 1;
+        }
+
+        /* Disable background when modal is open */
+        body.modal-open {
+            overflow: hidden;
+            padding-right: 15px; /* Prevent layout shift when scrollbar disappears */
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1040;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .tab-container {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .tab-button {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            border-radius: 3px 3px 0 0;
+            border-bottom: none;
+        }
+
+            .tab-button.active {
+                background-color: #007bff;
+                color: white;
+                font-weight: bold;
+            }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+
+            .tab-content.active {
+                display: block;
+            }
+
+        .btn-purple {
+            background-color: purple;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+
+        /* Animation */
+        .fade {
+            opacity: 0;
+            transition: opacity 0.15s linear;
+        }
+
+            .fade.show {
+                opacity: 1;
+            }
+
+        /* Loading Indicator Styles */
+        .loading-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        .loading-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+       
+    </style>
+    <script>
+        function isNumber(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+                return false;
+            }
+            return true;
+        }
+        function isNumberOrDecimal(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+
+            // Get the input element
+            var element = evt.target || evt.srcElement;
+            var value = element.value;
+
+            // Allow numbers (0-9): 48-57
+            // Allow decimal point (.): 46
+            if (
+                (charCode >= 48 && charCode <= 57) ||  // Numbers 0-9
+                (charCode === 46 && value.indexOf('.') === -1)  // Decimal point (only if not already present)
+            ) {
+                return true;
+            }
+            return false;
+        }
+        function isAlphabet(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+            if ((charCode >= 65 && charCode <= 90) || (charCode >= 97 && charCode <= 122) || charCode === 32) {
+                return true;
+            }
+            return false;
+        }
+        function isAlphaNumericWithUnderscoreHyphen(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+
+            // Allow:
+            // Uppercase A-Z: 65-90
+            // Lowercase a-z: 97-122
+            // Numbers 0-9: 48-57
+            // Underscore: 95
+            // Hyphen: 45
+            if ((charCode >= 48 && charCode <= 57) ||    // Numbers 0-9
+                (charCode >= 65 && charCode <= 90) ||    // Uppercase A-Z
+                (charCode >= 97 && charCode <= 122) ||   // Lowercase a-z
+                charCode === 95 ||                       // Underscore (_)
+                charCode === 45) {                       // Hyphen (-)
+                return true;
+            }
+            return false;
+        }
+        function isAlphaNumericWithOutUnderscoreHyphen(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+
+            // Allow:
+            // Uppercase A-Z: 65-90
+            // Lowercase a-z: 97-122
+            // Numbers 0-9: 48-57
+            // Underscore: 95
+            // Hyphen: 45
+            if ((charCode >= 48 && charCode <= 57) ||    // Numbers 0-9
+                (charCode >= 65 && charCode <= 90) ||    // Uppercase A-Z
+                (charCode >= 97 && charCode <= 122)) {
+                return true;
+            }
+            return false;
+        }
+        function validateMobileNumber(input) {
+            // Result object
+            const result = {
+                isValid: true,
+                message: ""
+            };
+
+            // If input is empty (null, undefined, or empty string), return valid
+            if (input === null || input === undefined || input === '') {
+                return result;
+            }
+
+            // Convert to string if not already
+            const strInput = String(input);
+
+            // Mobile validation - must be exactly 10 digits
+            const mobileRegex = /^[0-9]{10}$/;
+
+            // Check validation
+            if (!mobileRegex.test(strInput)) {
+                result.isValid = false;
+                result.message = "Please enter a valid 10-digit mobile number";
+            }
+
+            return result;
+        }
+
+        /**
+         * Validates if input is a valid email address.
+         * Skips validation if input is empty (returns true).
+         *
+         * @@param {string} input - The email address to validate
+         * @@returns {Object} Result with validation status and message
+         */
+        function validateEmail(input) {
+            // Result object
+            const result = {
+                isValid: true,
+                message: ""
+            };
+
+            // If input is empty (null, undefined, or empty string), return valid
+            if (input === null || input === undefined || input === '') {
+                return result;
+            }
+
+            // Convert to string if not already
+            const strInput = String(input);
+
+            // Regular expression for basic email validation
+            const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+            // Check validation
+            if (!emailRegex.test(strInput)) {
+                result.isValid = false;
+                result.message = "Please enter a valid email address";
+            }
+
+            return result;
+        }
+
+        // Loading Indicator Script
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set up the circular progress
+            const progressCircle = document.querySelector('.progress');
+            const percentageText = document.getElementById('progress-percentage');
+            const loaderContainer = document.getElementById('loader');
+
+            // Calculate the circle circumference
+            const radius = progressCircle.getAttribute('r');
+            const circumference = 2 * Math.PI * radius;
+
+            // Set the initial stroke-dasharray and stroke-dashoffset
+            progressCircle.style.strokeDasharray = circumference;
+            progressCircle.style.strokeDashoffset = circumference;
+
+            // Function to update progress
+            function updateProgress(percent) {
+                const offset = circumference - (percent / 100) * circumference;
+                progressCircle.style.strokeDashoffset = offset;
+                percentageText.textContent = `${Math.round(percent)}%`;
+            }
+
+            // Function to show loader
+            function showLoader() {
+                updateProgress(0); // Reset progress
+                loaderContainer.classList.add('active');
+            }
+
+            // Function to hide loader
+            function hideLoader() {
+                loaderContainer.classList.remove('active');
+            }
+
+            // Intercept jQuery AJAX requests
+            if (window.jQuery) {
+                $(document).ajaxStart(function () {
+                    showLoader();
+                });
+
+                $(document).ajaxStop(function () {
+                    hideLoader();
+                });
+
+                // Optional: Track progress for capable requests
+                $(document).ajaxSend(function (event, jqXHR, settings) {
+                    if (settings.xhr) {
+                        var oldXhr = settings.xhr;
+
+                        settings.xhr = function () {
+                            var xhr = oldXhr();
+                            xhr.upload.addEventListener('progress', function (e) {
+                                if (e.lengthComputable) {
+                                    var percentComplete = (e.loaded / e.total) * 100;
+                                    updateProgress(percentComplete);
+                                }
+                            });
+                            return xhr;
+                        };
+                    }
+                });
+            }
+
+            // For fetch API
+            const originalFetch = window.fetch;
+            window.fetch = function () {
+                showLoader();
+                return originalFetch.apply(this, arguments)
+                    .then(response => {
+                        hideLoader();
+                        return response;
+                    })
+                    .catch(error => {
+                        hideLoader();
+                        throw error;
+                    });
+            };
+
+            // For XMLHttpRequest
+            const originalXhr = window.XMLHttpRequest;
+            window.XMLHttpRequest = function () {
+                const xhr = new originalXhr();
+
+                xhr.addEventListener('loadstart', function () {
+                    showLoader();
+                });
+
+                xhr.upload.addEventListener('progress', function (e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        updateProgress(percentComplete);
+                    }
+                });
+
+                xhr.addEventListener('loadend', function () {
+                    updateProgress(100);
+                    setTimeout(hideLoader, 300);
+                });
+
+                return xhr;
+            };
+
+            // For ASP.NET WebForms postbacks
+            if (typeof Sys !== 'undefined' && Sys.WebForms) {
+                Sys.WebForms.PageRequestManager.getInstance().add_beginRequest(function () {
+                    showLoader();
+                });
+
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
+                    updateProgress(100);
+                    setTimeout(hideLoader, 300);
+                });
+            }
+        });
+
+        // Function to open modal with ledger view
+
+    </script>
+    <script>
+        // Combined function for opening modals with null checks
+        function openModal(studentId, url, studentName, type) {
+            // Get necessary elements
+            var modal = document.getElementById('ledgerModal');
+            var iframe = document.getElementById('contentIframe');
+
+            // Check if elements exist
+            if (!modal || !iframe) {
+                console.error('Modal or iframe elements not found. Make sure modal HTML is included in the page.');
+                return;
+            }
+
+            // Default message if type is undefined
+            var message = "Loading " + studentName + " " + type + " details...";
+            showLoadingIndicator(message);
+
+            // Set iframe source
+            iframe.src = url;
+
+            // Display modal
+            showModal();
+        }
+
+        // Function to show loading indicator with proper null checks
+        function showLoadingIndicator(message) {
+            var loadingIndicator = document.getElementById('loadingIndicator');
+            if (!loadingIndicator) {
+                console.error('Loading indicator element not found');
+                return;
+            }
+
+            var loadingText = loadingIndicator.querySelector('.loading-text');
+
+            // Update loading message if provided and text element exists
+            if (message && loadingText) {
+                loadingText.textContent = message;
+            }
+
+            // Show loading indicator
+            loadingIndicator.style.display = 'flex';
+        }
+
+        // Function to hide loading indicator with null check
+        function hideLoadingIndicator() {
+            var loadingIndicator = document.getElementById('loadingIndicator');
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        // Calculate scrollbar width
+        function getScrollbarWidth() {
+            const outer = document.createElement('div');
+            outer.style.visibility = 'hidden';
+            outer.style.overflow = 'scroll';
+            document.body.appendChild(outer);
+
+            const inner = document.createElement('div');
+            outer.appendChild(inner);
+
+            const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+
+            outer.parentNode.removeChild(outer);
+
+            return scrollbarWidth;
+        }
+
+        // Function to show the modal with null checks
+        function showModal() {
+            var modal = document.getElementById('ledgerModal');
+            if (!modal) {
+                console.error('Modal element not found');
+                return;
+            }
+
+            var body = document.body;
+            var scrollbarWidth = getScrollbarWidth();
+
+            // Store original body padding
+            var originalPadding = parseInt(window.getComputedStyle(body).paddingRight, 10) || 0;
+
+            // Add modal-open class to body to disable scrolling
+            body.classList.add('modal-open');
+
+            // Prevent layout shift from scrollbar disappearing
+            body.style.paddingRight = (originalPadding + scrollbarWidth) + 'px';
+
+            // Create backdrop if it doesn't exist
+            if (!document.getElementById('modal-backdrop')) {
+                var backdrop = document.createElement('div');
+                backdrop.id = 'modal-backdrop';
+                backdrop.className = 'modal-backdrop';
+                document.body.appendChild(backdrop);
+            }
+
+            // Display modal with animation
+            modal.style.display = 'block';
+
+            // Force reflow before adding the show class
+            modal.offsetHeight;
+
+            setTimeout(function () {
+                modal.classList.add('show');
+            }, 50);
+
+            // Set up iframe loading events
+            var iframe = document.getElementById('contentIframe');
+            if (!iframe) {
+                console.error('Iframe element not found');
+                return;
+            }
+
+            // Create a timeout to handle cases where iframe might not load properly
+            var loadTimeout = setTimeout(function () {
+                hideLoadingIndicator();
+            }, 15000); // 15 seconds timeout
+
+            // Add load event listener to iframe
+            iframe.onload = function () {
+                clearTimeout(loadTimeout);
+                hideLoadingIndicator();
+
+                try {
+                    var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeDoc && iframeDoc.body) {
+                        var observer = new MutationObserver(function () {
+                            adjustIframeHeight();
+                        });
+
+                        observer.observe(iframeDoc.body, {
+                            childList: true,
+                            subtree: true,
+                            attributes: true
+                        });
+                    }
+                } catch (e) {
+                    console.log("Cannot access iframe content due to cross-origin policy");
+                }
+
+                adjustIframeHeight();
+            };
+
+            iframe.onerror = function () {
+                clearTimeout(loadTimeout);
+                hideLoadingIndicator();
+                alert("Error loading content. Please try again.");
+            };
+        }
+
+        // Function to adjust iframe height with null checks
+        function adjustIframeHeight() {
+            var iframe = document.getElementById('contentIframe');
+            if (!iframe) {
+                return;
+            }
+
+            var modalBody = iframe.closest('.modal-body');
+            if (iframe && modalBody) {
+                iframe.style.height = '100%';
+            }
+        }
+
+        // Function to close the modal with null checks
+        function closeModal() {
+            var modal = document.getElementById('ledgerModal');
+            if (!modal) {
+                return;
+            }
+
+            var body = document.body;
+
+            modal.classList.remove('show');
+
+            setTimeout(function () {
+                modal.style.display = 'none';
+
+                body.classList.remove('modal-open');
+                body.style.paddingRight = '';
+
+                var backdrop = document.getElementById('modal-backdrop');
+                if (backdrop) {
+                    backdrop.parentNode.removeChild(backdrop);
+                }
+
+                var allElements = document.querySelectorAll('[data-original-tabindex]');
+                allElements.forEach(function (element) {
+                    var originalTabIndex = element.getAttribute('data-original-tabindex');
+                    if (originalTabIndex === 'null') {
+                        element.removeAttribute('tabindex');
+                    } else {
+                        element.setAttribute('tabindex', originalTabIndex);
+                    }
+                    element.removeAttribute('data-original-tabindex');
+
+                    var originalAriaHidden = element.getAttribute('data-original-aria-hidden');
+                    if (originalAriaHidden) {
+                        element.setAttribute('aria-hidden', originalAriaHidden);
+                        element.removeAttribute('data-original-aria-hidden');
+                    }
+                });
+
+                var loadingIndicator = document.getElementById('loadingIndicator');
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'flex';
+                }
+
+                var iframe = document.getElementById('contentIframe');
+                if (iframe) {
+                    iframe.src = '';
+                }
+            }, 300);
+        }
+
+        // Initialize event handlers when DOM is ready
+        document.addEventListener('DOMContentLoaded', function () {
+            var modal = document.getElementById('ledgerModal');
+
+            // Only set up event handlers if modal exists
+            if (modal) {
+                // Close modal when clicking outside of it
+                window.onclick = function (event) {
+                    if (event.target === modal) {
+                        closeModal();
+                    }
+                };
+            }
+
+            // Add window resize handler with null check
+            window.addEventListener('resize', function () {
+                var modal = document.getElementById('ledgerModal');
+                if (modal && modal.style.display === 'block') {
+                    adjustIframeHeight();
+                }
+            });
+
+            console.log("Modal system initialized successfully");
+        });
+    </script>
+</head>
+<body>
+    <div class="main-wrapper">
+        @Html.Partial("_PreSchoolHeader")
+        @Html.Partial("_PreSchoolSide")
+        <div class="page-wrapper">
+            <div class="content">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loader-container" id="loader">
+        <div class="loader-content">
+            <div class="circular-progress">
+                <svg>
+                    <circle cx="60" cy="60" r="54" class="background"></circle>
+                    <circle cx="60" cy="60" r="54" class="progress"></circle>
+                </svg>
+                <div class="percentage" id="progress-percentage">0%</div>
+            </div>
+            <div class="loading-text">Loading...</div>
+        </div>
+    </div>
+
+    <!-- Bottom Scripts -->
+    <script src="/template/assets/js/moment.js"></script>
+    <script src="/template/assets/plugins/daterangepicker/daterangepicker.js"></script>
+    <script src="/template/assets/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="/template/assets/js/feather.min.js"></script>
+    <script src="/template/assets/js/jquery.slimscroll.min.js"></script>
+    <script src="/template/assets/js/script.js"></script>
+    <!-- Modal for Ledger/Sibling Ledger -->
+    <div class="modal fade" id="ledgerModal" tabindex="-1" role="dialog" aria-labelledby="ledgerModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <!-- Close button with proper styling -->
+                    <button type="button" class="modal-close btn btn-danger" data-dismiss="modal" aria-label="Close" onclick="closeModal()" style="position: absolute; top: 10px; right: 10px; background-color: red; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <div id="loadingIndicator" class="loading-container">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Loading student data...</div>
+                    </div>
+                    <iframe id="contentIframe" class="modal-iframe" src=""></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

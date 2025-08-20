@@ -1,0 +1,645 @@
+﻿@using ERPIndia
+@{
+    ViewBag.Title = "Transport Pickup Points";
+    string sessionId = Convert.ToString(ViewBag.SessionId);
+    int sessionYear = ViewBag.SessionYear;
+}
+<div class="card">
+    <div class="card-header bg-light">
+        <div class="d-flex align-items-center">
+            <h5 class="text-dark">Transport Pickup Points Management</h5>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-xxl-3 col-xl-3">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h5 class="text-dark">Manage Pickup Points</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="transportPickupForm" class="new-added-form">
+                            <div class="row">
+                                <input type="hidden" id="transportPickupId">
+                                <input type="hidden" id="sessionYear" value="@sessionYear">
+
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Route *</label>
+                                    <select id="routeId" class="form-control required">
+                                        <option value="">Select Route</option>
+                                        <!-- Routes will be populated via AJAX -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Pickup Point Name *</label>
+                                    <input type="text" id="pickupName" placeholder="" autocomplete="off" class="form-control required">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Fee</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" id="fee" placeholder="0.00" value="0.00" min="0" step="0.01" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Sort Order</label>
+                                    <input type="number" id="sortOrder" placeholder="0" value="0" min="0" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isActive" checked>
+                                        <label class="form-check-label" for="isActive">
+                                            Active
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <br />
+                                    <div class="btn-group" role="group">
+                                        <button type="submit" id="submitBtn" class="btn btn-primary">Save</button>&nbsp;
+                                        <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-9 col-xl-9">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h5 class="text-dark">Pickup Points List</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" id="transportPickupDatatable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Route</th>
+                                        <th>Pickup Point</th>
+                                        <th>Fee</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+<script>
+/**
+ * Transport Pickup Management Module
+ * A module pattern implementation for better encapsulation and organization
+ */
+const TransportPickupManager = (function() {
+    // Private properties
+    const apiEndpoints = {
+        getAll: '@Url.Action("GetAllTransportPickups", "TransportPickups")',
+        getById: '@Url.Action("GetTransportPickupById", "TransportPickups")',
+        create: '@Url.Action("InsertTransportPickup", "TransportPickups")',
+        update: '@Url.Action("UpdateTransportPickup", "TransportPickups")',
+        delete: '@Url.Action("DeleteTransportPickup", "TransportPickups")',
+        getNextSortOrder: '@Url.Action("GetNextSortOrder", "TransportPickups")',
+        getRoutes: '@Url.Action("GetRoutes", "Dropdown")'
+    };
+
+    const elements = {
+        form: '#transportPickupForm',
+        idField: '#transportPickupId',
+        routeIdField: '#routeId',
+        routeFilter: '#routeFilter',
+        submitBtn: '#submitBtn',
+        cancelBtn: '#cancelBtn',
+        datatable: '#transportPickupDatatable',
+        requiredFields: '.required'
+    };
+
+    let dataTable = null;
+
+    // Private methods
+    const loadRoutes = function() {
+        $.ajax({
+            url: apiEndpoints.getRoutes,
+            type: 'GET',
+            success: function(result) {
+                if (result.success) {
+                    // Clear existing options
+                    $(elements.routeIdField).find('option').not(':first').remove();
+                    $(elements.routeFilter).find('option').not(':first').remove();
+
+                    // Add new options
+                    $.each(result.data, function(index, route) {
+                        $(elements.routeIdField).append($('<option></option>')
+                            .attr('value', route.Id)
+                            .text(route.Name));
+
+                        $(elements.routeFilter).append($('<option></option>')
+                            .attr('value', route.Id)
+                            .text(route.Name));
+                    });
+                } else {
+                    Notification.show('Failed to load routes. ' + result.message, 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading routes:', error);
+                Notification.show('An error occurred while loading routes.', 'error');
+            }
+        });
+    };
+
+    const initializeDataTable = function () {
+        const sessionYear = $('#sessionYear').val();
+        const routeId = $(elements.routeFilter).val();
+
+        console.log("Initializing DataTable with SessionYear:", sessionYear, "RouteId:", routeId);
+
+        dataTable = $(elements.datatable).DataTable({
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "ajax": {
+                "url": apiEndpoints.getAll,
+                "type": "POST",
+                "data": function (d) {
+                    d.sessionYear = sessionYear;
+                    d.routeId = routeId;
+                    console.log("Sending request with data:", JSON.stringify(d));
+                    return d;
+                },
+                "datatype": "json",
+                "error": function (xhr, error, thrown) {
+                    console.error("DataTable AJAX error:", error, thrown);
+                    console.log("Response:", xhr.responseText);
+                    Notification.show("Failed to load pickup points data. Please try again.", "error");
+                }
+            },
+            "columnDefs": [{
+                "targets": [0],
+                "visible": false,
+                "searchable": false
+            }],
+            "columns": [
+                { data: 'TransportPickupsId', visible: false },
+                { "data": "RouteName", "name": "RouteName", "autoWidth": true },
+                { "data": "PickupName", "name": "PickupName", "autoWidth": true },
+                {
+                    "data": "Fee",
+                    "name": "Fee",
+                    "autoWidth": true,
+                    "render": function(data) {
+                        return '₹ ' + parseFloat(data).toFixed(2);
+                    }
+                },
+                
+                {
+                    data: null,
+                    orderable: false,
+                    className: 'text-center',
+                    width: "100px",
+                    render: function (data, type, row) {
+                        return `
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary btn-sm edit-btn" data-id="${row.TransportPickupsId}" title="Edit">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" data-id="${row.TransportPickupsId}" title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+            ],
+            "order": [[4, "asc"]], // Default sort by SortOrder
+            responsive: true,
+            dom: "<'row'<'col-sm-6'B><'col-sm-3'l><'col-sm-3'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            buttons: [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ],
+            "language": {
+                "emptyTable": "No pickup points found for the selected criteria",
+                "zeroRecords": "No matching pickup points found"
+            }
+        });
+    };
+
+    // Check if the pickup name already exists for the same route
+    const checkForDuplicatePickup = async function (pickupName, routeId, currentId = '') {
+        const sessionYear = $('#sessionYear').val();
+
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: apiEndpoints.getAll,
+                type: 'GET',
+                data: {
+                    sessionYear: sessionYear,
+                    routeId: routeId,
+                    checkDuplicate: true,
+                    pickupName: pickupName
+                },
+                success: function (result) {
+                    if (result.success) {
+                        // Check if the pickup name already exists for this route (excluding the current record if we're editing)
+                        const isDuplicate = result.data.some(item => {
+                            return item.PickupName.toLowerCase() === pickupName.toLowerCase() &&
+                                   item.TransportPickupsId.toString() !== currentId.toString();
+                        });
+                        resolve(isDuplicate);
+                    } else {
+                        reject(result.message || 'Error checking for duplicates');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error checking for duplicates:", error);
+                    console.log("Response:", xhr.responseText);
+                    reject(error);
+                }
+            });
+        });
+    };
+
+    const getFormData = function () {
+        return {
+            TransportPickupsId: $('#transportPickupId').val(),
+            RouteId: $('#routeId').val(),
+            PickupName: $('#pickupName').val().trim(),
+            Fee: parseFloat($('#fee').val()) || 0,
+            SortOrder: parseInt($('#sortOrder').val()) || 0,
+            SessionYear: parseInt($('#sessionYear').val()),
+            IsActive: $('#isActive').is(':checked')
+        };
+    };
+
+    const bindEvents = function() {
+        // Form submission
+        $(elements.form).on('submit', async function(e) {
+            e.preventDefault();
+
+            // Disable submit button to prevent double submission
+            $(elements.submitBtn).prop('disabled', true);
+
+            try {
+                const isValid = await validateForm();
+
+                if (isValid) {
+                    saveTransportPickup();
+                } else {
+                    // Re-enable submit button if validation fails
+                    $(elements.submitBtn).prop('disabled', false);
+                }
+            } catch (error) {
+                console.error("Validation error:", error);
+                Notification.show("An error occurred during validation. Please try again.", "error");
+                $(elements.submitBtn).prop('disabled', false);
+            }
+        });
+
+        // Cancel button
+        $(elements.cancelBtn).on('click', resetForm);
+
+        // Edit button (delegated event for dynamic elements)
+        $(elements.datatable).on('click', '.edit-btn', function() {
+            const transportPickupId = $(this).data('id');
+            loadTransportPickupForEdit(transportPickupId);
+        });
+
+        // Delete button (delegated event for dynamic elements)
+        $(elements.datatable).on('click', '.delete-btn', function() {
+            const transportPickupId = $(this).data('id');
+            confirmDelete(transportPickupId);
+        });
+
+        // Route filter change
+        $(elements.routeFilter).on('change', function() {
+            refreshDataTable();
+        });
+
+        // Route selection change (for setting next sort order)
+        $(elements.routeIdField).on('change', function() {
+            const routeId = $(this).val();
+            if (routeId) {
+                getNextSortOrder(routeId);
+            }
+        });
+    };
+
+    const validateForm = async function() {
+        let isValid = true;
+
+        // Clear previous validation styling
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+
+        // Check required fields
+        $(elements.requiredFields).each(function() {
+            if (!$(this).val().trim()) {
+                isValid = false;
+                $(this).addClass('is-invalid');
+                $(this).after(`<div class="invalid-feedback">This field is required</div>`);
+            }
+        });
+
+        // If basic validation passes, check for duplicate pickup names
+        if (isValid) {
+            try {
+                const pickupName = $('#pickupName').val().trim();
+                const routeId = $('#routeId').val();
+                const currentId = $(elements.idField).val();
+
+                if (!routeId) {
+                    isValid = false;
+                    $('#routeId').addClass('is-invalid');
+                    $('#routeId').after(`<div class="invalid-feedback">Please select a route</div>`);
+                    return isValid;
+                }
+
+                const isDuplicate = await checkForDuplicatePickup(pickupName, routeId, currentId);
+
+                if (isDuplicate) {
+                    isValid = false;
+                    $('#pickupName').addClass('is-invalid');
+                    $('#pickupName').after(`<div class="invalid-feedback">This pickup point name already exists for the selected route</div>`);
+                }
+            } catch (error) {
+                console.error("Error checking for duplicates:", error);
+                // If there's an error checking duplicates, we'll let the server-side validation catch it
+            }
+        }
+
+        return isValid;
+    };
+
+    const resetForm = function() {
+        $('#pickupName').val('');
+        $('#fee').val('0.00');
+        $('#sortOrder').val('0');
+        $('#isActive').prop('checked', true);
+        $(elements.idField).val('');
+        $(elements.submitBtn).text('Save');
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+
+        // If a route is selected, get the next sort order
+        const routeId = $(elements.routeIdField).val();
+        if (routeId) {
+            getNextSortOrder(routeId);
+        }
+    };
+
+    const getNextSortOrder = function(routeId) {
+        if (!routeId) return;
+
+        $.ajax({
+            url: apiEndpoints.getNextSortOrder,
+            type: 'GET',
+            data: { routeId: routeId },
+            success: function(result) {
+                if (result.success) {
+                    $('#sortOrder').val(result.nextSortOrder);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error getting next sort order:", error);
+            }
+        });
+    };
+
+    const saveTransportPickup = function() {
+        const transportPickup = getFormData();
+        const isUpdate = transportPickup.TransportPickupsId !== '';
+
+        if (isUpdate) {
+            performAjaxOperation(apiEndpoints.update, transportPickup, 'updating');
+        } else {
+            performAjaxOperation(apiEndpoints.create, transportPickup, 'creating');
+        }
+    };
+
+    const loadTransportPickupForEdit = function(id) {
+        // Get transport pickup data by ID
+        $.ajax({
+            url: apiEndpoints.getById,
+            type: 'GET',
+            data: { id: id },
+            success: function(result) {
+                if (result.success && result.data) {
+                    const transportPickup = result.data;
+
+                    // Populate the form with transport pickup data
+                    $(elements.idField).val(transportPickup.TransportPickupsId);
+                    $('#routeId').val(transportPickup.RouteId);
+                    $('#pickupName').val(transportPickup.PickupName);
+                    $('#fee').val(parseFloat(transportPickup.Fee).toFixed(2));
+                    $('#sortOrder').val(transportPickup.SortOrder);
+                    $('#isActive').prop('checked', transportPickup.IsActive);
+
+                    // Update UI to indicate edit mode
+                    $(elements.submitBtn).text('Update');
+
+                    // Scroll to form for better UX
+                    $('html, body').animate({
+                        scrollTop: $(elements.form).offset().top - 100
+                    }, 500);
+                } else {
+                    Notification.show('Transport pickup not found.', 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching transport pickup data:', error);
+                Notification.show('An error occurred while fetching transport pickup data.', 'error');
+            }
+        });
+    };
+
+    const confirmDelete = function(id) {
+        swal({
+            title: "Are you sure?",
+            text: "Once deleted, you will not be able to recover this pickup point!",
+            icon: "warning",
+            buttons: ["Cancel", "Delete"],
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                deleteTransportPickup(id);
+            }
+        });
+    };
+
+    const deleteTransportPickup = function(id) {
+        performAjaxOperation(apiEndpoints.delete, { id: id }, 'deleting');
+    };
+
+    const performAjaxOperation = function(url, data, operationType) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                // Disable buttons during operation
+                $(elements.submitBtn).prop('disabled', true);
+                $(elements.cancelBtn).prop('disabled', true);
+            },
+            success: function(result) {
+                if (result.success) {
+                    // Reset form if it's a create or update operation
+                    if (operationType !== 'deleting') {
+                        resetForm();
+                    }
+
+                    // Refresh the data table
+                    refreshDataTable();
+
+                    // Show success message
+                    Notification.show(result.message, 'success');
+                } else {
+                    // Show error message
+                    Notification.show(result.message || `Failed while ${operationType} the transport pickup.`, 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`${operationType} error:`, error);
+                Notification.show(`An error occurred while ${operationType} the transport pickup.`, 'error');
+            },
+            complete: function() {
+                // Re-enable buttons
+                $(elements.submitBtn).prop('disabled', false);
+                $(elements.cancelBtn).prop('disabled', false);
+            }
+        });
+    };
+
+    const refreshDataTable = function() {
+        if (dataTable) {
+            dataTable.ajax.reload();
+            return;
+        }
+
+        // Fallback if datatable reference is lost
+        if ($.fn.DataTable.isDataTable(elements.datatable)) {
+            $(elements.datatable).DataTable().ajax.reload();
+        }
+    };
+
+    // Public methods
+    return {
+        init: function() {
+            loadRoutes();
+            initializeDataTable();
+            bindEvents();
+        }
+    };
+})();
+
+/**
+ * Notification Module
+ * Handles all notifications in a consistent way
+ */
+const Notification = (function() {
+    return {
+        show: function(message, type) {
+            swal({
+                title: type === 'success' ? 'Success!' : 'Error!',
+                text: message,
+                icon: type,
+                button: "OK",
+            });
+        }
+    };
+})();
+
+// Initialize the application when the document is ready
+$(document).ready(function() {
+    const sessionYear = $('#sessionYear').val();
+
+    console.log("Page loaded with SessionYear:", sessionYear);
+
+    if (!sessionYear) {
+        console.error("Warning: SessionYear value is missing!");
+        Notification.show("Session information is missing. Some features may not work correctly.", "warning");
+    }
+
+    // Initialize the manager
+    TransportPickupManager.init();
+});
+</script>
+
+<style>
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 80%;
+        margin-top: 0.25rem;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    /* DataTable styling */
+    div.dataTables_wrapper div.dataTables_filter {
+        text-align: right;
+    }
+
+    div.dt-buttons {
+        margin-bottom: 10px;
+    }
+
+    .dataTables_length {
+        padding-top: 5px;
+    }
+
+    /* Make buttons look consistent */
+    .dt-button {
+        padding: 5px 10px;
+        margin-right: 5px;
+        border: 1px solid #ddd;
+        background-color: #f8f8f8;
+        color: #333;
+        border-radius: 4px;
+    }
+
+        .dt-button:hover {
+            background-color: #e8e8e8;
+        }
+
+    /* Responsive adjustments */
+    @@media (max-width: 767px) {
+        div.dataTables_wrapper div.dataTables_filter,
+        div.dataTables_wrapper div.dataTables_length,
+        div.dt-buttons {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+</style>

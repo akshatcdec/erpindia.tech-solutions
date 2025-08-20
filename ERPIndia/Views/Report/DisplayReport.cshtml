@@ -1,0 +1,143 @@
+﻿@model ERPIndia.Controllers.ReportViewModel
+@using ERPIndia.Class.Helper
+@using CrystalDecisions.CrystalReports.Engine
+@using CrystalDecisions.Shared
+@using System.IO
+@using System.Data
+@using ERPIndia
+@{
+    ViewBag.Title = "Display Report";
+
+    // Crystal Report settings
+    string reportPath = Model.ReportPath;
+    ReportDocument reportDocument = new ReportDocument();
+    try
+    {
+        // Load the report
+        reportDocument.Load(reportPath);
+
+        // Set data source directly if data is available
+        if (Model.ReportData != null)
+        {
+            // Convert data to DataTable if needed
+            reportDocument.SetDataSource(Model.ReportData);
+
+            // Get tenant code
+            string code = CommonLogic.GetSessionValue(StringConstants.TenantCode);
+            string sessionprint = "Session ( " + CommonLogic.GetSessionValue(StringConstants.ActiveSessionPrint) + " )";
+            string img = CommonLogic.GetSessionValue(StringConstants.LogoImg);
+            string logoPath = Server.MapPath(ERPIndia.Class.Helper.AppLogic.GetLogoImage(code, img));
+
+            // Set common parameters
+            reportDocument.SetParameterValue("prmreportlogo", logoPath);
+            reportDocument.SetParameterValue("prmreportname", "");
+            reportDocument.SetParameterValue("prmreportitle1", sessionprint);
+
+            // Set report-specific parameters
+            if (Model.Parameters != null)
+            {
+                foreach (var param in Model.Parameters)
+                {
+                    reportDocument.SetParameterValue(param.Key, param.Value);
+                }
+            }
+
+            // Generate a unique identifier for the report
+            string reportId = Model.ReportType + "_" + DateTime.Now.ToString("yyyyMMddHHmmss");
+
+            // Store the report document in session for later retrieval
+            Session[reportId] = reportDocument;
+
+            // Default format is PDF for iframe display
+            string currentFormat = "pdf";
+            if (Request.QueryString["format"] != null)
+            {
+                currentFormat = Request.QueryString["format"].ToString().ToLower();
+            }
+
+            // Display export options
+            <div class="mb-3 text-right">
+                <div class="btn-group" role="group" aria-label="Export Options">
+                    <button type="button" class="btn @(currentFormat == "pdf" ? "btn-primary" : "btn-outline-primary") export-btn" data-format="pdf">
+                        <i class="fa fa-file-pdf-o"></i> PDF
+                    </button>
+                    <button type="button" class="btn @(currentFormat == "excel" ? "btn-primary" : "btn-outline-primary") export-btn" data-format="excel">
+                        <i class="fa fa-file-excel-o"></i> Excel
+                    </button>
+                    <button type="button" class="btn @(currentFormat == "excelrecord" ? "btn-primary" : "btn-outline-primary") export-btn" data-format="excelrecord">
+                        <i class="fa fa-file-excel-o"></i> Excel (XLSX)
+                    </button>
+                    <button type="button" class="btn @(currentFormat == "word" ? "btn-primary" : "btn-outline-primary") export-btn" data-format="word">
+                        <i class="fa fa-file-word-o"></i> Word
+                    </button>
+                    <button type="button" class="btn @(currentFormat == "csv" ? "btn-primary" : "btn-outline-primary") export-btn" data-format="csv">
+                        <i class="fa fa-file-text-o"></i> CSV
+                    </button>
+                    <a href="@Url.Action("StreamReport", "Report", new { id = reportId, format = currentFormat })"
+                       class="btn btn-success" target="_blank" title="Download the report">
+                        <i class="fa fa-download"></i> Download
+                    </a>
+                </div>
+            </div>
+
+            <!-- Only show preview for PDF -->
+            <div class="text-center">
+                @if (currentFormat == "pdf")
+                {
+                    <iframe src="@Url.Action("StreamReport", "Report", new { id = reportId, format = "pdf" })"
+                            class="w-100" style="height: 600px; border: none;"></iframe>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="fa fa-info-circle"></i> Preview not available for @currentFormat.ToUpper() format.
+                        Please use the download button to view the report.
+                    </div>
+                }
+            </div>
+
+            <script>
+                $(document).ready(function() {
+                    // Handle export format buttons
+                    $('.export-btn').on('click', function() {
+                        var format = $(this).data('format');
+                        window.location.href = '@Url.Action("DisplayReport", "Report")' +
+                            '?ReportType=@Model.ReportType' +
+                            '&format=' + format;
+                    });
+
+                    // Clean up on page unload
+                    $(window).on('beforeunload', function() {
+                        // Make an async call to clean up the report
+                        $.ajax({
+                            url: '@Url.Action("CleanupReport", "Report")',
+                            data: { id: '@reportId' },
+                            async: false
+                        });
+                    });
+                });
+            </script>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                <strong>No data available:</strong> There are no records to display in the report.
+            </div>
+            // Clean up if no data
+            reportDocument.Close();
+            reportDocument.Dispose();
+        }
+    }
+    catch (Exception ex)
+    {
+        <div class="alert alert-danger">
+            <strong>Error loading report:</strong> @ex.Message
+        </div>
+        // Clean up on error
+        if (reportDocument != null)
+        {
+            reportDocument.Close();
+            reportDocument.Dispose();
+        }
+    }
+}

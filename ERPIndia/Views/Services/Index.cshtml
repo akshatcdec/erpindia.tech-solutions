@@ -1,0 +1,435 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<div class="breadcrumbs-area">
+    <h3>Service</h3>
+    <ul>
+        <li><a href="@Url.Action("", "SiteMap")">Home</a></li>
+        <li>Services</li>
+    </ul>
+</div>
+
+<!-- Customer Management App -->
+<div id="customerApp">
+    <!-- Customer Form Card -->
+    <div class="card height-auto">
+        <div class="card-body">
+            <div class="heading-layout1">
+                <div class="item-title">
+                    <h3 id="formTitle">Add New Customer</h3>
+                </div>
+            </div>
+            <form id="customerForm" class="new-added-form">
+                <div class="row">
+                    <input type="hidden" id="customerId">
+
+                    <div class="col-xl-3 col-lg-6 col-12 form-group">
+                        <label>First Name *</label>
+                        <input type="text" id="firstName" placeholder="" class="form-control required">
+                    </div>
+                    <div class="col-xl-3 col-lg-6 col-12 form-group">
+                        <label>Last Name *</label>
+                        <input type="text" id="lastName" placeholder="" class="form-control required">
+                    </div>
+                    <div class="col-xl-3 col-lg-6 col-12 form-group">
+                        <label>Contact No *</label>
+                        <input type="text" id="contact" placeholder="" class="form-control required">
+                    </div>
+                    <div class="col-xl-3 col-lg-6 col-12 form-group">
+                        <label>Email *</label>
+                        <input type="email" id="email" placeholder="" class="form-control required">
+                    </div>
+
+                    <div class="col-xl-3 col-lg-6 col-12 form-group">
+                        <label>&nbsp;</label>
+                        <div class="button-group">
+                            <button type="submit" id="submitBtn" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark">Save</button>
+                            <button type="button" id="cancelBtn" class="btn-fill-lg btn-gradient-yellow btn-hover-bluedark">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer List Card -->
+    <div class="card height-auto">
+        <div class="card-body">
+            <div class="heading-layout1">
+                <div class="item-title">
+                    <h3>Customer List</h3>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-secondary refresh-btn" id="refreshBtn">
+                        <i class="fa fa-refresh"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table id="customerDatatable" class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Id</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+
+<script>
+    
+/**
+ * Customer Management Module
+ * A module pattern implementation for better encapsulation and organization
+ */
+const CustomerManager = (function() {
+    // Private properties
+    const apiEndpoints = {
+        getAll: '@Url.Action("GetCustomers", "Customer")',
+        getById: '/Customer/GetCustomerById',
+        create: '/Customer/InsertCustomer',
+        update: '/Customer/UpdateCustomer',
+        delete: '@Url.Action("DeleteCustomer", "Customer")'
+    };
+
+    const elements = {
+        form: '#customerForm',
+        formTitle: '#formTitle',
+        idField: '#customerId',
+        submitBtn: '#submitBtn',
+        cancelBtn: '#cancelBtn',
+        refreshBtn: '#refreshBtn',
+        datatable: '#customerDatatable',
+        requiredFields: '.required'
+    };
+
+    let dataTable = null;
+
+    // Private methods
+    const initializeDataTable = function() {
+
+     $("#customerDatatable").DataTable({
+         "processing": true,
+         "serverSide": true,
+         "filter": true,
+         "ajax": {
+            "url": '@Url.Action("GetCustomers", "Customer")',
+             "type": "POST",
+             "datatype": "json"
+         },
+         "columnDefs": [{
+             "targets": [0],
+             "visible": false,
+             "searchable": false
+         }],
+         "columns": [
+             { data: 'Id', visible: false },
+             { "data": "FirstName", "name": "First Name", "autoWidth": true },
+             { "data": "LastName", "name": "Last Name", "autoWidth": true },
+             { "data": "Contact", "name": "Country", "autoWidth": true },
+             { "data": "Email", "name": "Email", "autoWidth": true },
+             {
+                 data: null,
+                 orderable: false,
+                 className: 'text-center',
+                 render: function (data, type, row) {
+                     return `
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary btn-sm edit-btn" data-id="${row.Id}">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" data-id="${row.Id}">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                 }
+             },
+         ],
+         responsive: true,
+         dom: 'Bfrtip',
+         buttons: [
+             'copy', 'csv', 'excel', 'pdf', 'print'
+         ],
+     });
+    };
+
+    const bindEvents = function() {
+        // Form submission
+        $(elements.form).on('submit', function(e) {
+            e.preventDefault();
+            if (validateForm()) {
+                saveCustomer();
+            }
+        });
+
+        // Cancel button
+        $(elements.cancelBtn).on('click', resetForm);
+
+        // Refresh button
+        $(elements.refreshBtn).on('click', function() {
+            refreshDataTable();
+        });
+
+        // Edit button (delegated event for dynamic elements)
+        $(elements.datatable).on('click', '.edit-btn', function() {
+            const customerId = $(this).data('id');
+            loadCustomerForEdit(customerId);
+        });
+
+        // Delete button (delegated event for dynamic elements)
+        $(elements.datatable).on('click', '.delete-btn', function() {
+            const customerId = $(this).data('id');
+            confirmDelete(customerId);
+        });
+    };
+
+    const validateForm = function() {
+        let isValid = true;
+
+        // Clear previous validation styling
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+
+        // Check each required field
+        $(elements.requiredFields).each(function() {
+            if (!$(this).val().trim()) {
+                isValid = false;
+                $(this).addClass('is-invalid');
+                $(this).after(`<div class="invalid-feedback">This field is required</div>`);
+            }
+        });
+
+        // Validate email format if provided
+        const emailField = $('#email');
+        if (emailField.val().trim() && !isValidEmail(emailField.val().trim())) {
+            isValid = false;
+            emailField.addClass('is-invalid');
+            emailField.next('.invalid-feedback').remove();
+            emailField.after(`<div class="invalid-feedback">Please enter a valid email address</div>`);
+        }
+
+        return isValid;
+    };
+
+    const isValidEmail = function(email) {
+        const regex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+        return regex.test(email);
+    };
+
+    const getFormData = function() {
+        return {
+            FirstName: $('#firstName').val().trim(),
+            LastName: $('#lastName').val().trim(),
+            Contact: $('#contact').val().trim(),
+            Email: $('#email').val().trim(),
+            DateOfBirth: '01/01/01' // Default value
+        };
+    };
+
+    const resetForm = function() {
+        $(elements.form)[0].reset();
+        $(elements.idField).val('');
+        $(elements.submitBtn).text('Save');
+        $(elements.formTitle).text('Add New Customer');
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+    };
+
+    const saveCustomer = function() {
+        const customer = getFormData();
+        const isUpdate = $(elements.idField).val() !== '';
+
+        if (isUpdate) {
+            customer.Id = $(elements.idField).val();
+            performAjaxOperation(apiEndpoints.update, customer, 'updating');
+        } else {
+            performAjaxOperation(apiEndpoints.create, customer, 'creating');
+        }
+    };
+
+    const loadCustomerForEdit = function(id) {
+        // Scroll to form
+
+
+        // Get customer data by ID
+        $.ajax({
+            url: apiEndpoints.getById,
+            type: 'GET',
+            data: { id: id },
+            success: function(data) {
+                if (data) {
+                    // Populate the form with customer data
+                    $(elements.idField).val(data.Id);
+                    $('#firstName').val(data.FirstName);
+                    $('#lastName').val(data.LastName);
+                    $('#contact').val(data.Contact);
+                    $('#email').val(data.Email);
+
+                    // Update UI to indicate edit mode
+                    $(elements.submitBtn).text('Update');
+                    $(elements.formTitle).text('Edit Customer');
+                } else {
+                    Notification.show('Customer not found.', 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching customer data:', error);
+                Notification.show('An error occurred while fetching customer data.', 'error');
+            }
+        });
+    };
+
+    const confirmDelete = function(id) {
+        swal({
+            title: "Are you sure?",
+            text: "Once deleted, you will not be able to recover this customer record!",
+            icon: "warning",
+            buttons: ["Cancel", "Delete"],
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                deleteCustomer(id);
+            }
+        });
+    };
+
+    const deleteCustomer = function(id) {
+        performAjaxOperation(apiEndpoints.delete, { id: id }, 'deleting');
+    };
+
+    const performAjaxOperation = function(url, data, operationType) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                // Disable buttons during operation
+                $(elements.submitBtn).prop('disabled', true);
+                $(elements.cancelBtn).prop('disabled', true);
+            },
+            success: function(result) {
+                if (result.success) {
+                    // Reset form if it's a create or update operation
+                    if (operationType !== 'deleting') {
+                        resetForm();
+                    }
+
+                    // Refresh the data table
+                    refreshDataTable();
+
+                    // Show success message
+                    Notification.show(result.message, 'success');
+                } else {
+                    // Show error message
+                    Notification.show(result.message || `Failed while ${operationType} the customer.`, 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`${operationType} error:`, error);
+                Notification.show(`An error occurred while ${operationType} the customer.`, 'error');
+            },
+            complete: function() {
+                // Re-enable buttons
+                $(elements.submitBtn).prop('disabled', false);
+                $(elements.cancelBtn).prop('disabled', false);
+            }
+        });
+    };
+
+    const refreshDataTable = function() {
+        try {
+            if (dataTable) {
+                // First try with the global reference
+                dataTable.ajax.reload();
+                console.log("DataTable refreshed using global reference");
+                return;
+            }
+
+            // If global reference not available, try getting instance directly
+            if ($.fn.DataTable.isDataTable('#customerDatatable')) {
+                $('#customerDatatable').DataTable().ajax.reload();
+                console.log("DataTable refreshed using selector");
+                return;
+            }
+
+            // Last resort: clear and re-draw
+            if ($.fn.DataTable.isDataTable('#customerDatatable')) {
+                var table = $('#customerDatatable').DataTable();
+                table.clear().draw();
+                table.ajax.reload();
+                console.log("DataTable refreshed using clear and draw");
+                return;
+            }
+        } catch (e) {
+            console.error("Error refreshing DataTable:", e);
+
+            // Ultimate fallback: reload the page
+            // Uncomment only if necessary
+            // location.reload();
+        }
+    };
+
+    // Public methods
+    return {
+        init: function() {
+            initializeDataTable();
+            bindEvents();
+        }
+    };
+})();
+
+/**
+ * Notification Module
+ * Handles all notifications in a consistent way
+ */
+const Notification = (function() {
+    return {
+        show: function(message, type) {
+            swal({
+                title: type === 'success' ? 'Success!' : 'Error!',
+                text: message,
+                icon: type,
+                button: "OK",
+            });
+        }
+    };
+})();
+
+// Initialize the application when the document is ready
+$(document).ready(function() {
+    CustomerManager.init();
+});
+</script>
+
+<style>
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 80%;
+        margin-top: 0.25rem;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    .refresh-btn {
+        margin-bottom: 15px;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+    }
+</style>

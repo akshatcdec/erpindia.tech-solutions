@@ -1,0 +1,117 @@
+﻿@model ERPIndia.Tenant.TenantUserModel
+@{
+    ViewBag.Title = "Create Tenant User";
+}
+
+<!-- Tenant Information Card -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <div class="d-flex align-items-center">
+            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                <i class="ti ti-building fs-16"></i>
+            </span>
+            <h5 class="text-dark">School Information</h5>
+        </div>
+    </div>
+    <div class="card-body pb-1">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="mb-1">
+                    <label class="form-label" for="TenantCode">School Code</label>
+                    <input class="form-control" id="TenantCode" readonly="readonly" name="TenantCode" type="number" value="">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="TenantCode" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-4">
+                    <label class="form-label" for="TenantName">School Name</label>
+                    <input class="form-control" id="TenantName" maxlength="500" name="TenantName" type="text" value="">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="TenantName" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="mb-2">
+                    <label class="form-label" for="Username">Username</label>
+                    <input class="form-control" id="Username" maxlength="50" name="Username" type="text" value="">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="Username" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="mb-2">
+                    <label class="form-label" for="Password">Password</label>
+                    <div class="input-group">
+                        <input class="form-control" id="Password" maxlength="50" name="Password" type="password">
+                        <button class="btn btn-outline-secondary" type="button" id="passwordToggle">
+                            <i class="ti ti-eye"></i>
+                        </button>
+                    </div>
+                    <span class="field-validation-valid text-danger" data-valmsg-for="Password" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label class="form-label" for="TenantEmail">School Email</label>
+                    <input class="form-control" id="TenantEmail" maxlength="255" name="TenantEmail" type="email" value="">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="TenantEmail" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label class="form-label" for="TenantPhone">School Phone</label>
+                    <input class="form-control" id="TenantPhone" maxlength="20" name="TenantPhone" type="tel" value="">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="TenantPhone" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <br />
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary">Create School</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Password visibility toggle
+        const passwordToggle = document.getElementById('passwordToggle');
+        const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+        const passwordInput = document.getElementById('Password');
+        const confirmPasswordInput = document.getElementById('ConfirmPassword');
+
+        passwordToggle.addEventListener('click', function () {
+            togglePasswordVisibility(passwordInput, passwordToggle);
+        });
+
+        confirmPasswordToggle.addEventListener('click', function () {
+            togglePasswordVisibility(confirmPasswordInput, confirmPasswordToggle);
+        });
+
+        function togglePasswordVisibility(input, button) {
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.querySelector('i').classList.remove('ti-eye');
+                button.querySelector('i').classList.add('ti-eye-off');
+            } else {
+                input.type = 'password';
+                button.querySelector('i').classList.remove('ti-eye-off');
+                button.querySelector('i').classList.add('ti-eye');
+            }
+        }
+    });
+</script>
+

@@ -1,0 +1,1515 @@
+﻿@model ERPIndia.Controllers.BulkPhotoUploadViewModel
+@{
+    ViewBag.Title = "Bulk Photo Upload";
+}
+
+<style>
+    /* Mobile responsive wrapper */
+    .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        margin-bottom: 20px;
+    }
+
+    .photo-upload-table {
+        width: 100%;
+        min-width: 1200px; /* Minimum width to ensure all columns are visible */
+        border-collapse: collapse;
+        background: white;
+    }
+
+    /* Mobile specific styles */
+    @@media (max-width: 768px) {
+        .table-responsive-wrapper {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+
+        .photo-upload-table {
+            font-size: 12px;
+        }
+
+            .photo-upload-table th,
+            .photo-upload-table td {
+                padding: 8px 4px;
+            }
+
+        .photo-circle {
+            width: 50px;
+            height: 50px;
+        }
+
+        .camera-icon {
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+        }
+
+        .save-btn {
+            padding: 4px 12px;
+            font-size: 12px;
+            min-width: 80px;
+        }
+
+        .class-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+        }
+        /* Make the modal full screen on mobile */
+        .modal-dialog {
+            margin: 0;
+            max-width: 100%;
+            height: 100%;
+        }
+
+        .modal-content {
+            height: 100%;
+            border-radius: 0;
+        }
+        /* Sticky first column for better mobile experience */
+        .photo-upload-table td:first-child,
+        .photo-upload-table th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background-color: white;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        /* Override background for header sticky column */
+        .photo-upload-table thead th:first-child {
+            background-color: #5BC0DE !important;
+        }
+        /* Ensure body cells have white background */
+        .photo-upload-table tbody td:first-child {
+            background-color: white !important;
+        }
+        /* Apply alternating colors to sticky column */
+        .photo-upload-table tbody tr:nth-child(even) td:first-child {
+            background-color: #e9ecef !important;
+        }
+
+        .photo-upload-table tbody tr:nth-child(odd) td:first-child {
+            background-color: #ffffff !important;
+        }
+        /* Add visual scroll indicator */
+        .scroll-indicator {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 12px;
+            animation: bounce 2s infinite;
+        }
+
+        @@keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(0);
+            }
+
+            40% {
+                transform: translateX(-10px);
+            }
+
+            60% {
+                transform: translateX(-5px);
+            }
+        }
+    }
+
+    .photo-upload-table thead th {
+        background: #5BC0DE !important;
+        color: white !important;
+        font-weight: 500;
+        text-align: center;
+        padding: 12px 8px;
+        border: none;
+        font-size: 14px;
+    }
+
+        /* Ensure sticky column inherits header styles */
+        .photo-upload-table thead th:first-child {
+            background: #5BC0DE !important;
+            color: white !important;
+        }
+
+    .photo-upload-table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+    }
+
+        /* Add alternating row colors */
+        .photo-upload-table tbody tr:nth-child(even) {
+            background-color: #e9ecef;
+        }
+
+        .photo-upload-table tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .photo-upload-table tbody tr:hover {
+            background-color: #dee2e6 !important;
+        }
+
+    .photo-upload-table tbody td {
+        padding: 12px 8px;
+        text-align: left;
+        vertical-align: middle;
+        font-size: 14px;
+    }
+
+    .save-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 6px 20px;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin: 0 auto;
+        transition: all 0.2s ease;
+        min-width: 100px;
+        justify-content: center;
+    }
+
+        .save-btn:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .save-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .save-btn.saving {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .save-btn.saved {
+            background: #28a745;
+            animation: pulse 0.5s ease-in-out;
+        }
+
+    @@keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .save-btn i {
+        font-size: 16px;
+    }
+
+    .photo-circle {
+        width: 60px;
+        height: 60px;
+        border: 2px dashed #dee2e6;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 auto;
+        position: relative;
+    }
+
+        .photo-circle:hover {
+            border-color: #0d6efd;
+            background-color: #e7f1ff;
+        }
+
+        .photo-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-circle.uploaded {
+            border: 2px solid #28a745;
+            background: white;
+        }
+
+        .photo-circle i {
+            font-size: 24px;
+            color: #6c757d;
+        }
+
+    .camera-icon {
+        position: absolute;
+        bottom: -5px;
+        right: -5px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+        border: 2px solid white;
+        z-index: 3;
+    }
+
+        .camera-icon:hover {
+            background: #0056b3;
+            transform: scale(1.1);
+        }
+
+    .upload-input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 2;
+    }
+
+    .class-badge {
+        background: #7B3FF2;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .search-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .search-btn {
+        background: linear-gradient(to right, #6A5AE0, #A134B8);
+        color: white;
+        border: none;
+        padding: 8px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .search-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(106, 90, 224, 0.4);
+        }
+
+    .loading-spinner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        display: none;
+    }
+
+        .loading-spinner.active {
+            display: flex;
+        }
+
+    .photo-status {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #28a745;
+        color: white;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        display: none;
+    }
+
+    .photo-circle.uploaded .photo-status {
+        display: flex;
+    }
+
+    .compression-info {
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: #28a745;
+        white-space: nowrap;
+        display: none;
+    }
+
+    .photo-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+        .photo-wrapper:hover .compression-info {
+            display: block;
+        }
+
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        max-width: 90%;
+    }
+
+    .toast {
+        min-width: 250px;
+        max-width: 100%;
+        margin-bottom: 10px;
+        padding: 15px;
+        border-radius: 4px;
+        color: white;
+        animation: slideIn 0.3s ease-out;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        word-wrap: break-word;
+    }
+
+    @@media (max-width: 768px) {
+        .toast-container {
+            left: 10px;
+            right: 10px;
+        }
+
+        .toast {
+            min-width: auto;
+            font-size: 14px;
+            padding: 12px;
+        }
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .toast.success {
+        background: #28a745;
+    }
+
+    .toast.error {
+        background: #dc3545;
+    }
+
+    .toast.warning {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .student-name {
+        text-align: left;
+        font-weight: 500;
+    }
+
+    .father-name {
+        text-align: left;
+        color: #6c757d;
+    }
+
+    .gender-mobile {
+        color: #495057;
+    }
+
+    .remove-photo {
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 4;
+    }
+
+    .photo-circle:hover .remove-photo {
+        display: flex;
+    }
+
+    .has-changes {
+        background-color: #fff3cd !important;
+    }
+
+    .table-responsive-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-responsive-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .table-responsive-wrapper::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+        .table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+    @@media (max-width: 768px) {
+        .upload-input, .camera-icon {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .photo-circle {
+            margin: 5px auto;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+        }
+
+        body.modal-open {
+            position: fixed;
+            width: 100%;
+            overflow: hidden;
+        }
+    }
+
+    .success-animation {
+        animation: successPulse 0.5s ease-in-out;
+    }
+
+    @@keyframes successPulse {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    #successModal .modal-content {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    #successModal .btn-success {
+        background: #28a745;
+        border: none;
+        border-radius: 25px;
+        padding: 10px 30px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+        #successModal .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+    /* DataTable button styling */
+    .dt-buttons {
+        margin-bottom: 10px;
+    }
+
+        .dt-buttons .btn {
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-camera me-2"></i>Bulk Photo Upload
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="searchForm">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Class <span class="text-danger">*</span></label>
+                                @Html.DropDownListFor(x => x.SelectedClass, Model.Classes, "Select a class", new { @class = "form-select", id = "ddlClass" })
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Section</label>
+                                @Html.DropDownListFor(x => x.SelectedSection, Model.Sections, "All Sections", new { @class = "form-select", id = "ddlSection" })
+                            </div>
+                            <div class="col-md-4 align-self-end">
+                                <button type="button" class="btn search-btn w-100" id="btnSearch">
+                                    <i class="fas fa-search me-2"></i><span class="d-none d-sm-inline">Load Students</span><span class="d-inline d-sm-none">Load Students </span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div id="searchResultContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Webcam Modal -->
+<div class="modal fade" id="webcamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Capture Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="camera-selection mb-3 text-center" style="display: none;">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary active" id="frontCameraBtn">Front Camera</button>
+                        <button type="button" class="btn btn-outline-primary" id="backCameraBtn">Back Camera</button>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <video id="webcam" autoplay playsinline style="width: 100%; max-width: 400px; border-radius: 8px;"></video>
+                    <canvas id="webcamCanvas" style="display: none;"></canvas>
+                    <img id="capturedImage" style="display: none; width: 100%; max-width: 400px; border-radius: 8px;" />
+                </div>
+                <div class="text-center mt-2">
+                    <small class="text-muted" id="compressionInfo"></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="captureBtn" class="btn btn-primary">
+                    <i class="fas fa-camera"></i> Capture
+                </button>
+                <button type="button" id="recaptureBtn" class="btn btn-outline-primary" style="display: none;">
+                    <i class="fas fa-redo"></i> Recapture
+                </button>
+                <button type="button" id="saveImageBtn" class="btn btn-success" style="display: none;">
+                    <i class="fas fa-check"></i> Use Photo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <div class="success-animation mb-3">
+                    <i class="fas fa-check-circle text-success" style="font-size: 64px;"></i>
+                </div>
+                <h4 class="mb-3">Success!</h4>
+                <p class="mb-0" id="successMessage">Images have been saved successfully.</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-success px-4" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Global variables
+    var studentPhotos = {};
+    var currentStream = null;
+    var currentPhotoType = null;
+    var currentStudentId = null;
+    var currentAdmsnNo = null;
+    var currentFacingMode = 'user';
+    var webcamModal = null;
+    var successModal = null;
+    var dataTable = null; // Add DataTable variable
+    window.capturedPhotoResult = null;
+
+    // Initialize Bootstrap modals
+    if (typeof bootstrap !== 'undefined') {
+        webcamModal = new bootstrap.Modal(document.getElementById('webcamModal'));
+        successModal = new bootstrap.Modal(document.getElementById('successModal'));
+    }
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+        const toast = $('<div class="toast ' + type + '">' + message + '</div>');
+        $('#toastContainer').append(toast);
+
+        setTimeout(() => {
+            toast.fadeOut(300, function() {
+                $(this).remove();
+            });
+        }, 3000);
+    }
+
+    // Show success modal with animation
+    function showSuccessModal(message) {
+        if (successModal) {
+            document.getElementById('successMessage').textContent = message || 'Images have been saved successfully.';
+
+            const animationElement = document.querySelector('.success-animation i');
+            animationElement.style.animation = 'none';
+            setTimeout(() => {
+                animationElement.style.animation = '';
+            }, 10);
+
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE');
+                audio.volume = 0.3;
+                audio.play().catch(() => {});
+            } catch (e) {
+                // Ignore audio errors
+            }
+
+            successModal.show();
+
+            setTimeout(() => {
+                successModal.hide();
+            }, 3000);
+        } else {
+            showToast(message, 'success');
+        }
+    }
+
+    // Initialize DataTable
+    function initializeDataTable() {
+        // Check if DataTable exists
+        if (!$.fn.DataTable) {
+            console.log('DataTable not loaded, skipping initialization');
+            return;
+        }
+
+        // Destroy existing DataTable if it exists
+        if (dataTable && $.fn.DataTable.isDataTable('#studentDataTable')) {
+            dataTable.destroy();
+        }
+
+        // Initialize DataTable with export buttons
+        dataTable = $('#studentDataTable').DataTable({
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "pageLength": 25,
+            "order": [[7, "asc"], [8, "asc"]], // Order by Class and then Adm No
+            "scrollX": true,
+            "responsive": false, // Disable responsive as we're handling mobile differently
+            "dom": 'Blfrtip',
+            "buttons": [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: [5, 6, 7, 8, 9, 10, 11] // Export only text columns
+                    }
+                },
+                {
+                    extend: 'csv',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: [5, 6, 7, 8, 9, 10, 11]
+                    }
+                },
+                {
+                    extend: 'excel',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: [5, 6, 7, 8, 9, 10, 11]
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary',
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: [5, 6, 7, 8, 9, 10, 11]
+                    }
+                },
+                {
+                    extend: 'print',
+                    title: 'StudentList',
+                    className: 'btn btn-sm btn-secondary',
+                    exportOptions: {
+                        columns: [5, 6, 7, 8, 9, 10, 11]
+                    }
+                }
+            ],
+            "drawCallback": function (settings) {
+                // Re-bind events after DataTable redraw
+                bindPhotoEvents();
+            },
+            "language": {
+                "lengthMenu": "Show _MENU_ students",
+                "zeroRecords": "No students found",
+                "info": "Showing _START_ to _END_ of _TOTAL_ students",
+                "infoEmpty": "No students available",
+                "infoFiltered": "(filtered from _MAX_ total students)",
+                "search": "Search students:"
+            }
+        });
+    }
+
+    // Image compression with proper blob creation
+    function compressImage(dataUrl, maxSizeKB = 95) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                const maxDimension = 1200;
+                if (width > maxDimension || height > maxDimension) {
+                    const scale = maxDimension / Math.max(width, height);
+                    width = Math.round(width * scale);
+                    height = Math.round(height * scale);
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const canvasToBlob = (canvas, quality) => {
+                    return new Promise((resolve) => {
+                        canvas.toBlob((blob) => {
+                            resolve(blob);
+                        }, 'image/jpeg', quality);
+                    });
+                };
+
+                let quality = 0.9;
+
+                const tryCompress = async () => {
+                    const blob = await canvasToBlob(canvas, quality);
+
+                    if (blob.size > maxSizeKB * 1024 && quality > 0.1) {
+                        quality -= 0.1;
+                        return tryCompress();
+                    }
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+                    return {
+                        dataUrl: dataUrl,
+                        blob: blob,
+                        sizeKB: (blob.size / 1024).toFixed(2)
+                    };
+                };
+
+                tryCompress().then(resolve).catch(reject);
+            };
+
+            img.onerror = function() {
+                reject(new Error('Failed to load image'));
+            };
+
+            img.src = dataUrl;
+        });
+    }
+
+    // Search button click
+    $('#btnSearch').click(function() {
+        const className = $('#ddlClass').val();
+
+        if (!className) {
+            showToast('Please select a class', 'error');
+            return;
+        }
+
+        $('#searchResultContainer').html(
+            '<div class="text-center py-5">' +
+            '<div class="spinner-border text-primary"></div>' +
+            '<p class="mt-2">Loading students...</p>' +
+            '</div>'
+        );
+
+        $.ajax({
+            url: '@Url.Action("GetStudentsForPhotoUpload", "BulkPhotoUpload")',
+            type: 'POST',
+            data: {
+                className: className,
+                section: $('#ddlSection').val() || ''
+            },
+            success: function(response) {
+                if (response.success) {
+                    displayStudents(response.data);
+                } else {
+                    $('#searchResultContainer').html(
+                        '<div class="alert alert-danger">No students found</div>'
+                    );
+                }
+            },
+            error: function() {
+                $('#searchResultContainer').html(
+                    '<div class="alert alert-danger">Error loading students</div>'
+                );
+            }
+        });
+    });
+
+    // Display students with DataTable support
+    function displayStudents(students) {
+        if (!students || students.length === 0) {
+            $('#searchResultContainer').html(
+                '<div class="alert alert-info">No students found</div>'
+            );
+            return;
+        }
+
+        let html = '<div class="table-container">';
+
+        if (window.innerWidth <= 768) {
+            html += '<div class="scroll-indicator"><i class="fas fa-arrows-alt-h"></i> Swipe left/right to see all columns</div>';
+        }
+
+        // Add the table with ID for DataTable
+        html += '<div class="table-responsive-wrapper">' +
+                '<table id="studentDataTable" class="photo-upload-table">' +
+                '<thead><tr>' +
+                '<th>Save</th>' +
+                '<th>Student Photo</th>' +
+                '<th>Father Photo</th>' +
+                '<th>Mother Photo</th>' +
+                '<th>Guardian Photo</th>' +
+                '<th>Student Name</th>' +
+                '<th>Father Name</th>' +
+                '<th>Class</th>' +
+                '<th>Adm No.</th>' +
+                '<th>Roll No.</th>' +
+                '<th>Gender</th>' +
+                '<th>Mobile</th>' +
+                '</tr></thead><tbody>';
+
+        students.forEach(student => {
+            html += '<tr data-student-id="' + student.StudentId + '" data-admission-no="' + student.AdmsnNo + '" data-school-code="' + student.SchoolCode + '">' +
+                   '<td>' +
+                   '<button class="save-btn" onclick="saveStudentPhotos(\'' + student.StudentId + '\', \'' + student.AdmsnNo + '\')">' +
+                   '<i class="fas fa-save"></i> <span class="btn-text">Save</span>' +
+                   '</button>' +
+                   '</td>';
+
+            // Photo cells
+            html += createPhotoCell(student.StudentId, student.AdmsnNo, 'student', student.StudentPhoto, student.SchoolCode);
+            html += createPhotoCell(student.StudentId, student.AdmsnNo, 'father', student.FatherPhoto, student.SchoolCode);
+            html += createPhotoCell(student.StudentId, student.AdmsnNo, 'mother', student.MotherPhoto, student.SchoolCode);
+            html += createPhotoCell(student.StudentId, student.AdmsnNo, 'guardian', student.GuardianPhoto, student.SchoolCode);
+
+            // Student info
+            html += '<td class="student-name">' + student.StudentName + '</td>';
+            html += '<td class="father-name">' + (student.FatherName || '') + '</td>';
+            html += '<td><span class="class-badge">' + student.Class + '</span></td>';
+            html += '<td>' + student.AdmsnNo + '</td>';
+            html += '<td>' + (student.RollNo || '') + '</td>';
+            html += '<td class="gender-mobile">' + (student.Gender || 'Male') + '</td>';
+            html += '<td>' + (student.Mobile || '') + '</td>';
+            html += '</tr>';
+        });
+
+        html += '</tbody></table></div></div>';
+        $('#searchResultContainer').html(html);
+
+        // Initialize DataTable after rendering
+        setTimeout(function() {
+            initializeDataTable();
+        }, 100);
+
+        // Bind events after rendering
+        bindPhotoEvents();
+
+        if ('ontouchstart' in window) {
+            addTouchScrolling();
+        }
+    }
+
+    // Create photo cell
+    function createPhotoCell(studentId, admsnNo, photoType, existingPhoto, schoolCode) {
+        const cellId = photoType + '-' + studentId;
+        const hasPhoto = existingPhoto ? true : false;
+
+        let html = '<td>' +
+                  '<div class="photo-wrapper">' +
+                  '<div class="photo-circle' + (hasPhoto ? ' uploaded' : '') + '" id="' + cellId + '" data-photo-type="' + photoType + '" data-student-id="' + studentId + '" data-admsn-no="' + admsnNo + '">';
+
+        if (hasPhoto) {
+            html += '<img src="' + existingPhoto + '?t=' + new Date().getTime() + '" alt="' + photoType + '" ' +
+                    'onerror="this.style.display=\'none\'; this.parentElement.querySelector(\'.fa-user\').style.display=\'block\';">';
+        } else {
+            html += '<img src="" alt="' + photoType + '" style="display:none;">';
+        }
+
+        html += '<input type="file" class="upload-input" accept="image/jpeg,image/png" ' +
+               'data-photo-type="' + photoType + '" data-student-id="' + studentId + '" data-admsn-no="' + admsnNo + '">';
+
+        html += '<i class="fas fa-user" style="' + (hasPhoto ? 'display:none;' : '') + '"></i>';
+
+        if (hasPhoto) {
+            html += '<button class="remove-photo" data-student-id="' + studentId + '" data-photo-type="' + photoType + '">' +
+                   '<i class="fas fa-times"></i></button>';
+        }
+
+        html += '<div class="loading-spinner"><div class="spinner-border spinner-border-sm"></div></div>' +
+               '<div class="photo-status"><i class="fas fa-check"></i></div>' +
+               '</div>' +
+               '<div class="camera-icon" data-photo-type="' + photoType + '" data-student-id="' + studentId + '" data-admsn-no="' + admsnNo + '">' +
+               '<i class="fas fa-camera"></i></div>' +
+               '<div class="compression-info"></div>' +
+               '</div></td>';
+
+        return html;
+    }
+
+    // Bind photo events after rendering
+    function bindPhotoEvents() {
+        $('.upload-input').off('change').on('change', function() {
+            const photoType = $(this).data('photo-type');
+            const studentId = $(this).data('student-id');
+            const admsnNo = $(this).data('admsn-no');
+            handleFileUpload(this, photoType, studentId, admsnNo);
+        });
+
+        $('.camera-icon').off('click').on('click', function() {
+            const photoType = $(this).data('photo-type');
+            const studentId = $(this).data('student-id');
+            const admsnNo = $(this).data('admsn-no');
+            openCamera(photoType, studentId, admsnNo);
+        });
+
+        $('.remove-photo').off('click').on('click', function(e) {
+            e.stopPropagation();
+            const studentId = $(this).data('student-id');
+            const photoType = $(this).data('photo-type');
+            removePhoto(studentId, photoType);
+        });
+    }
+
+    // Handle file upload
+    function handleFileUpload(input, photoType, studentId, admsnNo) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const photoCircle = document.getElementById(photoType + '-' + studentId);
+            const loadingSpinner = photoCircle.querySelector('.loading-spinner');
+
+            if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                showToast('Only JPG and PNG files allowed', 'error');
+                input.value = '';
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('File size must be less than 5MB', 'error');
+                input.value = '';
+                return;
+            }
+
+            loadingSpinner.classList.add('active');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                compressImage(e.target.result).then(result => {
+                    if (!studentPhotos[studentId]) {
+                        studentPhotos[studentId] = {};
+                    }
+
+                    studentPhotos[studentId][photoType] = result;
+
+                    updatePhotoCircle(photoCircle, result.dataUrl, photoType, studentId);
+
+                    const compressionInfo = photoCircle.parentElement.querySelector('.compression-info');
+                    compressionInfo.textContent = result.sizeKB + 'KB';
+
+                    loadingSpinner.classList.remove('active');
+
+                    const row = document.querySelector('tr[data-student-id="' + studentId + '"]');
+                    if (row) {
+                        row.classList.add('has-changes');
+                    }
+
+                    showToast('Photo added. Click Save to upload.', 'success');
+                }).catch(error => {
+                    loadingSpinner.classList.remove('active');
+                    showToast('Error processing image', 'error');
+                    console.error('Image compression error:', error);
+                });
+            };
+            reader.onerror = function() {
+                loadingSpinner.classList.remove('active');
+                showToast('Error reading file', 'error');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Update photo circle
+    function updatePhotoCircle(circle, dataUrl, photoType, studentId) {
+        const img = circle.querySelector('img');
+        const icon = circle.querySelector('.fa-user');
+        let removeBtn = circle.querySelector('.remove-photo');
+
+        img.src = dataUrl;
+        img.style.display = 'block';
+        img.onerror = null;
+        icon.style.display = 'none';
+
+        if (!removeBtn) {
+            removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-photo';
+            removeBtn.setAttribute('data-student-id', studentId);
+            removeBtn.setAttribute('data-photo-type', photoType);
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            circle.appendChild(removeBtn);
+
+            $(removeBtn).on('click', function(e) {
+                e.stopPropagation();
+                removePhoto(studentId, photoType);
+            });
+        }
+
+        circle.classList.add('uploaded');
+
+        const fileInput = circle.querySelector('.upload-input');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+    }
+
+    // Remove photo
+    function removePhoto(studentId, photoType) {
+        const photoCircle = document.getElementById(photoType + '-' + studentId);
+        const img = photoCircle.querySelector('img');
+        const icon = photoCircle.querySelector('.fa-user');
+        const removeBtn = photoCircle.querySelector('.remove-photo');
+
+        if (studentPhotos[studentId]) {
+            delete studentPhotos[studentId][photoType];
+        }
+
+        img.src = '';
+        img.style.display = 'none';
+        icon.style.display = 'block';
+
+        if (removeBtn) {
+            removeBtn.remove();
+        }
+
+        const fileInput = photoCircle.querySelector('.upload-input');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+
+        photoCircle.classList.remove('uploaded');
+    }
+
+    // Open camera
+    function openCamera(photoType, studentId, admsnNo) {
+        currentPhotoType = photoType;
+        currentStudentId = studentId;
+        currentAdmsnNo = admsnNo;
+
+        const title = document.querySelector('#webcamModal .modal-title');
+        title.textContent = 'Capture ' + photoType.charAt(0).toUpperCase() + photoType.slice(1) + ' Photo';
+
+        if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+            document.querySelector('.camera-selection').style.display = 'block';
+        }
+
+        webcamModal.show();
+        startWebcam();
+    }
+
+    // Start webcam
+    function startWebcam() {
+        const constraints = {
+            video: {
+                facingMode: currentFacingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        };
+
+        navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+            currentStream = stream;
+            const video = document.getElementById('webcam');
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error('Camera error:', err);
+            showToast('Unable to access camera: ' + err.message, 'error');
+            webcamModal.hide();
+        });
+    }
+
+    // Stop webcam
+    function stopWebcam() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
+        }
+        const video = document.getElementById('webcam');
+        video.srcObject = null;
+    }
+
+    // Camera buttons
+    $('#frontCameraBtn').click(function() {
+        currentFacingMode = 'user';
+        $(this).addClass('active');
+        $('#backCameraBtn').removeClass('active');
+        if (currentStream) stopWebcam();
+        startWebcam();
+    });
+
+    $('#backCameraBtn').click(function() {
+        currentFacingMode = 'environment';
+        $(this).addClass('active');
+        $('#frontCameraBtn').removeClass('active');
+        if (currentStream) stopWebcam();
+        startWebcam();
+    });
+
+    // Capture photo
+    $('#captureBtn').click(function() {
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('webcamCanvas');
+
+        if (video.readyState !== video.HAVE_ENOUGH_DATA) {
+            showToast('Please wait for camera to load', 'error');
+            return;
+        }
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const captureBtn = $(this);
+        captureBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+
+        compressImage(dataUrl).then(result => {
+            const capturedImg = document.getElementById('capturedImage');
+            capturedImg.src = result.dataUrl;
+            capturedImg.style.display = 'block';
+            video.style.display = 'none';
+
+            window.capturedPhotoResult = result;
+
+            captureBtn.prop('disabled', false).html('<i class="fas fa-camera"></i> Capture');
+            $('#captureBtn').hide();
+            $('#recaptureBtn').show();
+            $('#saveImageBtn').show();
+
+            document.getElementById('compressionInfo').textContent = 'Size: ' + result.sizeKB + 'KB';
+        }).catch(error => {
+            console.error('Error compressing image:', error);
+            showToast('Error processing image', 'error');
+            captureBtn.prop('disabled', false).html('<i class="fas fa-camera"></i> Capture');
+        });
+    });
+
+    // Recapture
+    $('#recaptureBtn').click(function() {
+        document.getElementById('capturedImage').style.display = 'none';
+        document.getElementById('webcam').style.display = 'block';
+        $('#captureBtn').show();
+        $('#recaptureBtn').hide();
+        $('#saveImageBtn').hide();
+        document.getElementById('compressionInfo').textContent = '';
+
+        window.capturedPhotoResult = null;
+    });
+
+    // Save captured image
+    $('#saveImageBtn').click(function() {
+        if (!window.capturedPhotoResult) {
+            showToast('No photo captured', 'error');
+            return;
+        }
+
+        const result = window.capturedPhotoResult;
+
+        if (!result.blob) {
+            showToast('Error: Invalid photo data', 'error');
+            console.error('No blob in captured result:', result);
+            return;
+        }
+
+        if (!studentPhotos[currentStudentId]) {
+            studentPhotos[currentStudentId] = {};
+        }
+
+        studentPhotos[currentStudentId][currentPhotoType] = {
+            dataUrl: result.dataUrl,
+            blob: result.blob,
+            sizeKB: result.sizeKB
+        };
+
+        const photoCircle = document.getElementById(currentPhotoType + '-' + currentStudentId);
+        updatePhotoCircle(photoCircle, result.dataUrl, currentPhotoType, currentStudentId);
+
+        const compressionInfo = photoCircle.parentElement.querySelector('.compression-info');
+        compressionInfo.textContent = result.sizeKB + 'KB';
+
+        const row = document.querySelector('tr[data-student-id="' + currentStudentId + '"]');
+        if (row) {
+            row.classList.add('has-changes');
+        }
+
+        window.capturedPhotoResult = null;
+
+        webcamModal.hide();
+        stopWebcam();
+
+        showToast('Photo captured successfully! Click Save to upload.', 'success');
+    });
+
+    // Modal cleanup
+    $('#webcamModal').on('hidden.bs.modal', function() {
+        stopWebcam();
+        document.getElementById('capturedImage').style.display = 'none';
+        document.getElementById('webcam').style.display = 'block';
+        $('#captureBtn').show();
+        $('#recaptureBtn').hide();
+        $('#saveImageBtn').hide();
+        document.getElementById('compressionInfo').textContent = '';
+
+        window.capturedPhotoResult = null;
+    });
+
+    // Save student photos function
+    window.saveStudentPhotos = function(studentId, admsnNo) {
+        console.log('Saving photos for student:', studentId, 'AdmsnNo:', admsnNo);
+        console.log('Current studentPhotos:', studentPhotos);
+
+        const photos = studentPhotos[studentId];
+
+        if (!photos || Object.keys(photos).length === 0) {
+            showToast('No new photos to save for this student', 'error');
+            return;
+        }
+
+        let hasValidPhotos = true;
+        for (let photoType in photos) {
+            if (!photos[photoType].blob) {
+                console.error('Missing blob for photo type:', photoType);
+                hasValidPhotos = false;
+            }
+        }
+
+        if (!hasValidPhotos) {
+            showToast('Error: Some photos are missing data. Please re-capture them.', 'error');
+            return;
+        }
+
+        const saveBtn = document.querySelector('tr[data-student-id="' + studentId + '"] .save-btn');
+        const originalButtonHtml = saveBtn.innerHTML;
+
+        saveBtn.disabled = true;
+        saveBtn.classList.add('saving');
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span class="btn-text">Saving...</span>';
+
+        const formData = new FormData();
+
+        for (let photoType in photos) {
+            const photo = photos[photoType];
+            const fileName = admsnNo + '_' + photoType + '.jpg';
+
+            console.log('Adding photo:', photoType, 'Size:', photo.sizeKB + 'KB');
+
+            let fileObj;
+            try {
+                fileObj = new File([photo.blob], fileName, {type: 'image/jpeg'});
+            } catch (e) {
+                fileObj = new Blob([photo.blob], {type: 'image/jpeg'});
+                fileObj.lastModifiedDate = new Date();
+                fileObj.name = fileName;
+            }
+
+            formData.append('photos', fileObj, fileName);
+            formData.append('photoInfo', JSON.stringify({
+                studentId: studentId,
+                admsnNo: admsnNo,
+                photoType: photoType,
+                fileName: fileName
+            }));
+        }
+
+        $.ajax({
+            url: '@Url.Action("SaveStudentPhotos", "BulkPhotoUpload")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(result) {
+                console.log('Save response:', result);
+
+                if (result.success) {
+                    saveBtn.classList.remove('saving');
+                    saveBtn.classList.add('saved');
+                    saveBtn.innerHTML = '<i class="fas fa-check-circle"></i> Saved!';
+
+                    let successMessage = 'Images have been saved successfully.';
+                    if (result.message) {
+                        const match = result.message.match(/(\d+) images?/);
+                        if (match) {
+                            const count = match[1];
+                            successMessage = `${count} ${count === '1' ? 'image has' : 'images have'} been saved successfully.`;
+                        } else {
+                            successMessage = result.message;
+                        }
+                    }
+
+                    showSuccessModal(successMessage);
+
+                    delete studentPhotos[studentId];
+
+                    const row = document.querySelector('tr[data-student-id="' + studentId + '"]');
+                    if (row) {
+                        row.classList.remove('has-changes');
+                    }
+
+                    if (result.errors && result.errors.length > 0) {
+                        result.errors.forEach(error => {
+                            showToast(error, 'error');
+                        });
+                    }
+
+                    setTimeout(() => {
+                        saveBtn.disabled = false;
+                        saveBtn.classList.remove('saved');
+                        saveBtn.innerHTML = originalButtonHtml;
+                    }, 3000);
+                } else {
+                    saveBtn.disabled = false;
+                    saveBtn.classList.remove('saving');
+                    saveBtn.innerHTML = originalButtonHtml;
+                    showToast('Error: ' + (result.message || 'Failed to save photos'), 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Save error:', error);
+                saveBtn.disabled = false;
+                saveBtn.classList.remove('saving');
+                saveBtn.innerHTML = originalButtonHtml;
+
+                let errorMessage = 'Error saving photos';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (error) {
+                    errorMessage += ': ' + error;
+                }
+
+                showToast(errorMessage, 'error');
+            }
+        });
+    };
+
+    // Add touch scrolling support for mobile
+    function addTouchScrolling() {
+        const tableWrapper = $('.table-responsive-wrapper');
+        let isScrolling = false;
+        let startX;
+        let scrollLeft;
+
+        tableWrapper.on('touchstart', function(e) {
+            isScrolling = true;
+            startX = e.originalEvent.touches[0].pageX - this.offsetLeft;
+            scrollLeft = this.scrollLeft;
+        });
+
+        tableWrapper.on('touchend', function() {
+            isScrolling = false;
+        });
+
+        tableWrapper.on('touchmove', function(e) {
+            if (!isScrolling) return;
+            e.preventDefault();
+            const x = e.originalEvent.touches[0].pageX - this.offsetLeft;
+            const walk = (x - startX) * 2;
+            this.scrollLeft = scrollLeft - walk;
+        });
+    }
+
+    // Handle responsive file input on mobile
+    function handleMobileFileInput() {
+        if (window.innerWidth <= 768) {
+            $('.upload-input').attr('capture', 'environment');
+        }
+    }
+
+    // Make functions globally accessible
+    window.handleFileUpload = handleFileUpload;
+    window.removePhoto = removePhoto;
+    window.openCamera = openCamera;
+
+    // Add resize listener
+    $(window).on('resize', function() {
+        handleMobileFileInput();
+    });
+
+    // Initial mobile setup
+    handleMobileFileInput();
+});
+</script>

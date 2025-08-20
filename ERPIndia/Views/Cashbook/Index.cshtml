@@ -1,0 +1,303 @@
+﻿@model ERPK12Models.CashbookFilterViewModel
+
+@{
+    ViewBag.Title = "Cashbook Report";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <i class="fa fa-file-pdf-o"></i> Cashbook Report Generator
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    @using (Html.BeginForm("GeneratePdf", "Cashbook", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.FromDate, new { @class = "col-sm-3 control-label" })
+                                    <div class="col-sm-9">
+                                        @Html.TextBoxFor(m => m.FromDate, new { @class = "form-control", @type = "date" })
+                                        @Html.ValidationMessageFor(m => m.FromDate, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.ToDate, new { @class = "col-sm-3 control-label" })
+                                    <div class="col-sm-9">
+                                        @Html.TextBoxFor(m => m.ToDate, new { @class = "form-control", @type = "date" })
+                                        @Html.ValidationMessageFor(m => m.ToDate, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.PaymentMode, new { @class = "col-sm-3 control-label" })
+                                    <div class="col-sm-9">
+                                        @Html.DropDownListFor(m => m.PaymentMode,
+                                            new SelectList(Model.AvailablePaymentModes, Model.PaymentMode),
+                                            new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(m => m.PaymentMode, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    @Html.LabelFor(m => m.Class, new { @class = "col-sm-3 control-label" })
+                                    <div class="col-sm-9">
+                                        @Html.DropDownListFor(m => m.Class,
+                                            new SelectList(Model.AvailableClasses, Model.Class),
+                                            new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(m => m.Class, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <div class="col-sm-offset-2 col-sm-10">
+                                        <button type="button" id="btnPreview" class="btn btn-info">
+                                            <i class="fa fa-eye"></i> Preview Count
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fa fa-download"></i> Generate PDF
+                                        </button>
+                                        <button type="reset" class="btn btn-default">
+                                            <i class="fa fa-refresh"></i> Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" id="previewSection" style="display: none;">
+                            <div class="col-md-12">
+                                <div class="alert alert-info">
+                                    <h4><i class="fa fa-info-circle"></i> Preview Information</h4>
+                                    <div id="previewContent"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="alert alert-danger">
+                                        <h4><i class="fa fa-exclamation-triangle"></i> Validation Errors</h4>
+                                        @Html.ValidationSummary(false, "", new { @class = "list-unstyled" })
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sample Data Preview -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#sampleData">
+                            <i class="fa fa-table"></i> Sample Report Format Preview
+                        </a>
+                    </h4>
+                </div>
+                <div id="sampleData" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-condensed">
+                                <thead class="bg-primary">
+                                    <tr>
+                                        <th>Recp No.</th>
+                                        <th>Student Name</th>
+                                        <th>Father Name</th>
+                                        <th>Class</th>
+                                        <th>Section</th>
+                                        <th>PayMode</th>
+                                        <th>Date/Note/User</th>
+                                        <th>Recv. Amt.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>121</td>
+                                        <td>MD USMAN</td>
+                                        <td>MD WASIM</td>
+                                        <td>7th</td>
+                                        <td>A</td>
+                                        <td>cash</td>
+                                        <td>01/05/2025 - discount given by manager sir - 1</td>
+                                        <td class="text-right">10,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>122</td>
+                                        <td>WAZIHA BANO</td>
+                                        <td>MOHD. WASEEM</td>
+                                        <td>5th</td>
+                                        <td>A</td>
+                                        <td>cash</td>
+                                        <td>01/05/2025 - 1</td>
+                                        <td class="text-right">9,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>123</td>
+                                        <td>YASH SINGH</td>
+                                        <td>RANBAHADUR SINGH</td>
+                                        <td>10th</td>
+                                        <td>A</td>
+                                        <td>cash</td>
+                                        <td>01/05/2025 - 1</td>
+                                        <td class="text-right">6,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>129</td>
+                                        <td>YASH</td>
+                                        <td>RAM KUMAR</td>
+                                        <td>2nd</td>
+                                        <td>A</td>
+                                        <td>upi</td>
+                                        <td>02/05/2025 - 1</td>
+                                        <td class="text-right">3,525</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><strong>Payment Mode Summary</strong></h5>
+                                <table class="table table-condensed table-bordered">
+                                    <tr><td>Cash:</td><td class="text-right">229,850</td></tr>
+                                    <tr><td>UPI:</td><td class="text-right">151,270</td></tr>
+                                    <tr><td>Paytm:</td><td class="text-right">0</td></tr>
+                                    <tr><td>Bank:</td><td class="text-right">0</td></tr>
+                                    <tr><td>Cheque:</td><td class="text-right">0</td></tr>
+                                    <tr><td>Other:</td><td class="text-right">0</td></tr>
+                                    <tr class="info"><td><strong>Total:</strong></td><td class="text-right"><strong>381,120</strong></td></tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><strong>Class Wise Summary</strong></h5>
+                                <table class="table table-condensed table-bordered">
+                                    <tr><td>10th:</td><td class="text-right">55,075</td></tr>
+                                    <tr><td>9th:</td><td class="text-right">65,350</td></tr>
+                                    <tr><td>12th:</td><td class="text-right">52,475</td></tr>
+                                    <tr><td>7th:</td><td class="text-right">31,925</td></tr>
+                                    <tr><td>5th:</td><td class="text-right">28,275</td></tr>
+                                    <tr><td>2nd:</td><td class="text-right">22,075</td></tr>
+                                    <tr><td>Prep:</td><td class="text-right">21,475</td></tr>
+                                    <tr><td>6th:</td><td class="text-right">18,345</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            // Set default dates
+            var today = new Date();
+            var firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+
+            if (!$('#FromDate').val()) {
+                $('#FromDate').val(firstDay.toISOString().substr(0, 10));
+            }
+            if (!$('#ToDate').val()) {
+                $('#ToDate').val(today.toISOString().substr(0, 10));
+            }
+
+            // Preview button click
+            $('#btnPreview').click(function() {
+                var formData = {
+                    FromDate: $('#FromDate').val(),
+                    ToDate: $('#ToDate').val(),
+                    PaymentMode: $('#PaymentMode').val(),
+                    Class: $('#Class').val()
+                };
+
+                $.ajax({
+                    url: '@Url.Action("GetFilteredCount", "Cashbook")',
+                    type: 'POST',
+                    data: formData,
+                    beforeSend: function() {
+                        $('#btnPreview').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Loading...');
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            var content = '<p><strong>Records Found:</strong> ' + response.count + '</p>' +
+                                         '<p><strong>Total Amount:</strong> ₹' + response.totalAmount.toLocaleString() + '</p>' +
+                                         '<p><strong>Date Range:</strong> ' + formData.FromDate + ' to ' + formData.ToDate + '</p>' +
+                                         '<p><strong>Payment Mode:</strong> ' + formData.PaymentMode + '</p>' +
+                                         '<p><strong>Class:</strong> ' + formData.Class + '</p>';
+
+                            $('#previewContent').html(content);
+                            $('#previewSection').slideDown();
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred while fetching preview data.');
+                    },
+                    complete: function() {
+                        $('#btnPreview').prop('disabled', false).html('<i class="fa fa-eye"></i> Preview Count');
+                    }
+                });
+            });
+
+            // Form validation
+            $('form').submit(function() {
+                var fromDate = new Date($('#FromDate').val());
+                var toDate = new Date($('#ToDate').val());
+
+                if (fromDate > toDate) {
+                    alert('From Date cannot be greater than To Date');
+                    return false;
+                }
+
+                var dateDiff = Math.abs(toDate - fromDate) / (1000 * 60 * 60 * 24);
+                if (dateDiff > 365) {
+                    if (!confirm('You have selected a date range of more than 1 year. This may result in a large PDF file. Do you want to continue?')) {
+                        return false;
+                    }
+                }
+
+                // Show loading state
+                $('button[type="submit"]').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Generating PDF...');
+
+                return true;
+            });
+
+            // Reset button
+            $('button[type="reset"]').click(function() {
+                $('#previewSection').slideUp();
+                // Reset to current month
+                $('#FromDate').val(firstDay.toISOString().substr(0, 10));
+                $('#ToDate').val(today.toISOString().substr(0, 10));
+                $('#PaymentMode').val('ALL');
+                $('#Class').val('ALL');
+            });
+        });
+    </script>

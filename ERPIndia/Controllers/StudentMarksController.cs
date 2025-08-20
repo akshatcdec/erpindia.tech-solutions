@@ -310,7 +310,7 @@ namespace ERPIndia.Controllers
         }
         // Get student marks data for entry
         [HttpPost]
-        public JsonResult GetStudentMarksData(string classId, string sectionId, string examTypeId)
+       public JsonResult GetStudentMarksData(string classId, string sectionId, string examTypeId)
         {
             try
             {
@@ -319,6 +319,16 @@ namespace ERPIndia.Controllers
 
                 // Get subjects mapped to this class/section
                 var subjects = GetMappedSubjectsFromDB(classId, sectionId);
+
+                // Check if subjects are found
+                if (subjects == null || !subjects.Any())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Subject mapping not found. Please add subjects to the exam."
+                    });
+                }
 
                 // Get grade configurations for validation
                 var gradeConfigs = GetGradeConfigsFromDB(classId, sectionId, examTypeId);
@@ -357,7 +367,6 @@ namespace ERPIndia.Controllers
                 return Json(new { success = false, message = "Error loading data: " + ex.Message });
             }
         }
-
         // Save student marks
         [HttpPost]
         public JsonResult SaveStudentMarks()

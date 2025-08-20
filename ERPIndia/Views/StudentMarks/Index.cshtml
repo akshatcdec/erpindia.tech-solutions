@@ -1,6 +1,6 @@
 ﻿@model ERPIndia.Controllers.StudentMarksViewModel
 @{
-    ViewBag.Title = "Student Marks Entry - Bulk Update";
+    ViewBag.Title = "Bulk Mark Entry";
 }
 
 <style>
@@ -19,45 +19,45 @@
         border-collapse: collapse;
     }
 
-    .marks-entry-table thead th {
-        background: linear-gradient(to bottom, #69c1f7, #39a9f2);
-        color: #212529;
-        font-weight: bold;
-        text-align: center;
-        padding: 8px 10px;
-        border: 1px solid #ddd !important;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        font-size: 13px;
-    }
+        .marks-entry-table thead th {
+            background: linear-gradient(to bottom, #69c1f7, #39a9f2);
+            color: #212529;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px 10px;
+            border: 1px solid #ddd !important;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 13px;
+        }
 
-    .marks-entry-table tbody tr:nth-child(odd) {
-        background-color: #e3e8ed !important;
-    }
+        .marks-entry-table tbody tr:nth-child(odd) {
+            background-color: #e3e8ed !important;
+        }
 
-    .marks-entry-table tbody tr:nth-child(even) {
-        background-color: #ffffff !important;
-    }
+        .marks-entry-table tbody tr:nth-child(even) {
+            background-color: #ffffff !important;
+        }
 
-    .marks-entry-table tbody tr:hover {
-        background-color: #f0f4f8 !important;
-    }
+        .marks-entry-table tbody tr:hover {
+            background-color: #f0f4f8 !important;
+        }
 
-    .marks-entry-table tbody tr.selected-row {
-        background-color: #e3f2fd !important;
-    }
+        .marks-entry-table tbody tr.selected-row {
+            background-color: #e3f2fd !important;
+        }
 
-    .marks-entry-table tbody tr.modified-row {
-        background-color: #fff3cd !important;
-    }
+        .marks-entry-table tbody tr.modified-row {
+            background-color: #fff3cd !important;
+        }
 
-    .marks-entry-table tbody td {
-        padding: 4px 6px;
-        border: 1px solid #ddd;
-        text-align: center;
-        font-size: 13px;
-    }
+        .marks-entry-table tbody td {
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 13px;
+        }
 
     .student-info-cell {
         text-align: left !important;
@@ -75,38 +75,38 @@
         transition: all 0.2s ease;
     }
 
-    .marks-input:focus {
-        border-color: #4299e1;
-        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-        outline: none;
-    }
+        .marks-input:focus {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            outline: none;
+        }
 
-    .marks-input.is-invalid {
-        border-color: #dc3545 !important;
-        background-color: #fff5f5;
-    }
+        .marks-input.is-invalid {
+            border-color: #dc3545 !important;
+            background-color: #fff5f5;
+        }
 
-    .marks-input.absent-mark {
-        background-color: #ffe4e4;
-        color: #dc3545;
-        font-weight: bold;
-    }
+        .marks-input.absent-mark {
+            background-color: #ffe4e4;
+            color: #dc3545;
+            font-weight: bold;
+        }
 
-    .marks-input.medical-mark {
-        background-color: #e4f3ff;
-        color: #004085;
-        font-weight: bold;
-    }
+        .marks-input.medical-mark {
+            background-color: #e4f3ff;
+            color: #004085;
+            font-weight: bold;
+        }
 
-    .marks-input.pass-mark {
-        background-color: #d4edda;
-        color: #155724;
-    }
+        .marks-input.pass-mark {
+            background-color: #d4edda;
+            color: #155724;
+        }
 
-    .marks-input.fail-mark {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
+        .marks-input.fail-mark {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
 
     /* Button Styling */
     .search-button {
@@ -122,34 +122,33 @@
         transition: transform 0.2s ease;
     }
 
-    .search-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    }
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
 
-    .save-button {
-        background: linear-gradient(to right, #48BB78, #38A169);
+    .save-btn {
+        background: linear-gradient(to right, #28a745, #20c997);
         color: white;
-        padding: 0.5rem 1.5rem;
-        font-size: 14px;
+        padding: 12px 40px;
         border: none;
         border-radius: 5px;
         font-weight: bold;
         cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        margin: 20px 0;
         transition: all 0.3s ease;
+        font-size: 16px;
     }
 
-    .save-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    }
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+        }
 
-    .save-button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
     /* Toast Notification Styles */
     .toast-container {
@@ -176,6 +175,7 @@
             transform: translateX(100%);
             opacity: 0;
         }
+
         to {
             transform: translateX(0);
             opacity: 1;
@@ -238,8 +238,13 @@
     }
 
     @@keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     /* Subject Header */
@@ -249,12 +254,12 @@
         background: linear-gradient(to bottom, #ffc107, #ff9800) !important;
     }
 
-    .subject-header .max-marks {
-        font-size: 10px;
-        color: #444;
-        display: block;
-        margin-top: 2px;
-    }
+        .subject-header .max-marks {
+            font-size: 10px;
+            color: #444;
+            display: block;
+            margin-top: 2px;
+        }
 
     /* Legend Box */
     .marks-legend {
@@ -277,15 +282,15 @@
         border-radius: 6px;
     }
 
-    .marks-info b.absent {
-        color: #dc3545;
-        font-weight: 700;
-    }
+        .marks-info b.absent {
+            color: #dc3545;
+            font-weight: 700;
+        }
 
-    .marks-info b.medical {
-        color: #004085;
-        font-weight: 700;
-    }
+        .marks-info b.medical {
+            color: #004085;
+            font-weight: 700;
+        }
 
     /* Quick Actions */
     .quick-actions {
@@ -308,10 +313,10 @@
         transition: all 0.3s ease;
     }
 
-    .quick-action-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    }
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
 
     /* Checkbox Styling */
     .form-check-input {
@@ -337,7 +342,7 @@
             <div class="card">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-edit me-2"></i>Student Marks Entry - Bulk Update
+                        <i class="fas fa-edit me-2"></i>Bulk Mark Entry
                     </h5>
                 </div>
 
@@ -384,25 +389,29 @@
             <div class="card-header bg-light">
                 <div class="d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">
-                        <i class="fas fa-users me-2"></i>Students List
-                        <span class="marks-summary badge bg-info" id="studentCount">0 students</span>
-                        <span class="marks-summary badge bg-warning" id="modifiedCount">0 modified</span>
+                        <i class="fas fa-users me-2"></i>
+                        <strong style="color: #1a237e;">Guideline:</strong>
+                        <span id="maxMarksSpan" style="display:none">100</span>
+                        <span class="marks-info" style="font-weight: normal;">
+                            Fill
+                            <span style="background-color: #dc3545; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold;">-1</span>
+                            for
+                            <span style="color: #dc3545; font-weight: bold;">Absent</span>
+                            <span style="color: #666; margin: 0 8px;">|</span>
+                            Fill
+                            <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold;">-2</span>
+                            for
+                            <span style="color: #28a745; font-weight: bold;">Medical</span>
+                        </span>
+                        <span style="display:none">
+                            <span class="marks-summary badge bg-info" id="studentCount">0 students</span>
+                            <span class="marks-summary badge bg-warning" id="modifiedCount">0 modified</span>
+                        </span>
                     </h6>
-                    <button type="button" class="btn save-button" id="btnSaveMarks">
-                        <i class="fas fa-save me-2"></i>Save Marks
-                    </button>
+                   
                 </div>
             </div>
             <div class="card-body">
-                <div id="marksLegend" class="alert alert-info" style="font-size: 13px;">
-                    <strong>Guideline:</strong>
-                    <span id="maxMarksSpan" style="display:none">100</span>
-                    <div class="marks-info">
-                        Enter <b class="absent">-1</b> for <b>Absent</b>  |
-                        Enter <b class="medical">-2</b> for <b>Medical</b>
-                    </div>
-
-                </div>
                 <!-- Data Table -->
                 <div class="table-responsive">
                     <table class="table marks-entry-table" id="marksDataTable">
@@ -415,6 +424,11 @@
                             <!-- Data will be loaded here -->
                         </tbody>
                     </table>
+                </div>
+                <div class="text-center">
+                    <button type="button" class="save-btn" id="btnSaveMarks">
+                        <i class="fas fa-save me-2"></i>Save Marks
+                    </button>
                 </div>
             </div>
         </div>
@@ -575,6 +589,7 @@ $(document).ready(function() {
         // Build table headers
         var headerHtml =
             '<th><input type="checkbox" id="selectAll" class="form-check-input"></th>' +
+            '<th>Class</th>' +
             '<th>SR</th>' +
             '<th>Roll</th>' +
             '<th>Exam</th>' +
@@ -597,6 +612,7 @@ $(document).ready(function() {
         $.each(data.students, function(index, student) {
             bodyHtml += '<tr data-studentid="' + student.StudentID + '">' +
                        '<td class="text-center"><input type="checkbox" class="form-check-input row-checkbox"></td>' +
+                        '<td>' + student.ClassName + '-' + student.SectionName + '</td>' +
                        '<td>' + (index + 1) + '</td>' +
                        '<td>' + (student.RollNumber || '-') + '</td>' +
                        '<td>' + data.examName + '</td>' +
@@ -606,22 +622,25 @@ $(document).ready(function() {
             // Add input fields for each subject
             $.each(data.subjects, function(j, subject) {
                 var key = student.StudentID + '_' + subject.SubjectID;
-                var existingMark = originalMarks[key] || '';
+                // This handles undefined, null, and converts numbers to strings safely
+                var existingMark = (originalMarks[key] != null) ? originalMarks[key].toString() : '';
                 var config = gradeConfigs[subject.SubjectID] || { MaxMarks: 100, MinimumGrade: 33 };
 
                 var inputClass = 'marks-input';
                 if (existingMark !== '') {
                     var markValue = parseInt(existingMark);
-                    if (markValue === -1) {
-                        inputClass += ' absent-mark';
-                    } else if (markValue === -2) {
-                        inputClass += ' medical-mark';
-                    } else if (markValue >= -9 && markValue < 0) {
-                        inputClass += ' absent-mark';
-                    } else if (markValue >= config.MinimumGrade) {
-                        inputClass += ' pass-mark';
-                    } else if (markValue >= 0) {
-                        inputClass += ' fail-mark';
+                    if (!isNaN(markValue)) {
+                        if (markValue === -1) {
+                            inputClass += ' absent-mark';
+                        } else if (markValue === -2) {
+                            inputClass += ' medical-mark';
+                        } else if (markValue >= -9 && markValue < 0) {
+                            inputClass += ' absent-mark';
+                        } else if (markValue >= config.MinimumGrade) {
+                            inputClass += ' pass-mark';
+                        } else if (markValue >= 0) {
+                            inputClass += ' fail-mark';
+                        }
                     }
                 }
 
@@ -677,7 +696,7 @@ $(document).ready(function() {
                     text: 'Copy',
                     className: 'dt-button',
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8]
+                        columns: exportColumns
                     }
                 },
                 {
@@ -686,7 +705,7 @@ $(document).ready(function() {
                     className: 'dt-button',
                     title: 'StudentMarks_' + new Date().getTime(),
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8]
+                        columns: exportColumns
                     }
                 },
                 {
@@ -695,7 +714,7 @@ $(document).ready(function() {
                     className: 'dt-button',
                     title: 'StudentMarks_' + new Date().getTime(),
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8]
+                        columns: exportColumns
                     }
                 },
                 {
@@ -706,7 +725,7 @@ $(document).ready(function() {
                     orientation: 'landscape',
                     pageSize: 'A4',
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8]
+                        columns: exportColumns
                     }
                 },
                 {
@@ -715,7 +734,7 @@ $(document).ready(function() {
                     className: 'dt-button',
                     title: 'Student Marks Report',
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8]
+                        columns: exportColumns
                     }
                 }
             ],
@@ -761,6 +780,15 @@ $(document).ready(function() {
             var subjectId = $input.data('subjectid');
             var maxMarks = parseInt($input.data('maxmarks'));
             var minGrade = parseInt($input.data('mingrade'));
+            var originalValue = $input.data('original');
+
+            // Convert original value to string for comparison
+            if (originalValue !== undefined && originalValue !== null) {
+                originalValue = originalValue.toString().trim();
+            } else {
+                originalValue = '';
+            }
+
             var key = studentId + '_' + subjectId;
 
             // Allow minus sign only at the beginning
@@ -781,44 +809,63 @@ $(document).ready(function() {
             // Clear classes
             $input.removeClass('is-invalid pass-mark fail-mark absent-mark medical-mark');
 
+            // Check if value has changed from original
+            var hasChanged = (value !== originalValue);
+
             // Validate and apply styling
             if (value !== '' && value !== '-') {
                 var marks = parseInt(value);
 
                 if (!isNaN(marks)) {
+                    var isValid = true;
+
                     if (marks < -9) {
                         $input.addClass('is-invalid');
                         $input.val('-9');
                         showToast('Special codes are from -1 to -9 only', 'warning');
-                    } else if (marks === -1) {
-                        $input.addClass('absent-mark');
-                        modifiedMarks[key] = marks;
-                        markRowAsModified($input);
-                    } else if (marks === -2) {
-                        $input.addClass('medical-mark');
-                        modifiedMarks[key] = marks;
-                        markRowAsModified($input);
-                    } else if (marks >= -9 && marks < 0) {
-                        $input.addClass('absent-mark');
-                        modifiedMarks[key] = marks;
-                        markRowAsModified($input);
+                        marks = -9;
+                        value = '-9';
+                        hasChanged = (value !== originalValue);
                     } else if (marks > maxMarks) {
                         $input.addClass('is-invalid');
                         showToast('Marks cannot exceed ' + maxMarks, 'warning');
-                    } else {
-                        // Valid positive marks
+                        isValid = false;
+                    } else if (marks === -1) {
+                        $input.addClass('absent-mark');
+                    } else if (marks === -2) {
+                        $input.addClass('medical-mark');
+                    } else if (marks >= -9 && marks < 0) {
+                        $input.addClass('absent-mark');
+                    } else if (marks >= 0) {
+                        // Valid positive marks (including 0)
                         if (marks >= minGrade) {
                             $input.addClass('pass-mark');
                         } else {
                             $input.addClass('fail-mark');
                         }
+                    }
+
+                    // Track the change if different from original and valid
+                    if (hasChanged && isValid) {
                         modifiedMarks[key] = marks;
                         markRowAsModified($input);
+                    } else if (!hasChanged) {
+                        delete modifiedMarks[key];
+                        checkRowModification($input);
                     }
                 }
-            } else if (value === '') {
-                delete modifiedMarks[key];
-                checkRowModification($input);
+            } else {
+                // Empty value - check if this is a change from original
+                if (hasChanged && originalValue !== '') {
+                    // Original had a value, now it's empty - this is a change
+                    // Store as null or 0 based on your requirement
+                    modifiedMarks[key] = null; // or use 0 if your backend expects 0
+                    markRowAsModified($input);
+                } else if (!hasChanged || originalValue === '') {
+                    // No change or original was also empty
+                    delete modifiedMarks[key];
+                    checkRowModification($input);
+                }
             }
 
             updateSummary();
@@ -980,6 +1027,7 @@ $(document).ready(function() {
             var key = studentId + '_' + subjectId;
             if (modifiedMarks.hasOwnProperty(key)) {
                 hasModifications = true;
+                return false; // Break the loop
             }
         });
 
@@ -995,12 +1043,12 @@ $(document).ready(function() {
 
         $('#modifiedCount').text(modifiedRowCount + ' modified');
 
-        // Enable/disable save button
-        //$('#btnSaveMarks, #btnQuickSave').prop('disabled', entryCount === 0);
+        // Enable/disable save button based on modifications
+        $('#btnSaveMarks').prop('disabled', entryCount === 0);
     }
 
     // Save all marks
-    $('#btnSaveMarks, #btnQuickSave').click(function() {
+    $('#btnSaveMarks').click(function() {
         if (isUpdating) return;
 
         var marksToSave = [];
@@ -1017,10 +1065,18 @@ $(document).ready(function() {
                 hasErrors = true;
             }
 
+            // Handle different value types
+            var marksValue = value;
+            if (value === null || value === '') {
+                // Decide based on your backend requirement
+                // Use null for deletion or 0 for zero marks
+                marksValue = null; // or use 0
+            }
+
             marksToSave.push({
                 StudentID: studentId,
                 SubjectID: subjectId,
-                MarksObtained: value,
+                MarksObtained: marksValue,
                 ExamTypeID: currentExamId
             });
         });
@@ -1031,17 +1087,17 @@ $(document).ready(function() {
         }
 
         if (marksToSave.length === 0) {
-            showToast('No marks to save', 'warning');
+            showToast('No changes to save', 'info');
             return;
         }
 
-        if (!confirm('Do you want to save marks ' + marksToSave.length + ' entries?')) {
+        if (!confirm('Do you want to save marks for ' + marksToSave.length + ' entries?')) {
             return;
         }
 
         isUpdating = true;
         showSpinner();
-        $('#btnSaveMarks, #btnQuickSave').prop('disabled', true)
+        $('#btnSaveMarks').prop('disabled', true)
             .html('<i class="fas fa-spinner fa-spin me-2"></i>Saving...');
 
         $.ajax({
@@ -1058,33 +1114,40 @@ $(document).ready(function() {
                 hideSpinner();
 
                 if (result.success) {
-                    showToast(result.message || 'Marks saved successfully!!', 'success');
-                    setTimeout(function () {
+                    showToast(result.message || 'Marks saved successfully!', 'success');
+
+                    // Reload the page after 1 second
+                    setTimeout(function() {
                         location.reload();
                     }, 1000);
+
                 } else {
                     showToast(result.message || 'Failed to save marks', 'error');
+                    isUpdating = false;
+                    $('#btnSaveMarks').html('<i class="fas fa-save me-2"></i>Save Marks');
+                    $('#btnSaveMarks').prop('disabled', false);
                 }
             },
             error: function(xhr, status, error) {
                 hideSpinner();
                 showToast('An error occurred while saving marks', 'error');
                 console.error('Save error:', error);
-            },
-            complete: function() {
                 isUpdating = false;
-                $('#btnSaveMarks').html('<i class="fas fa-save me-2"></i>Save All Marks');
-                $('#btnQuickSave').html('<i class="fas fa-save me-2"></i>Quick Save');
-                $('#btnSaveMarks, #btnQuickSave').prop('disabled', false);
+                $('#btnSaveMarks').html('<i class="fas fa-save me-2"></i>Save Marks');
+                $('#btnSaveMarks').prop('disabled', false);
             }
         });
     });
 
-    // Clear all button
+    // Clear all button (if you have one)
     $('#btnClearAll').click(function() {
         if (confirm('Clear all entered marks? This will reset the form.')) {
             $('.marks-input').val('').removeClass('is-invalid pass-mark fail-mark absent-mark medical-mark');
+            $('.marks-input').each(function() {
+                $(this).data('original', '');
+            });
             modifiedMarks = {};
+            originalMarks = {};
             $('.modified-row').removeClass('modified-row');
             updateSummary();
             showToast('All marks cleared', 'info');
@@ -1108,6 +1171,8 @@ $(document).ready(function() {
             dataTable.destroy();
             dataTable = null;
         }
+        modifiedMarks = {};
+        originalMarks = {};
     });
 });
 </script>

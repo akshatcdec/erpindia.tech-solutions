@@ -314,23 +314,32 @@
     <div id="dataTableContainer" style="display:none;">
         <div class="card">
             <div class="card-header bg-light">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-users me-2"></i>Students List
-                </h5>
-            </div>
-            <div class="card-body">
-                <!-- Legend -->
-                <div id="marksLegend" class="alert alert-info" style="font-size: 13px;">
-                    <strong>Guideline:</strong>
-                    <span id="maxMarksSpan" style="display:none">100</span>
-                    <div class="marks-info">
-                        Enter <b class="absent">-1</b> for <b>Absent</b>  |
-                        Enter <b class="medical">-2</b> for <b>Medical</b>
-                    </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        <strong style="color: #1a237e;">Guideline:</strong>
+                        <span id="maxMarksSpan" style="display:none">100</span>
+                        <span class="marks-info" style="font-weight: normal;">
+                            Fill
+                            <span style="background-color: #dc3545; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold;">-1</span>
+                            for
+                            <span style="color: #dc3545; font-weight: bold;">Absent</span>
+                            <span style="color: #666; margin: 0 8px;">|</span>
+                            Fill
+                            <span style="background-color: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold;">-2</span>
+                            for
+                            <span style="color: #28a745; font-weight: bold;">Medical</span>
+                        </span>
+                        <span style="display:none">
+                            <span class="marks-summary badge bg-info" id="studentCount">0 students</span>
+                            <span class="marks-summary badge bg-warning" id="modifiedCount">0 modified</span>
+                        </span>
+                    </h6>
 
                 </div>
-
-                <!-- Data Table -->
+            </div>
+            <div class="card-body">
+               <!-- Data Table -->
                 <div class="table-responsive">
                     <table class="table product-style-table mb-0" id="marksTable">
                         <thead>
@@ -344,7 +353,7 @@
                                 <th>Subject</th>
                                 <th>Student</th>
                                 <th align="center" style="text-align:center">Father</th>
-                                <th width="80"  align="center">Max Marks</th>
+                                <th width="80" align="center">Max Marks</th>
                                 <th width="150" align="center">Obt. Marks</th>
                             </tr>
                         </thead>

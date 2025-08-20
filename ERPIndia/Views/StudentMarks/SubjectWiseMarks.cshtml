@@ -246,6 +246,27 @@
     .form-check-input {
         margin-right: 5px;
     }
+    .marks-info {
+        display: inline-block;
+        padding: 6px 12px;
+        margin-top: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+    }
+
+        .marks-info b.absent {
+            color: orangered;
+            font-weight: 700;
+        }
+
+        .marks-info b.medical {
+            color: navy;
+            font-weight: 700;
+        }
+
 </style>
 
 <div class="container-fluid">
@@ -301,8 +322,12 @@
                 <!-- Legend -->
                 <div id="marksLegend" class="alert alert-info" style="font-size: 13px;">
                     <strong>Guideline:</strong>
-                    <span id="maxMarksSpan" style="display:none">100</span> 
-                    Enter -1 for Absent  |   Enter -2 for Medical
+                    <span id="maxMarksSpan" style="display:none">100</span>
+                    <div class="marks-info">
+                        Enter <b class="absent">-1</b> for <b>Absent</b>  |
+                        Enter <b class="medical">-2</b> for <b>Medical</b>
+                    </div>
+
                 </div>
 
                 <!-- Data Table -->
@@ -897,7 +922,7 @@ $(document).ready(function() {
 
         var confirmMsg = 'Do you want to save marks for all students?';
         if (!hasValidMark) {
-            confirmMsg = 'All entered marks are either 0 or absent/medical (-1 to -9). Do you want to continue?';
+            confirmMsg = 'Do you want to continue?';
         }
 
         if (confirm(confirmMsg)) {

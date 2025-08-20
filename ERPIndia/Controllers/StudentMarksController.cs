@@ -659,7 +659,7 @@ namespace ERPIndia.Controllers
                                 StudentID = reader["StudentID"].ToString(),
                                 SubjectID = reader["SubjectID"].ToString(),
                                 ExamTypeID = reader["ExamTypeID"].ToString(),
-                                MarksObtained = Convert.ToDecimal(reader["MarksObtained"]),
+                                MarksObtained = reader["MarksObtained"] == DBNull.Value? (decimal?)null: Convert.ToDecimal(reader["MarksObtained"]),
                                 Grade = reader["Grade"]?.ToString(),
                                 Remarks = reader["Remarks"]?.ToString()
                             });
@@ -1333,7 +1333,7 @@ namespace ERPIndia.Controllers
         public string StudentID { get; set; }
         public string SubjectID { get; set; }
         public string ExamTypeID { get; set; }
-        public decimal MarksObtained { get; set; }
+        public decimal? MarksObtained { get; set; }
         public string Grade { get; set; }
         public string Remarks { get; set; }
     }

@@ -1,6 +1,6 @@
 ﻿@model ERPIndia.Controllers.StudentMarksViewModel
 @{
-    ViewBag.Title = "Subject Grade Entry";
+    ViewBag.Title = "Grade Entry";
 }
 
 <style>
@@ -36,10 +36,10 @@
 
 
 
-    .show-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
+        .show-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
 
     .data-table {
         width: 100%;
@@ -47,92 +47,94 @@
         background: white;
     }
 
-    .data-table thead th {
-        background: linear-gradient(to bottom, #007bff, #0056b3);
-        color: white;
-        border: 1px solid #dee2e6;
-        padding: 10px;
-        text-align: left;
-        font-weight: 600;
-        font-size: 13px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
+        .data-table thead th {
+            background: linear-gradient(to bottom, #007bff, #0056b3);
+            color: white;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
 
-    .data-table tbody td {
-        border: 1px solid #dee2e6;
-        padding: 8px 10px;
-        font-size: 13px;
-    }
+        .data-table tbody td {
+            border: 1px solid #dee2e6;
+            padding: 8px 10px;
+            font-size: 13px;
+        }
 
-    .data-table tbody tr:hover {
-        background: #f8f9fa;
-    }
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
 
-    .data-table tbody tr.modified {
-        background: #fff3cd;
-    }
+        .data-table tbody tr.modified {
+            background: #fff3cd;
+        }
 
-    .grade-select {
+    /* Updated styles for grade textbox instead of select */
+    .grade-input {
         width: 120px;
         padding: 5px 8px;
         border: 1px solid #ced4da;
         border-radius: 4px;
         font-size: 13px;
         text-align: center;
+        text-transform: uppercase;
     }
 
-    .grade-select:focus {
-        border-color: #80bdff;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-    }
+        .grade-input:focus {
+            border-color: #80bdff;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
 
-    .grade-select.grade-a-plus {
-        background: #28a745;
-        color: white;
-    }
+        .grade-input.grade-a-plus {
+            background: #28a745;
+            color: white;
+        }
 
-    .grade-select.grade-a {
-        background: #5cb85c;
-        color: white;
-    }
+        .grade-input.grade-a {
+            background: #5cb85c;
+            color: white;
+        }
 
-    .grade-select.grade-b-plus {
-        background: #17a2b8;
-        color: white;
-    }
+        .grade-input.grade-b-plus {
+            background: #17a2b8;
+            color: white;
+        }
 
-    .grade-select.grade-b {
-        background: #5bc0de;
-        color: white;
-    }
+        .grade-input.grade-b {
+            background: #5bc0de;
+            color: white;
+        }
 
-    .grade-select.grade-c-plus {
-        background: #ffc107;
-        color: #333;
-    }
+        .grade-input.grade-c-plus {
+            background: #ffc107;
+            color: #333;
+        }
 
-    .grade-select.grade-c {
-        background: #f0ad4e;
-        color: white;
-    }
+        .grade-input.grade-c {
+            background: #f0ad4e;
+            color: white;
+        }
 
-    .grade-select.grade-d {
-        background: #fd7e14;
-        color: white;
-    }
+        .grade-input.grade-d {
+            background: #fd7e14;
+            color: white;
+        }
 
-    .grade-select.grade-f {
-        background: #dc3545;
-        color: white;
-    }
+        .grade-input.grade-f {
+            background: #dc3545;
+            color: white;
+        }
 
-    .grade-select.grade-ab {
-        background: #6c757d;
-        color: white;
-    }
+        .grade-input.grade-ab {
+            background: #6c757d;
+            color: white;
+        }
 
     .remarks-input {
         width: 100%;
@@ -152,10 +154,10 @@
         transition: all 0.3s;
     }
 
-    .update-btn:hover {
-        color: #218838;
-        transform: scale(1.2);
-    }
+        .update-btn:hover {
+            color: #218838;
+            transform: scale(1.2);
+        }
 
     .save-all-btn {
         background: linear-gradient(to right, #28a745, #20c997);
@@ -170,15 +172,15 @@
         font-size: 16px;
     }
 
-    .save-all-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(40,167,69,0.3);
-    }
+        .save-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+        }
 
-    .save-all-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
+        .save-all-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
     .summary-box {
         background: linear-gradient(to right, #e7f3ff, #f0f8ff);
@@ -195,10 +197,10 @@
         font-size: 14px;
     }
 
-    .summary-item strong {
-        color: #007bff;
-        font-weight: 600;
-    }
+        .summary-item strong {
+            color: #007bff;
+            font-weight: 600;
+        }
 
     .toast-container {
         position: fixed;
@@ -221,6 +223,7 @@
             transform: translateX(100%);
             opacity: 0;
         }
+
         to {
             transform: translateX(0);
             opacity: 1;
@@ -276,8 +279,13 @@
     }
 
     @@keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     .subject-badge {
@@ -295,11 +303,13 @@
         margin-left: 20px;
     }
 
-    .batch-grade-select {
+    .batch-grade-input {
         padding: 6px 12px;
         border: 1px solid #ced4da;
         border-radius: 4px;
         margin-right: 10px;
+        width: 100px;
+        text-transform: uppercase;
     }
 
     .apply-batch-btn {
@@ -312,9 +322,9 @@
         font-size: 13px;
     }
 
-    .apply-batch-btn:hover {
-        background: #138496;
-    }
+        .apply-batch-btn:hover {
+            background: #138496;
+        }
 
     .entries-info {
         background: #e9ecef;
@@ -339,10 +349,10 @@
         transition: all 0.2s;
     }
 
-    .quick-fill-btn:hover {
-        background: #f8f9fa;
-        border-color: #adb5bd;
-    }
+        .quick-fill-btn:hover {
+            background: #f8f9fa;
+            border-color: #adb5bd;
+        }
 </style>
 
 <div class="container-fluid">
@@ -351,7 +361,7 @@
             <div class="card">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-edit me-2"></i>Subject Grade Entry
+                        <i class="fas fa-edit me-2"></i>Grade Entry
                     </h5>
                 </div>
                 <div class="card-body">
@@ -365,7 +375,7 @@
                             @Html.DropDownListFor(x => x.Sections, Model.Sections, "Select Section", new { @class = "filter-dropdown", id = "ddlSection" })
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Subject <span class="text-danger">*</span></label>
+                            <label class="form-label">Grade Sub. <span class="text-danger">*</span></label>
                             <select class="filter-dropdown" id="ddlSubject">
                                 <option value="">Select Subject</option>
                             </select>
@@ -383,81 +393,79 @@
                     </div>
                 </div>
             </div>
-    </div>
-                    <!-- Data Table Section -->
-                    <div id="dataTableContainer" style="display:none;">
-                        <div class="card">
-                            <div class="card-header bg-light">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">
-                                        <i class="fas fa-users"></i> Student Grade Entry
-                                    </h6>
-                                    <div style="display:none">
-                                        <div class="batch-actions">
-                                            <label>Apply to All:</label>
-                                            <select class="batch-grade-select" id="batchGradeSelect">
-                                                <option value="">Select Grade</option>
-                                            </select>
-                                            <button class="apply-batch-btn" onclick="applyBatchGrade()">
-                                                <i class="fas fa-check"></i> Apply
-                                            </button>
-                                        </div>
-                                        <div class="quick-fill-buttons">
-                                            <button class="quick-fill-btn" onclick="fillAllPresent()">All Present</button>
-                                            <button class="quick-fill-btn" onclick="fillAllAbsent()">All Absent</button>
-                                            <button class="quick-fill-btn" onclick="clearAllGrades()">Clear All</button>
-                                        </div>
-                                    </div>
-                                </div>
+        </div>
+        <!-- Data Table Section -->
+        <div id="dataTableContainer" style="display:none;">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="fas fa-users"></i> Grade Entry List
+                        </h6>
+                        <div style="display:none">
+                            <div class="batch-actions">
+                                <label>Apply to All:</label>
+                                <input type="text" class="batch-grade-input" id="batchGradeInput" maxlength="20" placeholder="Enter Grade">
+                                <button class="apply-batch-btn" onclick="applyBatchGrade()">
+                                    <i class="fas fa-check"></i> Apply
+                                </button>
                             </div>
-                            <div class="card-body">
-                                <!-- Data Table -->
-                                <div class="table-responsive">
-                                    <table class="data-table" id="gradesTable">
-                                        <thead>
-                                            <tr>
-                                                <th width="50">
-                                                    <input type="checkbox" id="selectAll">
-                                                </th>
-                                                <th width="60">Sr</th>
-                                                <th width="80">Roll</th>
-                                                <th>Student Name</th>
-                                                <th>Father Name</th>
-                                                <th width="150">Subject</th>
-                                                <th width="150">Grade</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="gradesTableBody">
-                                            <!-- Data will be loaded here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!-- Save All Button -->
-                                <div class="text-center mt-4">
-                                    <button class="save-all-btn" id="btnSaveAll">
-                                        <i class="fas fa-save"></i> Save All Grades
-                                    </button>
-                                </div>
+                            <div class="quick-fill-buttons">
+                                <button class="quick-fill-btn" onclick="fillAllPresent()">All Present</button>
+                                <button class="quick-fill-btn" onclick="fillAllAbsent()">All Absent</button>
+                                <button class="quick-fill-btn" onclick="clearAllGrades()">Clear All</button>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="card-body">
+                    <!-- Data Table -->
+                    <div class="table-responsive">
+                        <table class="data-table" id="gradesTable">
+                            <thead>
+                                <tr>
+                                    <th width="50">
+                                        <input type="checkbox" id="selectAll">
+                                    </th>
+                                    <th>Class</th>
+                                    <th>Sr</th>
+                                    <th>Roll</th>
+                                    <th>Student Name</th>
+                                    <th>Father Name</th>
+                                    <th>Grade Sub.</th>
+                                    <th>Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gradesTableBody">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- Toast Container -->
-                <div class="toast-container" id="toastContainer"></div>
-
-                <!-- Spinner Overlay -->
-                <div class="spinner-overlay" id="spinnerOverlay">
-                    <div class="spinner-box">
-                        <div class="spinner"></div>
-                        <div>Processing...</div>
+                    <!-- Save All Button -->
+                    <div class="text-center mt-4">
+                        <button class="save-all-btn" id="btnSaveAll">
+                            <i class="fas fa-save"></i> Save All Grades
+                        </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
-                <script>
+    <!-- Spinner Overlay -->
+    <div class="spinner-overlay" id="spinnerOverlay">
+        <div class="spinner-box">
+            <div class="spinner"></div>
+            <div>Processing...</div>
+        </div>
+    </div>
+
+
+    <script>
 $(document).ready(function() {
     var allStudentsData = [];
     var modifiedGrades = {};
@@ -529,12 +537,6 @@ $(document).ready(function() {
                     gradeOptions = data.gradeOptions;
                     currentSubject = data.subject;
 
-                    var $batchSelect = $('#batchGradeSelect');
-                    $batchSelect.empty().append('<option value="">Select Grade</option>');
-                    $.each(gradeOptions, function(i, option) {
-                        $batchSelect.append('<option value="' + option.GradeName + '">' + option.GradeName + '</option>');
-                    });
-
                     // Show table
                     $('#dataTableContainer').show();
                     renderTable();
@@ -557,24 +559,20 @@ $(document).ready(function() {
         $tbody.empty();
 
         $.each(allStudentsData, function(index, student) {
-            var gradeSelectHtml = '<select class="grade-select" data-studentid="' + student.StudentID + '">';
-            gradeSelectHtml += '<option value="">-Select-</option>';
-
-            $.each(gradeOptions, function(i, option) {
-                var selected = student.Grade === option.GradeName ? 'selected' : '';
-                gradeSelectHtml += '<option value="' + option.GradeName + '" ' + selected + '>' + option.GradeName + '</option>';
-            });
-            gradeSelectHtml += '</select>';
+            // Changed from select to input textbox with maxlength 20
+            var gradeInputHtml = '<input type="text" class="grade-input" data-studentid="' + student.StudentID + '" ' +
+                                'value="' + (student.Grade || '') + '" maxlength="20" placeholder="Enter Grade">';
 
             var row = '<tr data-studentid="' + student.StudentID + '">' +
-                     '<td><input type="checkbox" class="row-checkbox"></td>' +
-                     '<td>' + (index + 1) + '</td>' +
-                     '<td>' + (student.RollNumber || '-') + '</td>' +
-                     '<td><strong>' + student.StudentName + '</strong></td>' +
-                     '<td>' + (student.FatherName || '-') + '</td>' +
-                     '<td><span class="subject-badge">' + currentSubject.SubjectName + '</span></td>' +
-                     '<td>' + gradeSelectHtml + '</td>' +
-                     '</tr>';
+                      '<td><input type="checkbox" class="row-checkbox"></td>' +
+                      '<td>' + student.ClassName + '-' + student.SectionName + '</td>' +
+                      '<td>' + (index + 1) + '</td>' +
+                      '<td>' + (student.RollNumber || '-') + '</td>' +
+                      '<td><strong>' + student.StudentName + '</strong></td>' +
+                      '<td>' + (student.FatherName || '-') + '</td>' +
+                      '<td><span class="subject-badge">' + currentSubject.SubjectName + '</span></td>' +
+                      '<td>' + gradeInputHtml + '</td>' +
+                      '</tr>';
 
             $tbody.append(row);
         });
@@ -585,18 +583,18 @@ $(document).ready(function() {
 
     // Bind table events
     function bindTableEvents() {
-        // Grade select change
-        $('.grade-select').off('change').on('change', function() {
-            var $select = $(this);
-            var studentId = $select.data('studentid');
-            var grade = $select.val();
-            var $row = $select.closest('tr');
+        // Grade input change (changed from select to input)
+        $('.grade-input').off('input').on('input', function() {
+            var $input = $(this);
+            var studentId = $input.data('studentid');
+            var grade = $input.val();
+            var $row = $input.closest('tr');
 
             // Update visual style based on grade
-            $select.removeClass('grade-a-plus grade-a grade-b-plus grade-b grade-c-plus grade-c grade-d grade-f grade-ab');
+            $input.removeClass('grade-a-plus grade-a grade-b-plus grade-b grade-c-plus grade-c grade-d grade-f grade-ab');
             if (grade) {
                 var gradeClass = 'grade-' + grade.toLowerCase().replace('+', '-plus');
-                $select.addClass(gradeClass);
+                $input.addClass(gradeClass);
             }
 
             // Track modification
@@ -618,7 +616,7 @@ $(document).ready(function() {
         $('.remarks-input').off('input').on('input', function() {
             var $input = $(this);
             var studentId = $input.data('studentid');
-            var grade = $('.grade-select[data-studentid="' + studentId + '"]').val();
+            var grade = $('.grade-input[data-studentid="' + studentId + '"]').val();
 
             if (grade) {
                 modifiedGrades[studentId] = {
@@ -630,10 +628,10 @@ $(document).ready(function() {
         });
 
         // Enter key navigation
-        $('.grade-select, .remarks-input').on('keydown', function(e) {
+        $('.grade-input, .remarks-input').on('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                var $inputs = $('.grade-select:visible, .remarks-input:visible');
+                var $inputs = $('.grade-input:visible, .remarks-input:visible');
                 var index = $inputs.index(this);
                 if (index < $inputs.length - 1) {
                     $inputs.eq(index + 1).focus();
@@ -656,7 +654,8 @@ $(document).ready(function() {
             return;
         }
 
-        if (!confirm('Save all entered grades?')) return;
+        // Updated confirmation message
+        if (!confirm('Do you want to save all the entered grades?')) return;
 
         var gradesToSave = [];
         $.each(modifiedGrades, function(studentId, data) {
@@ -704,11 +703,11 @@ $(document).ready(function() {
 
     // Update single grade
     window.updateSingleGrade = function(studentId) {
-        var grade = $('.grade-select[data-studentid="' + studentId + '"]').val();
+        var grade = $('.grade-input[data-studentid="' + studentId + '"]').val();
         var remarks = $('.remarks-input[data-studentid="' + studentId + '"]').val();
 
         if (!grade) {
-            showToast('Please select a grade', 'warning');
+            showToast('Please enter a grade', 'warning');
             return;
         }
 
@@ -749,18 +748,18 @@ $(document).ready(function() {
         });
     };
 
-    // Batch operations
+    // Batch operations (updated to use input instead of select)
     window.applyBatchGrade = function() {
-        var grade = $('#batchGradeSelect').val();
+        var grade = $('#batchGradeInput').val();
         if (!grade) {
-            showToast('Please select a grade to apply', 'warning');
+            showToast('Please enter a grade to apply', 'warning');
             return;
         }
 
         $('.row-checkbox:checked').each(function() {
             var $row = $(this).closest('tr');
             var studentId = $row.data('studentid');
-            $('.grade-select[data-studentid="' + studentId + '"]').val(grade).trigger('change');
+            $('.grade-input[data-studentid="' + studentId + '"]').val(grade).trigger('input');
         });
 
         showToast('Grade applied to selected students', 'success');
@@ -768,19 +767,19 @@ $(document).ready(function() {
 
     window.fillAllPresent = function() {
         if (confirm('Mark all students as present with grade A?')) {
-            $('.grade-select').val('A').trigger('change');
+            $('.grade-input').val('A').trigger('input');
         }
     };
 
     window.fillAllAbsent = function() {
         if (confirm('Mark all students as absent?')) {
-            $('.grade-select').val('AB').trigger('change');
+            $('.grade-input').val('AB').trigger('input');
         }
     };
 
     window.clearAllGrades = function() {
         if (confirm('Clear all grades?')) {
-            $('.grade-select').val('').trigger('change');
+            $('.grade-input').val('').trigger('input');
             $('.remarks-input').val('');
             modifiedGrades = {};
             $('.modified').removeClass('modified');
@@ -818,4 +817,4 @@ $(document).ready(function() {
         }, 3000);
     }
 });
-                </script>
+    </script>

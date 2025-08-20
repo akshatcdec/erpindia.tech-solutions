@@ -337,7 +337,7 @@ namespace ERPIndia.Controllers
 
                     if (rowsAffected > 0)
                     {
-                        return Json(new { success = true, message = "Subject grade created successfully!" });
+                        return Json(new { success = true, message = "The grade subject has been created successfully!" });
                     }
                     else
                     {

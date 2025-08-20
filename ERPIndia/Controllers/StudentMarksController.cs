@@ -753,19 +753,32 @@ namespace ERPIndia.Controllers
 
                             foreach (var mark in request.Marks)
                             {
-                                // Skip if marks are null (empty textbox)
-                                if (!mark.MarksObtained.HasValue)
-                                {
-                                    continue; // Skip this student if no marks entered
-                                              // OR set to 0 if you want to save 0 for empty marks
-                                              // mark.MarksObtained = 0;
-                                }
+                                // Debug logging to track what we're processing
+                                System.Diagnostics.Debug.WriteLine($"Processing StudentID: {mark.StudentID}, SubjectID: {mark.SubjectID}, MarksObtained: {mark.MarksObtained}");
 
-                                // Calculate grade based on formula
+                                // Handle different mark scenarios:
+                                // 1. HasValue = true, Value = 0 -> Save as 0 (valid zero marks)
+                                // 2. HasValue = true, Value > 0 -> Save the actual marks
+                                // 3. HasValue = false (null/blank) -> Save as null or 0 based on business logic
+
+                                decimal? marksToSave = mark.MarksObtained;
+
+                                // Option A: If you want to save blank entries as NULL
+                                // (Keep marksToSave as is - it will be null)
+
+                                // Option B: If you want to save blank entries as 0, uncomment below:
+                                // if (!mark.MarksObtained.HasValue)
+                                // {
+                                //     marksToSave = 0;
+                                // }
+
+                                // Calculate grade based on the marks we're going to save
                                 GradeConfigModel config = configDict.ContainsKey(mark.SubjectID)
                                     ? configDict[mark.SubjectID]
                                     : null;
-                                string grade = CalculateGrade(mark.MarksObtained, config);
+
+                                string grade = CalculateGrade(marksToSave, config);
+                                System.Diagnostics.Debug.WriteLine($"Calculated grade: {grade}");
 
                                 // Check if mark already exists
                                 string checkQuery = @"
@@ -793,6 +806,8 @@ namespace ERPIndia.Controllers
                                 if (!string.IsNullOrEmpty(existingMarkId))
                                 {
                                     // Update existing mark
+                                    System.Diagnostics.Debug.WriteLine($"Updating existing mark with MarkID: {existingMarkId}");
+
                                     string updateQuery = @"
                                 UPDATE StudentMarks 
                                 SET MarksObtained = @MarksObtained,
@@ -805,25 +820,30 @@ namespace ERPIndia.Controllers
                                     {
                                         updateCmd.Parameters.AddWithValue("@MarkID", existingMarkId);
 
-                                        // Handle nullable MarksObtained
-                                        if (mark.MarksObtained.HasValue)
+                                        // Handle nullable MarksObtained - allow both 0 and null
+                                        if (marksToSave.HasValue)
                                         {
-                                            updateCmd.Parameters.AddWithValue("@MarksObtained", mark.MarksObtained.Value);
+                                            updateCmd.Parameters.AddWithValue("@MarksObtained", marksToSave.Value);
+                                            System.Diagnostics.Debug.WriteLine($"Updating with marks: {marksToSave.Value}");
                                         }
                                         else
                                         {
                                             updateCmd.Parameters.AddWithValue("@MarksObtained", DBNull.Value);
+                                            System.Diagnostics.Debug.WriteLine("Updating with NULL marks");
                                         }
 
                                         updateCmd.Parameters.AddWithValue("@Grade", grade ?? (object)DBNull.Value);
                                         updateCmd.Parameters.AddWithValue("@ModifiedBy", CurrentTenantUserID);
 
-                                        updateCmd.ExecuteNonQuery();
+                                        int rowsAffected = updateCmd.ExecuteNonQuery();
+                                        System.Diagnostics.Debug.WriteLine($"Update affected {rowsAffected} rows");
                                     }
                                 }
                                 else
                                 {
                                     // Insert new mark
+                                    System.Diagnostics.Debug.WriteLine("Inserting new mark record");
+
                                     string insertQuery = @"
                                 INSERT INTO StudentMarks 
                                 (MarkID, StudentID, SubjectID, ClassID, SectionID, ExamTypeID, 
@@ -834,21 +854,24 @@ namespace ERPIndia.Controllers
 
                                     using (SqlCommand insertCmd = new SqlCommand(insertQuery, conn, transaction))
                                     {
-                                        insertCmd.Parameters.AddWithValue("@MarkID", Guid.NewGuid().ToString());
+                                        string newMarkId = Guid.NewGuid().ToString();
+                                        insertCmd.Parameters.AddWithValue("@MarkID", newMarkId);
                                         insertCmd.Parameters.AddWithValue("@StudentID", mark.StudentID);
                                         insertCmd.Parameters.AddWithValue("@SubjectID", mark.SubjectID);
                                         insertCmd.Parameters.AddWithValue("@ClassID", request.ClassId);
                                         insertCmd.Parameters.AddWithValue("@SectionID", request.SectionId);
                                         insertCmd.Parameters.AddWithValue("@ExamTypeID", mark.ExamTypeID);
 
-                                        // Handle nullable MarksObtained
-                                        if (mark.MarksObtained.HasValue)
+                                        // Handle nullable MarksObtained - allow both 0 and null
+                                        if (marksToSave.HasValue)
                                         {
-                                            insertCmd.Parameters.AddWithValue("@MarksObtained", mark.MarksObtained.Value);
+                                            insertCmd.Parameters.AddWithValue("@MarksObtained", marksToSave.Value);
+                                            System.Diagnostics.Debug.WriteLine($"Inserting with marks: {marksToSave.Value}");
                                         }
                                         else
                                         {
                                             insertCmd.Parameters.AddWithValue("@MarksObtained", DBNull.Value);
+                                            System.Diagnostics.Debug.WriteLine("Inserting with NULL marks");
                                         }
 
                                         insertCmd.Parameters.AddWithValue("@Grade", grade ?? (object)DBNull.Value);
@@ -858,18 +881,21 @@ namespace ERPIndia.Controllers
                                         insertCmd.Parameters.AddWithValue("@TenantCode", CurrentTenantCode);
                                         insertCmd.Parameters.AddWithValue("@CreatedBy", CurrentTenantUserID);
 
-                                        insertCmd.ExecuteNonQuery();
+                                        int rowsAffected = insertCmd.ExecuteNonQuery();
+                                        System.Diagnostics.Debug.WriteLine($"Insert affected {rowsAffected} rows, New MarkID: {newMarkId}");
                                     }
                                 }
                             }
 
                             transaction.Commit();
+                            System.Diagnostics.Debug.WriteLine("Transaction committed successfully");
                             return true;
                         }
                         catch (Exception innerEx)
                         {
                             transaction.Rollback();
                             System.Diagnostics.Debug.WriteLine("Transaction error: " + innerEx.Message);
+                            System.Diagnostics.Debug.WriteLine("Inner exception stack trace: " + innerEx.StackTrace);
                             throw;
                         }
                     }

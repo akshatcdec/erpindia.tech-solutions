@@ -389,7 +389,7 @@
                         <span class="marks-summary badge bg-warning" id="modifiedCount">0 modified</span>
                     </h6>
                     <button type="button" class="btn save-button" id="btnSaveMarks">
-                        <i class="fas fa-save me-2"></i>Save All Marks
+                        <i class="fas fa-save me-2"></i>Save Marks
                     </button>
                 </div>
             </div>
@@ -574,7 +574,7 @@ $(document).ready(function() {
 
         // Build table headers
         var headerHtml =
-            '<th width="50"><input type="checkbox" id="selectAll" class="form-check-input"></th>' +
+            '<th><input type="checkbox" id="selectAll" class="form-check-input"></th>' +
             '<th>SR</th>' +
             '<th>Roll</th>' +
             '<th>Exam</th>' +
@@ -996,7 +996,7 @@ $(document).ready(function() {
         $('#modifiedCount').text(modifiedRowCount + ' modified');
 
         // Enable/disable save button
-        $('#btnSaveMarks, #btnQuickSave').prop('disabled', entryCount === 0);
+        //$('#btnSaveMarks, #btnQuickSave').prop('disabled', entryCount === 0);
     }
 
     // Save all marks

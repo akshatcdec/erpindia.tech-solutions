@@ -1,0 +1,738 @@
+﻿@{
+    ViewBag.Title = "Grade Subject Mapping";
+}
+
+<div class="loading" id="loadingSpinner">
+    <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2" id="loadingMessage">Loading configuration data...</p>
+    </div>
+</div>
+
+<!-- Validation Modal -->
+<div class="modal fade" id="validationModal" tabindex="-1" aria-labelledby="validationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="validationModalLabel">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Some grade subject mappings for the selected combinations already exist. Would you like to replace them?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSave">Yes, Replace</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <!-- Main Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Grade Subject Mapping Configuration</h4>
+                </div>
+                <div class="card-body">
+                    <form id="gradeSubjectMappingForm">
+                        <!-- Grid-based layout for selection options -->
+                        <div class="row mb-4">
+                            <!-- Class Column -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Class</h5>
+                                        <button type="button" class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body" id="classContainer">
+                                        <!-- Class checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section Column -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Section</h5>
+                                        <button type="button" class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body" id="sectionContainer">
+                                        <!-- Section checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Subject Grade Column -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Subject Grade</h5>
+                                        <button type="button" class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body" id="subjectGradeContainer">
+                                        <!-- Subject Grade checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Exam Column -->
+                            <div class="col-md-3 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Exam</h5>
+                                        <button type="button" class="btn btn-sm btn-success">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="card-body" id="examContainer">
+                                        <!-- Exam checkboxes will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12 text-end">
+                                <button type="button" id="btnSave" class="btn btn-lg btn-warning">Save Mapping</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="card-title">Existing Grade Subject Mappings</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="gradeSubjectMappingTable" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Class</th>
+                                    <th>Section</th>
+                                    <th>Subject Grade</th>
+                                    <th>Exam</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .checkbox-header {
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 10;
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .checkbox-container {
+        scrollbar-width: thin;
+    }
+
+        .checkbox-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .checkbox-container::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 3px;
+        }
+
+    .checkbox-counter {
+        font-size: 0.8rem;
+        text-align: right;
+    }
+
+    .card-header h5 {
+        transition: all 0.3s ease;
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        transition: background-color 0.3s ease;
+    }
+
+        .card-header:hover {
+            background-color: #e9ecef;
+        }
+
+    .select-all-btn {
+        font-size: 0.8rem;
+        padding: 2px 6px;
+    }
+
+    .loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        display: none;
+        z-index: 9999;
+    }
+
+    .loading-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+</style>
+
+<script type="text/javascript">
+    var classData = [];
+    var sectionData = [];
+    var subjectGradeData = [];
+    var examData = [];
+    var existingMappings = [];
+    var validationModal;
+    var dataTable;
+
+    $(document).ready(function () {
+        // Initialize DataTable with proper configuration
+        dataTable = $('#gradeSubjectMappingTable').DataTable({
+            processing: true,
+            serverSide: false,
+            data: [],
+            columns: [
+                {
+                    data: "Id",
+                    visible: false,
+                    defaultContent: ""
+                },
+                {
+                    data: "ClassName",
+                    defaultContent: ""
+                },
+                {
+                    data: "SectionName",
+                    defaultContent: ""
+                },
+                {
+                    data: "SubjectGradeName",
+                    defaultContent: ""
+                },
+                {
+                    data: "ExamName",
+                    defaultContent: ""
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    className: "text-center",
+                    defaultContent: "",
+                    render: function (data, type, row) {
+                        if (row && row.Id) {
+                            return '<button class="btn btn-danger btn-sm delete-mapping" data-id="' + row.Id + '"><i class="fa fa-trash"></i></button>';
+                        }
+                        return '';
+                    }
+                }
+            ],
+            language: {
+                emptyTable: "No grade subject mappings found",
+                processing: "Loading..."
+            },
+            drawCallback: function(settings) {
+                console.log("DataTable drawn with " + this.api().data().length + " records");
+            }
+        });
+
+        // Initialize Bootstrap modal
+        validationModal = new bootstrap.Modal(document.getElementById('validationModal'));
+
+        // Set up event handlers
+        $(document).on('input', '.checkbox-search', function () {
+            const searchTerm = $(this).val().toLowerCase();
+            const targetName = $(this).data('target');
+
+            $(`input[name="${targetName}"]`).each(function () {
+                const label = $(`label[for="${this.id}"]`).text().toLowerCase();
+                const matching = label.includes(searchTerm);
+                $(this).closest('.form-check').toggle(matching);
+            });
+
+            updateCheckboxCounter(targetName);
+        });
+
+        // Select all functionality
+        $(document).on('click', '.select-all-btn', function () {
+            const targetName = $(this).data('target');
+            const allChecked = $(`input[name="${targetName}"]:checked:visible`).length === $(`input[name="${targetName}"]:visible`).length;
+            $(`input[name="${targetName}"]:visible`).prop('checked', !allChecked);
+            updateCheckboxCounter(targetName);
+        });
+
+        // Update counter when checkboxes change
+        $(document).on('change', 'input[type="checkbox"]', function () {
+            updateCheckboxCounter($(this).attr('name'));
+        });
+
+        // Save button click handler
+        $('#btnSave').click(function () {
+            validateAndSave();
+        });
+
+        // Confirm save button click handler
+        $('#confirmSave').click(function () {
+            validationModal.hide();
+            saveMappings(true);
+        });
+
+        // Delete mapping click handler
+        $(document).on('click', '.delete-mapping', function() {
+            var mappingId = $(this).data('id');
+            if (confirm('Are you sure you want to delete this mapping?')) {
+                deleteMapping(mappingId);
+            }
+        });
+
+        // Load all initial data
+        loadConfigurationData();
+    });
+
+    // Load configuration data from the server
+    function loadConfigurationData() {
+        $('#loadingSpinner').show();
+        $('#loadingMessage').text('Loading configuration data...');
+
+        Promise.all([
+            // Get classes
+            $.ajax({
+                url: '@Url.Action("GetClasses", "Dropdown")',
+                type: 'GET',
+                dataType: 'json'
+            }),
+            // Get sections
+            $.ajax({
+                url: '@Url.Action("GetSections", "Dropdown")',
+                type: 'GET',
+                dataType: 'json'
+            }),
+            // Get subject grades
+            $.ajax({
+                url: '@Url.Action("GetSubjectGrades", "Dropdown")',
+                type: 'GET',
+                dataType: 'json'
+            }),
+            // Get exams
+            $.ajax({
+                url: '@Url.Action("GetExamMarks", "Dropdown")',
+                type: 'GET',
+                dataType: 'json'
+            })
+        ])
+        .then(function(responses) {
+            // Process classes
+            if (responses[0].success) {
+                classData = responses[0].data.map(function(item) {
+                    return { id: item.Id, name: item.Name };
+                });
+                loadClasses();
+            }
+
+            // Process sections
+            if (responses[1].success) {
+                sectionData = responses[1].data.map(function(item) {
+                    return { id: item.Id, name: item.Name };
+                });
+                loadSections();
+            }
+
+            // Process subject grades
+            if (responses[2].success) {
+                subjectGradeData = responses[2].data.map(function(item) {
+                    return { id: item.Id, name: item.Name };
+                });
+                loadSubjectGrades();
+            }
+
+            // Process exams
+            if (responses[3].success) {
+                examData = responses[3].data.map(function(item) {
+                    return { id: item.Id, name: item.Name };
+                });
+                loadExams();
+            }
+
+            // Load existing mappings after configuration data is loaded
+            setTimeout(function() {
+                loadExistingMappings();
+                loadMappingData();
+            }, 100);
+
+            $('#loadingSpinner').hide();
+        })
+        .catch(function(error) {
+            console.error('Error loading configuration data:', error);
+            $('#loadingSpinner').hide();
+            alert('Error loading configuration data. Please try again.');
+        });
+    }
+
+    // Helper function to create checkbox grid
+    function createCheckboxes(data, name) {
+        if (!data || data.length === 0) {
+            return '<div class="alert alert-warning">No data available</div>';
+        }
+
+        let html = `
+        <div class="mb-2 checkbox-header">
+            <div class="input-group input-group-sm">
+                <input type="text" class="form-control form-control-sm checkbox-search"
+                       placeholder="Search..." data-target="${name}">
+                <div class="input-group-append">
+                    <button class="btn btn-sm btn-outline-secondary select-all-btn"
+                            type="button" data-target="${name}">All</button>
+                </div>
+            </div>
+        </div>`;
+
+        html += `<div class="checkbox-container" style="${data.length > 6 ? 'height: 240px; overflow-y: auto;' : ''}">`
+
+        data.forEach((item) => {
+            html += `
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="${name}${item.id}" name="${name}" value="${item.id}">
+                <label class="form-check-label" for="${name}${item.id}">${item.name}</label>
+            </div>`;
+        });
+
+        html += '</div>';
+
+        html += `
+        <div class="mt-2 small text-muted checkbox-counter">
+            <span class="selected-count">0</span> of <span class="total-count">${data.length}</span> selected
+        </div>`;
+
+        return html;
+    }
+
+    function loadClasses() {
+        $('#classContainer').html(createCheckboxes(classData, 'CLASS'));
+    }
+
+    function loadSections() {
+        $('#sectionContainer').html(createCheckboxes(sectionData, 'SECTION'));
+    }
+
+    function loadSubjectGrades() {
+        $('#subjectGradeContainer').html(createCheckboxes(subjectGradeData, 'SUBJECTGRADE'));
+    }
+
+    function loadExams() {
+        $('#examContainer').html(createCheckboxes(examData, 'EXAM'));
+    }
+
+    function updateCheckboxCounter(name) {
+        const totalVisible = $(`input[name="${name}"]:visible`).length;
+        const totalSelected = $(`input[name="${name}"]:checked`).length;
+
+        const counterElement = $(`input[name="${name}"]`).closest('.card-body').find('.checkbox-counter');
+        counterElement.find('.selected-count').text(totalSelected);
+        counterElement.find('.total-count').text(totalVisible);
+
+        const headerElement = $(`input[name="${name}"]`).closest('.card').find('.card-header h5');
+        headerElement.toggleClass('text-primary font-weight-bold', totalSelected > 0);
+    }
+
+    function loadExistingMappings() {
+        console.log('Loading existing mappings for validation...');
+
+        $.ajax({
+            url: '@Url.Action("GetMappingList", "GradeSubjectMapping")',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                console.log('Existing mappings loaded:', response);
+                if (Array.isArray(response)) {
+                    existingMappings = response;
+                } else {
+                    existingMappings = [];
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading existing mappings:', error);
+                existingMappings = [];
+            }
+        });
+    }
+
+    function loadMappingData() {
+        console.log('Loading mapping data for grid...');
+        $('#loadingSpinner').show();
+        $('#loadingMessage').text('Loading mapping data...');
+
+        $.ajax({
+            url: '@Url.Action("GetMappingList", "GradeSubjectMapping")',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                $('#loadingSpinner').hide();
+                console.log('Mapping data response:', response);
+
+                // Clear the table first
+                dataTable.clear();
+
+                // Check if response is an array and has data
+                if (Array.isArray(response) && response.length > 0) {
+                    console.log('Adding ' + response.length + ' records to DataTable');
+
+                    // Ensure each record has all required fields
+                    var processedData = response.map(function(item) {
+                        return {
+                            Id: item.Id || '',
+                            ClassID: item.ClassID || '',
+                            SectionID: item.SectionID || '',
+                            SubjectGradeID: item.SubjectGradeID || '',
+                            ExamID: item.ExamID || '',
+                            ClassName: item.ClassName || '',
+                            SectionName: item.SectionName || '',
+                            SubjectGradeName: item.SubjectGradeName || '',
+                            ExamName: item.ExamName || ''
+                        };
+                    });
+
+                    // Add rows and redraw
+                    dataTable.rows.add(processedData);
+                } else if (response && response.error) {
+                    console.error('Error in response:', response.error);
+                } else {
+                    console.log('No data found in response');
+                }
+
+                // Always redraw the table
+                dataTable.draw();
+            },
+            error: function(xhr, status, error) {
+                $('#loadingSpinner').hide();
+                console.error('Error loading mapping data:', error);
+                console.error('Response text:', xhr.responseText);
+
+                // Clear and redraw even on error
+                dataTable.clear().draw();
+            }
+        });
+    }
+
+    function validateAndSave() {
+        var classes = getSelectedValues('CLASS');
+        var sections = getSelectedValues('SECTION');
+        var subjectGrades = getSelectedValues('SUBJECTGRADE');
+        var exams = getSelectedValues('EXAM');
+
+        if (classes.length === 0) {
+            alert('Please select at least one Class');
+            return;
+        }
+
+        if (sections.length === 0) {
+            alert('Please select at least one Section');
+            return;
+        }
+
+        if (subjectGrades.length === 0) {
+            alert('Please select at least one Subject Grade');
+            return;
+        }
+
+        if (exams.length === 0) {
+            alert('Please select at least one Exam');
+            return;
+        }
+
+        var hasExistingMappings = checkForExistingMappings(classes, sections, subjectGrades, exams);
+
+        if (hasExistingMappings) {
+            validationModal.show();
+        } else {
+            saveMappings(false);
+        }
+    }
+
+    function checkForExistingMappings(classes, sections, subjectGrades, exams) {
+        if (existingMappings.length === 0) {
+            return false;
+        }
+
+        for (var i = 0; i < classes.length; i++) {
+            for (var j = 0; j < sections.length; j++) {
+                for (var k = 0; k < subjectGrades.length; k++) {
+                    for (var l = 0; l < exams.length; l++) {
+                        var exists = existingMappings.some(function(mapping) {
+                            return mapping.ClassID == classes[i] &&
+                                   mapping.SectionID == sections[j] &&
+                                   mapping.SubjectGradeID == subjectGrades[k] &&
+                                   mapping.ExamID == exams[l];
+                        });
+
+                        if (exists) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    function saveMappings(forceOverride) {
+        var selectedClasses = getSelectedValues('CLASS');
+        var selectedSections = getSelectedValues('SECTION');
+        var selectedSubjectGrades = getSelectedValues('SUBJECTGRADE');
+        var selectedExams = getSelectedValues('EXAM');
+
+        $('#loadingSpinner').show();
+        $('#loadingMessage').text('Saving mappings...');
+
+        var successCount = 0;
+        var errorCount = 0;
+        var totalRequests = selectedClasses.length * selectedSections.length * selectedSubjectGrades.length * selectedExams.length;
+        var completedRequests = 0;
+
+        console.log('Starting to save ' + totalRequests + ' mappings');
+
+        function checkAllComplete() {
+            completedRequests++;
+
+            if (completedRequests >= totalRequests) {
+                $('#loadingSpinner').hide();
+
+                if (errorCount > 0) {
+                    alert(`Mapping process completed with ${successCount} successful entries and ${errorCount} errors.`);
+                } else {
+                    alert('All mappings saved successfully!');
+                }
+
+                // Reset form
+                resetForm();
+
+                // Reload data with delay to ensure server has processed all requests
+                setTimeout(function() {
+                    loadExistingMappings();
+                    loadMappingData();
+                }, 500);
+            }
+        }
+
+        if (totalRequests === 0) {
+            $('#loadingSpinner').hide();
+            alert('No mappings to save.');
+            return;
+        }
+
+        // Send all requests
+        for (var i = 0; i < selectedClasses.length; i++) {
+            for (var j = 0; j < selectedSections.length; j++) {
+                for (var k = 0; k < selectedSubjectGrades.length; k++) {
+                    for (var l = 0; l < selectedExams.length; l++) {
+                        (function(classId, sectionId, subjectId, examId) {
+                            var mappingModel = {
+                                ClassID: classId,
+                                SectionID: sectionId,
+                                SubjectGradeID: subjectId,
+                                ExamID: examId,
+                                IsActive: true
+                            };
+
+                            $.ajax({
+                                url: '@Url.Action("CreateGradeSubjectMapping", "GradeSubjectMapping")',
+                                type: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify(mappingModel),
+                                success: function (response) {
+                                    if (response.success) {
+                                        successCount++;
+                                        console.log('Mapping saved successfully', response);
+                                    } else {
+                                        errorCount++;
+                                        console.error('Error saving mapping:', response.message);
+                                    }
+                                    checkAllComplete();
+                                },
+                                error: function (xhr, status, error) {
+                                    errorCount++;
+                                    console.error('Ajax error saving mapping:', error);
+                                    checkAllComplete();
+                                }
+                            });
+                        })(selectedClasses[i], selectedSections[j], selectedSubjectGrades[k], selectedExams[l]);
+                    }
+                }
+            }
+        }
+    }
+
+    function deleteMapping(mappingId) {
+        $('#loadingSpinner').show();
+        $('#loadingMessage').text('Deleting mapping...');
+
+        $.ajax({
+            url: '@Url.Action("DeleteGradeSubjectMapping", "GradeSubjectMapping")',
+            type: 'POST',
+            data: { id: mappingId },
+            success: function(response) {
+                $('#loadingSpinner').hide();
+
+                if (response.success) {
+                    alert('Mapping deleted successfully!');
+
+                    // Reload data with a small delay
+                    setTimeout(function() {
+                        loadMappingData();
+                        loadExistingMappings();
+                    }, 200);
+                } else {
+                    alert('Error deleting mapping: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#loadingSpinner').hide();
+                alert('Error deleting mapping: ' + error);
+            }
+        });
+    }
+
+    function resetForm() {
+        $('input[type="checkbox"]').prop('checked', false);
+        ['CLASS', 'SECTION', 'SUBJECTGRADE', 'EXAM'].forEach(updateCheckboxCounter);
+    }
+
+    function getSelectedValues(name) {
+        var selected = [];
+        $('input[name="' + name + '"]:checked').each(function () {
+            selected.push($(this).val());
+        });
+        return selected;
+    }
+</script>

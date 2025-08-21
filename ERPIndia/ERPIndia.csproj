@@ -445,6 +445,7 @@
     <Compile Include="Controllers\GatePassController.cs" />
     <Compile Include="Controllers\GatePassPrnController.cs" />
     <Compile Include="Controllers\GradeConfigurationController.cs" />
+    <Compile Include="Controllers\GradeSubjectMappingController.cs" />
     <Compile Include="Controllers\NoticeController.cs" />
     <Compile Include="Controllers\ReportController.cs" />
     <Compile Include="Controllers\FeeDefaulterController.cs" />
@@ -7842,6 +7843,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\StudentMarks\SubjectGradeEntry.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\GradeSubjectMapping\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

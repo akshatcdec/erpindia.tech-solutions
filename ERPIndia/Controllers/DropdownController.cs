@@ -587,7 +587,40 @@ namespace ERPIndia.Controllers
                 return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
-        
+        [HttpGet]
+        public JsonResult GetSubjectGrades()
+        {
+            try
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    var query = @"
+                    SELECT 
+                        SubjectGradeID AS Id, 
+                        SubjectGradeName AS Name  
+                    FROM AcademicSubjectGradeMaster
+                    WHERE TenantID = @TenantID 
+                         AND SessionID = @SessionID 
+                         AND IsDeleted = 0 
+                         AND IsActive = 1 
+                         ORDER BY SortOrder, SubjectGradeName";
+
+                    var classes = connection.Query<DropdownItem>(query, new
+                    {
+                        TenantID = CurrentTenantID,
+                        SessionID = CurrentSessionID
+                    }).ToList();
+
+                    return Json(new { success = true, data = classes }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
         [HttpGet]
         public JsonResult GetExams()
         {

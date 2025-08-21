@@ -4,6 +4,7 @@
 }
 
 <style>
+    /* ... [Keep all existing styles as they are] ... */
     .filter-card {
         background: #f8f9fa;
         border-radius: 10px;
@@ -300,7 +301,6 @@
             font-weight: 700;
         }
 
-
     .apply-batch-btn {
         background: #17a2b8;
         color: white;
@@ -336,14 +336,14 @@
                             @Html.DropDownListFor(x => x.Sections, Model.Sections, "Select Section", new { @class = "filter-dropdown", id = "ddlSection" })
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Grade Subject <span class="text-danger">*</span></label>
-                            <select class="filter-dropdown" id="ddlSubject">
-                                <option value="">Select Subject</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
                             <label class="form-label">Exam <span class="text-danger">*</span></label>
                             @Html.DropDownListFor(x => x.ExamTypes, Model.ExamTypes, "Select Exam", new { @class = "filter-dropdown", id = "ddlExam" })
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Grade Subject <span class="text-danger">*</span></label>
+                            <select class="filter-dropdown" id="ddlSubject" disabled>
+                                <option value="">First select Class, Section & Exam</option>
+                            </select>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">&nbsp;</label>
@@ -431,13 +431,23 @@ $(document).ready(function() {
 
     console.log('Page loaded, initializing Grade Entry system with DataTables...');
 
-    // Load subjects when class and section are selected
-    $('#ddlClass, #ddlSection').change(function() {
+    // CORRECTED: Load subjects when class, section AND exam are selected
+    $('#ddlClass, #ddlSection, #ddlExam').change(function() {
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
+        var examId = $('#ddlExam').val();
 
-        if (classId && sectionId) {
-            loadSubjects(classId, sectionId);
+        // Clear subject dropdown first
+        $('#ddlSubject').html('<option value="">Select Grade Subject</option>').prop('disabled', true);
+
+        // Only load subjects when all three are selected
+        if (classId && sectionId && examId) {
+            loadSubjects(classId, sectionId, examId);
+        } else {
+            // Show appropriate message
+            if (!classId || !sectionId || !examId) {
+                $('#ddlSubject').html('<option value="">First select Class, Section & Exam</option>').prop('disabled', true);
+            }
         }
 
         // Hide table when filters change
@@ -449,8 +459,8 @@ $(document).ready(function() {
         allStudentsData = [];
     });
 
-    // Hide table when exam or subject changes
-    $('#ddlExam, #ddlSubject').change(function() {
+    // Hide table when subject changes
+    $('#ddlSubject').change(function() {
         $('#dataTableContainer').hide();
         if (dataTable) {
             dataTable.destroy();
@@ -459,34 +469,42 @@ $(document).ready(function() {
         allStudentsData = [];
     });
 
-    // Load subjects
-    function loadSubjects(classId, sectionId) {
-        $('#ddlSubject').html('<option value="">Loading subjects...</option>');
+    // CORRECTED: Load subjects with exam ID
+    function loadSubjects(classId, sectionId, examId) {
+        $('#ddlSubject').html('<option value="">Loading grade subjects...</option>').prop('disabled', true);
 
         $.ajax({
             url: '@Url.Action("GetGradeSubjects", "StudentMarks")',
             type: 'POST',
-            data: { classId: classId, sectionId: sectionId },
+            data: {
+                classId: classId,
+                sectionId: sectionId,
+                examId: examId  // IMPORTANT: Now passing exam ID
+            },
             success: function(data) {
                 var $dropdown = $('#ddlSubject');
-                $dropdown.empty().append('<option value="">Select Subject</option>');
+                $dropdown.empty().append('<option value="">Select Grade Subject</option>');
 
                 if (data && data.success) {
                     if (data.subjects && data.subjects.length > 0) {
                         $.each(data.subjects, function(i, subject) {
                             $dropdown.append('<option value="' + subject.SubjectID + '">' + subject.SubjectName + '</option>');
                         });
+                        $dropdown.prop('disabled', false);
+                        //showToast('Grade subjects loaded successfully', 'info');
                     } else {
-                        showToast('No subjects found for selected class and section', 'warning');
+                        $dropdown.html('<option value="">No grade subjects mapped</option>').prop('disabled', true);
+                        showToast('No grade subjects found for this combination. Please configure Grade Subject Mapping first.', 'warning');
                     }
                 } else {
-                    showToast(data.message || 'Failed to load subjects', 'error');
+                    $dropdown.html('<option value="">No grade subjects available</option>').prop('disabled', true);
+                    showToast(data.message || 'Failed to load grade subjects', 'error');
                 }
             },
             error: function(xhr, status, error) {
-                $('#ddlSubject').html('<option value="">Select Subject</option>');
-                showToast('Error loading subjects: ' + (error || 'Unknown error'), 'error');
-                console.error('Error loading subjects:', error);
+                $('#ddlSubject').html('<option value="">Error loading subjects</option>').prop('disabled', true);
+                showToast('Error loading grade subjects: ' + (error || 'Unknown error'), 'error');
+                console.error('Error loading grade subjects:', error);
             }
         });
     }
@@ -514,15 +532,15 @@ $(document).ready(function() {
             return false;
         }
 
-        if (!subjectId || subjectId === '' || subjectId === '0') {
-            showToast('Please select Subject', 'warning');
-            $('#ddlSubject').focus();
-            return false;
-        }
-
         if (!examId || examId === '' || examId === '0') {
             showToast('Please select Exam Type', 'warning');
             $('#ddlExam').focus();
+            return false;
+        }
+
+        if (!subjectId || subjectId === '' || subjectId === '0') {
+            showToast('Please select Grade Subject', 'warning');
+            $('#ddlSubject').focus();
             return false;
         }
 
@@ -643,10 +661,12 @@ $(document).ready(function() {
         if (dataTable) {
             dataTable.destroy();
         }
+
         var exportColumns = [];
-        for (var i = 1; i < $('#tableHeader th').length; i++) {
+        for (var i = 1; i < $('#gradesTable thead th').length; i++) {
             exportColumns.push(i);
         }
+
         // Initialize new DataTable
         dataTable = $('#gradesTable').DataTable({
             "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
@@ -668,7 +688,7 @@ $(document).ready(function() {
                     extend: 'csv',
                     text: 'CSV',
                     className: 'dt-button',
-                    title: 'StudentMarks_' + new Date().getTime(),
+                    title: 'StudentGrades_' + new Date().getTime(),
                     exportOptions: {
                         columns: exportColumns
                     }
@@ -677,7 +697,7 @@ $(document).ready(function() {
                     extend: 'excel',
                     text: 'Excel',
                     className: 'dt-button',
-                    title: 'StudentMarks_' + new Date().getTime(),
+                    title: 'StudentGrades_' + new Date().getTime(),
                     exportOptions: {
                         columns: exportColumns
                     }
@@ -686,7 +706,7 @@ $(document).ready(function() {
                     extend: 'pdf',
                     text: 'PDF',
                     className: 'dt-button',
-                    title: 'Student Marks Report',
+                    title: 'Student Grades Report',
                     orientation: 'landscape',
                     pageSize: 'A4',
                     exportOptions: {
@@ -697,7 +717,7 @@ $(document).ready(function() {
                     extend: 'print',
                     text: 'Print',
                     className: 'dt-button',
-                    title: 'Student Marks Report',
+                    title: 'Student Grades Report',
                     exportOptions: {
                         columns: exportColumns
                     }
@@ -723,13 +743,11 @@ $(document).ready(function() {
             "drawCallback": function(settings) {
                 // Re-bind events after DataTable redraw
                 bindTableEvents();
-                //updateGradesEntered();
             }
         });
 
         // Initial binding
         bindTableEvents();
-        //updateGradesEntered();
     }
 
     // Bind table events
@@ -768,8 +786,6 @@ $(document).ready(function() {
                 delete modifiedGrades[studentId];
                 $row.removeClass('modified');
             }
-
-            //updateGradesEntered();
         });
 
         // Enter key navigation
@@ -810,7 +826,6 @@ $(document).ready(function() {
         });
     }
 
-
     // Apply batch grade to selected students
     window.applyBatchGrade = function() {
         var grade = $('#batchGradeSelect').val();
@@ -847,20 +862,6 @@ $(document).ready(function() {
         }
 
         // Validate grades
-        var invalidGrades = [];
-        var validGrades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F', 'AB', ''];
-
-        $.each(modifiedGrades, function(studentId, data) {
-            if (data.grade !== '' && !validGrades.includes(data.grade)) {
-                invalidGrades.push(data.grade);
-            }
-        });
-
-        if (invalidGrades.length > 0) {
-            showToast('Invalid grades found: ' + invalidGrades.join(', ') + '. Valid grades are: A+, A, B+, B, C+, C, D, F, AB', 'error');
-            return;
-        }
-
         var confirmMessage = 'Do you want to save ' + modifiedCount + ' modified grade(s)?';
 
         if (confirm(confirmMessage)) {
@@ -906,21 +907,9 @@ $(document).ready(function() {
 
                 if (result && result.success) {
                     showToast('Grades saved successfully!', 'success');
-
-                    // Update original grades
-                    $.each(modifiedGrades, function(studentId, data) {
-                        originalGrades[studentId] = data.grade;
-                        $('.grade-input[data-studentid="' + studentId + '"]').data('original', data.grade);
-                    });
-
-                    // Clear modified tracking
-                    modifiedGrades = {};
-                    $('.modified').removeClass('modified');
-                    //updateGradesEntered();
-
                     setTimeout(function() {
                         location.reload();
-                    }, 1500);
+                    }, 1000);
                 } else {
                     showToast(result.message || 'Failed to save grades', 'error');
                 }

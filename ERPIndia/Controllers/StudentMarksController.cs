@@ -35,16 +35,44 @@ namespace ERPIndia.Controllers
             }
         }
         [HttpPost]
-        public JsonResult GetGradeSubjects(string classId, string sectionId)
+        public JsonResult GetGradeSubjects(string classId, string sectionId, string examId)
         {
             try
             {
-                var subjects = GetMappedGradeSubjectsFromDB(classId, sectionId);
-                return Json(new { success = true, subjects = subjects });
+                // Validate input parameters
+                if (string.IsNullOrEmpty(classId) || string.IsNullOrEmpty(sectionId) || string.IsNullOrEmpty(examId))
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Please select Class, Section, and Exam to load grade subjects"
+                    });
+                }
+
+                var subjects = GetMappedGradeSubjectsFromDB(classId, sectionId, examId);
+
+                if (subjects == null || !subjects.Any())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "No grade subjects found for the selected combination. Please configure grade subject mapping first."
+                    });
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    subjects = subjects
+                });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new
+                {
+                    success = false,
+                    message = "Error loading grade subjects: " + ex.Message
+                });
             }
         }
         [HttpPost]
@@ -477,7 +505,7 @@ namespace ERPIndia.Controllers
 
             return students;
         }
-        private List<SubjectModel> GetMappedGradeSubjectsFromDB(string classId, string sectionId)
+        private List<SubjectModel> GetMappedGradeSubjectsFromDB(string classId, string sectionId, string examId)
         {
             var subjects = new List<SubjectModel>();
 
@@ -486,22 +514,33 @@ namespace ERPIndia.Controllers
                 conn.Open();
 
                 string query = @"
-                    SELECT DISTINCT
-                        sm.SubjectGradeID as SubjectID,
-                        sm.SubjectGradeName as SubjectName
-                        
-                    FROM AcademicSubjectGradeMaster sm
-                    WHERE 
-                         sm.IsActive = 1
-                        AND sm.IsDeleted = 0
-                        AND sm.TenantID = @TenantID
-                        AND sm.SessionID = @SessionID
-                    ORDER BY sm.SubjectGradeName";
+            SELECT DISTINCT
+                sm.SubjectGradeID as SubjectID,
+                sm.SubjectGradeName as SubjectName
+            FROM AcademicSubjectGradeMaster sm
+            INNER JOIN AcademicGradeSubjectMapping gsm 
+                ON sm.SubjectGradeID = gsm.SubjectGradeID
+            WHERE 
+                sm.IsActive = 1
+                AND sm.IsDeleted = 0
+                AND sm.TenantID = @TenantID
+                AND sm.SessionID = @SessionID
+                AND gsm.IsActive = 1
+                AND gsm.IsDeleted = 0
+                AND gsm.TenantID = @TenantID
+                AND gsm.SessionID = @SessionID
+                AND gsm.ClassID = @ClassID
+                AND gsm.SectionID = @SectionID
+                AND gsm.ExamID = @ExamID
+            ORDER BY sm.SubjectGradeName";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                     cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                    cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
                     cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+                    cmd.Parameters.AddWithValue("@ClassID", Guid.Parse(classId));
+                    cmd.Parameters.AddWithValue("@SectionID", Guid.Parse(sectionId));
+                    cmd.Parameters.AddWithValue("@ExamID", Guid.Parse(examId));
 
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {

@@ -397,7 +397,7 @@ namespace ERPIndia.Controllers
 
                     if (rowsAffected > 0)
                     {
-                        return Json(new { success = true, message = "Subject grade updated successfully!" });
+                        return Json(new { success = true, message = "The grade subject has been updated successfully!" });
                     }
                     else
                     {
@@ -448,7 +448,7 @@ namespace ERPIndia.Controllers
 
                     if (rowsAffected > 0)
                     {
-                        return Json(new { success = true, message = "Subject grade deleted successfully!" });
+                        return Json(new { success = true, message = "The grade subject has been deleted successfully!" });
                     }
                     else
                     {

@@ -446,7 +446,7 @@ namespace ERPIndia.Controllers
                             {
                                 success = rowsAffected > 0,
                                 message = rowsAffected > 0
-                                    ? "Grade Subject Mapping deleted successfully"
+                                    ? "Mapping has been deleted successfully!"
                                     : "Mapping not found or already deleted"
                             });
                         }

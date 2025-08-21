@@ -20,7 +20,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Some grade subject mappings for the selected combinations already exist. Would you like to replace them?</p>
+                <p>Some grade-subject mappings for the selected combinations already exist. Do you want to replace them?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -37,7 +37,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title">Grade Subject Mapping Configuration</h4>
+                    <h4 class="card-title">Grade Subject Mapping</h4>
                 </div>
                 <div class="card-body">
                     <form id="gradeSubjectMappingForm">
@@ -48,9 +48,9 @@
                                 <div class="card h-100">
                                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                         <h5 class="mb-0">Class</h5>
-                                        <button type="button" class="btn btn-sm btn-success">
+                                        <a href="@Url.Action("Index", "Class")" class="btn btn-sm btn-success" title="Add Class">
                                             <i class="fa fa-plus"></i>
-                                        </button>
+                                        </a>
                                     </div>
                                     <div class="card-body" id="classContainer">
                                         <!-- Class checkboxes will be populated here -->
@@ -63,9 +63,9 @@
                                 <div class="card h-100">
                                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                         <h5 class="mb-0">Section</h5>
-                                        <button type="button" class="btn btn-sm btn-success">
+                                        <a href="@Url.Action("Index", "Section")" class="btn btn-sm btn-success" title="Add Section">
                                             <i class="fa fa-plus"></i>
-                                        </button>
+                                        </a>
                                     </div>
                                     <div class="card-body" id="sectionContainer">
                                         <!-- Section checkboxes will be populated here -->
@@ -73,17 +73,17 @@
                                 </div>
                             </div>
 
-                            <!-- Subject Grade Column -->
+                            <!-- Grade Subject Column -->
                             <div class="col-md-3 mb-3">
                                 <div class="card h-100">
                                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                                        <h5 class="mb-0">Subject Grade</h5>
-                                        <button type="button" class="btn btn-sm btn-success">
+                                        <h5 class="mb-0">Grade Subject</h5>
+                                        <a href="@Url.Action("Index", "SubjectGrade")" class="btn btn-sm btn-success" title="Manage Grade Subject">
                                             <i class="fa fa-plus"></i>
-                                        </button>
+                                        </a>
                                     </div>
                                     <div class="card-body" id="subjectGradeContainer">
-                                        <!-- Subject Grade checkboxes will be populated here -->
+                                        <!-- Grade Subject checkboxes will be populated here -->
                                     </div>
                                 </div>
                             </div>
@@ -93,9 +93,9 @@
                                 <div class="card h-100">
                                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                         <h5 class="mb-0">Exam</h5>
-                                        <button type="button" class="btn btn-sm btn-success">
+                                        <a href="@Url.Action("Index", "Exam")" class="btn btn-sm btn-success" title="Manage Exam">
                                             <i class="fa fa-plus"></i>
-                                        </button>
+                                        </a>
                                     </div>
                                     <div class="card-body" id="examContainer">
                                         <!-- Exam checkboxes will be populated here -->
@@ -106,7 +106,9 @@
 
                         <div class="row mb-3">
                             <div class="col-12 text-end">
-                                <button type="button" id="btnSave" class="btn btn-lg btn-warning">Save Mapping</button>
+                                <button type="button" id="btnSave" class="btn btn-lg btn-warning">
+                                    <i class="fa fa-save"></i> Save Mapping
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -126,7 +128,7 @@
                                     <th>ID</th>
                                     <th>Class</th>
                                     <th>Section</th>
-                                    <th>Subject Grade</th>
+                                    <th>Grade Subject</th>
                                     <th>Exam</th>
                                     <th>Action</th>
                                 </tr>
@@ -338,7 +340,7 @@
                 type: 'GET',
                 dataType: 'json'
             }),
-            // Get subject grades
+            // Get subject grades (renamed to grade subjects)
             $.ajax({
                 url: '@Url.Action("GetSubjectGrades", "Dropdown")',
                 type: 'GET',
@@ -368,7 +370,7 @@
                 loadSections();
             }
 
-            // Process subject grades
+            // Process grade subjects (renamed from subject grades)
             if (responses[2].success) {
                 subjectGradeData = responses[2].data.map(function(item) {
                     return { id: item.Id, name: item.Name };
@@ -561,7 +563,7 @@
         }
 
         if (subjectGrades.length === 0) {
-            alert('Please select at least one Subject Grade');
+            alert('Please select at least one grade subject');
             return;
         }
 
@@ -631,7 +633,7 @@
                 if (errorCount > 0) {
                     alert(`Mapping process completed with ${successCount} successful entries and ${errorCount} errors.`);
                 } else {
-                    alert('All mappings saved successfully!');
+                    alert('All mappings have been saved successfully!');
                 }
 
                 // Reset form
@@ -705,7 +707,7 @@
                 $('#loadingSpinner').hide();
 
                 if (response.success) {
-                    alert('Mapping deleted successfully!');
+                    alert('Mapping has been deleted successfully!');
 
                     // Reload data with a small delay
                     setTimeout(function() {

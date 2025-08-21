@@ -9,7 +9,7 @@
     <meta name="author" content="ERP India technologies - School Management Software" />
     <meta name="robots" content="noindex, nofollow" />
     <title>Dashboard</title>
-
+   
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="/img/erplogo.png">
     <!-- Bootstrap CSS -->
@@ -351,43 +351,43 @@
         }
     </style>
     <script>
-      // Attach transliteration on an input -> output pair
-      function enableHindiTransliteration(sourceInputId, targetInputId, delayMs = 250) {
-        const src = document.getElementById(sourceInputId);
+        // Attach transliteration on an input -> output pair
+        function enableHindiTransliteration(sourceInputId, targetInputId, delayMs = 250) {
+            const src = document.getElementById(sourceInputId);
             const dst = document.getElementById(targetInputId);
             if (!src || !dst) return;
 
             let timer = null;
 
-        src.addEventListener('input', () => {
-          const text = src.value.trim();
-            clearTimeout(timer);
+            src.addEventListener('input', () => {
+                const text = src.value.trim();
+                clearTimeout(timer);
 
-            if (!text) {
-                dst.value = '';
-            return;
-          }
-
-          timer = setTimeout(() => {
-            const url = `https://inputtools.google.com/request?text=${encodeURIComponent(text)}&itc=hi-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8`;
-
-            fetch(url)
-              .then(r => r.json())
-              .then(data => {
-                // Expected shape: ["SUCCESS", [[original, [suggestions...]]]]
-                if (Array.isArray(data) && data[0] === "SUCCESS" && data[1]?.[0]?.[1]?.[0]) {
-                dst.value = data[1][0][1][0];
+                if (!text) {
+                    dst.value = '';
+                    return;
                 }
-              })
-              .catch(() => {
-                // Silent fail. Keep previous value if any.
-            });
-          }, delayMs);
-        });
-      }
 
-           
-    
+                timer = setTimeout(() => {
+                    const url = `https://inputtools.google.com/request?text=${encodeURIComponent(text)}&itc=hi-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8`;
+
+                    fetch(url)
+                        .then(r => r.json())
+                        .then(data => {
+                            // Expected shape: ["SUCCESS", [[original, [suggestions...]]]]
+                            if (Array.isArray(data) && data[0] === "SUCCESS" && data[1]?.[0]?.[1]?.[0]) {
+                                dst.value = data[1][0][1][0];
+                            }
+                        })
+                        .catch(() => {
+                            // Silent fail. Keep previous value if any.
+                        });
+                }, delayMs);
+            });
+        }
+
+
+
         function isNumber(evt) {
             evt = (evt) ? evt : window.event;
             var charCode = (evt.which) ? evt.which : evt.keyCode;

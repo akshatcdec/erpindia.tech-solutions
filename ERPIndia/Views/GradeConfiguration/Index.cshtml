@@ -1,6 +1,6 @@
 ﻿@model ERPIndia.Controllers.GradeConfigViewModel
 @{
-    ViewBag.Title = "Grade Configuration";
+    ViewBag.Title = "Marks Setup";
 }
 
 <style>
@@ -9,44 +9,46 @@
         border-collapse: collapse;
     }
 
-    .product-style-table thead th {
-        background: linear-gradient(to bottom, #69c1f7, #39a9f2);
-        color: #212529;
-        font-weight: bold;
-        text-align: center;
-        padding: 8px 10px;
-        border: 1px solid #ddd !important;
-    }
+        .product-style-table thead th {
+            background: linear-gradient(180deg, #3EBFDA 0%, #1E5A8E 100%);
+            color: #ffffff !important;
+            font-weight: bold;
+            text-align: center !important;
+            padding: 12px 10px;
+            border: 1px solid #ddd !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            position: relative;
+        }
 
-    .product-style-table tbody tr:nth-child(odd) {
-        background-color: #e3e8ed !important;
-    }
+        .product-style-table tbody tr:nth-child(odd) {
+            background-color: #e3e8ed !important;
+        }
 
-    .product-style-table tbody tr:nth-child(even) {
-        background-color: #ffffff !important;
-    }
+        .product-style-table tbody tr:nth-child(even) {
+            background-color: #ffffff !important;
+        }
 
-    .product-style-table tbody tr.selected-row {
-        background-color: #e3f2fd !important;
-    }
+        .product-style-table tbody tr.selected-row {
+            background-color: #e3f2fd !important;
+        }
 
-    .product-style-table tbody tr.table-warning {
-        background-color: #fff3cd !important;
-    }
+        .product-style-table tbody tr.table-warning {
+            background-color: #fff3cd !important;
+        }
 
-    .product-style-table tbody td {
-        padding: 8px 10px;
-        border: 1px solid #ddd;
-        text-align: left;
-        background-color: transparent !important;
-    }
+        .product-style-table tbody td {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+            background-color: transparent !important;
+        }
 
-    .product-style-table .form-check {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0;
-    }
+        .product-style-table .form-check {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
 
     .search-button {
         background: linear-gradient(to bottom, #E53E3E, #C53030);
@@ -61,34 +63,123 @@
         transition: transform 0.2s ease;
     }
 
-    .search-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    }
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
 
+    /* Updated Save Button Style with Gradient */
+    /* Updated Save Button Style with Mobile Support */
+.save-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2);
+    background: -webkit-linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2);
+    background: -moz-linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2);
+    background: -o-linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2);
+    color: #fff !important; /* Force white color */
+    font-size: 16px !important;
+    font-weight: bold !important;
+    font-family: inherit !important; /* Maintain consistent font */
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    text-decoration: none !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    -webkit-transition: transform 0.2s ease, box-shadow 0.3s ease;
+    -moz-transition: transform 0.2s ease, box-shadow 0.3s ease;
+    -webkit-appearance: none; /* Remove iOS default styling */
+    -moz-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    outline: none !important;
+}
+
+.save-button:hover,
+.save-button:focus,
+.save-button:active {
+    color: #fff !important; /* Maintain white color on all states */
+    background: linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2) !important;
+    background: -webkit-linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2) !important;
+    text-decoration: none !important;
+}
+
+.save-button:hover {
+    transform: translateY(-3px);
+    -webkit-transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+}
+
+.save-button:active {
+    transform: translateY(0px);
+    -webkit-transform: translateY(0px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.save-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    -webkit-transform: none;
+}
+
+.save-button .icon {
+    font-size: 18px;
+    color: inherit !important;
+}
+
+/* Mobile-specific styles */
+@@media (max-width: 768px) {
     .save-button {
-        background: linear-gradient(to right, #48BB78, #38A169);
-        color: white;
-        padding: 0.5rem 1.5rem;
-        font-size: 14px;
-        border: none;
-        border-radius: 5px;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        transition: all 0.3s ease;
+        padding: 10px 24px;
+        font-size: 14px !important;
+        background: linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2) !important;
+        background: -webkit-linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2) !important;
+        color: #fff !important;
+        font-weight: bold !important;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
     }
 
-    .save-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    .save-button .icon {
+        font-size: 16px;
     }
 
-    .save-button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
+    /* Prevent iOS from changing button appearance */
+    .save-button,
+    .save-button:hover,
+    .save-button:focus,
+    .save-button:active {
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        background: linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2) !important;
+        background: -webkit-linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2) !important;
+        color: #fff !important;
+        border: none !important;
+        outline: none !important;
     }
+}
+
+/* Ensure button text doesn't change color */
+.save-button span {
+    color: inherit !important;
+}
+
+/* Fix for iOS specific issues */
+@@supports (-webkit-touch-callout: none) {
+    .save-button {
+        background: linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2) !important;
+        background: -webkit-linear-gradient(90deg, #ff4b2b, #ff416c, #8a2be2) !important;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+    }
+}
 
     .editable-field {
         background-color: #ffffff;
@@ -96,16 +187,16 @@
         transition: all 0.2s ease;
     }
 
-    .editable-field:focus {
-        border-color: #4299e1;
-        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-        outline: none;
-    }
+        .editable-field:focus {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            outline: none;
+        }
 
-    .editable-field.is-invalid {
-        border-color: #dc3545 !important;
-        background-color: #fff5f5;
-    }
+        .editable-field.is-invalid {
+            border-color: #dc3545 !important;
+            background-color: #fff5f5;
+        }
 
     .invalid-feedback {
         display: block;
@@ -131,10 +222,10 @@
         transition: all 0.3s ease-in-out;
     }
 
-    .toast.show {
-        opacity: 1;
-        transform: translateX(0);
-    }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
 
     .toast-success {
         background-color: #d4edda;
@@ -206,9 +297,17 @@
     }
 
     @@keyframes pulse-new {
-        0% { background-color: rgba(40, 167, 69, 0.2); }
-        50% { background-color: rgba(40, 167, 69, 0.05); }
-        100% { background-color: rgba(40, 167, 69, 0.1); }
+        0% {
+            background-color: rgba(40, 167, 69, 0.2);
+        }
+
+        50% {
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+
+        100% {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
     }
 
     .badge.bg-success {
@@ -243,6 +342,15 @@
         height: 3rem;
         border-width: 0.3em;
     }
+
+    /* Bottom Save Button Container */
+    .bottom-save-container {
+        background-color: #f8f9fa;
+        border-top: 2px solid #dee2e6;
+        padding: 15px;
+        text-align: center;
+        margin-top: 0;
+    }
 </style>
 
 <div class="container-fluid">
@@ -251,14 +359,11 @@
             <div class="card">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-graduation-cap me-2"></i>Grade Configuration
+                        <i class="fas fa-graduation-cap me-2"></i>Marks Setup
                     </h5>
                 </div>
 
                 <div class="card-body">
-                    <div id="validationMessage" class="alert alert-warning d-none">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Please select all required fields before searching.
-                    </div>
                     <form id="searchForm" class="needs-validation" novalidate>
                         <div class="row g-3">
                             <div class="col-md-3">
@@ -302,10 +407,6 @@
 <!-- Page Blur Overlay -->
 <div class="page-blur-overlay" id="pageBlurOverlay"></div>
 
-<!-- JavaScript section -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -377,10 +478,35 @@ $(document).ready(function() {
         }, 300);
     };
 
+    // Function to handle Grade Formula field based on Required field value
+    function handleGradeFormulaState($requiredField) {
+        var configId = $requiredField.data('configid');
+        var isRequired = $requiredField.val() === 'Yes';
+        var $formulaField = $('#formula_' + configId);
+
+        if (!isRequired) {
+            // When Required is "No", make Grade Formula read-only
+            $formulaField.prop('readonly', true);
+            $formulaField.css({
+                'background-color': '#e9ecef',
+                'cursor': 'not-allowed'
+            });
+            // Clear any validation errors when making it readonly
+            $formulaField.removeClass('is-invalid');
+            $formulaField.siblings('.invalid-feedback').text('');
+        } else {
+            // When Required is "Yes", make Grade Formula editable
+            $formulaField.prop('readonly', false);
+            $formulaField.css({
+                'background-color': '#ffffff',
+                'cursor': 'text'
+            });
+        }
+    }
+
     // Search button click handler
     $('#btnSearch').click(function() {
-        $('#validationMessage').addClass('d-none');
-
+      
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
         var examId = $('#ddlExam').val();
@@ -396,9 +522,6 @@ $(document).ready(function() {
 
         if (errors.length > 0) {
             showToast(errors.join(', '), 'warning');
-            $('#validationMessage').html(
-                '<i class="fas fa-exclamation-triangle me-2"></i>' + errors.join(', ')
-            ).removeClass('d-none');
             return;
         }
 
@@ -407,7 +530,7 @@ $(document).ready(function() {
                 '<div class="spinner-border text-primary" role="status">' +
                     '<span class="visually-hidden">Loading...</span>' +
                 '</div>' +
-                '<div class="mt-3">Loading grade configurations...</div>' +
+                '<div class="mt-3">Loading marks setup...</div>' +
             '</div>'
         );
 
@@ -429,7 +552,7 @@ $(document).ready(function() {
                     if (newCount > 0) {
                         showToast('Loaded ' + data.data.length + ' configurations (' + newCount + ' new subjects added)', 'success');
                     } else {
-                        showToast('Grade configurations loaded successfully', 'success');
+                        showToast('Marks setup loaded successfully', 'success');
                     }
                 } else {
                     $('#searchResultContainer').html(
@@ -445,10 +568,10 @@ $(document).ready(function() {
                 $('#searchResultContainer').html(
                     '<div class="alert alert-danger">' +
                         '<i class="fas fa-times-circle me-2"></i>' +
-                        'An error occurred while loading grade configurations' +
+                        'An error occurred while loading marks setup' +
                     '</div>'
                 );
-                showToast('An error occurred while loading grade configurations', 'error');
+                showToast('An error occurred while loading marks setup', 'error');
             }
         });
     });
@@ -459,7 +582,7 @@ $(document).ready(function() {
             $('#searchResultContainer').html(
                 '<div class="alert alert-info">' +
                     '<i class="fas fa-info-circle me-2"></i>' +
-                    'No grade configurations found for the selected criteria' +
+                    'No marks setup found for the selected criteria' +
                 '</div>'
             );
             return;
@@ -470,13 +593,10 @@ $(document).ready(function() {
                 '<div class="card-header bg-light">' +
                     '<div class="d-flex justify-content-between align-items-center">' +
                         '<h6 class="mb-0">' +
-                            '<i class="fas fa-list me-2"></i>Grade Settings ' +
+                            '<i class="fas fa-list me-2"></i>Subject List ' +
                             '<span class="badge bg-primary ms-2" id="selectedCount">0 selected</span> ' +
                             '<span class="badge bg-warning ms-2" id="changedCount">0 changed</span>' +
                         '</h6>' +
-                        '<button type="button" class="btn save-button" id="btnUpdate">' +
-                            '<i class="fas fa-save me-2"></i>Save All Changes' +
-                        '</button>' +
                     '</div>' +
                 '</div>' +
                 '<div class="card-body p-3">' +
@@ -491,7 +611,7 @@ $(document).ready(function() {
                                     '</th>' +
                                     '<th>Subject</th>' +
                                     '<th style="width: 120px;">Max Marks</th>' +
-                                    '<th style="width: 130px;">Minimum Grade</th>' +
+                                    '<th style="width: 130px;">Min. Marks</th>' +
                                     '<th style="width: 130px;">Required</th>' +
                                     '<th style="width: 350px;">Grade Formula</th>' +
                                 '</tr>' +
@@ -500,12 +620,11 @@ $(document).ready(function() {
                         '</table>' +
                     '</div>' +
                 '</div>' +
-                '<div class="card-footer text-muted">' +
-                    '<small>' +
-                        '<i class="fas fa-info-circle me-1"></i>' +
-                        'All fields are editable. Select rows and click Save to update multiple configurations at once. ' +
-                        'Formula format: 100-75|H,74-60|F,59-45|S,45-33|T,31-1|F,-1|M' +
-                    '</small>' +
+                '<div class="bottom-save-container">' +
+                    '<button type="button" class="btn save-button" id="btnUpdate">' +
+                        '<span class="icon"><i class="fas fa-save"></i></span>' +
+                        '<span>Save Changes</span>' +
+                    '</button>' +
                 '</div>' +
             '</div>';
 
@@ -561,7 +680,7 @@ $(document).ready(function() {
                 '<div class="invalid-feedback"></div>' +
                 '</td>');
 
-            // Minimum Grade - Editable
+            // Min. Marks - Editable
             row.append('<td>' +
                 '<input type="text" ' +
                 'id="mingrade_' + configId + '" ' +
@@ -586,7 +705,10 @@ $(document).ready(function() {
                 '</select>' +
                 '</td>');
 
-            // Grade Formula - Editable
+            // Grade Formula - Editable (conditionally)
+            var isReadonly = !config.IsMinimumRequired ? ' readonly' : '';
+            var bgColor = !config.IsMinimumRequired ? 'background-color: #e9ecef; cursor: not-allowed;' : '';
+
             row.append('<td>' +
                 '<input type="text" ' +
                 'id="formula_' + configId + '" ' +
@@ -594,7 +716,9 @@ $(document).ready(function() {
                 'data-field="GradeFormula" ' +
                 'class="form-control form-control-sm editable-field formula-input" ' +
                 'value="' + config.GradeFormula + '" ' +
-                'placeholder="e.g., 100-75|H,74-60|F...">' +
+                'placeholder="e.g., 100-75|H,74-60|F..." ' +
+                isReadonly + ' ' +
+                'style="' + bgColor + '">' +
                 '<div class="formula-help">Format: 100-75|H,74-60|F,59-45|S...</div>' +
                 '<div class="invalid-feedback"></div>' +
                 '</td>');
@@ -617,6 +741,11 @@ $(document).ready(function() {
             var configId = $this.data('configid');
             var field = $this.data('field');
             var currentValue = $this.val();
+
+            // Handle Required field change to toggle Grade Formula
+            if (field === 'IsMinimumRequired') {
+                handleGradeFormulaState($this);
+            }
 
             // For IsMinimumRequired, convert to boolean for comparison
             if (field === 'IsMinimumRequired') {
@@ -666,7 +795,7 @@ $(document).ready(function() {
         $('.editable-field').off('keydown').on('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                var $allInputs = $('.editable-field:visible');
+                var $allInputs = $('.editable-field:visible:not([readonly])');
                 var currentIndex = $allInputs.index($(this));
                 if (currentIndex < $allInputs.length - 1) {
                     $allInputs.eq(currentIndex + 1).focus();
@@ -681,6 +810,11 @@ $(document).ready(function() {
         var value = $field.val();
         var isValid = true;
         var errorMessage = '';
+
+        // Skip validation if field is readonly
+        if ($field.prop('readonly')) {
+            return true;
+        }
 
         if (field === 'MaxMarks') {
             var num = parseInt(value);
@@ -749,6 +883,11 @@ $(document).ready(function() {
         });
 
         $('#btnUpdate').off('click').on('click', updateGradeConfigurations);
+
+        // Initialize Grade Formula state based on Required field values
+        $('[data-field="IsMinimumRequired"]').each(function() {
+            handleGradeFormulaState($(this));
+        });
     }
 
     // Update counts
@@ -820,10 +959,17 @@ $(document).ready(function() {
             return;
         }
 
-        if (confirm('Save changes to ' + updates.length + ' configuration(s)?')) {
+        // Updated confirmation message with dynamic count
+        var confirmMessage = 'Do you want to save these ' + updates.length + ' configuration' +
+                           (updates.length > 1 ? 's' : '') + '?';
+
+        if (confirm(confirmMessage)) {
             isUpdating = true;
             $('#pageBlurOverlay').fadeIn(200);
-            $('#btnUpdate').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Saving...');
+            $('#btnUpdate').prop('disabled', true).html(
+                '<span class="icon"><i class="fas fa-spinner fa-spin"></i></span>' +
+                '<span>Saving...</span>'
+            );
 
             var requestData = {
                 Updates: updates,
@@ -840,15 +986,15 @@ $(document).ready(function() {
                 success: function(result) {
                     if (result.success) {
                         showToast(result.message || 'Update successful!', 'success');
-
-                        // Reload the grid with updated data
-                        setTimeout(function() {
-                            $('#btnSearch').click();
-                            $('#pageBlurOverlay').fadeOut(200);
+                        setTimeout(function () {
+                            location.reload();
                         }, 1000);
                     } else {
                         $('#pageBlurOverlay').fadeOut(200);
-                        $('#btnUpdate').prop('disabled', false).html('<i class="fas fa-save me-2"></i>Save All Changes');
+                        $('#btnUpdate').prop('disabled', false).html(
+                            '<span class="icon"><i class="fas fa-save"></i></span>' +
+                            '<span>Save Changes</span>'
+                        );
 
                         var errorMessage = result.message || 'Update failed';
                         if (result.errors && result.errors.length > 0) {
@@ -859,7 +1005,10 @@ $(document).ready(function() {
                 },
                 error: function(xhr, status, error) {
                     $('#pageBlurOverlay').fadeOut(200);
-                    $('#btnUpdate').prop('disabled', false).html('<i class="fas fa-save me-2"></i>Save All Changes');
+                    $('#btnUpdate').prop('disabled', false).html(
+                        '<span class="icon"><i class="fas fa-save"></i></span>' +
+                        '<span>Save Changes</span>'
+                    );
                     showToast('An error occurred while updating configurations', 'error');
                 },
                 complete: function() {

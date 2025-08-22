@@ -1311,6 +1311,277 @@ namespace ERPIndia.Controllers
                 return false;
             }
         }
+        public ActionResult BulkGradeEntry()
+        {
+            var classesResult = _dropdownController.GetClasses();
+            var sectionsResult = _dropdownController.GetSections();
+            var examsResult = _dropdownController.GetExamMarks();
+
+            var model = new StudentMarksViewModel
+            {
+                Classes = ConvertToSelectList(classesResult),
+                Sections = ConvertToSelectList(sectionsResult),
+                ExamTypes = ConvertToSelectList(examsResult)
+            };
+
+            return View(model);
+        }
+
+        // Get student bulk grades data for entry
+        [HttpPost]
+        public JsonResult GetStudentBulkGradesData(string classId, string sectionId, string examTypeId)
+        {
+            try
+            {
+                // Get students
+                var students = GetStudentsFromDB(classId, sectionId);
+
+                // Get grade subjects mapped to this class/section/exam
+                var subjects = GetMappedGradeSubjectsFromDB(classId, sectionId, examTypeId);
+
+                // Check if subjects are found
+                if (subjects == null || !subjects.Any())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Grade subject mapping not found. Please configure grade subjects for this exam."
+                    });
+                }
+
+                // Get existing grades if any
+                var existingGrades = GetExistingBulkGradesFromDB(classId, sectionId, examTypeId);
+
+                // Get exam name
+                var examName = GetExamNameFromDB(examTypeId);
+
+                return Json(new
+                {
+                    success = true,
+                    students = students,
+                    subjects = subjects,
+                    existingGrades = existingGrades,
+                    examName = examName
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error loading data: " + ex.Message });
+            }
+        }
+
+        // Save bulk student grades
+        [HttpPost]
+        public JsonResult SaveBulkStudentGrades()
+        {
+            try
+            {
+                var requestJson = Request.InputStream;
+                requestJson.Position = 0;
+                using (var reader = new System.IO.StreamReader(requestJson))
+                {
+                    var json = reader.ReadToEnd();
+                    var request = JsonConvert.DeserializeObject<SaveBulkGradesRequest>(json);
+
+                    if (request == null || request.Grades == null || !request.Grades.Any())
+                    {
+                        return Json(new { success = false, message = "No grades to save" });
+                    }
+
+                    // Save grades to database
+                    bool result = SaveBulkGradesToDB(request);
+
+                    if (result)
+                    {
+                        return Json(new
+                        {
+                            success = true,
+                            message = string.Format("Successfully saved grades for {0} entries", request.Grades.Count)
+                        });
+                    }
+
+                    return Json(new { success = false, message = "Failed to save grades" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
+        // Private helper method to get existing bulk grades
+        private List<StudentGradeModel> GetExistingBulkGradesFromDB(string classId, string sectionId, string examTypeId)
+        {
+            var grades = new List<StudentGradeModel>();
+
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+
+                string query = @"
+            SELECT 
+                sg.GradeID,
+                sg.StudentID,
+                sg.SubjectID,
+                sg.ExamTypeID,
+                sg.Grade,
+                sg.Remarks
+            FROM StudentGrades sg
+            WHERE sg.ClassID = @ClassID 
+                AND sg.SectionID = @SectionID 
+                AND sg.ExamTypeID = @ExamTypeID
+                AND sg.IsDeleted = 0
+                AND sg.TenantID = @TenantID
+                AND sg.SessionID = @SessionID";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@ClassID", classId);
+                    cmd.Parameters.AddWithValue("@SectionID", sectionId);
+                    cmd.Parameters.AddWithValue("@ExamTypeID", examTypeId);
+                    cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                    cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            grades.Add(new StudentGradeModel
+                            {
+                                GradeID = reader["GradeID"].ToString(),
+                                StudentID = reader["StudentID"].ToString(),
+                                SubjectID = reader["SubjectID"].ToString(),
+                                ExamTypeID = reader["ExamTypeID"].ToString(),
+                                Grade = reader["Grade"]?.ToString(),
+                                Remarks = reader["Remarks"]?.ToString()
+                            });
+                        }
+                    }
+                }
+            }
+
+            return grades;
+        }
+
+        // Private helper method to save bulk grades
+        private bool SaveBulkGradesToDB(SaveBulkGradesRequest request)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlTransaction transaction = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            foreach (var grade in request.Grades)
+                            {
+                                // Check if grade already exists
+                                string checkQuery = @"
+                            SELECT GradeID FROM StudentGrades 
+                            WHERE StudentID = @StudentID 
+                                AND SubjectID = @SubjectID 
+                                AND ExamTypeID = @ExamTypeID
+                                AND TenantID = @TenantID
+                                AND SessionID = @SessionID
+                                AND IsDeleted = 0";
+
+                                string existingGradeId = null;
+                                using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn, transaction))
+                                {
+                                    checkCmd.Parameters.AddWithValue("@StudentID", grade.StudentID);
+                                    checkCmd.Parameters.AddWithValue("@SubjectID", grade.SubjectID);
+                                    checkCmd.Parameters.AddWithValue("@ExamTypeID", grade.ExamTypeID);
+                                    checkCmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                                    checkCmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                                    var result = checkCmd.ExecuteScalar();
+                                    existingGradeId = result?.ToString();
+                                }
+
+                                if (!string.IsNullOrEmpty(existingGradeId))
+                                {
+                                    // Update existing grade
+                                    string updateQuery = @"
+                                UPDATE StudentGrades 
+                                SET Grade = @Grade,
+                                    ModifiedBy = @ModifiedBy,
+                                    ModifiedDate = GETDATE()
+                                WHERE GradeID = @GradeID";
+
+                                    using (SqlCommand updateCmd = new SqlCommand(updateQuery, conn, transaction))
+                                    {
+                                        updateCmd.Parameters.AddWithValue("@GradeID", existingGradeId);
+
+                                        // Handle empty grades (clearing grade)
+                                        if (string.IsNullOrEmpty(grade.Grade))
+                                        {
+                                            updateCmd.Parameters.AddWithValue("@Grade", DBNull.Value);
+                                        }
+                                        else
+                                        {
+                                            updateCmd.Parameters.AddWithValue("@Grade", grade.Grade);
+                                        }
+
+                                        updateCmd.Parameters.AddWithValue("@ModifiedBy", CurrentTenantUserID);
+
+                                        updateCmd.ExecuteNonQuery();
+                                    }
+                                }
+                                else
+                                {
+                                    // Only insert if grade is not empty
+                                    if (!string.IsNullOrEmpty(grade.Grade))
+                                    {
+                                        // Insert new grade
+                                        string insertQuery = @"
+                                    INSERT INTO StudentGrades 
+                                    (GradeID, StudentID, SubjectID, ClassID, SectionID, ExamTypeID, 
+                                     Grade, SessionYear, SessionID, TenantID, TenantCode, CreatedBy, CreatedDate, IsDeleted)
+                                    VALUES 
+                                    (@GradeID, @StudentID, @SubjectID, @ClassID, @SectionID, @ExamTypeID,
+                                     @Grade, @SessionYear, @SessionID, @TenantID, @TenantCode, @CreatedBy, GETDATE(), 0)";
+
+                                        using (SqlCommand insertCmd = new SqlCommand(insertQuery, conn, transaction))
+                                        {
+                                            insertCmd.Parameters.AddWithValue("@GradeID", Guid.NewGuid().ToString());
+                                            insertCmd.Parameters.AddWithValue("@StudentID", grade.StudentID);
+                                            insertCmd.Parameters.AddWithValue("@SubjectID", grade.SubjectID);
+                                            insertCmd.Parameters.AddWithValue("@ClassID", request.ClassId);
+                                            insertCmd.Parameters.AddWithValue("@SectionID", request.SectionId);
+                                            insertCmd.Parameters.AddWithValue("@ExamTypeID", grade.ExamTypeID);
+                                            insertCmd.Parameters.AddWithValue("@Grade", grade.Grade);
+                                            insertCmd.Parameters.AddWithValue("@SessionYear", CurrentSessionYear);
+                                            insertCmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+                                            insertCmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                                            insertCmd.Parameters.AddWithValue("@TenantCode", CurrentTenantCode);
+                                            insertCmd.Parameters.AddWithValue("@CreatedBy", CurrentTenantUserID);
+
+                                            insertCmd.ExecuteNonQuery();
+                                        }
+                                    }
+                                }
+                            }
+
+                            transaction.Commit();
+                            return true;
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            System.Diagnostics.Debug.WriteLine("Bulk save grades error: " + ex.Message);
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Save bulk grades error: " + ex.Message);
+                return false;
+            }
+        }
+
     }
     public class StudentWithGradesModel
     {
@@ -1411,6 +1682,30 @@ namespace ERPIndia.Controllers
         public string ClassName { get; set; }
         public string SectionName { get; set; }
         public decimal? MarksObtained { get; set; }
+        public string Grade { get; set; }
+    }
+    public class StudentGradeModel
+    {
+        public string GradeID { get; set; }
+        public string StudentID { get; set; }
+        public string SubjectID { get; set; }
+        public string ExamTypeID { get; set; }
+        public string Grade { get; set; }
+        public string Remarks { get; set; }
+    }
+    public class SaveBulkGradesRequest
+    {
+        public List<BulkGradeEntry> Grades { get; set; }
+        public string ClassId { get; set; }
+        public string SectionId { get; set; }
+        public string ExamTypeId { get; set; }
+    }
+
+    public class BulkGradeEntry
+    {
+        public string StudentID { get; set; }
+        public string SubjectID { get; set; }
+        public string ExamTypeID { get; set; }
         public string Grade { get; set; }
     }
 }

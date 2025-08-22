@@ -425,6 +425,7 @@
     <Compile Include="Controllers\AdminClientController.cs" />
     <Compile Include="Controllers\AdminDashboardController.cs" />
     <Compile Include="Controllers\APIController.cs" />
+    <Compile Include="Controllers\AttendanceController.cs" />
     <Compile Include="Controllers\BulkPhotoUploadController.cs" />
     <Compile Include="Controllers\BulkUpdateController.cs" />
     <Compile Include="Controllers\CashbookController.cs" />
@@ -511,6 +512,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountModels.cs" />
+    <Compile Include="Models\Attendance\AttendanceViewModel.cs" />
     <Compile Include="Models\CompanyModel.cs" />
     <Compile Include="Models\CRM\BranchModel.cs" />
     <Compile Include="Models\CRM\InvoiceModel.cs" />
@@ -7849,6 +7851,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\StudentMarks\BulkGradeEntry.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Attendance\Entry.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

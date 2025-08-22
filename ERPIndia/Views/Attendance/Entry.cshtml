@@ -1,0 +1,995 @@
+﻿@model ERPIndia.Models.Attendance.AttendanceViewModel
+@{
+    ViewBag.Title = "Attendance Entry";
+}
+
+<style>
+    /* Header Styling */
+    .filter-card {
+        background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    /* Table Styling */
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .attendance-table thead th {
+            background: linear-gradient(to bottom, #1c79eb, #2c78bf, #155ab5);
+            color: white !important;
+            padding: 12px 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border: 1px solid #ddd !important;
+        }
+
+        .attendance-table tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .attendance-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .attendance-table tbody tr:hover {
+            background-color: #e3f2fd;
+        }
+
+        .attendance-table tbody tr.selected-row {
+            background-color: #e3f2fd !important;
+        }
+
+        .attendance-table tbody td {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+
+    /* Status Dropdown Styling */
+    .status-dropdown {
+        width: 100%;
+        padding: 6px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+        .status-dropdown:focus {
+            border-color: #9c27b0;
+            box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.1);
+            outline: none;
+        }
+
+    /* Status Color Coding */
+    .status-present {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-absent {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-late {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .status-halfday {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .status-holiday {
+        background-color: #e2e3e5;
+        color: #383d41;
+    }
+
+    /* Time Input Styling */
+    .time-input {
+        width: 90px;
+        padding: 6px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 13px;
+        text-align: center;
+    }
+
+    /* Note Input Styling */
+    .note-input {
+        width: 100%;
+        padding: 6px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+
+    /* Button Styling */
+    .search-button {
+        background: linear-gradient(to bottom, #1c79eb, #2c78bf, #155ab5);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+    .save-button {
+        background: linear-gradient(to right, #28a745, #20c997);
+        color: white;
+        padding: 12px 40px;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .save-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .batch-apply-btn {
+        background: #17a2b8;
+        color: white;
+        padding: 8px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+        .batch-apply-btn:hover {
+            background: #138496;
+        }
+
+    /* Checkbox Styling */
+    .student-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    /* Toast Styling */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 99999;
+    }
+
+    .toast {
+        min-width: 300px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        animation: slideIn 0.3s;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .toast-success {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        color: #155724;
+    }
+
+    .toast-error {
+        background: #f8d7da;
+        border-left: 4px solid #dc3545;
+        color: #721c24;
+    }
+
+    .toast-warning {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        color: #856404;
+    }
+
+    .toast-info {
+        background: #d1ecf1;
+        border-left: 4px solid #17a2b8;
+        color: #0c5460;
+    }
+
+    /* Spinner */
+    .spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .spinner-box {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #9c27b0;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    /* DataTable Button Styling - matching Index page */
+    .dataTables_wrapper .dataTables_length select {
+        padding: 5px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        padding: 5px 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        margin-left: 10px;
+    }
+
+    .dataTables_wrapper .dataTables_info {
+        padding: 8px 0;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .dataTables_wrapper .dataTables_paginate {
+        padding: 8px 0;
+    }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 5px 10px;
+            margin: 0 2px;
+            border: 1px solid #dee2e6;
+            border-radius: 3px;
+            cursor: pointer;
+            background: white;
+            color: #495057;
+        }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+                background: linear-gradient(to bottom, #1c79eb, #155ab5);
+                color: white !important;
+                border: 1px solid #155ab5;
+            }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
+                background: #e9ecef;
+                color: #495057;
+            }
+
+    /* Student info cell styling */
+    .student-info-cell {
+        text-align: left !important;
+        font-size: 13px;
+    }
+
+    /* Summary badges */
+    .attendance-summary {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header Card -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-calendar-check me-2"></i>Attendance Entry
+            </h5>
+        </div>
+        <div class="card-body">
+            <div id="validationMessage" class="alert alert-warning d-none">
+                <i class="fas fa-exclamation-triangle me-2"></i>Please select all required fields before searching.
+            </div>
+
+            <form id="searchForm" class="needs-validation" novalidate>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="ddlClass" class="form-label">Class <span class="text-danger">*</span></label>
+                        @Html.DropDownListFor(x => x.Classes, Model.Classes, "Select Class", new { @class = "form-select", id = "ddlClass" })
+                    </div>
+                    <div class="col-md-3">
+                        <label for="ddlSection" class="form-label">Section <span class="text-danger">*</span></label>
+                        @Html.DropDownListFor(x => x.Sections, Model.Sections, "Select Section", new { @class = "form-select", id = "ddlSection" })
+                    </div>
+                    <div class="col-md-3">
+                        <label for="attendanceDate" class="form-label">Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="attendanceDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-3 align-self-end">
+                        <button type="button" class="btn search-button w-100" id="btnSearch">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Attendance Entry Grid -->
+    <div id="attendanceContainer" class="mt-4" style="display:none;">
+        <div class="card">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        <span id="classInfo"></span>
+                        <span class="attendance-summary badge bg-info" id="studentCount">0 students</span>
+                        <span class="attendance-summary badge bg-success" id="presentCount">0 present</span>
+                        <span class="attendance-summary badge bg-danger" id="absentCount">0 absent</span>
+                    </h6>
+                    <div>
+                        <select id="batchStatus" class="form-select form-select-sm d-inline-block" style="width: 150px;">
+                            <option value="">Select Status</option>
+                            <option value="Present">Present</option>
+                            <option value="Absent">Absent</option>
+                            <option value="Late">Late</option>
+                            <option value="Half Day">Half Day</option>
+                            <option value="Holiday">Holiday</option>
+                        </select>
+                        <button class="btn btn-sm batch-apply-btn ms-2" onclick="applyBatchStatus()">
+                            Apply to Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table attendance-table" id="attendanceDataTable">
+                        <thead>
+                            <tr id="tableHeader">
+                                <th><input type="checkbox" id="selectAll" class="student-checkbox"></th>
+                                <th>SR</th>
+                                <th>Adm.</th>
+                                <th>Class</th>
+                                <th>Mobile</th>
+                                <th>Name</th>
+                                <th>Father</th>
+                                <th>Roll</th>
+                                <th width="80">Status</th>
+                                <th>Source</th>
+                                <th>Time-in</th>
+                                <th>Time-out</th>
+                                <th width="120">Note</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-4">
+                    <button type="button" class="save-button" id="btnSave">
+                        <i class="fas fa-save me-2"></i>Save Attendance
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Spinner Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+    <div class="spinner-box">
+        <div class="spinner"></div>
+        <div>Loading data...</div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var dataTable = null;
+    var currentClassId = '';
+    var currentSectionId = '';
+    var currentDate = '';
+    var studentsData = [];
+    var defaultConfig = {};
+    var originalAttendance = {};
+    var modifiedAttendance = {};
+
+    // Toast notification function
+    function showToast(message, type, duration) {
+        type = type || 'success';
+        duration = duration || 4000;
+
+        var icons = {
+            success: 'check-circle',
+            error: 'times-circle',
+            warning: 'exclamation-triangle',
+            info: 'info-circle'
+        };
+
+        var toastId = 'toast_' + Date.now();
+        var toastHtml =
+            '<div class="toast toast-' + type + '" id="' + toastId + '" style="display:none;">' +
+                '<i class="fas fa-' + icons[type] + ' me-2"></i>' +
+                message +
+            '</div>';
+
+        $('#toastContainer').append(toastHtml);
+        $('#' + toastId).fadeIn(300);
+
+        setTimeout(function() {
+            $('#' + toastId).fadeOut(300, function() {
+                $(this).remove();
+            });
+        }, duration);
+    }
+
+    // Show/Hide spinner
+    function showSpinner() {
+        $('#spinnerOverlay').css('display', 'flex');
+    }
+
+    function hideSpinner() {
+        $('#spinnerOverlay').hide();
+    }
+
+    // Search button click
+    $('#btnSearch').click(function() {
+        $('#validationMessage').addClass('d-none');
+
+        var classId = $('#ddlClass').val();
+        var sectionId = $('#ddlSection').val();
+        var date = $('#attendanceDate').val();
+
+        currentClassId = classId;
+        currentSectionId = sectionId;
+        currentDate = date;
+
+        var errors = [];
+        if (!classId) errors.push('Please select a class');
+        if (!sectionId) errors.push('Please select a section');
+        if (!date) errors.push('Please select a date');
+
+        if (errors.length > 0) {
+            showToast(errors.join(', '), 'warning');
+            $('#validationMessage').html(
+                '<i class="fas fa-exclamation-triangle me-2"></i>' + errors.join(', ')
+            ).removeClass('d-none');
+            return;
+        }
+
+        loadAttendanceData(classId, sectionId, date);
+    });
+
+    // Load attendance data
+    function loadAttendanceData(classId, sectionId, date) {
+        showSpinner();
+
+        $.ajax({
+            url: '@Url.Action("GetStudentsForAttendance", "Attendance")',
+            type: 'POST',
+            data: {
+                classId: classId,
+                sectionId: sectionId,
+                attendanceDate: date
+            },
+            success: function(response) {
+                hideSpinner();
+
+                if (response.success) {
+                    studentsData = response.students;
+                    defaultConfig = response.config;
+                    originalAttendance = {};
+                    modifiedAttendance = {};
+
+                    // Store original attendance
+                    if (response.existingAttendance) {
+                        $.each(response.existingAttendance, function(i, att) {
+                            originalAttendance[att.StudentID] = {
+                                Status: att.Status,
+                                TimeIn: att.TimeIn,
+                                TimeOut: att.TimeOut,
+                                Note: att.Note
+                            };
+                        });
+                    }
+
+                    displayAttendanceGrid(response);
+                    $('#attendanceContainer').show();
+                    showToast('Data loaded successfully! ' + response.students.length + ' students found', 'success');
+
+                    if (response.isHoliday) {
+                        showToast('Note: Selected date is a holiday', 'info');
+                    }
+                } else {
+                    showToast(response.message || 'Failed to load data', 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideSpinner();
+                showToast('An error occurred while loading data', 'error');
+                console.error('Load error:', error);
+            }
+        });
+    }
+
+    // Display attendance grid with DataTable
+    function displayAttendanceGrid(data) {
+        if (!data.students || data.students.length === 0) {
+            $('#attendanceContainer').html(
+                '<div class="alert alert-info">' +
+                    '<i class="fas fa-info-circle me-2"></i>' +
+                    'No students found for the selected criteria' +
+                '</div>'
+            );
+            return;
+        }
+
+        // Update student count
+        $('#studentCount').text(data.students.length + ' students');
+
+        // Update class info
+        var className = data.students[0]?.ClassName || '';
+        var sectionName = data.students[0]?.SectionName || '';
+        $('#classInfo').text(className + ' - ' + sectionName + ' | Date: ' + currentDate);
+
+        // Build table body
+        var bodyHtml = '';
+        $.each(data.students, function(index, student) {
+            var existingAtt = originalAttendance[student.StudentID] || {};
+            var status = existingAtt.Status || student.Status || 'Present';
+            var timeIn = existingAtt.TimeIn || student.TimeIn || '08:30';
+            var timeOut = existingAtt.TimeOut || student.TimeOut || '14:45';
+            var note = existingAtt.Note || student.Note || '';
+
+            bodyHtml += '<tr data-studentid="' + student.StudentID + '">' +
+                     '<td class="text-center"><input type="checkbox" class="student-checkbox row-checkbox"></td>' +
+                     '<td>' + (index + 1) + '</td>' +
+                     '<td>' + student.AdmissionNo + '</td>' +
+                     '<td>' + student.ClassName + '-' + student.SectionName + '</td>' +
+                     '<td>' + (student.MobileNumber || '-') + '</td>' +
+                     '<td class="student-info-cell"><strong>' + student.StudentName + '</strong></td>' +
+                     '<td class="student-info-cell">' + student.FatherName + '</td>' +
+                     '<td><span class="badge bg-warning">' + (student.RollNumber || '-') + '</span></td>' +
+                     '<td>' +
+                        '<select class="status-dropdown" ' +
+                        'data-studentid="' + student.StudentID + '" ' +
+                        'data-original="' + status + '">' +
+                            '<option value="Present"' + (status === 'Present' ? ' selected' : '') + '>Present</option>' +
+                            '<option value="Absent"' + (status === 'Absent' ? ' selected' : '') + '>Absent</option>' +
+                            '<option value="Late"' + (status === 'Late' ? ' selected' : '') + '>Late</option>' +
+                            '<option value="Half Day"' + (status === 'Half Day' ? ' selected' : '') + '>Half Day</option>' +
+                            '<option value="Holiday"' + (status === 'Holiday' ? ' selected' : '') + '>Holiday</option>' +
+                        '</select>' +
+                     '</td>' +
+                     '<td>Manual</td>' +
+                     '<td><input type="time" class="time-input time-in" ' +
+                        'data-studentid="' + student.StudentID + '" ' +
+                        'data-original="' + timeIn + '" ' +
+                        'value="' + timeIn + '"></td>' +
+                     '<td><input type="time" class="time-input time-out" ' +
+                        'data-studentid="' + student.StudentID + '" ' +
+                        'data-original="' + timeOut + '" ' +
+                        'value="' + timeOut + '"></td>' +
+                     '<td><input type="text" class="note-input" ' +
+                        'data-studentid="' + student.StudentID + '" ' +
+                        'data-original="' + note + '" ' +
+                        'placeholder="Note" value="' + note + '"></td>' +
+                     '</tr>';
+        });
+
+        $('#attendanceTableBody').html(bodyHtml);
+
+        // Initialize DataTable
+        initializeDataTable();
+    }
+
+    // Initialize DataTable
+    function initializeDataTable() {
+        // Destroy existing DataTable if exists
+        if (dataTable) {
+            dataTable.destroy();
+        }
+
+        // Calculate which columns should be exportable (exclude checkbox column)
+        var exportColumns = [];
+        for (var i = 1; i < $('#tableHeader th').length; i++) {
+            exportColumns.push(i);
+        }
+
+        // Initialize new DataTable
+        dataTable = $('#attendanceDataTable').DataTable({
+            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            "pageLength": 25,
+            "order": [[1, "asc"]], // Order by SR
+            "scrollX": true,
+            "responsive": false,
+            "dom": 'Blfrtip',
+            "buttons": [
+                {
+                    extend: 'copy',
+                    text: 'Copy',
+                    className: 'dt-button',
+                    exportOptions: {
+                        columns: exportColumns
+                    }
+                },
+                {
+                    extend: 'csv',
+                    text: 'CSV',
+                    className: 'dt-button',
+                    title: 'AttendanceReport_' + new Date().getTime(),
+                    exportOptions: {
+                        columns: exportColumns
+                    }
+                },
+                {
+                    extend: 'excel',
+                    text: 'Excel',
+                    className: 'dt-button',
+                    title: 'AttendanceReport_' + new Date().getTime(),
+                    exportOptions: {
+                        columns: exportColumns
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    text: 'PDF',
+                    className: 'dt-button',
+                    title: 'Attendance Report',
+                    orientation: 'landscape',
+                    pageSize: 'A4',
+                    exportOptions: {
+                        columns: exportColumns
+                    }
+                },
+                {
+                    extend: 'print',
+                    text: 'Print',
+                    className: 'dt-button',
+                    title: 'Attendance Report',
+                    exportOptions: {
+                        columns: exportColumns
+                    }
+                }
+            ],
+            "language": {
+                "search": "Search students:",
+                "lengthMenu": "Show _MENU_ entries",
+                "info": "Showing _START_ to _END_ of _TOTAL_ students",
+                "paginate": {
+                    "first": "First",
+                    "last": "Last",
+                    "next": "Next",
+                    "previous": "Previous"
+                }
+            },
+            "columnDefs": [
+                {
+                    "orderable": false,
+                    "targets": [0] // Disable ordering for checkbox column
+                }
+            ],
+            "drawCallback": function(settings) {
+                // Re-bind events after DataTable redraw
+                bindAttendanceEvents();
+                updateAttendanceSummary();
+            }
+        });
+
+        // Initial binding
+        bindAttendanceEvents();
+        updateAttendanceSummary();
+    }
+
+    // Bind attendance events
+    function bindAttendanceEvents() {
+        // Remove previous event handlers to prevent duplicates
+        $('.status-dropdown').off('change');
+        $('.time-input, .note-input').off('change input');
+        $('#selectAll').off('change');
+        $('.row-checkbox').off('change');
+
+        // Status change
+        $('.status-dropdown').on('change', function() {
+            var $this = $(this);
+            updateStatusColor($this);
+            trackModification($this);
+            updateAttendanceSummary();
+        });
+
+        // Time and note changes
+        $('.time-input, .note-input').on('change input', function() {
+            trackModification($(this));
+        });
+
+        // Select all checkbox
+        $('#selectAll').on('change', function() {
+            var isChecked = $(this).prop('checked');
+            if (dataTable) {
+                dataTable.$('.row-checkbox').prop('checked', isChecked);
+                if (isChecked) {
+                    dataTable.$('tr').addClass('selected-row');
+                } else {
+                    dataTable.$('tr').removeClass('selected-row');
+                }
+            }
+        });
+
+        // Individual row checkbox
+        $('.row-checkbox').on('change', function() {
+            var $row = $(this).closest('tr');
+            if ($(this).is(':checked')) {
+                $row.addClass('selected-row');
+            } else {
+                $row.removeClass('selected-row');
+            }
+
+            // Update select all checkbox
+            var totalCheckboxes = $('.row-checkbox').length;
+            var checkedCheckboxes = $('.row-checkbox:checked').length;
+            $('#selectAll').prop('checked', totalCheckboxes === checkedCheckboxes);
+        });
+
+        // Apply initial status colors
+        $('.status-dropdown').each(function() {
+            updateStatusColor($(this));
+        });
+    }
+
+    // Update status color
+    function updateStatusColor($select) {
+        var status = $select.val();
+        $select.removeClass('status-present status-absent status-late status-halfday status-holiday');
+
+        switch(status) {
+            case 'Present':
+                $select.addClass('status-present');
+                break;
+            case 'Absent':
+                $select.addClass('status-absent');
+                break;
+            case 'Late':
+                $select.addClass('status-late');
+                break;
+            case 'Half Day':
+                $select.addClass('status-halfday');
+                break;
+            case 'Holiday':
+                $select.addClass('status-holiday');
+                break;
+        }
+    }
+
+    // Track modifications
+    function trackModification($element) {
+        var studentId = $element.data('studentid');
+        var $row = $element.closest('tr');
+
+        var currentData = {
+            Status: $row.find('.status-dropdown').val(),
+            TimeIn: $row.find('.time-in').val(),
+            TimeOut: $row.find('.time-out').val(),
+            Note: $row.find('.note-input').val()
+        };
+
+        var originalData = originalAttendance[studentId] || {
+            Status: 'Present',
+            TimeIn: '08:30',
+            TimeOut: '14:45',
+            Note: ''
+        };
+
+        // Check if data has changed
+        var hasChanged = JSON.stringify(currentData) !== JSON.stringify(originalData);
+
+        if (hasChanged) {
+            modifiedAttendance[studentId] = currentData;
+            $row.addClass('modified-row');
+        } else {
+            delete modifiedAttendance[studentId];
+            $row.removeClass('modified-row');
+        }
+
+        // Enable/disable save button
+        $('#btnSave').prop('disabled', Object.keys(modifiedAttendance).length === 0);
+    }
+
+    // Update attendance summary
+    function updateAttendanceSummary() {
+        var presentCount = 0;
+        var absentCount = 0;
+        var totalCount = 0;
+
+        if (dataTable) {
+            dataTable.$('.status-dropdown').each(function() {
+                totalCount++;
+                var status = $(this).val();
+                if (status === 'Present') {
+                    presentCount++;
+                } else if (status === 'Absent') {
+                    absentCount++;
+                }
+            });
+        }
+
+        $('#studentCount').text(totalCount + ' students');
+        $('#presentCount').text(presentCount + ' present');
+        $('#absentCount').text(absentCount + ' absent');
+    }
+
+    // Apply batch status
+    window.applyBatchStatus = function() {
+        var status = $('#batchStatus').val();
+        if (!status) {
+            showToast('Please select a status', 'error');
+            return;
+        }
+
+        var checkedCount = 0;
+
+        if (dataTable) {
+            dataTable.$('.row-checkbox:checked').each(function() {
+                var $row = $(this).closest('tr');
+                var $dropdown = $row.find('.status-dropdown');
+                $dropdown.val(status);
+                updateStatusColor($dropdown);
+                trackModification($dropdown);
+                checkedCount++;
+            });
+        }
+
+        if (checkedCount === 0) {
+            showToast('Please select students first', 'error');
+        } else {
+            showToast('Status applied to ' + checkedCount + ' students', 'success');
+            $('#batchStatus').val('');
+            updateAttendanceSummary();
+        }
+    };
+
+    // Save attendance
+    $('#btnSave').click(function() {
+        if (!confirm('Save attendance for all students?')) {
+            return;
+        }
+
+        var attendanceData = [];
+
+        if (dataTable) {
+            dataTable.$('tbody tr').each(function() {
+                var $row = $(this);
+                attendanceData.push({
+                    StudentID: $row.data('studentid'),
+                    Status: $row.find('.status-dropdown').val(),
+                    TimeIn: $row.find('.time-in').val(),
+                    TimeOut: $row.find('.time-out').val(),
+                    Note: $row.find('.note-input').val()
+                });
+            });
+        }
+
+        if (attendanceData.length === 0) {
+            showToast('No data to save', 'error');
+            return;
+        }
+
+        showSpinner();
+        $('#btnSave').prop('disabled', true)
+            .html('<i class="fas fa-spinner fa-spin me-2"></i>Saving...');
+
+        $.ajax({
+            url: '@Url.Action("SaveAttendance", "Attendance")',
+            type: 'POST',
+            data: JSON.stringify({
+                Attendance: attendanceData,
+                ClassId: currentClassId,
+                SectionId: currentSectionId,
+                AttendanceDate: currentDate
+            }),
+            contentType: 'application/json',
+            success: function(response) {
+                hideSpinner();
+
+                if (response.success) {
+                    showToast(response.message || 'Attendance saved successfully!', 'success');
+
+                    // Reload the page after 1 second
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+
+                } else {
+                    showToast(response.message || 'Failed to save', 'error');
+                    $('#btnSave').html('<i class="fas fa-save me-2"></i>Save Attendance')
+                        .prop('disabled', false);
+                }
+            },
+            error: function(xhr, status, error) {
+                hideSpinner();
+                showToast('An error occurred while saving', 'error');
+                console.error('Save error:', error);
+                $('#btnSave').html('<i class="fas fa-save me-2"></i>Save Attendance')
+                    .prop('disabled', false);
+            }
+        });
+    });
+
+    // Export to Excel using DataTable
+    $('#btnExportData').click(function() {
+        if (dataTable) {
+            $('.dt-button.buttons-excel').click();
+        } else {
+            showToast('Please load data first', 'warning');
+        }
+    });
+
+    // Hide container when filters change
+    $('#ddlClass, #ddlSection, #attendanceDate').change(function() {
+        $('#attendanceContainer').hide();
+        if (dataTable) {
+            dataTable.destroy();
+            dataTable = null;
+        }
+        modifiedAttendance = {};
+        originalAttendance = {};
+    });
+});
+</script>

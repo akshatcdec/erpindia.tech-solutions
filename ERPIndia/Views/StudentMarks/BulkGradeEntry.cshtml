@@ -3,135 +3,248 @@
     ViewBag.Title = "Bulk Grade Entry";
 }
 
+<!-- Add Tippy.js CDN -->
+<link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale.css" />
+
 <style>
     /* Filter Card Styling */
     .filter-card {
-        background: #f8f9fa;
+        background: linear-gradient(to bottom, #ffffff, #f8f9fa);
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        border: 1px solid #e9ecef;
     }
 
     /* DataTable Custom Styling */
     .grades-entry-table {
         width: 100%;
         border-collapse: collapse;
+        border: 1px solid #ddd;
     }
 
-    .grades-entry-table thead th {
-        background: linear-gradient(to bottom, #9c27b0, #673ab7);
-        color: #ffffff !important;
-        font-weight: bold;
-        text-align: center;
-        padding: 8px 10px;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        font-size: 13px;
+        .grades-entry-table thead th {
+            background: linear-gradient(to bottom, #9c27b0, #673ab7);
+            color: #ffffff !important;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 13px;
+        }
+
+        /* Alternating row colors with higher specificity */
+        #gradesDataTable tbody tr:nth-child(odd),
+        .grades-entry-table tbody tr:nth-child(odd),
+        table.dataTable.grades-entry-table tbody tr:nth-child(odd) {
+            background-color: #ffffff !important;
+        }
+
+        #gradesDataTable tbody tr:nth-child(even),
+        .grades-entry-table tbody tr:nth-child(even),
+        table.dataTable.grades-entry-table tbody tr:nth-child(even) {
+            background-color: #e8e8e8 !important;
+        }
+
+        /* Class-based alternating colors for DataTable compatibility */
+        #gradesDataTable tbody tr.row-odd,
+        .grades-entry-table tbody tr.row-odd,
+        table.dataTable tbody tr.row-odd {
+            background-color: #ffffff !important;
+        }
+
+        #gradesDataTable tbody tr.row-even,
+        .grades-entry-table tbody tr.row-even,
+        table.dataTable tbody tr.row-even {
+            background-color: #e8e8e8 !important;
+        }
+
+        #gradesDataTable tbody tr:hover,
+        .grades-entry-table tbody tr:hover,
+        table.dataTable.grades-entry-table tbody tr:hover {
+            background-color: #d4e8f7 !important;
+            transition: background-color 0.2s ease;
+        }
+
+        #gradesDataTable tbody tr.selected-row,
+        .grades-entry-table tbody tr.selected-row,
+        table.dataTable.grades-entry-table tbody tr.selected-row {
+            background-color: #b8d4f0 !important;
+        }
+
+        #gradesDataTable tbody tr.modified-row,
+        .grades-entry-table tbody tr.modified-row,
+        table.dataTable.grades-entry-table tbody tr.modified-row {
+            background-color: #ffe066 !important;
+        }
+
+    /* Override any DataTable styling with maximum specificity */
+    div.dataTables_wrapper table.dataTable tbody tr {
+        background-color: transparent !important;
     }
 
-    .grades-entry-table tbody tr:nth-child(odd) {
-        background-color: #e3e8ed !important;
-    }
-
-    .grades-entry-table tbody tr:nth-child(even) {
+    /* Force alternating colors */
+    table#gradesDataTable tbody tr:nth-of-type(odd),
+    div.dataTables_wrapper table#gradesDataTable tbody tr:nth-of-type(odd) {
         background-color: #ffffff !important;
     }
 
-    .grades-entry-table tbody tr:hover {
-        background-color: #f0f4f8 !important;
+    table#gradesDataTable tbody tr:nth-of-type(even),
+    div.dataTables_wrapper table#gradesDataTable tbody tr:nth-of-type(even) {
+        background-color: #e8e8e8 !important;
     }
 
-    .grades-entry-table tbody tr.selected-row {
-        background-color: #e3f2fd !important;
+    /* Ensure cells in even rows also get the background */
+    #gradesDataTable tbody tr:nth-child(even) td,
+    .grades-entry-table tbody tr:nth-child(even) td,
+    #gradesDataTable tbody tr.row-even td {
+        background-color: transparent !important;
     }
 
-    .grades-entry-table tbody tr.modified-row {
-        background-color: #fff3cd !important;
+    #gradesDataTable tbody tr:nth-child(odd) td,
+    .grades-entry-table tbody tr:nth-child(odd) td,
+    #gradesDataTable tbody tr.row-odd td {
+        background-color: transparent !important;
     }
 
     .grades-entry-table tbody td {
         padding: 4px 6px;
-        border: 1px solid #ddd;
+        border: 1px solid #e0e0e0;
         text-align: center;
         font-size: 13px;
+        vertical-align: middle;
     }
 
     .student-info-cell {
         text-align: left !important;
         font-size: 13px;
+        padding-left: 10px;
     }
 
-    /* Grade Dropdown Styling */
-    .grade-select {
-        width: 90px;
+    /* Grade Textbox Styling */
+    .grade-input {
+        width: 60px;
         text-align: center;
         border: 1px solid #cbd5e0;
         border-radius: 3px;
         padding: 3px;
         font-size: 13px;
         transition: all 0.2s ease;
+        text-transform: uppercase;
+        background-color: white;
     }
 
-    .grade-select:focus {
-        border-color: #9c27b0;
-        box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
-        outline: none;
-    }
+        .grade-input:focus {
+            border-color: #9c27b0;
+            box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
+            outline: none;
+            background-color: white;
+        }
 
-    .grade-select.is-invalid {
-        border-color: #dc3545 !important;
-        background-color: #fff5f5;
-    }
+        .grade-input.is-invalid {
+            border-color: #dc3545 !important;
+            background-color: #fff5f5;
+        }
 
-    .grade-select.grade-a-plus {
-        background-color: #4caf50;
-        color: white;
+        .grade-input.is-modified {
+            background-color: #fffacd;
+            font-weight: bold;
+        }
+
+        /* Grade color coding based on value */
+        .grade-input[data-grade="A+"], .grade-input[data-grade="A PLUS"] {
+            background-color: #4caf50;
+            color: white;
+            font-weight: bold;
+        }
+
+        .grade-input[data-grade="A"] {
+            background-color: #66bb6a;
+            color: white;
+            font-weight: bold;
+        }
+
+        .grade-input[data-grade="B+"], .grade-input[data-grade="B PLUS"] {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        .grade-input[data-grade="B"] {
+            background-color: #42a5f5;
+            color: white;
+        }
+
+        .grade-input[data-grade="C+"], .grade-input[data-grade="C PLUS"] {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .grade-input[data-grade="C"] {
+            background-color: #ffa726;
+            color: white;
+        }
+
+        .grade-input[data-grade="D"] {
+            background-color: #ff7043;
+            color: white;
+        }
+
+        .grade-input[data-grade="F"] {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .grade-input[data-grade="AB"] {
+            background-color: #757575;
+            color: white;
+        }
+
+    /* Subject Header Styling */
+    .subject-header {
+        font-size: 12px;
         font-weight: bold;
+        background: linear-gradient(to bottom, #ab47bc, #8e24aa) !important;
+        color: white !important;
+        position: relative;
+        cursor: help;
     }
 
-    .grade-select.grade-a {
-        background-color: #66bb6a;
-        color: white;
-        font-weight: bold;
+    .subject-name-compressed {
+        display: inline-block;
+        max-width: 80px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: help;
     }
 
-    .grade-select.grade-b-plus {
-        background-color: #2196f3;
+    /* Custom Tippy.js Theme */
+    .tippy-box[data-theme~='custom'] {
+        background-color: #333;
         color: white;
+        font-size: 14px;
+        font-weight: normal;
     }
 
-    .grade-select.grade-b {
-        background-color: #42a5f5;
-        color: white;
-    }
+        .tippy-box[data-theme~='custom'][data-placement^='top'] > .tippy-arrow::before {
+            border-top-color: #333;
+        }
 
-    .grade-select.grade-c-plus {
-        background-color: #ff9800;
-        color: white;
-    }
+        .tippy-box[data-theme~='custom'][data-placement^='bottom'] > .tippy-arrow::before {
+            border-bottom-color: #333;
+        }
 
-    .grade-select.grade-c {
-        background-color: #ffa726;
-        color: white;
-    }
+        .tippy-box[data-theme~='custom'][data-placement^='left'] > .tippy-arrow::before {
+            border-left-color: #333;
+        }
 
-    .grade-select.grade-d {
-        background-color: #ff7043;
-        color: white;
-    }
-
-    .grade-select.grade-f {
-        background-color: #f44336;
-        color: white;
-    }
-
-    .grade-select.grade-ab {
-        background-color: #757575;
-        color: white;
-    }
+        .tippy-box[data-theme~='custom'][data-placement^='right'] > .tippy-arrow::before {
+            border-right-color: #333;
+        }
 
     /* Button Styling */
     .search-button {
@@ -147,10 +260,10 @@
         transition: transform 0.2s ease;
     }
 
-    .search-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    }
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
 
     .save-btn {
         background: linear-gradient(to right, #9c27b0, #673ab7);
@@ -165,23 +278,15 @@
         font-size: 16px;
     }
 
-    .save-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
-    }
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
+        }
 
-    .save-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    /* Subject Header */
-    .subject-header {
-        font-size: 12px;
-        font-weight: bold;
-        background: linear-gradient(to bottom, #ab47bc, #8e24aa) !important;
-        color: white !important;
-    }
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
     /* Toast Notification Styles */
     .toast-container {
@@ -208,6 +313,7 @@
             transform: translateX(100%);
             opacity: 0;
         }
+
         to {
             transform: translateX(0);
             opacity: 1;
@@ -270,18 +376,24 @@
     }
 
     @@keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     /* Legend Box */
     .grades-legend {
-        background: #f3e5f5;
-        border: 1px solid #ce93d8;
+        background: linear-gradient(to right, #f8f9fa, #ffffff);
+        border: 2px solid #e9ecef;
         border-radius: 8px;
         padding: 15px;
         margin-bottom: 20px;
         font-size: 14px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     .grade-badge {
@@ -303,11 +415,13 @@
         margin-left: 20px;
     }
 
-    .batch-grade-select {
+    .batch-grade-input {
         padding: 6px 12px;
         border: 1px solid #ddd;
         border-radius: 4px;
         margin-right: 10px;
+        width: 120px;
+        text-transform: uppercase;
     }
 
     .apply-batch-btn {
@@ -319,15 +433,24 @@
         cursor: pointer;
     }
 
-    .apply-batch-btn:hover {
-        background: #138496;
-    }
+        .apply-batch-btn:hover {
+            background: #138496;
+        }
 
     /* Checkbox Styling */
     .form-check-input {
         cursor: pointer;
         width: 18px;
         height: 18px;
+    }
+
+    /* CRITICAL: Force alternating row colors - Place this at the end to override everything */
+    table#gradesDataTable tbody tr:nth-child(odd) {
+        background: #ffffff !important;
+    }
+
+    table#gradesDataTable tbody tr:nth-child(even) {
+        background: #e8e8e8 !important;
     }
 </style>
 
@@ -343,10 +466,6 @@
                 </div>
 
                 <div class="card-body">
-                    <div id="validationMessage" class="alert alert-warning d-none">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Please select all required fields before searching.
-                    </div>
-
                     <form id="searchForm" class="needs-validation" novalidate>
                         <div class="row g-3">
                             <div class="col-md-3">
@@ -386,21 +505,10 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">
                         <i class="fas fa-users me-2"></i>
-                        <strong style="color: #673ab7;">Grade Entry</strong>
+                        <strong style="color: #673ab7;">Grade Entry List</strong>
                     </h6>
                     <div class="batch-grade-container">
-                        <select class="batch-grade-select" id="batchGradeSelect">
-                            <option value="">Select Grade</option>
-                            <option value="A+">A+</option>
-                            <option value="A">A</option>
-                            <option value="B+">B+</option>
-                            <option value="B">B</option>
-                            <option value="C+">C+</option>
-                            <option value="C">C</option>
-                            <option value="D">D</option>
-                            <option value="F">F</option>
-                            <option value="AB">AB (Absent)</option>
-                        </select>
+                        <input type="text" class="batch-grade-input" id="batchGradeInput" placeholder="Enter Grade" maxlength="30">
                         <button class="apply-batch-btn" onclick="applyBatchGrade()">
                             Apply to Selected
                         </button>
@@ -410,7 +518,7 @@
             <div class="card-body">
                 <!-- Grade Legend -->
                 <div class="grades-legend">
-                    <strong>Grade Scale:</strong>
+                    <strong>Common Grade Scale:</strong>
                     <span class="grade-badge" style="background: #4caf50; color: white;">A+</span>
                     <span class="grade-badge" style="background: #66bb6a; color: white;">A</span>
                     <span class="grade-badge" style="background: #2196f3; color: white;">B+</span>
@@ -418,8 +526,10 @@
                     <span class="grade-badge" style="background: #ff9800; color: white;">C+</span>
                     <span class="grade-badge" style="background: #ffa726; color: white;">C</span>
                     <span class="grade-badge" style="background: #ff7043; color: white;">D</span>
+                    <span class="grade-badge" style="background: #e53935; color: white;">E</span>
                     <span class="grade-badge" style="background: #f44336; color: white;">F</span>
                     <span class="grade-badge" style="background: #757575; color: white;">AB</span>
+                    <span style="margin-left: 10px; font-style: italic;">* You can enter any custom grade up to 30 characters</span>
                 </div>
 
                 <!-- Data Table -->
@@ -456,6 +566,10 @@
     </div>
 </div>
 
+<!-- Add Tippy.js Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.2/umd/popper.min.js"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+
 <script>
 $(document).ready(function() {
     var dataTable = null;
@@ -467,6 +581,91 @@ $(document).ready(function() {
     var originalGrades = {};
     var modifiedGrades = {};
     var isUpdating = false;
+    var tippyInstances = []; // Store Tippy instances for cleanup
+
+    // Standard grades for color coding (trimmed versions)
+    var standardGrades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'E', 'F', 'AB'];
+
+    // Additional variations that should get color coding
+    var gradeVariations = {
+        'A PLUS': 'A+',
+        'B PLUS': 'B+',
+        'C PLUS': 'C+',
+        'A-PLUS': 'A+',
+        'B-PLUS': 'B+',
+        'C-PLUS': 'C+'
+    };
+
+    // Function to compress text
+    function compressText(text, maxLength) {
+        maxLength = maxLength || 8;
+        if (text.length > maxLength) {
+            return text.substring(0, maxLength) + '...';
+        }
+        return text;
+    }
+
+    // Initialize Tippy.js tooltips
+    function initializeTippyTooltips() {
+        // Destroy existing Tippy instances
+        if (tippyInstances.length > 0) {
+            tippyInstances.forEach(function(instance) {
+                if (instance && instance.destroy) {
+                    instance.destroy();
+                }
+            });
+            tippyInstances = [];
+        }
+
+        // Create new Tippy instances for each subject header
+        $('.subject-tooltip').each(function() {
+            var element = this;
+            var subjectName = $(element).data('subject');
+
+            if (subjectName) {
+                var instance = tippy(element, {
+                    content: '<strong>Subject:</strong> ' + subjectName,
+                    placement: 'top',
+                    arrow: true,
+                    theme: 'custom',
+                    allowHTML: true,
+                    interactive: false,
+                    appendTo: document.body,
+                    // Mobile settings
+                    touch: ['hold', 300], // Long press for mobile
+                    touchHold: true,
+                    // Desktop settings
+                    trigger: 'mouseenter focus click',
+                    hideOnClick: true,
+                    // General settings
+                    animation: 'scale',
+                    duration: [200, 150],
+                    maxWidth: 350,
+                    zIndex: 99999,
+                    // Ensure tooltip shows properly
+                    popperOptions: {
+                        strategy: 'fixed',
+                        modifiers: [
+                            {
+                                name: 'flip',
+                                options: {
+                                    fallbackPlacements: ['bottom', 'right', 'left'],
+                                },
+                            },
+                            {
+                                name: 'preventOverflow',
+                                options: {
+                                    boundary: 'viewport',
+                                },
+                            },
+                        ],
+                    },
+                });
+
+                tippyInstances.push(instance);
+            }
+        });
+    }
 
     // Toast notification function
     function showToast(message, type, duration) {
@@ -506,10 +705,36 @@ $(document).ready(function() {
         $('#spinnerOverlay').hide();
     }
 
+    // Apply grade color coding
+    function applyGradeColor($input, grade) {
+        // Remove all grade classes
+        $input.removeClass('grade-a-plus grade-a grade-b-plus grade-b grade-c-plus grade-c grade-d grade-f grade-ab');
+        $input.removeAttr('data-grade');
+
+        if (grade) {
+            // For display purposes, store the original value with spaces
+            var originalValue = grade.toUpperCase();
+
+            // For color matching, use trimmed version
+            var trimmedGrade = grade.trim().toUpperCase();
+
+            // Check if it's a variation that maps to a standard grade
+            if (gradeVariations[trimmedGrade]) {
+                trimmedGrade = gradeVariations[trimmedGrade];
+            }
+
+            $input.attr('data-grade', trimmedGrade);
+
+            // Apply color only for standard grades
+            if (standardGrades.indexOf(trimmedGrade) !== -1) {
+                var gradeClass = 'grade-' + trimmedGrade.toLowerCase().replace('+', '-plus');
+                $input.addClass(gradeClass);
+            }
+        }
+    }
+
     // Search button click handler
     $('#btnSearch').click(function() {
-        $('#validationMessage').addClass('d-none');
-
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
         var examId = $('#ddlExam').val();
@@ -525,9 +750,6 @@ $(document).ready(function() {
 
         if (errors.length > 0) {
             showToast(errors.join(', '), 'warning');
-            $('#validationMessage').html(
-                '<i class="fas fa-exclamation-triangle me-2"></i>' + errors.join(', ')
-            ).removeClass('d-none');
             return;
         }
 
@@ -600,9 +822,16 @@ $(document).ready(function() {
             '<th>Student</th>' +
             '<th>Father Name</th>';
 
-        // Add grade subject columns
+        // Add grade subject columns with Tippy.js tooltips
         $.each(data.subjects, function(i, subject) {
-            headerHtml += '<th class="subject-header">' + subject.SubjectName + '</th>';
+            var compressedName = compressText(subject.SubjectName, 8);
+
+            headerHtml += '<th class="subject-header">' +
+                         '<span class="subject-tooltip subject-name-compressed" ' +
+                         'data-subject="' + subject.SubjectName + '">' +
+                         compressedName +
+                         '</span>' +
+                         '</th>';
         });
 
         $('#tableHeader').html(headerHtml);
@@ -610,41 +839,33 @@ $(document).ready(function() {
         // Build table body
         var bodyHtml = '';
         $.each(data.students, function(index, student) {
-            bodyHtml += '<tr data-studentid="' + student.StudentID + '">' +
+            // Apply alternating row classes
+            var rowClass = index % 2 === 0 ? 'row-even' : 'row-odd';
+
+            bodyHtml += '<tr data-studentid="' + student.StudentID + '" class="' + rowClass + '">' +
                        '<td class="text-center"><input type="checkbox" class="form-check-input row-checkbox"></td>' +
                        '<td>' + student.ClassName + '-' + student.SectionName + '</td>' +
                        '<td>' + (index + 1) + '</td>' +
-                       '<td>' + (student.RollNumber || '-') + '</td>' +
+                       '<td><span class="grade-badge" style="background: #ffa726; color: white;">' + (student.RollNumber || '-') + '</span></td>'+
                        '<td>' + data.examName + '</td>' +
                        '<td class="student-info-cell"><strong>' + student.StudentName + '</strong></td>' +
                        '<td class="student-info-cell">' + (student.FatherName || '-') + '</td>';
 
-            // Add grade dropdown for each subject
+            // Add grade textbox for each subject
             $.each(data.subjects, function(j, subject) {
                 var key = student.StudentID + '_' + subject.SubjectID;
                 var existingGrade = originalGrades[key] || '';
 
-                var gradeClass = '';
-                if (existingGrade) {
-                    gradeClass = ' grade-' + existingGrade.toLowerCase().replace('+', '-plus');
-                }
-
                 bodyHtml += '<td>' +
-                           '<select class="grade-select' + gradeClass + '" ' +
+                           '<input type="text" ' +
+                           'class="grade-input" ' +
+                           'maxlength="30" ' +
                            'data-studentid="' + student.StudentID + '" ' +
                            'data-subjectid="' + subject.SubjectID + '" ' +
-                           'data-original="' + existingGrade + '">' +
-                           '<option value="">-</option>' +
-                           '<option value="A+"' + (existingGrade === 'A+' ? ' selected' : '') + '>A+</option>' +
-                           '<option value="A"' + (existingGrade === 'A' ? ' selected' : '') + '>A</option>' +
-                           '<option value="B+"' + (existingGrade === 'B+' ? ' selected' : '') + '>B+</option>' +
-                           '<option value="B"' + (existingGrade === 'B' ? ' selected' : '') + '>B</option>' +
-                           '<option value="C+"' + (existingGrade === 'C+' ? ' selected' : '') + '>C+</option>' +
-                           '<option value="C"' + (existingGrade === 'C' ? ' selected' : '') + '>C</option>' +
-                           '<option value="D"' + (existingGrade === 'D' ? ' selected' : '') + '>D</option>' +
-                           '<option value="F"' + (existingGrade === 'F' ? ' selected' : '') + '>F</option>' +
-                           '<option value="AB"' + (existingGrade === 'AB' ? ' selected' : '') + '>AB</option>' +
-                           '</select>' +
+                           'data-original="' + existingGrade + '" ' +
+                           'value="' + existingGrade + '" ' +
+                           'placeholder="-" ' +
+                           'autocomplete="off">' +
                            '</td>';
             });
 
@@ -653,8 +874,34 @@ $(document).ready(function() {
 
         $('#gradesTableBody').html(bodyHtml);
 
+        // Apply initial grade colors
+        $('.grade-input').each(function() {
+            var value = $(this).val();
+            if (value) {
+                applyGradeColor($(this), value);
+            }
+        });
+
         // Initialize DataTable
         initializeDataTable();
+
+        // Initialize Tippy tooltips after table is created
+        setTimeout(function() {
+            initializeTippyTooltips();
+        }, 100);
+
+        // Force apply alternating colors after DataTable initialization
+        setTimeout(function() {
+            $('#gradesDataTable tbody tr').each(function(index) {
+                if (!$(this).hasClass('modified-row') && !$(this).hasClass('selected-row')) {
+                    if (index % 2 === 0) {
+                        $(this).css('background-color', '#e8e8e8');
+                    } else {
+                        $(this).css('background-color', '#ffffff');
+                    }
+                }
+            });
+        }, 100);
     }
 
     // Initialize DataTable
@@ -677,6 +924,7 @@ $(document).ready(function() {
             "order": [[2, "asc"]], // Order by SR
             "scrollX": true,
             "responsive": false,
+            "stripeClasses": [], // Disable DataTable's default striping
             "dom": 'Blfrtip',
             "buttons": [
                 {
@@ -744,8 +992,42 @@ $(document).ready(function() {
                 }
             ],
             "drawCallback": function(settings) {
+                // Apply alternating row colors after each draw
+                $('#gradesDataTable tbody tr:visible').each(function(index) {
+                    $(this).css('background-color', '');  // Clear any existing inline styles
+                    if (index % 2 === 0) {
+                        $(this).css('background-color', '#e8e8e8');
+                        $(this).addClass('row-even').removeClass('row-odd');
+                    } else {
+                        $(this).css('background-color', '#ffffff');
+                        $(this).addClass('row-odd').removeClass('row-even');
+                    }
+                });
+
                 // Re-bind events after DataTable redraw
                 bindGradesEntryEvents();
+
+                // Re-initialize Tippy tooltips after DataTable redraw
+                setTimeout(function() {
+                    initializeTippyTooltips();
+                }, 100);
+            },
+            "initComplete": function(settings, json) {
+                // Apply initial striping
+                $('#gradesDataTable tbody tr').each(function(index) {
+                    if (index % 2 === 0) {
+                        $(this).css('background-color', '#e8e8e8');
+                        $(this).addClass('row-even');
+                    } else {
+                        $(this).css('background-color', '#ffffff');
+                        $(this).addClass('row-odd');
+                    }
+                });
+
+                // Initialize Tippy tooltips on DataTable complete
+                setTimeout(function() {
+                    initializeTippyTooltips();
+                }, 100);
             }
         });
 
@@ -756,46 +1038,49 @@ $(document).ready(function() {
     // Bind grades entry events
     function bindGradesEntryEvents() {
         // Remove previous event handlers to prevent duplicates
-        $('.grade-select').off('change');
+        $('.grade-input').off('input change keydown');
         $('#selectAll').off('change');
         $('.row-checkbox').off('change');
 
-        // Grade select change event
-        $('.grade-select').on('change', function() {
-            var $select = $(this);
-            var studentId = $select.data('studentid');
-            var subjectId = $select.data('subjectid');
-            var originalValue = $select.data('original') || '';
-            var currentValue = $select.val();
+        // Grade input change event - FIXED TO ALLOW SPACES
+        $('.grade-input').on('input change', function() {
+            var $input = $(this);
+            var studentId = $input.data('studentid');
+            var subjectId = $input.data('subjectid');
+            var originalValue = $input.data('original') || '';
+
+            // Don't trim - preserve spaces, just convert to uppercase
+            var currentValue = $input.val().toUpperCase();
             var key = studentId + '_' + subjectId;
 
-            // Update visual style
-            $select.removeClass('grade-a-plus grade-a grade-b-plus grade-b grade-c-plus grade-c grade-d grade-f grade-ab');
-            if (currentValue) {
-                var gradeClass = 'grade-' + currentValue.toLowerCase().replace('+', '-plus');
-                $select.addClass(gradeClass);
-            }
+            // Update the input value to uppercase (preserving spaces)
+            $input.val(currentValue);
+
+            // Apply color coding based on trimmed value for matching
+            applyGradeColor($input, currentValue);
 
             // Check if value has changed from original
             if (currentValue !== originalValue) {
                 modifiedGrades[key] = currentValue;
-                markRowAsModified($select);
+                markRowAsModified($input);
+                $input.addClass('is-modified');
             } else {
                 delete modifiedGrades[key];
-                checkRowModification($select);
+                checkRowModification($input);
+                $input.removeClass('is-modified');
             }
 
             updateSummary();
         });
 
-        // Tab navigation between dropdowns
-        $('.grade-select').on('keydown', function(e) {
+        // Navigation between inputs
+        $('.grade-input').on('keydown', function(e) {
             if (e.key === 'Enter' || e.keyCode === 13) {
                 e.preventDefault();
-                var $selects = $('.grade-select:visible');
-                var currentIndex = $selects.index(this);
-                if (currentIndex < $selects.length - 1) {
-                    $selects.eq(currentIndex + 1).focus();
+                var $inputs = $('.grade-input:visible');
+                var currentIndex = $inputs.index(this);
+                if (currentIndex < $inputs.length - 1) {
+                    $inputs.eq(currentIndex + 1).focus();
                 }
             } else if (e.key === 'ArrowDown' || e.keyCode === 40) {
                 e.preventDefault();
@@ -803,6 +1088,24 @@ $(document).ready(function() {
             } else if (e.key === 'ArrowUp' || e.keyCode === 38) {
                 e.preventDefault();
                 navigateVertical($(this), -1);
+            } else if (e.key === 'ArrowRight' || e.keyCode === 39) {
+                if (this.selectionStart === this.value.length) {
+                    e.preventDefault();
+                    var $inputs = $('.grade-input:visible');
+                    var currentIndex = $inputs.index(this);
+                    if (currentIndex < $inputs.length - 1) {
+                        $inputs.eq(currentIndex + 1).focus();
+                    }
+                }
+            } else if (e.key === 'ArrowLeft' || e.keyCode === 37) {
+                if (this.selectionStart === 0) {
+                    e.preventDefault();
+                    var $inputs = $('.grade-input:visible');
+                    var currentIndex = $inputs.index(this);
+                    if (currentIndex > 0) {
+                        $inputs.eq(currentIndex - 1).focus();
+                    }
+                }
             }
         });
 
@@ -813,8 +1116,23 @@ $(document).ready(function() {
                 dataTable.$('.row-checkbox').prop('checked', isChecked);
                 if (isChecked) {
                     dataTable.$('tr').addClass('selected-row');
+                    dataTable.$('tr').each(function() {
+                        $(this).css('background-color', '#b8d4f0');
+                    });
                 } else {
                     dataTable.$('tr').removeClass('selected-row');
+                    dataTable.$('tr').each(function(index) {
+                        var $row = $(this);
+                        if ($row.hasClass('modified-row')) {
+                            $row.css('background-color', '#ffe066');
+                        } else {
+                            if (index % 2 === 0) {
+                                $row.css('background-color', '#e8e8e8');
+                            } else {
+                                $row.css('background-color', '#ffffff');
+                            }
+                        }
+                    });
                 }
             }
         });
@@ -822,10 +1140,23 @@ $(document).ready(function() {
         // Individual row checkbox
         $('.row-checkbox').on('change', function() {
             var $row = $(this).closest('tr');
+            var rowIndex = $('#gradesDataTable tbody tr').index($row);
+
             if ($(this).is(':checked')) {
                 $row.addClass('selected-row');
+                $row.css('background-color', '#b8d4f0');  // Apply blue selection background
             } else {
                 $row.removeClass('selected-row');
+                // Restore appropriate background
+                if ($row.hasClass('modified-row')) {
+                    $row.css('background-color', '#ffe066');
+                } else {
+                    if (rowIndex % 2 === 0) {
+                        $row.css('background-color', '#e8e8e8');
+                    } else {
+                        $row.css('background-color', '#ffffff');
+                    }
+                }
             }
 
             // Update select all checkbox
@@ -836,31 +1167,33 @@ $(document).ready(function() {
     }
 
     // Navigate vertically in grid
-    function navigateVertical($select, direction) {
-        var subjectId = $select.data('subjectid');
-        var $currentRow = $select.closest('tr');
+    function navigateVertical($input, direction) {
+        var subjectId = $input.data('subjectid');
+        var $currentRow = $input.closest('tr');
         var $targetRow = direction > 0 ? $currentRow.next('tr') : $currentRow.prev('tr');
 
         if ($targetRow.length > 0) {
-            var $targetSelect = $targetRow.find('[data-subjectid="' + subjectId + '"]');
-            if ($targetSelect.length > 0) {
-                $targetSelect.focus();
+            var $targetInput = $targetRow.find('[data-subjectid="' + subjectId + '"]');
+            if ($targetInput.length > 0) {
+                $targetInput.focus();
             }
         }
     }
 
     // Mark row as modified
-    function markRowAsModified($select) {
-        $select.closest('tr').addClass('modified-row');
+    function markRowAsModified($input) {
+        var $row = $input.closest('tr');
+        $row.addClass('modified-row');
+        $row.css('background-color', '#ffe066');  // Apply yellow background with inline style
     }
 
     // Check if row should remain modified
-    function checkRowModification($select) {
-        var $row = $select.closest('tr');
+    function checkRowModification($input) {
+        var $row = $input.closest('tr');
         var studentId = $row.data('studentid');
         var hasModifications = false;
 
-        $row.find('.grade-select').each(function() {
+        $row.find('.grade-input').each(function() {
             var subjectId = $(this).data('subjectid');
             var key = studentId + '_' + subjectId;
             if (modifiedGrades.hasOwnProperty(key)) {
@@ -871,6 +1204,13 @@ $(document).ready(function() {
 
         if (!hasModifications) {
             $row.removeClass('modified-row');
+            // Restore original alternating color
+            var rowIndex = $('#gradesDataTable tbody tr').index($row);
+            if (rowIndex % 2 === 0) {
+                $row.css('background-color', '#e8e8e8');
+            } else {
+                $row.css('background-color', '#ffffff');
+            }
         }
     }
 
@@ -883,11 +1223,18 @@ $(document).ready(function() {
         $('#btnSaveGrades').prop('disabled', entryCount === 0);
     }
 
-    // Apply batch grade to selected students
+    // Apply batch grade to selected students - FIXED TO ALLOW SPACES
     window.applyBatchGrade = function() {
-        var grade = $('#batchGradeSelect').val();
+        // Don't trim - preserve spaces and special characters
+        var grade = $('#batchGradeInput').val().toUpperCase();
+
         if (!grade) {
-            showToast('Please select a grade from the dropdown', 'warning');
+            showToast('Please enter a grade', 'warning');
+            return;
+        }
+
+        if (grade.length > 30) {
+            showToast('Grade cannot exceed 30 characters', 'warning');
             return;
         }
 
@@ -901,20 +1248,22 @@ $(document).ready(function() {
 
         $checkedBoxes.each(function() {
             var $row = $(this).closest('tr');
-            $row.find('.grade-select').val(grade).trigger('change');
+            $row.find('.grade-input').val(grade).trigger('change');
+            // Ensure modified color is applied
+            $row.css('background-color', '#ffe066');
         });
 
-        $('#batchGradeSelect').val('');
-        showToast('Grade ' + grade + ' applied to ' + checkedCount + ' selected student(s)', 'success');
+        $('#batchGradeInput').val('');
+        showToast('Grade "' + grade + '" applied to ' + checkedCount + ' selected student(s)', 'success');
     };
 
-    // Save all grades
+    // Save all grades - HANDLES VALUES WITH SPACES
     $('#btnSaveGrades').click(function() {
         if (isUpdating) return;
 
         var gradesToSave = [];
 
-        // Collect all modified grades
+        // Collect all modified grades (including those with spaces)
         $.each(modifiedGrades, function(key, value) {
             var parts = key.split('_');
             var studentId = parts[0];
@@ -923,7 +1272,7 @@ $(document).ready(function() {
             gradesToSave.push({
                 StudentID: studentId,
                 SubjectID: subjectId,
-                Grade: value,
+                Grade: value, // This now includes spaces if present
                 ExamTypeID: currentExamId
             });
         });
@@ -990,6 +1339,16 @@ $(document).ready(function() {
         }
         modifiedGrades = {};
         originalGrades = {};
+
+        // Clean up Tippy instances
+        if (tippyInstances.length > 0) {
+            tippyInstances.forEach(function(instance) {
+                if (instance && instance.destroy) {
+                    instance.destroy();
+                }
+            });
+            tippyInstances = [];
+        }
     });
 });
 </script>

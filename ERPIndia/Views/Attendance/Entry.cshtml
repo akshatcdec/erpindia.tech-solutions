@@ -3,6 +3,9 @@
     ViewBag.Title = "Attendance Entry";
 }
 
+<!-- Add Timepicker CSS and JS -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
+
 <style>
     /* Header Styling */
     .filter-card {
@@ -96,14 +99,96 @@
         color: #383d41;
     }
 
-    /* Time Input Styling */
+    /* Time Input Styling - Updated for text inputs */
     .time-input {
-        width: 90px;
+        width: 100px;
         padding: 6px;
         border: 1px solid #ced4da;
         border-radius: 4px;
         font-size: 13px;
         text-align: center;
+        background-color: white;
+        cursor: pointer;
+    }
+
+    .time-input:focus {
+        border-color: #9c27b0;
+        box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.1);
+        outline: none;
+    }
+
+    /* Timepicker dropdown styling */
+    .ui-timepicker-wrapper {
+        overflow-y: auto;
+        max-height: 200px;
+        width: 120px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        z-index: 99999 !important;
+    }
+
+    .ui-timepicker-wrapper.ui-timepicker-with-duration {
+        width: 13em;
+    }
+
+    .ui-timepicker-wrapper.ui-timepicker-with-duration.ui-timepicker-step-60 {
+        width: 11em;
+    }
+
+    .ui-timepicker-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .ui-timepicker-duration {
+        margin-left: 5px;
+        color: #888;
+    }
+
+    .ui-timepicker-list:hover .ui-timepicker-duration {
+        color: #888;
+    }
+
+    .ui-timepicker-list li {
+        padding: 3px 10px;
+        cursor: pointer;
+        white-space: nowrap;
+        color: #000;
+        list-style: none;
+        margin: 0;
+    }
+
+    .ui-timepicker-list:hover .ui-timepicker-selected {
+        background: #fff;
+        color: #000;
+    }
+
+    .ui-timepicker-list li:hover,
+    .ui-timepicker-list .ui-timepicker-selected:hover {
+        background: #1c79eb;
+        color: #fff;
+    }
+
+    li.ui-timepicker-selected,
+    .ui-timepicker-list li:hover,
+    .ui-timepicker-list .ui-timepicker-selected:hover {
+        background: #1c79eb;
+        color: #fff;
+    }
+
+    .ui-timepicker-list li.ui-timepicker-disabled,
+    .ui-timepicker-list li.ui-timepicker-disabled:hover,
+    .ui-timepicker-list li.ui-timepicker-selected.ui-timepicker-disabled {
+        color: #888;
+        cursor: default;
+    }
+
+    .ui-timepicker-list li.ui-timepicker-disabled:hover,
+    .ui-timepicker-list li.ui-timepicker-selected.ui-timepicker-disabled {
+        background: #f2f2f2;
     }
 
     /* Note Input Styling */
@@ -131,6 +216,22 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
+
+        .search-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: not-allowed;
+    }
 
     .save-button {
         background: linear-gradient(to right, #28a745, #20c997);
@@ -269,8 +370,11 @@
             opacity: 1;
         }
     }
-
-    /* DataTable Button Styling - matching Index page */
+    #attendanceDataTable tbody tr:nth-child(odd),
+    .attendance-table tbody tr:nth-child(odd) {
+        background-color: #ffffff !important;
+    }
+    /* DataTable Button Styling */
     .dataTables_wrapper .dataTables_length select {
         padding: 5px;
         border: 1px solid #ced4da;
@@ -329,21 +433,69 @@
         font-size: 12px;
         margin-left: 10px;
     }
+
+    /* Modified row indicator */
+    .modified-row {
+        border-left: 3px solid #ffc107 !important;
+    }
+
+    /* Invalid date selection */
+    .border-danger {
+        border: 2px solid #dc3545 !important;
+        background-color: #fff5f5 !important;
+        animation: shake 0.3s;
+    }
+
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    /* Date input validation message */
+    .date-validation-msg {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+        padding: 5px 10px;
+        background-color: #f8d7da;
+        border-left: 3px solid #dc3545;
+        border-radius: 3px;
+    }
+
+    .date-validation-msg.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 
 <div class="container-fluid">
     <!-- Header Card -->
     <div class="card">
         <div class="card-header bg-light">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-calendar-check me-2"></i>Attendance Entry
-            </h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calendar-check me-2"></i>Attendance Entry
+                </h5>
+                <div class="badge bg-warning text-dark">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Sundays are holidays - No attendance
+                </div>
+            </div>
         </div>
         <div class="card-body">
-            <div id="validationMessage" class="alert alert-warning d-none">
-                <i class="fas fa-exclamation-triangle me-2"></i>Please select all required fields before searching.
-            </div>
-
             <form id="searchForm" class="needs-validation" novalidate>
                 <div class="row g-3">
                     <div class="col-md-3">
@@ -357,6 +509,12 @@
                     <div class="col-md-3">
                         <label for="attendanceDate" class="form-label">Date <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="attendanceDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> Sunday is not allowed (holiday)
+                        </small>
+                        <div class="date-validation-msg" id="dateValidationMsg">
+                            <i class="fas fa-exclamation-circle"></i> Sunday is a holiday. Please select Monday to Saturday.
+                        </div>
                     </div>
                     <div class="col-md-3 align-self-end">
                         <button type="button" class="btn search-button w-100" id="btnSearch">
@@ -401,18 +559,17 @@
                         <thead>
                             <tr id="tableHeader">
                                 <th><input type="checkbox" id="selectAll" class="student-checkbox"></th>
-                                <th>SR</th>
-                                <th>Adm.</th>
-                                <th>Class</th>
-                                <th>Mobile</th>
-                                <th>Name</th>
-                                <th>Father</th>
-                                <th>Roll</th>
-                                <th width="80">Status</th>
-                                <th>Source</th>
-                                <th>Time-in</th>
-                                <th>Time-out</th>
-                                <th width="120">Note</th>
+                                <th align="center" style="text-align:center">Adm.</th>
+                                <th align="center" style="text-align:center">Class</th>
+                                <th align="center" style="text-align:center">Mobile</th>
+                                <th align="center" style="text-align:center">Name</th>
+                                <th align="center" style="text-align:center">Father</th>
+                                <th align="center" style="text-align:center">Roll</th>
+                                <th width="80" style="text-align:center">Status</th>
+                                <th align="center" style="text-align:center">Source</th>
+                                <th align="center" style="text-align:center">Time-in</th>
+                                <th align="center" style="text-align:center">Time-out</th>
+                                <th width="120" style="text-align:center">Note</th>
                             </tr>
                         </thead>
                         <tbody id="attendanceTableBody">
@@ -441,6 +598,9 @@
     </div>
 </div>
 
+<!-- Add Timepicker JS at the end -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
+
 <script>
 $(document).ready(function() {
     var dataTable = null;
@@ -451,6 +611,152 @@ $(document).ready(function() {
     var defaultConfig = {};
     var originalAttendance = {};
     var modifiedAttendance = {};
+
+    // Time conversion helper functions
+    function convertTo12Hour(time24) {
+        if (!time24) return '08:30 AM';
+
+        // Handle if already in 12-hour format
+        if (time24.includes('AM') || time24.includes('PM')) {
+            return time24;
+        }
+
+        var parts = time24.split(':');
+        var hours = parseInt(parts[0]);
+        var minutes = parts[1];
+        var suffix = hours >= 12 ? 'PM' : 'AM';
+
+        if (hours === 0) {
+            hours = 12;
+        } else if (hours > 12) {
+            hours = hours - 12;
+        }
+
+        return hours + ':' + minutes + ' ' + suffix;
+    }
+
+    function convertTo24Hour(time12) {
+        if (!time12) return '08:30';
+
+        // Handle if already in 24-hour format
+        if (!time12.includes('AM') && !time12.includes('PM')) {
+            return time12;
+        }
+
+        // Clean up the input
+        time12 = time12.trim();
+
+        // Split time and modifier (AM/PM)
+        var parts = time12.split(' ');
+        if (parts.length !== 2) {
+            console.error('Invalid time format:', time12);
+            return '08:30';
+        }
+
+        var time = parts[0];
+        var modifier = parts[1].toUpperCase();
+
+        var timeParts = time.split(':');
+        if (timeParts.length !== 2) {
+            console.error('Invalid time parts:', time);
+            return '08:30';
+        }
+
+        var hours = parseInt(timeParts[0]);
+        var minutes = timeParts[1];
+
+        // Convert to 24-hour format
+        if (modifier === 'PM' && hours !== 12) {
+            hours = hours + 12;
+        } else if (modifier === 'AM' && hours === 12) {
+            hours = 0;
+        }
+
+        // Ensure two-digit format
+        hours = hours.toString().padStart(2, '0');
+
+        var result = hours + ':' + minutes;
+        console.log('Converted', time12, 'to', result);
+        return result;
+    }
+
+    // Initialize time pickers
+    function initializeTimePickers() {
+        // Check if timepicker is available
+        if (!$.fn.timepicker) {
+            console.error('Timepicker library not loaded!');
+            return;
+        }
+
+        // Initialize time-in pickers
+        $('.time-in').each(function() {
+            var $this = $(this);
+            var currentValue = $this.val() || '8:30 AM';
+
+            // Ensure data-time24 is set initially
+            if (!$this.attr('data-time24')) {
+                $this.attr('data-time24', convertTo24Hour(currentValue));
+            }
+
+            $this.timepicker({
+                timeFormat: 'h:mm p',
+                interval: 15,
+                minTime: '6:00 AM',
+                maxTime: '8:00 PM',
+                defaultTime: currentValue,
+                startTime: '6:00 AM',
+                dynamic: false,
+                dropdown: true,
+                scrollbar: true
+            });
+        });
+
+        // Initialize time-out pickers
+        $('.time-out').each(function() {
+            var $this = $(this);
+            var currentValue = $this.val() || '2:45 PM';
+
+            // Ensure data-time24 is set initially
+            if (!$this.attr('data-time24')) {
+                $this.attr('data-time24', convertTo24Hour(currentValue));
+            }
+
+            $this.timepicker({
+                timeFormat: 'h:mm p',
+                interval: 15,
+                minTime: '6:00 AM',
+                maxTime: '8:00 PM',
+                defaultTime: currentValue,
+                startTime: '6:00 AM',
+                dynamic: false,
+                dropdown: true,
+                scrollbar: true
+            });
+        });
+
+        // Bind all time change events
+        $('.time-in, .time-out').off('changeTime change blur').on('changeTime change blur', function(e) {
+            var $this = $(this);
+            var time12 = $this.val();
+
+            if (time12 && (time12.includes('AM') || time12.includes('PM'))) {
+                var time24 = convertTo24Hour(time12);
+                var oldTime24 = $this.attr('data-time24');
+
+                if (oldTime24 !== time24) {
+                    $this.attr('data-time24', time24);
+                    var fieldType = $this.hasClass('time-in') ? 'IN' : 'OUT';
+                    console.log('Time-' + fieldType + ' changed:',
+                               'Student:', $this.data('studentid'),
+                               'Event:', e.type,
+                               'Old:', oldTime24,
+                               'New 12hr:', time12,
+                               'New 24hr:', time24);
+                    trackModification($this);
+                }
+            }
+        });
+    }
 
     // Toast notification function
     function showToast(message, type, duration) {
@@ -490,10 +796,59 @@ $(document).ready(function() {
         $('#spinnerOverlay').hide();
     }
 
+    // Configuration for restricted days
+    var restrictedDays = {
+        sunday: true,      // Set to true to restrict Sunday
+        saturday: false,   // Set to true to restrict Saturday as well
+        autoAdjust: true  // Automatically adjust to next valid day
+    };
+
+    // Get next valid date from a restricted day
+    function getNextValidDate(dateString) {
+        var date = new Date(dateString);
+        var dayOfWeek = date.getDay();
+
+        // If Sunday and restricted, move to Monday
+        if (dayOfWeek === 0 && restrictedDays.sunday) {
+            date.setDate(date.getDate() + 1);
+        }
+        // If Saturday and restricted, move to Monday
+        else if (dayOfWeek === 6 && restrictedDays.saturday) {
+            date.setDate(date.getDate() + 2);
+        }
+
+        // Format date as YYYY-MM-DD
+        var year = date.getFullYear();
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var day = String(date.getDate()).padStart(2, '0');
+
+        return year + '-' + month + '-' + day;
+    }
+
+    // Check if date is a restricted day
+    function isRestrictedDay(dateString) {
+        var date = new Date(dateString);
+        var dayOfWeek = date.getDay();
+
+        if (restrictedDays.sunday && dayOfWeek === 0) {
+            return { restricted: true, dayName: 'Sunday' };
+        }
+        if (restrictedDays.saturday && dayOfWeek === 6) {
+            return { restricted: true, dayName: 'Saturday' };
+        }
+
+        return { restricted: false, dayName: null };
+    }
+
+    // Get day name from date
+    function getDayName(dateString) {
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var date = new Date(dateString);
+        return days[date.getDay()];
+    }
+
     // Search button click
     $('#btnSearch').click(function() {
-        $('#validationMessage').addClass('d-none');
-
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
         var date = $('#attendanceDate').val();
@@ -509,13 +864,51 @@ $(document).ready(function() {
 
         if (errors.length > 0) {
             showToast(errors.join(', '), 'warning');
-            $('#validationMessage').html(
-                '<i class="fas fa-exclamation-triangle me-2"></i>' + errors.join(', ')
-            ).removeClass('d-none');
             return;
         }
 
-        loadAttendanceData(classId, sectionId, date);
+        // Check if selected date is a restricted day
+        var restrictionCheck = isRestrictedDay(date);
+        if (restrictionCheck.restricted) {
+            if (restrictedDays.autoAdjust) {
+                // Auto-adjust to next valid date
+                var nextValidDate = getNextValidDate(date);
+                var nextDayName = getDayName(nextValidDate);
+
+                showToast('Cannot mark attendance for ' + restrictionCheck.dayName +
+                         '! Automatically adjusted to ' + nextDayName + '.', 'info', 5000);
+
+                // Set the new date
+                $('#attendanceDate').val(nextValidDate);
+                currentDate = nextValidDate;
+
+                // Trigger change event to update validation
+                $('#attendanceDate').trigger('change');
+
+                // Load data for the adjusted date
+                setTimeout(function() {
+                    loadAttendanceData(classId, sectionId, nextValidDate);
+                }, 500);
+            } else {
+                // Don't auto-adjust, just show error
+                showToast('Attendance cannot be marked for ' + restrictionCheck.dayName + '! ' +
+                         restrictionCheck.dayName + ' is a holiday. Please select a working day.', 'error', 5000);
+
+                // Hide attendance container if it was visible
+                $('#attendanceContainer').hide();
+                if (dataTable) {
+                    dataTable.destroy();
+                    dataTable = null;
+                }
+
+                return; // Don't proceed with loading students
+            }
+        } else {
+            // Valid date - proceed normally
+            var dayName = getDayName(date);
+            console.log('Selected day:', dayName);
+            loadAttendanceData(classId, sectionId, date);
+        }
     });
 
     // Load attendance data
@@ -586,28 +979,37 @@ $(document).ready(function() {
         $('#studentCount').text(data.students.length + ' students');
 
         // Update class info
-        var className = data.students[0]?.ClassName || '';
-        var sectionName = data.students[0]?.SectionName || '';
-        $('#classInfo').text(className + ' - ' + sectionName + ' | Date: ' + currentDate);
+        $('#classInfo').text('Student List');
 
         // Build table body
         var bodyHtml = '';
         $.each(data.students, function(index, student) {
             var existingAtt = originalAttendance[student.StudentID] || {};
             var status = existingAtt.Status || student.Status || 'Present';
+
+            // Set proper defaults - 08:30 for TimeIn, 14:45 for TimeOut
             var timeIn = existingAtt.TimeIn || student.TimeIn || '08:30';
             var timeOut = existingAtt.TimeOut || student.TimeOut || '14:45';
             var note = existingAtt.Note || student.Note || '';
 
+            // Ensure times are in proper 24-hour format
+            if (!timeIn.includes(':')) timeIn = '08:30';
+            if (!timeOut.includes(':')) timeOut = '14:45';
+
+            // Convert times to 12-hour format for display
+            var timeIn12 = convertTo12Hour(timeIn);
+            var timeOut12 = convertTo12Hour(timeOut);
+
+            console.log('Student:', student.StudentName, 'TimeIn:', timeIn, '->', timeIn12, 'TimeOut:', timeOut, '->', timeOut12);
+
             bodyHtml += '<tr data-studentid="' + student.StudentID + '">' +
                      '<td class="text-center"><input type="checkbox" class="student-checkbox row-checkbox"></td>' +
-                     '<td>' + (index + 1) + '</td>' +
                      '<td>' + student.AdmissionNo + '</td>' +
                      '<td>' + student.ClassName + '-' + student.SectionName + '</td>' +
                      '<td>' + (student.MobileNumber || '-') + '</td>' +
                      '<td class="student-info-cell"><strong>' + student.StudentName + '</strong></td>' +
                      '<td class="student-info-cell">' + student.FatherName + '</td>' +
-                     '<td><span class="badge bg-warning">' + (student.RollNumber || '-') + '</span></td>' +
+                     '<td><span class="badge bg-danger">' + (student.RollNumber || '-') + '</span></td>' +
                      '<td>' +
                         '<select class="status-dropdown" ' +
                         'data-studentid="' + student.StudentID + '" ' +
@@ -620,15 +1022,17 @@ $(document).ready(function() {
                         '</select>' +
                      '</td>' +
                      '<td>Manual</td>' +
-                     '<td><input type="time" class="time-input time-in" ' +
+                     '<td><input type="text" class="time-input time-in" ' +
                         'data-studentid="' + student.StudentID + '" ' +
                         'data-original="' + timeIn + '" ' +
-                        'value="' + timeIn + '"></td>' +
-                     '<td><input type="time" class="time-input time-out" ' +
+                        'data-time24="' + timeIn + '" ' +
+                        'value="' + timeIn12 + '"></td>' +
+                     '<td><input type="text" class="time-input time-out" ' +
                         'data-studentid="' + student.StudentID + '" ' +
                         'data-original="' + timeOut + '" ' +
-                        'value="' + timeOut + '"></td>' +
-                     '<td><input type="text" class="note-input" ' +
+                        'data-time24="' + timeOut + '" ' +
+                        'value="' + timeOut12 + '"></td>' +
+                     '<td><input maxlength="20" type="text" class="note-input" ' +
                         'data-studentid="' + student.StudentID + '" ' +
                         'data-original="' + note + '" ' +
                         'placeholder="Note" value="' + note + '"></td>' +
@@ -741,11 +1145,22 @@ $(document).ready(function() {
 
     // Bind attendance events
     function bindAttendanceEvents() {
-        // Remove previous event handlers to prevent duplicates
-        $('.status-dropdown').off('change');
-        $('.time-input, .note-input').off('change input');
-        $('#selectAll').off('change');
-        $('.row-checkbox').off('change');
+        // Remove ALL previous event handlers to prevent duplicates
+        $('.status-dropdown').off();
+        $('.note-input').off();
+        $('#selectAll').off();
+        $('.row-checkbox').off();
+        $('.time-in, .time-out').off();
+
+        // Destroy any existing timepickers
+        $('.time-in, .time-out').each(function() {
+            if ($(this).data('timepicker')) {
+                $(this).timepicker('remove');
+            }
+        });
+
+        // Initialize time pickers
+        initializeTimePickers();
 
         // Status change
         $('.status-dropdown').on('change', function() {
@@ -755,8 +1170,8 @@ $(document).ready(function() {
             updateAttendanceSummary();
         });
 
-        // Time and note changes
-        $('.time-input, .note-input').on('change input', function() {
+        // Note changes
+        $('.note-input').on('change input', function() {
             trackModification($(this));
         });
 
@@ -821,12 +1236,49 @@ $(document).ready(function() {
     // Track modifications
     function trackModification($element) {
         var studentId = $element.data('studentid');
+        if (!studentId) {
+            console.warn('No student ID found for element:', $element);
+            return;
+        }
+
         var $row = $element.closest('tr');
+        if ($row.length === 0) {
+            console.warn('No row found for element:', $element);
+            return;
+        }
+
+        // Get current time values - prioritize data-time24 attribute
+        var $timeIn = $row.find('.time-in');
+        var $timeOut = $row.find('.time-out');
+
+        var timeInValue = $timeIn.attr('data-time24');
+        var timeOutValue = $timeOut.attr('data-time24');
+
+        // If data-time24 not set, convert from display value
+        if (!timeInValue || timeInValue === 'undefined') {
+            var timeIn12 = $timeIn.val();
+            if (timeIn12 && (timeIn12.includes('AM') || timeIn12.includes('PM'))) {
+                timeInValue = convertTo24Hour(timeIn12);
+                $timeIn.attr('data-time24', timeInValue);
+            } else {
+                timeInValue = timeIn12 || '08:30';
+            }
+        }
+
+        if (!timeOutValue || timeOutValue === 'undefined') {
+            var timeOut12 = $timeOut.val();
+            if (timeOut12 && (timeOut12.includes('AM') || timeOut12.includes('PM'))) {
+                timeOutValue = convertTo24Hour(timeOut12);
+                $timeOut.attr('data-time24', timeOutValue);
+            } else {
+                timeOutValue = timeOut12 || '14:45';
+            }
+        }
 
         var currentData = {
             Status: $row.find('.status-dropdown').val(),
-            TimeIn: $row.find('.time-in').val(),
-            TimeOut: $row.find('.time-out').val(),
+            TimeIn: timeInValue,
+            TimeOut: timeOutValue,
             Note: $row.find('.note-input').val()
         };
 
@@ -837,15 +1289,21 @@ $(document).ready(function() {
             Note: ''
         };
 
+        console.log('Tracking modification for student:', studentId);
+        console.log('Current data:', currentData);
+        console.log('Original data:', originalData);
+
         // Check if data has changed
         var hasChanged = JSON.stringify(currentData) !== JSON.stringify(originalData);
 
         if (hasChanged) {
             modifiedAttendance[studentId] = currentData;
             $row.addClass('modified-row');
+            console.log('Data changed - marked as modified');
         } else {
             delete modifiedAttendance[studentId];
             $row.removeClass('modified-row');
+            console.log('Data unchanged - removed modification');
         }
 
         // Enable/disable save button
@@ -912,16 +1370,75 @@ $(document).ready(function() {
         }
 
         var attendanceData = [];
+        var debugData = []; // For debugging
 
         if (dataTable) {
             dataTable.$('tbody tr').each(function() {
                 var $row = $(this);
-                attendanceData.push({
-                    StudentID: $row.data('studentid'),
+                var studentId = $row.data('studentid');
+                var $timeIn = $row.find('.time-in');
+                var $timeOut = $row.find('.time-out');
+
+                // Debug: Log current state
+                console.log('=====================================');
+                console.log('Processing Student ID:', studentId);
+                console.log('Time-IN element value:', $timeIn.val());
+                console.log('Time-IN data-time24:', $timeIn.attr('data-time24'));
+                console.log('Time-OUT element value:', $timeOut.val());
+                console.log('Time-OUT data-time24:', $timeOut.attr('data-time24'));
+
+                // Method 1: Try to get from data-time24 attribute
+                var timeInValue = $timeIn.attr('data-time24');
+                var timeOutValue = $timeOut.attr('data-time24');
+
+                // Method 2: If no data-time24, get current display value and convert
+                if (!timeInValue || timeInValue === 'undefined') {
+                    var timeIn12 = $timeIn.val();
+                    console.log('Converting Time-IN from display:', timeIn12);
+                    if (timeIn12) {
+                        if (timeIn12.includes('AM') || timeIn12.includes('PM')) {
+                            timeInValue = convertTo24Hour(timeIn12);
+                        } else {
+                            timeInValue = timeIn12; // Already in 24-hour format
+                        }
+                    } else {
+                        timeInValue = '08:30'; // Default
+                    }
+                }
+
+                if (!timeOutValue || timeOutValue === 'undefined') {
+                    var timeOut12 = $timeOut.val();
+                    console.log('Converting Time-OUT from display:', timeOut12);
+                    if (timeOut12) {
+                        if (timeOut12.includes('AM') || timeOut12.includes('PM')) {
+                            timeOutValue = convertTo24Hour(timeOut12);
+                        } else {
+                            timeOutValue = timeOut12; // Already in 24-hour format
+                        }
+                    } else {
+                        timeOutValue = '14:45'; // Default
+                    }
+                }
+
+                console.log('FINAL Time-IN to save:', timeInValue);
+                console.log('FINAL Time-OUT to save:', timeOutValue);
+                console.log('=====================================');
+
+                var attendanceRecord = {
+                    StudentID: studentId,
                     Status: $row.find('.status-dropdown').val(),
-                    TimeIn: $row.find('.time-in').val(),
-                    TimeOut: $row.find('.time-out').val(),
+                    TimeIn: timeInValue,
+                    TimeOut: timeOutValue,
                     Note: $row.find('.note-input').val()
+                };
+
+                attendanceData.push(attendanceRecord);
+
+                // Store for final debug output
+                debugData.push({
+                    StudentID: studentId,
+                    TimeIn: timeInValue,
+                    TimeOut: timeOutValue
                 });
             });
         }
@@ -930,6 +1447,18 @@ $(document).ready(function() {
             showToast('No data to save', 'error');
             return;
         }
+
+        // Final debug output - what we're sending to server
+        console.log('===== FINAL DATA BEING SENT TO SERVER =====');
+        console.log('Total Records:', attendanceData.length);
+        console.table(debugData);
+        console.log('Full Payload:', JSON.stringify({
+            Attendance: attendanceData,
+            ClassId: currentClassId,
+            SectionId: currentSectionId,
+            AttendanceDate: currentDate
+        }, null, 2));
+        console.log('============================================');
 
         showSpinner();
         $('#btnSave').prop('disabled', true)
@@ -966,6 +1495,7 @@ $(document).ready(function() {
                 hideSpinner();
                 showToast('An error occurred while saving', 'error');
                 console.error('Save error:', error);
+                console.error('Server response:', xhr.responseText);
                 $('#btnSave').html('<i class="fas fa-save me-2"></i>Save Attendance')
                     .prop('disabled', false);
             }
@@ -991,5 +1521,77 @@ $(document).ready(function() {
         modifiedAttendance = {};
         originalAttendance = {};
     });
+
+    // Add date change validation
+    $('#attendanceDate').change(function() {
+        var selectedDate = $(this).val();
+
+        if (selectedDate) {
+            var restrictionCheck = isRestrictedDay(selectedDate);
+
+            if (restrictionCheck.restricted) {
+                // Show validation message
+                $('#dateValidationMsg').html(
+                    '<i class="fas fa-exclamation-circle"></i> ' +
+                    restrictionCheck.dayName + ' is a holiday. Please select a working day (Monday to Friday).'
+                ).addClass('show');
+
+                // Show toast notification
+                showToast('Warning: ' + restrictionCheck.dayName + ' is not allowed for attendance!', 'warning', 5000);
+
+                // Add red border to indicate invalid selection
+                $(this).addClass('border-danger');
+
+                // Disable search button and change its appearance
+                $('#btnSearch').prop('disabled', true)
+                              .removeClass('search-button')
+                              .addClass('btn-secondary')
+                              .html('<i class="fas fa-ban me-2"></i>Cannot Search (' + restrictionCheck.dayName + ' Selected)');
+            } else {
+                // Valid date selected
+                var dayName = getDayName(selectedDate);
+                console.log('Valid day selected:', dayName);
+
+                // Hide validation message
+                $('#dateValidationMsg').removeClass('show');
+
+                // Remove red border if date is valid
+                $(this).removeClass('border-danger');
+
+                // Enable search button and restore its appearance
+                $('#btnSearch').prop('disabled', false)
+                              .removeClass('btn-secondary')
+                              .addClass('search-button')
+                              .html('<i class="fas fa-search me-2"></i>Search');
+            }
+        } else {
+            // No date selected
+            $('#dateValidationMsg').removeClass('show');
+            $(this).removeClass('border-danger');
+            $('#btnSearch').prop('disabled', false)
+                          .removeClass('btn-secondary')
+                          .addClass('search-button')
+                          .html('<i class="fas fa-search me-2"></i>Search');
+        }
+    });
+
+    // Check initial date on page load
+    var initialDate = $('#attendanceDate').val();
+    if (initialDate) {
+        $('#attendanceDate').trigger('change');
+    }
+
+    // Set max date to today and min date (optional)
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var yyyy = today.getFullYear();
+    var todayString = yyyy + '-' + mm + '-' + dd;
+
+    // Set max date to today (can't mark future attendance)
+    $('#attendanceDate').attr('max', todayString);
+
+    // Optionally set min date (e.g., start of academic year)
+    // $('#attendanceDate').attr('min', '2024-04-01');
 });
 </script>

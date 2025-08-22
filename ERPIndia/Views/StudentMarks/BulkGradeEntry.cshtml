@@ -571,7 +571,27 @@
 <script src="https://unpkg.com/tippy.js@6"></script>
 
 <script>
-$(document).ready(function() {
+    // Add this after document.ready
+    $(document).ready(function () {
+        $(document).on('input', '.grade-input', function () {
+            var $this = $(this);
+            var cursorPos = this.selectionStart;
+            var value = $this.val().toUpperCase();
+            $this.val(value);
+            // Restore cursor position
+            this.setSelectionRange(cursorPos, cursorPos);
+        });
+
+        // For batch grade input
+        $(document).on('input', '#batchGradeInput', function () {
+            var $this = $(this);
+            var cursorPos = this.selectionStart;
+            var value = $this.val().toUpperCase();
+            $this.val(value);
+            // Restore cursor position
+            this.setSelectionRange(cursorPos, cursorPos);
+        });
+
     var dataTable = null;
     var currentClassId = '';
     var currentSectionId = '';

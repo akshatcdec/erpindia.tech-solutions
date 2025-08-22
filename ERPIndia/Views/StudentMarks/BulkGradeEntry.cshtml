@@ -134,7 +134,6 @@
         padding: 3px;
         font-size: 13px;
         transition: all 0.2s ease;
-        text-transform: uppercase;
         background-color: white;
     }
 
@@ -421,7 +420,7 @@
         border-radius: 4px;
         margin-right: 10px;
         width: 120px;
-        text-transform: uppercase;
+     
     }
 
     .apply-batch-btn {
@@ -508,7 +507,7 @@
                         <strong style="color: #673ab7;">Grade Entry List</strong>
                     </h6>
                     <div class="batch-grade-container">
-                        <input type="text" class="batch-grade-input" id="batchGradeInput" placeholder="Enter Grade" maxlength="30">
+                        <input type="text" class="batch-grade-input" id="batchGradeInput" placeholder="Enter Grade" maxlength="20">
                         <button class="apply-batch-btn" onclick="applyBatchGrade()">
                             Apply to Selected
                         </button>
@@ -573,24 +572,6 @@
 <script>
     // Add this after document.ready
     $(document).ready(function () {
-        $(document).on('input', '.grade-input', function () {
-            var $this = $(this);
-            var cursorPos = this.selectionStart;
-            var value = $this.val().toUpperCase();
-            $this.val(value);
-            // Restore cursor position
-            this.setSelectionRange(cursorPos, cursorPos);
-        });
-
-        // For batch grade input
-        $(document).on('input', '#batchGradeInput', function () {
-            var $this = $(this);
-            var cursorPos = this.selectionStart;
-            var value = $this.val().toUpperCase();
-            $this.val(value);
-            // Restore cursor position
-            this.setSelectionRange(cursorPos, cursorPos);
-        });
 
     var dataTable = null;
     var currentClassId = '';
@@ -733,10 +714,10 @@
 
         if (grade) {
             // For display purposes, store the original value with spaces
-            var originalValue = grade.toUpperCase();
+            var originalValue = grade;
 
             // For color matching, use trimmed version
-            var trimmedGrade = grade.trim().toUpperCase();
+            var trimmedGrade = grade;
 
             // Check if it's a variation that maps to a standard grade
             if (gradeVariations[trimmedGrade]) {
@@ -879,7 +860,7 @@
                 bodyHtml += '<td>' +
                            '<input type="text" ' +
                            'class="grade-input" ' +
-                           'maxlength="30" ' +
+                           'maxlength="20" ' +
                            'data-studentid="' + student.StudentID + '" ' +
                            'data-subjectid="' + subject.SubjectID + '" ' +
                            'data-original="' + existingGrade + '" ' +
@@ -1070,7 +1051,7 @@
             var originalValue = $input.data('original') || '';
 
             // Don't trim - preserve spaces, just convert to uppercase
-            var currentValue = $input.val().toUpperCase();
+            var currentValue = $input.val();
             var key = studentId + '_' + subjectId;
 
             // Update the input value to uppercase (preserving spaces)
@@ -1246,7 +1227,7 @@
     // Apply batch grade to selected students - FIXED TO ALLOW SPACES
     window.applyBatchGrade = function() {
         // Don't trim - preserve spaces and special characters
-        var grade = $('#batchGradeInput').val().toUpperCase();
+        var grade = $('#batchGradeInput').val();
 
         if (!grade) {
             showToast('Please enter a grade', 'warning');

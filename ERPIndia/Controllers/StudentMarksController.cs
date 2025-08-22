@@ -733,7 +733,7 @@ namespace ERPIndia.Controllers
             FROM ExamMaster
             WHERE ExamID = @ExamTypeID
                 AND IsDeleted = 0
-                AND IsActive = 1
+                AND Num = 1
                 AND TenantID = @TenantID
                 AND SessionID = @SessionID";
 

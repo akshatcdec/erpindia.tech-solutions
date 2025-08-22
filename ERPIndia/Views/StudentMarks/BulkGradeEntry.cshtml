@@ -517,7 +517,7 @@
             </div>
             <div class="card-body">
                 <!-- Grade Legend -->
-                <div class="grades-legend">
+                <div class="grades-legend" style="display:none">
                     <strong>Common Grade Scale:</strong>
                     <span class="grade-badge" style="background: #4caf50; color: white;">A+</span>
                     <span class="grade-badge" style="background: #66bb6a; color: white;">A</span>
@@ -820,7 +820,7 @@ $(document).ready(function() {
             '<th>Roll</th>' +
             '<th>Exam</th>' +
             '<th>Student</th>' +
-            '<th>Father Name</th>';
+            '<th>Father</th>';
 
         // Add grade subject columns with Tippy.js tooltips
         $.each(data.subjects, function(i, subject) {

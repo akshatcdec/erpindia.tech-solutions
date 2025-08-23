@@ -662,9 +662,9 @@ $(document).ready(function() {
             html += '<td class="student-info-cell"><strong>' + student.StudentName + '</strong></td>';
             html += '<td class="student-info-cell">' + (student.FatherName || '-') + '</td>';
             html += '<td>' + (student.MobileNumber || '-') + '</td>';
-            html += '<td class="editable editable-status" data-field="Status"><span class="' + statusClass + '">' + student.Status + '</span></td>';
-            html += '<td class="editable editable-time" data-field="TimeIn">' + (student.TimeIn || '-') + '</td>';
-            html += '<td class="editable editable-time" data-field="TimeOut">' + (student.TimeOut || '-') + '</td>';
+            html += '<td><span class="' + statusClass + '">' + student.Status + '</span></td>';
+            html += '<td>' + (student.TimeIn || '-') + '</td>';
+            html += '<td>' + (student.TimeOut || '-') + '</td>';
             html += '</tr>';
         });
 

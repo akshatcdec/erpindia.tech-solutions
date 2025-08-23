@@ -3,7 +3,40 @@
     ViewBag.Title = "Edit School Profile";
     string schoolcode = Model.TenantCode.ToString();
 }
+<!-- Add Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* Time Picker Styling */
+    .time-picker {
+        background-color: white !important;
+        cursor: pointer !important;
+    }
 
+        .time-picker:focus {
+            border-color: #9c27b0;
+            box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.1);
+            outline: none;
+        }
+
+    /* Flatpickr custom styling */
+    .flatpickr-calendar {
+        box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        border-radius: 4px;
+    }
+
+    .flatpickr-time {
+        border-top: 1px solid #e6e6e6;
+    }
+
+    .flatpickr-am-pm {
+        cursor: pointer;
+    }
+
+    /* Validation styling */
+    .time-picker.is-invalid {
+        border-color: #dc3545 !important;
+    }
+</style>
 <div class="card mb-4">
     <div class="card-header p-0">
         <ul class="nav nav-tabs" id="tenantTabs" role="tablist">
@@ -120,7 +153,7 @@
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-dark text-white">
-                                        <i class="fas fa-envelope text-white"></i> 
+                                        <i class="fas fa-envelope text-white"></i>
                                     </span>
                                     @Html.TextBoxFor(model => model.Email, new { @class = "form-control", placeholder = "Mobile", maxlength = "10", required = "required" })
                                     @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
@@ -153,6 +186,47 @@
                                 </div>
                             </div>
 
+                        </div>
+                        <!-- Add this after the Online Fee Allow row -->
+                        <div class="row" style="padding:10px;">
+                            <div class="col-md-6">
+                                <label for="TimeIn" class="control-label">
+                                    School Time In <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-white">
+                                        <i class="fas fa-clock"></i>
+                                    </span>
+                                    @Html.TextBoxFor(model => model.TimeIn, new
+                                    {
+                                        @class = "form-control time-picker",
+                                        id = "schoolTimeIn",
+                                        placeholder = "Select Time In",
+                                        required = "required",
+                                        @readonly = "readonly"
+                                    })
+                                    @Html.ValidationMessageFor(model => model.TimeIn, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="TimeOut" class="control-label">
+                                    School Time Out <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-white">
+                                        <i class="fas fa-clock"></i>
+                                    </span>
+                                    @Html.TextBoxFor(model => model.TimeOut, new
+                                    {
+                                        @class = "form-control time-picker",
+                                        id = "schoolTimeOut",
+                                        placeholder = "Select Time Out",
+                                        required = "required",
+                                        @readonly = "readonly"
+                                    })
+                                    @Html.ValidationMessageFor(model => model.TimeOut, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
                         </div>
                         <div class="row" style="display:none">
                             <div class="col-md-6">
@@ -421,11 +495,11 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="logoImage">Remove</button>
                                     </div>
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.LOGOImg)"
-                                                 alt="School Logo" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.LOGOImg)
-                                        </div>
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.LOGOImg)"
+                                             alt="School Logo" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.LOGOImg)
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -446,11 +520,11 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="receiptBanner">Remove</button>
                                     </div>
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ReceiptBannerImg)"
-                                                 alt="Receipt Banner" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.ReceiptBannerImg)
-                                        </div>
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ReceiptBannerImg)"
+                                             alt="Receipt Banner" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.ReceiptBannerImg)
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -471,13 +545,13 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="admitCardBanner">Remove</button>
                                     </div>
-                                    
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content("~/Documents/" + Html.Encode(schoolcode) + "/SchoolProfile/" + Model.AdmitCardBannerImg)"
-                                                 alt="Admit Card Banner" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.AdmitCardBannerImg)
-                                        </div>
-                                    
+
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content("~/Documents/" + Html.Encode(schoolcode) + "/SchoolProfile/" + Model.AdmitCardBannerImg)"
+                                             alt="Admit Card Banner" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.AdmitCardBannerImg)
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -498,13 +572,13 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="reportCardBanner">Remove</button>
                                     </div>
-                                    
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content("~/Documents/" + Html.Encode(schoolcode) + "/SchoolProfile/" + Model.ReportCardBannerImg)"
-                                                 alt="Report Card Banner" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.ReportCardBannerImg)
-                                        </div>
-                                    
+
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content("~/Documents/" + Html.Encode(schoolcode) + "/SchoolProfile/" + Model.ReportCardBannerImg)"
+                                             alt="Report Card Banner" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.ReportCardBannerImg)
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -525,13 +599,13 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="transferCertBanner">Remove</button>
                                     </div>
-                                    
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.TransferCertBannerImg)"
-                                                 alt="Transfer Certificate" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.TransferCertBannerImg)
-                                        </div>
-                                    
+
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.TransferCertBannerImg)"
+                                             alt="Transfer Certificate" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.TransferCertBannerImg)
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -552,13 +626,13 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="salarySlipBanner">Remove</button>
                                     </div>
-                                   
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.SalarySlipBannerImg)"
-                                                 alt="Salary Slip" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.SalarySlipBannerImg)
-                                        </div>
-                                    
+
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.SalarySlipBannerImg)"
+                                             alt="Salary Slip" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.SalarySlipBannerImg)
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -579,13 +653,13 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="icardNameBanner">Remove</button>
                                     </div>
-                                    
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ICardNameBannerImg)"
-                                                 alt="I-Card Name Banner" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.ICardNameBannerImg)
-                                        </div>
-                                    
+
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ICardNameBannerImg)"
+                                             alt="I-Card Name Banner" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.ICardNameBannerImg)
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -606,13 +680,13 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="icardAddressBanner">Remove</button>
                                     </div>
-                                    
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ICardAddressBannerImg)"
-                                                 alt="I-Card Address Banner" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.ICardAddressBannerImg)
-                                        </div>
-                                    
+
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ICardAddressBannerImg)"
+                                             alt="I-Card Address Banner" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.ICardAddressBannerImg)
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -633,13 +707,13 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="principalSign">Remove</button>
                                     </div>
-                                   
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.PrincipalSignImg)"
-                                                 alt="Principal Signature" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.PrincipalSignImg)
-                                        </div>
-                                    
+
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.PrincipalSignImg)"
+                                             alt="Principal Signature" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.PrincipalSignImg)
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -660,13 +734,13 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="receiptSign">Remove</button>
                                     </div>
-                                    
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ReceiptSignImg)"
-                                                 alt="Receipt Signature" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.ReceiptSignImg)
-                                        </div>
-                                    
+
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.ReceiptSignImg)"
+                                             alt="Receipt Signature" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.ReceiptSignImg)
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -687,13 +761,13 @@
                                         <img src="" alt="Preview" class="img-thumbnail preview-img" />
                                         <button type="button" class="btn btn-sm btn-danger remove-preview" data-input="idHeaderImg">Remove</button>
                                     </div>
-                                   
-                                        <div class="mt-2 existing-image">
-                                            <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.HeaderImg)"
-                                                 alt="Header Image" class="img-thumbnail" style="max-height: 100px;" />
-                                            @Html.HiddenFor(model => model.HeaderImg)
-                                        </div>
-                                    
+
+                                    <div class="mt-2 existing-image">
+                                        <img src="@Url.Content(string.Format("/Documents/{0}/SchoolProfile/", schoolcode) + Model.HeaderImg)"
+                                             alt="Header Image" class="img-thumbnail" style="max-height: 100px;" />
+                                        @Html.HiddenFor(model => model.HeaderImg)
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -1279,3 +1353,76 @@
 <!-- Include toastr CSS and JS if not already included -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<!-- Add Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+$(document).ready(function() {
+    // ... your existing code ...
+
+    // Initialize Flatpickr for School Time In
+    flatpickr("#schoolTimeIn", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "h:i K", // 12-hour format with AM/PM
+        time_24hr: false,
+        defaultDate: "@(Model.TimeIn ?? "08:30 AM")",
+        minuteIncrement: 15,
+        onChange: function(selectedDates, dateStr, instance) {
+            console.log("School Time In changed to: " + dateStr);
+            // Update validation if needed
+            $('#schoolTimeIn').removeClass('is-invalid');
+        }
+    });
+
+    // Initialize Flatpickr for School Time Out
+    flatpickr("#schoolTimeOut", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "h:i K", // 12-hour format with AM/PM
+        time_24hr: false,
+        defaultDate: "@(Model.TimeOut ?? "02:45 PM")",
+        minuteIncrement: 15,
+        onChange: function(selectedDates, dateStr, instance) {
+            console.log("School Time Out changed to: " + dateStr);
+            // Update validation if needed
+            $('#schoolTimeOut').removeClass('is-invalid');
+        }
+    });
+
+    // Add validation for time fields
+    $('#tenant-form').on('submit', function(e) {
+        var timeIn = $('#schoolTimeIn').val();
+        var timeOut = $('#schoolTimeOut').val();
+
+        if (!timeIn || !timeOut) {
+            e.preventDefault();
+
+            if (!timeIn) {
+                $('#schoolTimeIn').addClass('is-invalid');
+                showToast('Please select School Time In', 'error');
+            }
+
+            if (!timeOut) {
+                $('#schoolTimeOut').addClass('is-invalid');
+                showToast('Please select School Time Out', 'error');
+            }
+
+            // Switch to Basic Info tab if validation fails
+            var basicTab = document.querySelector('#basic-tab');
+            if (basicTab) {
+                var tab = new bootstrap.Tab(basicTab);
+                tab.show();
+            }
+
+            return false;
+        }
+
+        // Existing submit logic...
+        showLoader();
+    });
+
+    // ... rest of your existing code ...
+});
+</script>

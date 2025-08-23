@@ -1,4 +1,7 @@
 ﻿// Controllers/AttendanceController.cs
+using Dapper;
+using ERPIndia.Models.Attendance;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -6,8 +9,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web.Mvc;
-using ERPIndia.Models.Attendance;
-using Newtonsoft.Json;
 
 namespace ERPIndia.Controllers
 {
@@ -155,7 +156,6 @@ namespace ERPIndia.Controllers
         private List<StudentAttendanceModel> GetStudentsWithAttendanceFromDB(string classId, string sectionId, DateTime attendanceDate)
         {
             var students = new List<StudentAttendanceModel>();
-
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
@@ -225,9 +225,27 @@ namespace ERPIndia.Controllers
 
             return students;
         }
-
+        public string GetSingleStringValue(string query, object parameters = null)
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+                return connection.QuerySingleOrDefault<string>(query, parameters);
+            }
+        }
         private dynamic GetAttendanceConfigFromDB(string classId, string sectionId)
         {
+            string sqltime = string.Format("SELECT isnull(convert(VARCHAR(50),TimeIn+'|'+TimeOut),'') AS SchoolTime  FROM Tenants WHERE TenantID='{0}'", CurrentTenantID);
+            string timedetails = GetSingleStringValue(sqltime);
+            string[] timevalue = timedetails.Split('|');
+            string tenantTimeIn = (timevalue != null && timevalue.Length > 0 && !string.IsNullOrWhiteSpace(timevalue[0]))
+                           ? timevalue[0]
+                           : null;
+
+            string tenantTimeOut = (timevalue != null && timevalue.Length > 1 && !string.IsNullOrWhiteSpace(timevalue[1]))
+                                    ? timevalue[1]
+                                    : null;
+
             using (SqlConnection conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
@@ -261,8 +279,8 @@ namespace ERPIndia.Controllers
                         {
                             return new
                             {
-                                DefaultTimeIn = reader["DefaultTimeIn"]?.ToString() ?? "08:30:00",
-                                DefaultTimeOut = reader["DefaultTimeOut"]?.ToString() ?? "14:45:00",
+                                DefaultTimeIn = tenantTimeIn ?? (reader["DefaultTimeIn"]?.ToString() ?? "08:30:00"),
+                                DefaultTimeOut = tenantTimeOut ?? (reader["DefaultTimeOut"]?.ToString() ?? "14:45:00"),
                                 LateMarkAfter = reader["LateMarkAfter"]?.ToString() ?? "08:45:00",
                                 HalfDayBefore = reader["HalfDayBefore"]?.ToString() ?? "12:00:00",
                                 MinAttendancePercentage = Convert.ToDecimal(reader["MinAttendancePercentage"] ?? 75)
@@ -275,8 +293,8 @@ namespace ERPIndia.Controllers
             // Return default config if none found
             return new
             {
-                DefaultTimeIn = "08:30:00",
-                DefaultTimeOut = "14:45:00",
+                DefaultTimeIn = tenantTimeIn ?? "08:30:00",
+                DefaultTimeOut = tenantTimeOut ?? "14:45:00",
                 LateMarkAfter = "08:45:00",
                 HalfDayBefore = "12:00:00",
                 MinAttendancePercentage = 75.0m

@@ -299,7 +299,9 @@ SELECT
     TopBarName,
     TopBarAddress,
     EnableOnlineFee,
-    IsSingleFee
+    IsSingleFee,
+    TimeIn,
+    TimeOut
 FROM dbo.Tenants
 WHERE TenantID = @TenantId
   AND IsDeleted = 0";
@@ -400,7 +402,9 @@ SET
     TopBarName               = @TopBarName,
     TopBarAddress            = @TopBarAddress,
     EnableOnlineFee          = @EnableOnlineFee,
-    IsSingleFee              = @IsSingleFee
+    IsSingleFee              = @IsSingleFee,
+    TimeIn                   = @TimeIn,
+    TimeOut                  = @TimeOut
 WHERE TenantID = @TenantID;
 ";
 
@@ -425,7 +429,7 @@ INSERT INTO dbo.Tenants (
     PrincipalSignImg, ReceiptSignImg,
     MgrName, ManagerContactNo, DiseCode, RegNo, website,
     schoolnote1, schoolnote2, schoolnote3, schoolnote4, schoolnote5,
-    admitnote1, admitnote2, admitnote3, admitnote4, admitnote5,TopBarName,TopBarAddress,EnableOnlineFee,IsSingleFee
+    admitnote1, admitnote2, admitnote3, admitnote4, admitnote5,TopBarName,TopBarAddress,EnableOnlineFee,IsSingleFee,TimeIn,TimeOut
 )
 VALUES (
     @TenantID, @TenantName, @Address1, @Address2, @City, @State, @ZipCode,
@@ -440,7 +444,7 @@ VALUES (
     @PrincipalSignImg, @ReceiptSignImg,
     @MgrName, @ManagerContactNo, @DiseCode, @RegNo, @website,
     @schoolnote1, @schoolnote2, @schoolnote3, @schoolnote4, @schoolnote5,
-    @admitnote1, @admitnote2, @admitnote3, @admitnote4, @admitnote5,@TopBarName,@TopBarAddress,@EnableOnlineFee,@IsSingleFee
+    @admitnote1, @admitnote2, @admitnote3, @admitnote4, @admitnote5,@TopBarName,@TopBarAddress,@EnableOnlineFee,@IsSingleFee,@TimeIn,@TimeOut
 );
 ";
 
@@ -805,5 +809,11 @@ public class TenantModel
     [Display(Name = "TopBar School Address")]
     [StringLength(100, ErrorMessage = "TopBar School Address cannot be longer than 100 characters.")]
     public string TopBarAddress { get; set; }
+    [Required]
+    [Display(Name = "Time In")]
+    public string TimeIn { get; set; }
+    [Required]
+    [Display(Name = "Time Out")]
+    public string TimeOut { get; set; }
 
 }

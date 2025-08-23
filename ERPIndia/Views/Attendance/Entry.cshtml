@@ -430,6 +430,7 @@
             transform: translateY(0);
         }
     }
+
     .table.dataTable > tbody > tr:nth-child(odd) td {
         background-color: #f9f9f9; /* light shade */
         color: #515B73;
@@ -444,6 +445,7 @@
         border-bottom: 1px solid #E9EDF4;
         padding: 12px 20px;
     }
+
     .date-validation-msg.show {
         display: block;
         animation: slideDown 0.3s ease;
@@ -562,7 +564,6 @@
 
 <!-- Add Flatpickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
 <script>
 $(document).ready(function() {
     var dataTable = null;
@@ -570,7 +571,10 @@ $(document).ready(function() {
     var currentSectionId = '';
     var currentDate = '';
     var studentsData = [];
-    var defaultConfig = {};
+    var defaultConfig = {
+        DefaultTimeIn: "8:30 AM",
+        DefaultTimeOut: "2:45 PM"  // Default fallback values
+    };
     var originalAttendance = {};
     var modifiedAttendance = {};
     var flatpickrInstances = {}; // Store Flatpickr instances for cleanup
@@ -661,7 +665,7 @@ $(document).ready(function() {
         // Initialize time-in pickers
         $('.time-in').each(function() {
             var $this = $(this);
-            var currentValue = $this.val() || '8:30 AM';
+            var currentValue = $this.val() || defaultConfig.DefaultTimeIn || '8:30 AM';
             var studentId = $this.data('studentid');
             var instanceKey = 'timein_' + studentId;
 
@@ -698,7 +702,7 @@ $(document).ready(function() {
         // Initialize time-out pickers
         $('.time-out').each(function() {
             var $this = $(this);
-            var currentValue = $this.val() || '2:45 PM';
+            var currentValue = $this.val() || defaultConfig.DefaultTimeOut || '2:45 PM';
             var studentId = $this.data('studentid');
             var instanceKey = 'timeout_' + studentId;
 
@@ -902,7 +906,15 @@ $(document).ready(function() {
 
                 if (response.success) {
                     studentsData = response.students;
-                    defaultConfig = response.config;
+
+                    // IMPORTANT: Store the config from server response
+                    if (response.config) {
+                        defaultConfig = response.config;
+                        console.log('Config received from server:', defaultConfig);
+                        console.log('Default TimeIn:', defaultConfig.DefaultTimeIn);
+                        console.log('Default TimeOut:', defaultConfig.DefaultTimeOut);
+                    }
+
                     originalAttendance = {};
                     modifiedAttendance = {};
 
@@ -961,20 +973,32 @@ $(document).ready(function() {
             var existingAtt = originalAttendance[student.StudentID] || {};
             var status = existingAtt.Status || student.Status || 'Present';
 
-            // Set proper defaults - 08:30 for TimeIn, 14:45 for TimeOut
-            var timeIn = existingAtt.TimeIn || student.TimeIn || '08:30';
-            var timeOut = existingAtt.TimeOut || student.TimeOut || '14:45';
+            // FIXED: Use config defaults properly
+            // Convert config times to 24-hour format
+            var defaultTimeIn24 = convertTo24Hour(defaultConfig.DefaultTimeIn || '8:30 AM');
+            var defaultTimeOut24 = convertTo24Hour(defaultConfig.DefaultTimeOut || '2:45 PM');
+
+            // Get time values with proper fallback to config defaults
+            var timeIn = existingAtt.TimeIn || student.TimeIn || defaultTimeIn24;
+            var timeOut = existingAtt.TimeOut || student.TimeOut || defaultTimeOut24;
             var note = existingAtt.Note || student.Note || '';
 
-            // Ensure times are in proper 24-hour format
-            if (!timeIn.includes(':')) timeIn = '08:30';
-            if (!timeOut.includes(':')) timeOut = '14:45';
+            // Ensure times are in proper 24-hour format (if they're not already)
+            if (timeIn && (timeIn.includes('AM') || timeIn.includes('PM'))) {
+                timeIn = convertTo24Hour(timeIn);
+            }
+            if (timeOut && (timeOut.includes('AM') || timeOut.includes('PM'))) {
+                timeOut = convertTo24Hour(timeOut);
+            }
 
             // Convert times to 12-hour format for display
             var timeIn12 = convertTo12Hour(timeIn);
             var timeOut12 = convertTo12Hour(timeOut);
 
-            console.log('Student:', student.StudentName, 'TimeIn:', timeIn, '->', timeIn12, 'TimeOut:', timeOut, '->', timeOut12);
+            console.log('Student:', student.StudentName,
+                       'TimeIn:', timeIn, '->', timeIn12,
+                       'TimeOut:', timeOut, '->', timeOut12,
+                       'Using Config Defaults:', defaultConfig.DefaultTimeIn, defaultConfig.DefaultTimeOut);
 
             bodyHtml += '<tr data-studentid="' + student.StudentID + '">' +
                      '<td class="text-center"><input type="checkbox" class="student-checkbox row-checkbox"></td>' +
@@ -1034,12 +1058,12 @@ $(document).ready(function() {
 
         // Initialize new DataTable
         dataTable = $('#attendanceDataTable').DataTable({
-            "paging": false, 
-             "info": false,      
+            "paging": false,
+            "info": false,
             "pageLength": -1, // Always show all
             "order": [[1, "asc"]], // Order by SR
             "scrollX": true,
-            "lengthChange": false ,// hides the length menu dropdown
+            "lengthChange": false, // hides the length menu dropdown
             "responsive": false,
             "dom": 'Bfrtip',
             "buttons": [
@@ -1229,7 +1253,7 @@ $(document).ready(function() {
                 timeInValue = convertTo24Hour(timeIn12);
                 $timeIn.attr('data-time24', timeInValue);
             } else {
-                timeInValue = timeIn12 || '08:30';
+                timeInValue = timeIn12 || convertTo24Hour(defaultConfig.DefaultTimeIn || '08:30 AM');
             }
         }
 
@@ -1239,7 +1263,7 @@ $(document).ready(function() {
                 timeOutValue = convertTo24Hour(timeOut12);
                 $timeOut.attr('data-time24', timeOutValue);
             } else {
-                timeOutValue = timeOut12 || '14:45';
+                timeOutValue = timeOut12 || convertTo24Hour(defaultConfig.DefaultTimeOut || '2:45 PM');
             }
         }
 
@@ -1250,10 +1274,11 @@ $(document).ready(function() {
             Note: $row.find('.note-input').val()
         };
 
+        // Use config defaults for original data comparison
         var originalData = originalAttendance[studentId] || {
             Status: 'Present',
-            TimeIn: '08:30',
-            TimeOut: '14:45',
+            TimeIn: convertTo24Hour(defaultConfig.DefaultTimeIn || '08:30 AM'),
+            TimeOut: convertTo24Hour(defaultConfig.DefaultTimeOut || '2:45 PM'),
             Note: ''
         };
 
@@ -1370,7 +1395,7 @@ $(document).ready(function() {
                             timeInValue = timeIn12; // Already in 24-hour format
                         }
                     } else {
-                        timeInValue = '08:30'; // Default
+                        timeInValue = convertTo24Hour(defaultConfig.DefaultTimeIn || '08:30 AM');
                     }
                 }
 
@@ -1384,7 +1409,7 @@ $(document).ready(function() {
                             timeOutValue = timeOut12; // Already in 24-hour format
                         }
                     } else {
-                        timeOutValue = '14:45'; // Default
+                        timeOutValue = convertTo24Hour(defaultConfig.DefaultTimeOut || '2:45 PM');
                     }
                 }
 
@@ -1490,53 +1515,7 @@ $(document).ready(function() {
         modifiedAttendance = {};
         originalAttendance = {};
     });
-    // Add date change validation
-    $('#attendanceDate').change(function () {
-        var selectedDate = $(this).val();
 
-        if (selectedDate) {
-            var restrictionCheck = isRestrictedDay(selectedDate);
-
-            if (restrictionCheck.restricted) {
-                // Show validation message in RED
-                $('#dateValidationMsg').html(
-                    '<i class="fas fa-exclamation-circle"></i> ' +
-                    '<strong style="color: #dc3545;">Warning: ' + restrictionCheck.dayName +
-                    ' is not allowed for attendance!</strong>'
-                ).addClass('show');
-
-                // Show toast notification
-               // showToast('Warning: ' + restrictionCheck.dayName + ' is not allowed for attendance!', 'error', 5000);
-
-                // Add red border to indicate invalid selection
-                $(this).addClass('border-danger');
-
-                // HIDE the search button completely
-                $('#btnSearch').hide();
-
-            } else {
-                // Valid date selected
-                var dayName = getDayName(selectedDate);
-                console.log('Valid day selected:', dayName);
-
-                // Hide validation message
-                $('#dateValidationMsg').removeClass('show');
-
-                // Remove red border if date is valid
-                $(this).removeClass('border-danger');
-
-                // SHOW the search button again
-                $('#btnSearch').show();
-            }
-        } else {
-            // No date selected
-            $('#dateValidationMsg').removeClass('show');
-            $(this).removeClass('border-danger');
-
-            // Show the search button
-            $('#btnSearch').show();
-        }
-    });
     // Add date change validation
     $('#attendanceDate').change(function() {
         var selectedDate = $(this).val();

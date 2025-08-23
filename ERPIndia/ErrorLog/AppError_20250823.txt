@@ -1,0 +1,77 @@
+23-08-2025 12:25:18
+Message : Incorrect syntax near 'TimeIn'.
+StackTrace:   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at System.Data.SqlClient.SqlCommand.CompleteAsyncExecuteReader(Boolean isInternal, Boolean forDescribeParameterEncryption)
+   at System.Data.SqlClient.SqlCommand.InternalEndExecuteNonQuery(IAsyncResult asyncResult, String endMethod, Boolean isInternal)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryInternal(IAsyncResult asyncResult)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryAsync(IAsyncResult asyncResult)
+   at System.Threading.Tasks.TaskFactory`1.FromAsyncCoreLogic(IAsyncResult iar, Func`2 endFunction, Action`1 endAction, Task`1 promise, Boolean requiresSynchronization)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Dapper.SqlMapper.<ExecuteImplAsync>d__39.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at TenantRepository.<SaveAsync>d__3.MoveNext() in C:\code\aaa\ERPIndia\Controllers\SchoolProfileController.cs:line 411
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at ERPIndia.Controllers.SchoolProfileController.<Index>d__5.MoveNext() in C:\code\aaa\ERPIndia\Controllers\SchoolProfileController.cs:line 202
+-------------------
+23-08-2025 12:26:41
+Message : Error parsing column 61 (TimeIn=08:30:00 - TimeSpan)
+StackTrace:   at Dapper.SqlMapper.ThrowDataException(Exception ex, Int32 index, IDataReader reader, Object value)
+   at Deserialize5e66e392-870c-4900-9bb9-c58ac25169a1(DbDataReader )
+   at Dapper.SqlMapper.ReadRow[T](CacheInfo info, Identity identity, CommandDefinition& command, Type effectiveType, DbDataReader reader)
+   at Dapper.SqlMapper.<QueryRowAsync>d__34`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at TenantRepository.<GetByIdAsync>d__2.MoveNext() in C:\code\aaa\ERPIndia\Controllers\SchoolProfileController.cs:line 309
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at ERPIndia.Controllers.SchoolProfileController.<Index>d__4.MoveNext() in C:\code\aaa\ERPIndia\Controllers\SchoolProfileController.cs:line 116
+-------------------
+23-08-2025 12:27:06
+Message : Error parsing column 61 (TimeIn=08:30:00 - TimeSpan)
+StackTrace:   at Dapper.SqlMapper.ThrowDataException(Exception ex, Int32 index, IDataReader reader, Object value)
+   at Deserialize5e66e392-870c-4900-9bb9-c58ac25169a1(DbDataReader )
+   at Dapper.SqlMapper.ReadRow[T](CacheInfo info, Identity identity, CommandDefinition& command, Type effectiveType, DbDataReader reader)
+   at Dapper.SqlMapper.<QueryRowAsync>d__34`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at TenantRepository.<GetByIdAsync>d__2.MoveNext() in C:\code\aaa\ERPIndia\Controllers\SchoolProfileController.cs:line 309
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at ERPIndia.Controllers.SchoolProfileController.<Index>d__4.MoveNext() in C:\code\aaa\ERPIndia\Controllers\SchoolProfileController.cs:line 116
+-------------------
+23-08-2025 12:28:32
+Message : Error parsing column 61 (TimeIn=08:30:00 - TimeSpan)
+StackTrace:   at Dapper.SqlMapper.ThrowDataException(Exception ex, Int32 index, IDataReader reader, Object value)
+   at Deserialize5e66e392-870c-4900-9bb9-c58ac25169a1(DbDataReader )
+   at Dapper.SqlMapper.ReadRow[T](CacheInfo info, Identity identity, CommandDefinition& command, Type effectiveType, DbDataReader reader)
+   at Dapper.SqlMapper.<QueryRowAsync>d__34`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at TenantRepository.<GetByIdAsync>d__2.MoveNext() in C:\code\aaa\ERPIndia\Controllers\SchoolProfileController.cs:line 309
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at ERPIndia.Controllers.SchoolProfileController.<Index>d__4.MoveNext() in C:\code\aaa\ERPIndia\Controllers\SchoolProfileController.cs:line 116
+-------------------

@@ -3,8 +3,8 @@
     ViewBag.Title = "Attendance Entry";
 }
 
-<!-- Add Timepicker CSS and JS -->
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
+<!-- Add Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <style>
     /* Header Styling */
@@ -99,7 +99,7 @@
         color: #383d41;
     }
 
-    /* Time Input Styling - Updated for text inputs */
+    /* Time Input Styling - Updated for Flatpickr */
     .time-input {
         width: 100px;
         padding: 6px;
@@ -111,84 +111,24 @@
         cursor: pointer;
     }
 
-    .time-input:focus {
-        border-color: #9c27b0;
-        box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.1);
-        outline: none;
-    }
+        .time-input:focus {
+            border-color: #9c27b0;
+            box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.1);
+            outline: none;
+        }
 
-    /* Timepicker dropdown styling */
-    .ui-timepicker-wrapper {
-        overflow-y: auto;
-        max-height: 200px;
-        width: 120px;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+    /* Flatpickr custom styling */
+    .flatpickr-calendar {
         box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-        z-index: 99999 !important;
+        border-radius: 4px;
     }
 
-    .ui-timepicker-wrapper.ui-timepicker-with-duration {
-        width: 13em;
+    .flatpickr-time {
+        border-top: 1px solid #e6e6e6;
     }
 
-    .ui-timepicker-wrapper.ui-timepicker-with-duration.ui-timepicker-step-60 {
-        width: 11em;
-    }
-
-    .ui-timepicker-list {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
-
-    .ui-timepicker-duration {
-        margin-left: 5px;
-        color: #888;
-    }
-
-    .ui-timepicker-list:hover .ui-timepicker-duration {
-        color: #888;
-    }
-
-    .ui-timepicker-list li {
-        padding: 3px 10px;
+    .flatpickr-am-pm {
         cursor: pointer;
-        white-space: nowrap;
-        color: #000;
-        list-style: none;
-        margin: 0;
-    }
-
-    .ui-timepicker-list:hover .ui-timepicker-selected {
-        background: #fff;
-        color: #000;
-    }
-
-    .ui-timepicker-list li:hover,
-    .ui-timepicker-list .ui-timepicker-selected:hover {
-        background: #1c79eb;
-        color: #fff;
-    }
-
-    li.ui-timepicker-selected,
-    .ui-timepicker-list li:hover,
-    .ui-timepicker-list .ui-timepicker-selected:hover {
-        background: #1c79eb;
-        color: #fff;
-    }
-
-    .ui-timepicker-list li.ui-timepicker-disabled,
-    .ui-timepicker-list li.ui-timepicker-disabled:hover,
-    .ui-timepicker-list li.ui-timepicker-selected.ui-timepicker-disabled {
-        color: #888;
-        cursor: default;
-    }
-
-    .ui-timepicker-list li.ui-timepicker-disabled:hover,
-    .ui-timepicker-list li.ui-timepicker-selected.ui-timepicker-disabled {
-        background: #f2f2f2;
     }
 
     /* Note Input Styling */
@@ -370,6 +310,7 @@
             opacity: 1;
         }
     }
+
     #attendanceDataTable tbody tr:nth-child(odd),
     .attendance-table tbody tr:nth-child(odd) {
         background-color: #ffffff !important;
@@ -447,12 +388,20 @@
     }
 
     @@keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        75% { transform: translateX(5px); }
+        0%, 100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        75% {
+            transform: translateX(5px);
+        }
     }
 
-    /* Date input validation message */
+    /* Date validation message */
     .date-validation-msg {
         color: #dc3545;
         font-size: 12px;
@@ -464,20 +413,41 @@
         border-radius: 3px;
     }
 
-    .date-validation-msg.show {
-        display: block;
-        animation: slideDown 0.3s ease;
-    }
+        .date-validation-msg.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
 
     @@keyframes slideDown {
         from {
             opacity: 0;
             transform: translateY(-10px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
         }
+    }
+    .table.dataTable > tbody > tr:nth-child(odd) td {
+        background-color: #f9f9f9; /* light shade */
+        color: #515B73;
+    }
+
+    .table.dataTable > tbody > tr:nth-child(even) td {
+        background-color: lightgray; /* gray shade */
+        color: #515B73;
+    }
+
+    .table.dataTable > tbody > tr td {
+        border-bottom: 1px solid #E9EDF4;
+        padding: 12px 20px;
+    }
+    .date-validation-msg.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+        color: #dc3545 !important; /* Red color for warning */
+        font-weight: bold;
     }
 </style>
 
@@ -489,10 +459,6 @@
                 <h5 class="card-title mb-0">
                     <i class="fas fa-calendar-check me-2"></i>Attendance Entry
                 </h5>
-                <div class="badge bg-warning text-dark">
-                    <i class="fas fa-exclamation-triangle me-1"></i>
-                    Sundays are holidays - No attendance
-                </div>
             </div>
         </div>
         <div class="card-body">
@@ -509,14 +475,9 @@
                     <div class="col-md-3">
                         <label for="attendanceDate" class="form-label">Date <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="attendanceDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle"></i> Sunday is not allowed (holiday)
-                        </small>
-                        <div class="date-validation-msg" id="dateValidationMsg">
-                            <i class="fas fa-exclamation-circle"></i> Sunday is a holiday. Please select Monday to Saturday.
-                        </div>
                     </div>
-                    <div class="col-md-3 align-self-end">
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
                         <button type="button" class="btn search-button w-100" id="btnSearch">
                             <i class="fas fa-search me-2"></i>Search
                         </button>
@@ -598,8 +559,8 @@
     </div>
 </div>
 
-<!-- Add Timepicker JS at the end -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
+<!-- Add Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script>
 $(document).ready(function() {
@@ -611,6 +572,7 @@ $(document).ready(function() {
     var defaultConfig = {};
     var originalAttendance = {};
     var modifiedAttendance = {};
+    var flatpickrInstances = {}; // Store Flatpickr instances for cleanup
 
     // Time conversion helper functions
     function convertTo12Hour(time24) {
@@ -680,34 +642,55 @@ $(document).ready(function() {
         return result;
     }
 
-    // Initialize time pickers
-    function initializeTimePickers() {
-        // Check if timepicker is available
-        if (!$.fn.timepicker) {
-            console.error('Timepicker library not loaded!');
-            return;
+    // Destroy all Flatpickr instances
+    function destroyAllFlatpickrs() {
+        for (var key in flatpickrInstances) {
+            if (flatpickrInstances[key]) {
+                flatpickrInstances[key].destroy();
+                delete flatpickrInstances[key];
+            }
         }
+    }
+
+    // Initialize Flatpickr time pickers
+    function initializeTimePickers() {
+        // Destroy existing instances first
+        destroyAllFlatpickrs();
 
         // Initialize time-in pickers
         $('.time-in').each(function() {
             var $this = $(this);
             var currentValue = $this.val() || '8:30 AM';
+            var studentId = $this.data('studentid');
+            var instanceKey = 'timein_' + studentId;
 
             // Ensure data-time24 is set initially
             if (!$this.attr('data-time24')) {
                 $this.attr('data-time24', convertTo24Hour(currentValue));
             }
 
-            $this.timepicker({
-                timeFormat: 'h:mm p',
-                interval: 15,
-                minTime: '6:00 AM',
-                maxTime: '8:00 PM',
-                defaultTime: currentValue,
-                startTime: '6:00 AM',
-                dynamic: false,
-                dropdown: true,
-                scrollbar: true
+            // Create Flatpickr instance
+            flatpickrInstances[instanceKey] = flatpickr($this[0], {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "h:i K",  // 12-hour format with AM/PM
+                time_24hr: false,
+                defaultDate: currentValue,
+                minuteIncrement: 15,
+                onChange: function(selectedDates, dateStr, instance) {
+                    var time24 = convertTo24Hour(dateStr);
+                    var oldTime24 = $this.attr('data-time24');
+
+                    if (oldTime24 !== time24) {
+                        $this.attr('data-time24', time24);
+                        console.log('Time-IN changed:',
+                                   'Student:', studentId,
+                                   'Old:', oldTime24,
+                                   'New 12hr:', dateStr,
+                                   'New 24hr:', time24);
+                        trackModification($this);
+                    }
+                }
             });
         });
 
@@ -715,46 +698,37 @@ $(document).ready(function() {
         $('.time-out').each(function() {
             var $this = $(this);
             var currentValue = $this.val() || '2:45 PM';
+            var studentId = $this.data('studentid');
+            var instanceKey = 'timeout_' + studentId;
 
             // Ensure data-time24 is set initially
             if (!$this.attr('data-time24')) {
                 $this.attr('data-time24', convertTo24Hour(currentValue));
             }
 
-            $this.timepicker({
-                timeFormat: 'h:mm p',
-                interval: 15,
-                minTime: '6:00 AM',
-                maxTime: '8:00 PM',
-                defaultTime: currentValue,
-                startTime: '6:00 AM',
-                dynamic: false,
-                dropdown: true,
-                scrollbar: true
-            });
-        });
+            // Create Flatpickr instance
+            flatpickrInstances[instanceKey] = flatpickr($this[0], {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "h:i K",  // 12-hour format with AM/PM
+                time_24hr: false,
+                defaultDate: currentValue,
+                minuteIncrement: 15,
+                onChange: function(selectedDates, dateStr, instance) {
+                    var time24 = convertTo24Hour(dateStr);
+                    var oldTime24 = $this.attr('data-time24');
 
-        // Bind all time change events
-        $('.time-in, .time-out').off('changeTime change blur').on('changeTime change blur', function(e) {
-            var $this = $(this);
-            var time12 = $this.val();
-
-            if (time12 && (time12.includes('AM') || time12.includes('PM'))) {
-                var time24 = convertTo24Hour(time12);
-                var oldTime24 = $this.attr('data-time24');
-
-                if (oldTime24 !== time24) {
-                    $this.attr('data-time24', time24);
-                    var fieldType = $this.hasClass('time-in') ? 'IN' : 'OUT';
-                    console.log('Time-' + fieldType + ' changed:',
-                               'Student:', $this.data('studentid'),
-                               'Event:', e.type,
-                               'Old:', oldTime24,
-                               'New 12hr:', time12,
-                               'New 24hr:', time24);
-                    trackModification($this);
+                    if (oldTime24 !== time24) {
+                        $this.attr('data-time24', time24);
+                        console.log('Time-OUT changed:',
+                                   'Student:', studentId,
+                                   'Old:', oldTime24,
+                                   'New 12hr:', dateStr,
+                                   'New 24hr:', time24);
+                        trackModification($this);
+                    }
                 }
-            }
+            });
         });
     }
 
@@ -852,7 +826,6 @@ $(document).ready(function() {
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
         var date = $('#attendanceDate').val();
-
         currentClassId = classId;
         currentSectionId = sectionId;
         currentDate = date;
@@ -1032,7 +1005,7 @@ $(document).ready(function() {
                         'data-original="' + timeOut + '" ' +
                         'data-time24="' + timeOut + '" ' +
                         'value="' + timeOut12 + '"></td>' +
-                     '<td><input maxlength="20" type="text" class="note-input" ' +
+                     '<td><input maxlength="50" type="text" class="note-input" ' +
                         'data-studentid="' + student.StudentID + '" ' +
                         'data-original="' + note + '" ' +
                         'placeholder="Note" value="' + note + '"></td>' +
@@ -1060,10 +1033,11 @@ $(document).ready(function() {
 
         // Initialize new DataTable
         dataTable = $('#attendanceDataTable').DataTable({
-            "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-            "pageLength": 25,
+            "paging": false,   
+            "pageLength": -1, // Always show all
             "order": [[1, "asc"]], // Order by SR
             "scrollX": true,
+            "lengthChange": false ,// hides the length menu dropdown
             "responsive": false,
             "dom": 'Blfrtip',
             "buttons": [
@@ -1150,16 +1124,8 @@ $(document).ready(function() {
         $('.note-input').off();
         $('#selectAll').off();
         $('.row-checkbox').off();
-        $('.time-in, .time-out').off();
 
-        // Destroy any existing timepickers
-        $('.time-in, .time-out').each(function() {
-            if ($(this).data('timepicker')) {
-                $(this).timepicker('remove');
-            }
-        });
-
-        // Initialize time pickers
+        // Initialize time pickers with Flatpickr
         initializeTimePickers();
 
         // Status change
@@ -1365,7 +1331,7 @@ $(document).ready(function() {
 
     // Save attendance
     $('#btnSave').click(function() {
-        if (!confirm('Save attendance for all students?')) {
+        if (!confirm('Do you want to save attendance for all students?')) {
             return;
         }
 
@@ -1511,17 +1477,64 @@ $(document).ready(function() {
         }
     });
 
-    // Hide container when filters change
+    // Hide container when filters change and cleanup Flatpickr instances
     $('#ddlClass, #ddlSection, #attendanceDate').change(function() {
         $('#attendanceContainer').hide();
         if (dataTable) {
             dataTable.destroy();
             dataTable = null;
         }
+        destroyAllFlatpickrs(); // Clean up Flatpickr instances
         modifiedAttendance = {};
         originalAttendance = {};
     });
+    // Add date change validation
+    $('#attendanceDate').change(function () {
+        var selectedDate = $(this).val();
 
+        if (selectedDate) {
+            var restrictionCheck = isRestrictedDay(selectedDate);
+
+            if (restrictionCheck.restricted) {
+                // Show validation message in RED
+                $('#dateValidationMsg').html(
+                    '<i class="fas fa-exclamation-circle"></i> ' +
+                    '<strong style="color: #dc3545;">Warning: ' + restrictionCheck.dayName +
+                    ' is not allowed for attendance!</strong>'
+                ).addClass('show');
+
+                // Show toast notification
+               // showToast('Warning: ' + restrictionCheck.dayName + ' is not allowed for attendance!', 'error', 5000);
+
+                // Add red border to indicate invalid selection
+                $(this).addClass('border-danger');
+
+                // HIDE the search button completely
+                $('#btnSearch').hide();
+
+            } else {
+                // Valid date selected
+                var dayName = getDayName(selectedDate);
+                console.log('Valid day selected:', dayName);
+
+                // Hide validation message
+                $('#dateValidationMsg').removeClass('show');
+
+                // Remove red border if date is valid
+                $(this).removeClass('border-danger');
+
+                // SHOW the search button again
+                $('#btnSearch').show();
+            }
+        } else {
+            // No date selected
+            $('#dateValidationMsg').removeClass('show');
+            $(this).removeClass('border-danger');
+
+            // Show the search button
+            $('#btnSearch').show();
+        }
+    });
     // Add date change validation
     $('#attendanceDate').change(function() {
         var selectedDate = $(this).val();
@@ -1537,7 +1550,7 @@ $(document).ready(function() {
                 ).addClass('show');
 
                 // Show toast notification
-                showToast('Warning: ' + restrictionCheck.dayName + ' is not allowed for attendance!', 'warning', 5000);
+                showToast('Warning: ' + restrictionCheck.dayName + ' is not allowed for attendance!', 'error', 5000);
 
                 // Add red border to indicate invalid selection
                 $(this).addClass('border-danger');
@@ -1591,7 +1604,9 @@ $(document).ready(function() {
     // Set max date to today (can't mark future attendance)
     $('#attendanceDate').attr('max', todayString);
 
-    // Optionally set min date (e.g., start of academic year)
-    // $('#attendanceDate').attr('min', '2024-04-01');
+    // Cleanup on page unload
+    $(window).on('beforeunload', function() {
+        destroyAllFlatpickrs();
+    });
 });
 </script>

@@ -17,6 +17,7 @@
     }
 
     /* Table Styling */
+    /* Table Styling */
     .attendance-table {
         width: 100%;
         border-collapse: collapse;
@@ -1033,13 +1034,14 @@ $(document).ready(function() {
 
         // Initialize new DataTable
         dataTable = $('#attendanceDataTable').DataTable({
-            "paging": false,   
+            "paging": false, 
+             "info": false,      
             "pageLength": -1, // Always show all
             "order": [[1, "asc"]], // Order by SR
             "scrollX": true,
             "lengthChange": false ,// hides the length menu dropdown
             "responsive": false,
-            "dom": 'Blfrtip',
+            "dom": 'Bfrtip',
             "buttons": [
                 {
                     extend: 'copy',

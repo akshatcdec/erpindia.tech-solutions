@@ -13,7 +13,13 @@ namespace ERPIndia.Models.Attendance
         public string SelectedClassName { get; set; }
         public string SelectedSectionName { get; set; }
     }
-
+    public class DailyAttendanceViewModel
+    {
+        public List<SelectListItem> Classes { get; set; }
+        public List<SelectListItem> Sections { get; set; }
+        public List<SelectListItem> StatusOptions { get; set; }
+        public DateTime SelectedDate { get; set; }
+    }
     public class StudentAttendanceModel
     {
         public string StudentID { get; set; }

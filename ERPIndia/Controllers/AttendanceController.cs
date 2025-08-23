@@ -37,7 +37,164 @@ namespace ERPIndia.Controllers
 
             return View(model);
         }
+        public ActionResult DailyAttendance()
+        {
+            var classesResult = _dropdownController.GetClasses();
+            var sectionsResult = _dropdownController.GetSections();
+            var model = new DailyAttendanceViewModel
+            {
+                Classes = ConvertToSelectList(classesResult),
+                Sections = ConvertToSelectList(sectionsResult),
+                StatusOptions = GetAttendanceStatusList(),
+                SelectedDate = DateTime.Today
+            };
 
+            return View(model);
+        }
+        private List<SelectListItem> GetAttendanceStatusList()
+        {
+            return new List<SelectListItem>  {
+                   new SelectListItem { Value = "ALL", Text = "ALL" },
+                   new SelectListItem { Value = "Present", Text = "Present" },
+                   new SelectListItem { Value = "Absent", Text = "Absent" },
+                   new SelectListItem { Value = "Late", Text = "Late" },
+                   new SelectListItem { Value = "Half Day", Text = "Half Day" },
+                   new SelectListItem { Value = "Holy Day", Text = "Holy Day" }
+                   };
+        }
+        [HttpPost]
+        public JsonResult GetDailyAttendanceReport(string classId, string sectionId, string status, DateTime date)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+
+                    string query = @"
+SELECT 
+    s.StudentID,
+    s.AdmsnNo AS AdmissionNo,
+    s.RollNo AS RollNumber,
+    c.ClassName,
+    sec.SectionName,
+    s.FirstName AS StudentName,
+    s.FatherName,
+    s.Mobile AS MobileNumber,
+    sa.Status,
+    CONVERT(VARCHAR(8), CAST(sa.TimeIn AS TIME), 108) AS TimeIn,
+    CONVERT(VARCHAR(8), CAST(sa.TimeOut AS TIME), 108) AS TimeOut,
+    ISNULL(sa.Note, '') AS Note,
+    'Yes' AS AttendanceMarked
+FROM StudentAttendance sa
+INNER JOIN StudentInfoBasic s ON s.StudentID = sa.StudentID
+INNER JOIN AcademicClassMaster c ON s.ClassID = c.ClassID
+INNER JOIN AcademicSectionMaster sec ON s.SectionID = sec.SectionID
+WHERE sa.AttendanceDate = @AttendanceDate
+    AND sa.IsDeleted = 0
+    AND s.IsActive = 1
+    AND s.IsDeleted = 0
+    AND s.TenantID = @TenantID
+    AND s.SessionID = @SessionID";
+
+                    // Add filters (ONLY ONCE)
+                    if (!string.IsNullOrEmpty(classId) && classId != "All")
+                    {
+                        query += " AND s.ClassID = @ClassID";
+                    }
+
+                    if (!string.IsNullOrEmpty(sectionId) && sectionId != "All")
+                    {
+                        query += " AND s.SectionID = @SectionID";
+                    }
+
+                    // Note: "Not Marked" filter won't work with INNER JOIN
+                    if (!string.IsNullOrEmpty(status) && status != "ALL")
+                    {
+                        if (status == "Not Marked")
+                        {
+                            // This won't return any results with INNER JOIN
+                            // You might want to handle this differently or show a message
+                            query += " AND 1=0"; // This will return no results
+                        }
+                        else
+                        {
+                            query += " AND sa.Status = @Status";
+                        }
+                    }
+
+                    // Add ORDER BY clause (ONLY ONCE)
+                    query += " ORDER BY CAST(s.RollNo AS INT), s.FirstName";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@AttendanceDate", date.Date);
+                        cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                        cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                        if (!string.IsNullOrEmpty(classId) && classId != "All")
+                            cmd.Parameters.AddWithValue("@ClassID", classId);
+
+                        if (!string.IsNullOrEmpty(sectionId) && sectionId != "All")
+                            cmd.Parameters.AddWithValue("@SectionID", sectionId);
+
+                        if (!string.IsNullOrEmpty(status) && status != "ALL" && status != "Not Marked")
+                            cmd.Parameters.AddWithValue("@Status", status);
+
+                        var students = new List<object>();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                students.Add(new
+                                {
+                                    AdmissionNo = reader["AdmissionNo"].ToString(),
+                                    RollNumber = reader["RollNumber"].ToString(),
+                                    ClassName = reader["ClassName"].ToString(),
+                                    SectionName = reader["SectionName"].ToString(),
+                                    StudentName = reader["StudentName"].ToString(),
+                                    FatherName = reader["FatherName"].ToString(),
+                                    MobileNumber = reader["MobileNumber"].ToString(),
+                                    Status = reader["Status"].ToString(),
+                                    StudentID = reader["StudentID"].ToString(),
+                                    TimeIn = ConvertTimeFormat(reader["TimeIn"].ToString()),
+                                    TimeOut = ConvertTimeFormat(reader["TimeOut"].ToString()),
+                                    Note = reader["Note"].ToString(),
+                                    AttendanceMarked = reader["AttendanceMarked"].ToString()
+                                });
+                            }
+                        }
+
+                        // Calculate summary statistics
+                        var summary = new
+                        {
+                            TotalStudents = students.Count,
+                            Present = students.Count(s => ((dynamic)s).Status == "Present"),
+                            Absent = students.Count(s => ((dynamic)s).Status == "Absent"),
+                            Late = students.Count(s => ((dynamic)s).Status == "Late"),
+                            HalfDay = students.Count(s => ((dynamic)s).Status == "Half Day"),
+                            Holiday = students.Count(s => ((dynamic)s).Status == "Holiday" || ((dynamic)s).Status == "Holy Day"),
+                            NotMarked = 0 // Will always be 0 with INNER JOIN
+                        };
+
+                        return Json(new
+                        {
+                            success = true,
+                            data = students,
+                            summary = summary,
+                            reportDate = date.ToString("dd-MMM-yyyy"),
+                            className = classId == "All" ? "All Classes" : students.FirstOrDefault() != null ? ((dynamic)students.First()).ClassName : "",
+                            sectionName = sectionId == "All" ? "All Sections" : students.FirstOrDefault() != null ? ((dynamic)students.First()).SectionName : ""
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+        // Export to PDF
         // Get students for attendance entry
         [HttpPost]
         public JsonResult GetStudentsForAttendance(string classId, string sectionId, DateTime attendanceDate)
@@ -116,7 +273,22 @@ namespace ERPIndia.Controllers
 
             return Json(options, JsonRequestBehavior.AllowGet);
         }
+        private string ConvertTimeFormat(string time)
+        {
+            if (string.IsNullOrEmpty(time)) return "8:15 AM";
 
+            try
+            {
+                if (TimeSpan.TryParse(time, out TimeSpan timeSpan))
+                {
+                    DateTime dateTime = DateTime.Today.Add(timeSpan);
+                    return dateTime.ToString("h:mm tt");
+                }
+            }
+            catch { }
+
+            return time;
+        }
         // Monthly Report
         public ActionResult MonthlyReport()
         {

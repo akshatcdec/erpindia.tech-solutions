@@ -7855,6 +7855,9 @@
   <ItemGroup>
     <Content Include="Views\Attendance\Entry.cshtml" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Attendance\DailyAttendance.cshtml" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

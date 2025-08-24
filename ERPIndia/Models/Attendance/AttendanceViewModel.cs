@@ -5,6 +5,42 @@ using System.Web.Mvc;
 
 namespace ERPIndia.Models.Attendance
 {
+    // Add to Models/Attendance folder
+
+    public class MonthlyAttendanceViewModel
+    {
+        public List<SelectListItem> Classes { get; set; }
+        public List<SelectListItem> Sections { get; set; }
+        public List<SelectListItem> Months { get; set; }
+        public List<SelectListItem> Years { get; set; }
+        public int SelectedMonth { get; set; }
+        public int SelectedYear { get; set; }
+    }
+
+    public class MonthlyReportData
+    {
+        public string ClassName { get; set; }
+        public string SectionName { get; set; }
+        public string MonthName { get; set; }
+        public int Month { get; set; }
+        public int Year { get; set; }
+        public int TotalStudents { get; set; }
+        public int WorkingDays { get; set; }
+        public decimal AverageAttendance { get; set; }
+        public List<DateInfo> DatesInMonth { get; set; }
+        public List<StudentMonthlyAttendance> Students { get; set; }
+    }
+
+    public class DateInfo
+    {
+        public DateTime Date { get; set; }
+        public string Day { get; set; }
+        public string WeekDay { get; set; }
+        public bool IsSunday { get; set; }
+        public bool IsHoliday { get; set; }
+    }
+
+   
     public class YearlyAttendanceViewModel
     {
         public List<SelectListItem> Classes { get; set; }
@@ -162,8 +198,12 @@ namespace ERPIndia.Models.Attendance
 
     public class StudentMonthlyAttendance
     {
+        public decimal AttendancePercentage { get; set; }
         public int SerialNo { get; set; }
+        public string StudentID { get; set; }
         public string StudentName { get; set; }
+        public string RollNumber { get; set; }
+        public string AdmissionNo { get; set; }
         public string FatherName { get; set; }
         public Dictionary<int, string> DailyAttendance { get; set; } // Day -> Status
         public int TotalPresent { get; set; }

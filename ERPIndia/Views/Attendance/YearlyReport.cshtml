@@ -220,6 +220,18 @@
         color: #721c24;
     }
 
+    .toast-warning {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        color: #856404;
+    }
+
+    .toast-info {
+        background: #d1ecf1;
+        border-left: 4px solid #17a2b8;
+        color: #0c5460;
+    }
+
     @@keyframes slideIn {
         from {
             transform: translateX(100%);
@@ -284,6 +296,14 @@
 
     .text-white {
         color: white !important;
+    }
+
+    .text-info {
+        color: #17a2b8 !important;
+    }
+
+    .text-success {
+        color: #28a745 !important;
     }
 </style>
 
@@ -361,6 +381,17 @@
                     <h6 class="mb-0">
                         <i class="fas fa-table me-2"></i>Yearly Attendance Details
                     </h6>
+                    <div class="no-print">
+                        <button class="export-button" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel me-1"></i>Excel
+                        </button>
+                        <button class="export-button" onclick="exportToPDF()">
+                            <i class="fas fa-file-pdf me-1"></i>PDF
+                        </button>
+                        <button class="export-button" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i>Print
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
@@ -370,9 +401,6 @@
                             <!-- Dynamic headers will be generated here -->
                         </thead>
                         <tbody id="tableBody">
-                            <tr>
-                                
-                            </tr>
                             <!-- Data will be loaded here -->
                         </tbody>
                     </table>
@@ -436,6 +464,29 @@ $(document).ready(function() {
         $('#spinnerOverlay').hide();
     }
 
+    // Clear existing data and DataTable
+    function clearExistingData() {
+        // Destroy DataTable if it exists
+        if (dataTable) {
+            dataTable.destroy();
+            dataTable = null;
+        }
+
+        // Clear the table completely
+        $('#tableHeader').empty();
+        $('#tableBody').empty();
+
+        // Clear summary data
+        $('#className').text('-');
+        $('#sectionName').text('-');
+        $('#yearValue').text('-');
+        $('#totalStudents').text('0');
+        $('#avgAttendance').text('0%');
+
+        // Reset report data
+        reportData = null;
+    }
+
     // Search button click
     $('#btnSearch').click(function() {
         var classId = $('#ddlClass').val();
@@ -447,12 +498,19 @@ $(document).ready(function() {
             return;
         }
 
+        // Clear existing data before loading new data
+        clearExistingData();
+
         loadYearlyReport(classId, sectionId, year);
     });
 
     // Load yearly report
     function loadYearlyReport(classId, sectionId, year) {
         showSpinner();
+
+        // Hide containers while loading
+        $('#summaryContainer').hide();
+        $('#reportContainer').hide();
 
         $.ajax({
             url: '@Url.Action("GetYearlyAttendanceReport", "Attendance")',
@@ -462,6 +520,7 @@ $(document).ready(function() {
                 sectionId: sectionId,
                 year: year
             },
+            cache: false, // Prevent caching
             success: function(response) {
                 hideSpinner();
 
@@ -473,18 +532,34 @@ $(document).ready(function() {
                     showToast('Report generated successfully!', 'success');
                 } else {
                     showToast(response.message || 'Failed to generate report', 'error');
+                    clearExistingData(); // Clear any partial data
+                    $('#summaryContainer').hide();
+                    $('#reportContainer').hide();
                 }
             },
             error: function(xhr, status, error) {
                 hideSpinner();
-                showToast('Error generating report', 'error');
+                showToast('Error generating report: ' + error, 'error');
                 console.error('Error:', error);
+                clearExistingData(); // Clear any partial data
+                $('#summaryContainer').hide();
+                $('#reportContainer').hide();
             }
         });
     }
 
     // Display report
     function displayReport(data) {
+        // Clear any existing table content first
+        $('#tableHeader').empty();
+        $('#tableBody').empty();
+
+        // Destroy existing DataTable if it exists
+        if (dataTable) {
+            dataTable.destroy();
+            dataTable = null;
+        }
+
         // Update summary
         $('#className').text(data.ClassName || 'N/A');
         $('#sectionName').text(data.SectionName || 'N/A');
@@ -494,12 +569,14 @@ $(document).ready(function() {
         // Calculate average attendance
         var totalPercentage = 0;
         var validStudents = 0;
-        $.each(data.Students, function(i, student) {
-            if (student.AttendancePercentage > 0) {
-                totalPercentage += student.AttendancePercentage;
-                validStudents++;
-            }
-        });
+        if (data.Students && data.Students.length > 0) {
+            $.each(data.Students, function(i, student) {
+                if (student.AttendancePercentage > 0) {
+                    totalPercentage += parseFloat(student.AttendancePercentage);
+                    validStudents++;
+                }
+            });
+        }
         var avgPercentage = validStudents > 0 ?
             (totalPercentage / validStudents).toFixed(2) : 0;
         $('#avgAttendance').text(avgPercentage + '%');
@@ -517,7 +594,7 @@ $(document).ready(function() {
                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
         $.each(months, function(i, month) {
-            headerHtml += '<th colspan="5"  align="center" style="text-align:center">' + month + '</th>';
+            headerHtml += '<th colspan="5" align="center" style="text-align:center">' + month + '</th>';
         });
 
         headerHtml += '<th colspan="6">Yearly Total</th>';
@@ -546,114 +623,163 @@ $(document).ready(function() {
 
         // Build table body
         var bodyHtml = '';
-        console.log(data);
-        $.each(data.Students, function (index, student) {
-            if (index === 0) {  // Log first student details
-                console.log('Processing Student:', {
-                    SerialNo: student.SerialNo,
-                    StudentName: student.StudentName,
-                    FatherName: student.FatherName,
-                    AdmissionNo: student.AdmissionNo,
-                    RollNumber: student.RollNumber
-                });
-            }
-            var rowClass = '';
-            if (student.AttendancePercentage < 75) {
-                rowClass = 'attendance-poor';
-            } else if (student.AttendancePercentage < 85) {
-                rowClass = 'attendance-average';
-            } else if (student.AttendancePercentage < 95) {
-                rowClass = 'attendance-good';
-            } else {
-                rowClass = 'attendance-excellent';
-            }
 
-            bodyHtml += '<tr>';
-            bodyHtml += '<td>' + student.SerialNo + '</td>';
-            bodyHtml += '<td>' + (student.AdmissionNo || '-') + '</td>';
-            bodyHtml += '<td>' + (student.RollNumber || '-') + '</td>';
-            bodyHtml += '<td>' + (student.StudentName || '-') + '</td>';
-            bodyHtml += '<td>' + (student.FatherName || '-') + '</td>';
+        if (data.Students && data.Students.length > 0) {
+            $.each(data.Students, function (index, student) {
+                var attendancePercentage = parseFloat(student.AttendancePercentage) || 0;
+                var rowClass = '';
 
-            // Monthly data
-            if (student.MonthlyData && student.MonthlyData.length === 12) {
-                for (var month = 0; month < 12; month++) {
-                    var monthData = student.MonthlyData[month];
-                    if (monthData) {
-                        bodyHtml += '<td>' + (monthData.WorkingDays || 0) + '</td>';
-                        bodyHtml += '<td>' + (monthData.Present || 0) + '</td>';
-                        bodyHtml += '<td>' + (monthData.Absent || 0) + '</td>';
-                        bodyHtml += '<td>' + (monthData.Late || 0) + '</td>';
-                        bodyHtml += '<td>' + (monthData.HalfDay || 0) + '</td>';
-                    } else {
+                if (attendancePercentage < 75) {
+                    rowClass = 'attendance-poor';
+                } else if (attendancePercentage < 85) {
+                    rowClass = 'attendance-average';
+                } else if (attendancePercentage < 95) {
+                    rowClass = 'attendance-good';
+                } else {
+                    rowClass = 'attendance-excellent';
+                }
+
+                bodyHtml += '<tr>';
+                bodyHtml += '<td>' + (student.SerialNo || (index + 1)) + '</td>';
+                bodyHtml += '<td>' + (student.AdmissionNo || '-') + '</td>';
+                bodyHtml += '<td>' + (student.RollNumber || '-') + '</td>';
+                bodyHtml += '<td>' + (student.StudentName || '-') + '</td>';
+                bodyHtml += '<td>' + (student.FatherName || '-') + '</td>';
+
+                // Monthly data
+                if (student.MonthlyData && student.MonthlyData.length === 12) {
+                    for (var month = 0; month < 12; month++) {
+                        var monthData = student.MonthlyData[month];
+                        if (monthData) {
+                            bodyHtml += '<td>' + (monthData.WorkingDays || 0) + '</td>';
+                            bodyHtml += '<td>' + (monthData.Present || 0) + '</td>';
+                            bodyHtml += '<td>' + (monthData.Absent || 0) + '</td>';
+                            bodyHtml += '<td>' + (monthData.Late || 0) + '</td>';
+                            bodyHtml += '<td>' + (monthData.HalfDay || 0) + '</td>';
+                        } else {
+                            bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>';
+                        }
+                    }
+                } else {
+                    // Fill with zeros if data is missing
+                    for (var m = 0; m < 12; m++) {
                         bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>';
                     }
                 }
-            }
-            else {
-                // Fill with zeros if data is missing
-                for (var m = 0; m < 12; m++) {
-                    bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>';
-                }
-            }
 
-            // Yearly totals
-            bodyHtml += '<td><strong>' + (student.TotalWorkingDays || 0) + '</strong></td>';
-            bodyHtml += '<td><strong>' + (student.TotalPresent || 0) + '</strong></td>';
-            bodyHtml += '<td><strong>' + (student.TotalAbsent || 0) + '</strong></td>';
-            bodyHtml += '<td><strong>' + (student.TotalLate || 0) + '</strong></td>';
-            bodyHtml += '<td><strong>' + (student.TotalHalfDay || 0) + '</strong></td>';
-            bodyHtml += '<td><strong>' + (student.TotalHolidays || 0) + '</strong></td>';
+                // Yearly totals
+                bodyHtml += '<td><strong>' + (student.TotalWorkingDays || 0) + '</strong></td>';
+                bodyHtml += '<td><strong>' + (student.TotalPresent || 0) + '</strong></td>';
+                bodyHtml += '<td><strong>' + (student.TotalAbsent || 0) + '</strong></td>';
+                bodyHtml += '<td><strong>' + (student.TotalLate || 0) + '</strong></td>';
+                bodyHtml += '<td><strong>' + (student.TotalHalfDay || 0) + '</strong></td>';
+                bodyHtml += '<td><strong>' + (student.TotalHolidays || 0) + '</strong></td>';
 
-            // Percentage with row coloring
-            bodyHtml += '<td class="' + rowClass + '"><strong>' +
-                       (student.AttendancePercentage || 0).toFixed(2) + '%</strong></td>';
+                // Percentage with row coloring
+                bodyHtml += '<td class="' + rowClass + '"><strong>' +
+                           attendancePercentage.toFixed(2) + '%</strong></td>';
 
-            // Grade with proper badge coloring
-            var gradeColor = student.AttendanceColor || 'secondary';
-            var gradeText = student.AttendanceGrade || 'N/A';
-            bodyHtml += '<td><span class="performance-badge bg-' + gradeColor + ' text-white">' +
-                       gradeText + '</span></td>';
-            bodyHtml += '</tr>';
-        });
+                // Grade with proper badge coloring
+                var gradeColor = student.AttendanceColor || 'secondary';
+                var gradeText = student.AttendanceGrade || 'N/A';
+                bodyHtml += '<td><span class="performance-badge bg-' + gradeColor + ' text-white">' +
+                           gradeText + '</span></td>';
+                bodyHtml += '</tr>';
+            });
+        } else {
+            bodyHtml = '<tr><td colspan="73" class="text-center">No data available</td></tr>';
+        }
 
         $('#tableBody').html(bodyHtml);
 
-        // Initialize DataTable
-        if (dataTable) {
-            dataTable.destroy();
+        // Initialize DataTable only if there's data
+        if (data.Students && data.Students.length > 0) {
+            // Small delay to ensure DOM is ready
+            setTimeout(function() {
+                try {
+                    dataTable = $('#yearlyAttendanceTable').DataTable({
+                        "paging": false,
+                        "info": false,
+                        "searching": true,
+                        "ordering": true,
+                        "scrollX": true,
+                        "destroy": true, // Ensure clean initialization
+                        "dom": 'Bfrtip',
+                        "buttons": [
+                            {
+                                extend: 'copy',
+                                text: 'Copy',
+                                className: 'dt-button'
+                                
+                            },
+                            {
+                                extend: 'csv',
+                                text: 'CSV',
+                                className: 'dt-button',
+                                title: 'AttendanceReport_' + new Date().getTime()
+                               
+                            },
+                            {
+                                extend: 'excel',
+                                text: 'Excel',
+                                className: 'dt-button',
+                                title: 'AttendanceReport_' + new Date().getTime()
+                                
+                            },
+                            {
+                                extend: 'pdf',
+                                text: 'PDF',
+                                className: 'dt-button',
+                                title: 'Attendance Report',
+                                orientation: 'landscape',
+                                pageSize: 'A4'
+                               
+                            },
+                            {
+                                extend: 'print',
+                                text: 'Print',
+                                className: 'dt-button',
+                                title: 'Attendance Report'
+                               
+                            }
+                        ],
+                    });
+                } catch (error) {
+                    console.error('Error initializing DataTable:', error);
+                }
+            }, 100);
         }
-
-        dataTable = $('#yearlyAttendanceTable').DataTable({
-            "paging": false,
-            "info": false,
-            "searching": true,
-            "ordering": true,
-            "scrollX": true,
-            "dom": 'Bfrtip',
-            "buttons": [
-                'copy', 'csv', 'excel', 'pdf', 'print'
-            ]
-        });
     }
 
     // Export functions
     window.exportToExcel = function() {
         if (dataTable) {
             $('.dt-button.buttons-excel').click();
+        } else {
+            showToast('No data available to export', 'warning');
         }
     };
 
     window.exportToPDF = function() {
         if (dataTable) {
             $('.dt-button.buttons-pdf').click();
+        } else {
+            showToast('No data available to export', 'warning');
         }
     };
 
-    // Hide containers when filters change
+    // Hide containers and clear data when filters change
     $('#ddlClass, #ddlSection, #ddlYear').change(function() {
         $('#summaryContainer').hide();
         $('#reportContainer').hide();
+        clearExistingData(); // Clear data when filters change
+    });
+
+    // Prevent form submission on Enter key
+    $('#searchForm').on('submit', function(e) {
+        e.preventDefault();
+        $('#btnSearch').click();
+        return false;
     });
 });
 </script>

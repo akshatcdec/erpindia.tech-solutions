@@ -1,0 +1,558 @@
+﻿@model ERPIndia.Models.Attendance.MonthlyAttendanceViewModel
+@{
+    ViewBag.Title = "Monthly Attendance Report";
+}
+
+<style>
+    /* Header Card Styling */
+    .filter-card {
+        background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    /* Table Styling */
+    .monthly-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+    }
+
+        .monthly-table thead th {
+            background: linear-gradient(to bottom, #1c79eb, #2c78bf, #155ab5);
+            color: white !important;
+            padding: 5px 3px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border: 1px solid #ddd !important;
+        }
+
+        .monthly-table tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .monthly-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .monthly-table tbody tr:hover {
+            background-color: #e3f2fd;
+        }
+
+        .monthly-table tbody td {
+            padding: 4px 2px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 10px;
+            min-width: 25px;
+        }
+
+    /* Day headers */
+    .day-header {
+        background: #4a90e2 !important;
+        color: white;
+        font-size: 10px;
+        padding: 3px 2px;
+    }
+
+    .weekday-header {
+        background: #6ba3e5 !important;
+        color: white;
+        font-size: 9px;
+        padding: 2px 1px;
+    }
+
+    /* Status cell colors */
+    .status-p {
+        background-color: #d4edda;
+        color: #155724;
+        font-weight: bold;
+    }
+
+    .status-a {
+        background-color: #f8d7da;
+        color: #721c24;
+        font-weight: bold;
+    }
+
+    .status-l {
+        background-color: #fff3cd;
+        color: #856404;
+        font-weight: bold;
+    }
+
+    .status-hd {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .status-su, .status-h {
+        background-color: #e7e7e7;
+        color: #666;
+    }
+
+    /* Total columns */
+    .total-column {
+        background-color: #f0f0f0;
+        font-weight: bold;
+        border-left: 2px solid #333 !important;
+    }
+
+    .attendance-excellent {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .attendance-good {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .attendance-average {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .attendance-poor {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Student info columns */
+    .student-info {
+        text-align: left !important;
+        font-weight: 500;
+        padding-left: 5px !important;
+        position: sticky;
+        left: 0;
+        background: white;
+        z-index: 5;
+    }
+
+    .seq-column {
+        position: sticky;
+        left: 0;
+        background: white;
+        z-index: 5;
+        width: 40px;
+    }
+
+    /* Summary cards */
+    .summary-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .summary-stat {
+        display: inline-block;
+        margin: 0 15px;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 12px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    /* Export buttons */
+    .export-button {
+        background: #28a745;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        margin: 0 5px;
+        cursor: pointer;
+    }
+
+        .export-button:hover {
+            background: #218838;
+        }
+
+    /* Spinner */
+    .spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #9c27b0;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Print styles */
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+
+        .monthly-table {
+            font-size: 9px;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header Card -->
+    <div class="card no-print">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>Monthly Attendance Report
+                </h5>
+            </div>
+        </div>
+        <div class="card-body">
+            <form id="searchForm" class="needs-validation" novalidate>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="ddlClass" class="form-label">Class <span class="text-danger">*</span></label>
+                        @Html.DropDownListFor(m => m.Classes, Model.Classes, "Select Class", new { @class = "form-select", id = "ddlClass" })
+                    </div>
+                    <div class="col-md-3">
+                        <label for="ddlSection" class="form-label">Section <span class="text-danger">*</span></label>
+                        @Html.DropDownListFor(m => m.Sections, Model.Sections, "Select Section", new { @class = "form-select", id = "ddlSection" })
+                    </div>
+                    <div class="col-md-3">
+                        <label for="ddlMonth" class="form-label">Month <span class="text-danger">*</span></label>
+                        @Html.DropDownListFor(m => m.Months, Model.Months, new { @class = "form-select", id = "ddlMonth" })
+                    </div>
+                    <div class="col-md-3">
+                        <label for="ddlYear" class="form-label">Year <span class="text-danger">*</span></label>
+                        @Html.DropDownListFor(m => m.Years, Model.Years, new { @class = "form-select", id = "ddlYear" })
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <button type="button" class="btn search-button" id="btnSearch">
+                            <i class="fas fa-search me-2"></i>Generate Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div id="summaryContainer" class="mt-4" style="display:none;">
+        <div class="summary-card">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <div class="summary-stat">
+                        <div class="stat-label">Class</div>
+                        <div class="stat-value" id="className">-</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-label">Section</div>
+                        <div class="stat-value" id="sectionName">-</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-label">Month</div>
+                        <div class="stat-value" id="monthName">-</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-label">Total Students</div>
+                        <div class="stat-value text-info" id="totalStudents">0</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-label">Working Days</div>
+                        <div class="stat-value text-primary" id="workingDays">0</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-label">Avg. Attendance</div>
+                        <div class="stat-value text-success" id="avgAttendance">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Table -->
+    <div id="reportContainer" class="mt-4" style="display:none;">
+        <div class="card">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-table me-2"></i>Monthly Attendance Details
+                    </h6>
+                    <div class="no-print">
+                        <button class="export-button" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel me-1"></i>Excel
+                        </button>
+                        <button class="export-button" onclick="exportToPDF()">
+                            <i class="fas fa-file-pdf me-1"></i>PDF
+                        </button>
+                        <button class="export-button" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i>Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="monthly-table" id="monthlyAttendanceTable">
+                        <thead id="tableHeader">
+                            <!-- Dynamic headers will be generated here -->
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Spinner Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+    <div class="spinner-box">
+        <div class="spinner"></div>
+        <div>Generating monthly report...</div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var reportData = null;
+    var dataTable = null;
+
+    // Show/Hide spinner
+    function showSpinner() {
+        $('#spinnerOverlay').css('display', 'flex');
+    }
+
+    function hideSpinner() {
+        $('#spinnerOverlay').hide();
+    }
+
+    // Clear existing data
+    function clearExistingData() {
+        if (dataTable) {
+            dataTable.destroy();
+            dataTable = null;
+        }
+
+        $('#tableHeader').empty();
+        $('#tableBody').empty();
+        $('#summaryContainer').hide();
+        $('#reportContainer').hide();
+        reportData = null;
+    }
+
+    // Search button click
+    $('#btnSearch').click(function() {
+        var classId = $('#ddlClass').val();
+        var sectionId = $('#ddlSection').val();
+        var month = $('#ddlMonth').val();
+        var year = $('#ddlYear').val();
+
+        if (!classId || !sectionId || !month || !year) {
+            alert('Please select all required fields');
+            return;
+        }
+
+        clearExistingData();
+        loadMonthlyReport(classId, sectionId, month, year);
+    });
+
+    // Load monthly report
+    function loadMonthlyReport(classId, sectionId, month, year) {
+        showSpinner();
+
+        $.ajax({
+            url: '@Url.Action("GetMonthlyAttendanceReport", "Attendance")',
+            type: 'POST',
+            data: {
+                classId: classId,
+                sectionId: sectionId,
+                month: month,
+                year: year
+            },
+            success: function(response) {
+                hideSpinner();
+
+                if (response.success) {
+                    reportData = response.data;
+                    displayReport(reportData);
+                    $('#summaryContainer').show();
+                    $('#reportContainer').show();
+                } else {
+                    alert(response.message || 'Failed to generate report');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideSpinner();
+                alert('Error generating report: ' + error);
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    // Display report
+    function displayReport(data) {
+        // Update summary
+        $('#className').text(data.ClassName || 'N/A');
+        $('#sectionName').text(data.SectionName || 'N/A');
+        $('#monthName').text(data.MonthName || 'N/A');
+        $('#totalStudents').text(data.TotalStudents || 0);
+        $('#workingDays').text(data.WorkingDays || 0);
+        $('#avgAttendance').text((data.AverageAttendance || 0).toFixed(2) + '%');
+
+        // Build table headers
+        var headerHtml = '<tr>';
+        headerHtml += '<th rowspan="2" class="seq-column">SEQ.</th>';
+        headerHtml += '<th rowspan="2">STUDENT</th>';
+        headerHtml += '<th rowspan="2">FATHER</th>';
+
+        // Date headers
+        if (data.DatesInMonth && data.DatesInMonth.length > 0) {
+            $.each(data.DatesInMonth, function(i, date) {
+                headerHtml += '<th class="day-header">' + date.Day + '</th>';
+            });
+        }
+
+        // Total headers
+        headerHtml += '<th rowspan="2" class="total-column">Total Attd.</th>';
+        headerHtml += '<th colspan="4" class="total-column">Summary</th>';
+        headerHtml += '</tr>';
+
+        // Weekday sub-headers
+        headerHtml += '<tr>';
+        if (data.DatesInMonth && data.DatesInMonth.length > 0) {
+            $.each(data.DatesInMonth, function(i, date) {
+                headerHtml += '<th class="weekday-header">' + date.WeekDay + '</th>';
+            });
+        }
+        headerHtml += '<th class="total-column">T.P</th>';
+        headerHtml += '<th class="total-column">P.A</th>';
+        headerHtml += '<th class="total-column">T.L</th>';
+        headerHtml += '<th class="total-column">T.A</th>';
+        headerHtml += '</tr>';
+
+        $('#tableHeader').html(headerHtml);
+
+        // Build table body
+        var bodyHtml = '';
+
+        if (data.Students && data.Students.length > 0) {
+            $.each(data.Students, function(index, student) {
+                var attendancePercentage = student.AttendancePercentage || 0;
+                var rowClass = '';
+
+                if (attendancePercentage < 75) {
+                    rowClass = 'attendance-poor';
+                } else if (attendancePercentage < 85) {
+                    rowClass = 'attendance-average';
+                } else if (attendancePercentage < 95) {
+                    rowClass = 'attendance-good';
+                } else {
+                    rowClass = 'attendance-excellent';
+                }
+
+                bodyHtml += '<tr>';
+                bodyHtml += '<td class="seq-column">' + student.SerialNo + '</td>';
+                bodyHtml += '<td class="student-info">' + student.StudentName + '</td>';
+                bodyHtml += '<td class="student-info">' + (student.FatherName || '-') + '</td>';
+
+                // Daily attendance
+                if (data.DatesInMonth && data.DatesInMonth.length > 0) {
+                    $.each(data.DatesInMonth, function(i, date) {
+                        var status = student.DailyAttendance[date.Day] || '';
+                        var statusClass = 'status-' + status.toLowerCase();
+
+                        if (date.IsSunday || date.IsHoliday) {
+                            statusClass = 'status-su';
+                            status = 'SU';
+                        }
+
+                        bodyHtml += '<td class="' + statusClass + '">' + status + '</td>';
+                    });
+                }
+
+                // Totals
+                var totalDays = student.TotalPresent + student.TotalAbsent +
+                               student.TotalLate + student.TotalHalfDay;
+
+                bodyHtml += '<td class="total-column">' + totalDays + '</td>';
+                bodyHtml += '<td class="total-column">' + student.TotalPresent + '</td>';
+                bodyHtml += '<td class="total-column ' + rowClass + '">' +
+                           attendancePercentage.toFixed(0) + '</td>';
+                bodyHtml += '<td class="total-column">' + student.TotalLate + '</td>';
+                bodyHtml += '<td class="total-column">' + student.TotalAbsent + '</td>';
+                bodyHtml += '</tr>';
+            });
+        } else {
+            var colspan = 3 + (data.DatesInMonth ? data.DatesInMonth.length : 31) + 5;
+            bodyHtml = '<tr><td colspan="' + colspan + '" class="text-center">No data available</td></tr>';
+        }
+
+        $('#tableBody').html(bodyHtml);
+
+        // Initialize DataTable
+        if (data.Students && data.Students.length > 0) {
+            setTimeout(function() {
+                try {
+                    dataTable = $('#monthlyAttendanceTable').DataTable({
+                        "paging": false,
+                        "info": false,
+                        "searching": true,
+                        "ordering": false,
+                        "scrollX": true,
+                        "destroy": true
+                    });
+                } catch (error) {
+                    console.error('Error initializing DataTable:', error);
+                }
+            }, 100);
+        }
+    }
+
+    // Export functions
+    window.exportToExcel = function() {
+        // Implementation for Excel export
+        alert('Export to Excel functionality to be implemented');
+    };
+
+    window.exportToPDF = function() {
+        // Implementation for PDF export
+        alert('Export to PDF functionality to be implemented');
+    };
+});
+</script>

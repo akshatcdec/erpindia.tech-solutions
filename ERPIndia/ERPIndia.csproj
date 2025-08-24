@@ -2395,6 +2395,7 @@
     <Content Include="Uploads\Students\112a4836-bfec-4ecc-bbd0-f7a58e14a821.png" />
     <Content Include="Uploads\Students\de441f17-274c-426c-b2d5-43255944c5b6.png" />
     <Content Include="Uploads\Students\de45f345-cdfe-43f3-a2a4-6da4f67c1ab2.png" />
+    <Content Include="Views\Attendance\YearlyReport.cshtml" />
     <Content Include="Views\Enquiry\_CreatePartial.cshtml" />
     <Content Include="Views\Enquiry\_EditPartial.cshtml" />
     <Content Include="Views\Enquiry\_FollowUpPartial.cshtml" />

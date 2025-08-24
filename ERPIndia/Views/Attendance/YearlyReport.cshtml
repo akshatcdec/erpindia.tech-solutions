@@ -1,0 +1,659 @@
+﻿@model ERPIndia.Models.Attendance.YearlyAttendanceViewModel
+@{
+    ViewBag.Title = "Yearly Attendance Report";
+}
+
+<style>
+    /* Header Card Styling */
+    .filter-card {
+        background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    /* Table Styling */
+    .yearly-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+
+        .yearly-table thead th {
+            background: linear-gradient(to bottom, #1c79eb, #2c78bf, #155ab5);
+            color: white !important;
+            padding: 8px 5px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border: 1px solid #ddd !important;
+        }
+
+        .yearly-table tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .yearly-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .yearly-table tbody tr:hover {
+            background-color: #e3f2fd;
+        }
+
+        .yearly-table tbody td {
+            padding: 6px 4px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 11px;
+        }
+
+    /* Month headers */
+    .month-header {
+        background: #2c78bf !important;
+        color: white;
+        font-weight: bold;
+        writing-mode: vertical-lr;
+        text-orientation: mixed;
+        padding: 5px 2px;
+        min-width: 30px;
+    }
+
+    .sub-header {
+        background: #4a90e2 !important;
+        color: white;
+        font-size: 10px;
+        padding: 4px 2px;
+    }
+
+    /* Status indicators */
+    .attendance-excellent {
+        background: #d4edda;
+        color: #155724;
+        font-weight: bold;
+    }
+
+    .attendance-good {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .attendance-average {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .attendance-poor {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Button Styling */
+    .search-button {
+        background: linear-gradient(to bottom, #1c79eb, #2c78bf, #155ab5);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+    /* Export buttons */
+    .export-button {
+        background: #28a745;
+        color: white;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        margin: 0 5px;
+        cursor: pointer;
+    }
+
+        .export-button:hover {
+            background: #218838;
+        }
+
+    /* Summary cards */
+    .summary-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .summary-stat {
+        display: inline-block;
+        margin: 0 15px;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 12px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    /* Spinner */
+    .spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .spinner-box {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #9c27b0;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Toast notifications */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 99999;
+    }
+
+    .toast {
+        min-width: 300px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        animation: slideIn 0.3s;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    .toast-success {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        color: #155724;
+    }
+
+    .toast-error {
+        background: #f8d7da;
+        border-left: 4px solid #dc3545;
+        color: #721c24;
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    /* Print styles */
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+
+        .yearly-table {
+            font-size: 10px;
+        }
+
+            .yearly-table thead th {
+                font-size: 9px;
+            }
+    }
+
+    /* Student info styling */
+    .student-info {
+        text-align: left !important;
+        font-weight: 500;
+    }
+
+    /* Performance badge */
+    .performance-badge {
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 10px;
+        font-weight: bold;
+    }
+
+    /* Grade badges colors */
+    .bg-success {
+        background: #28a745 !important;
+    }
+
+    .bg-primary {
+        background: #007bff !important;
+    }
+
+    .bg-warning {
+        background: #ffc107 !important;
+    }
+
+    .bg-danger {
+        background: #dc3545 !important;
+    }
+
+    .bg-secondary {
+        background: #6c757d !important;
+    }
+
+    .text-white {
+        color: white !important;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header Card -->
+    <div class="card no-print">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Yearly Attendance Report
+                </h5>
+            </div>
+        </div>
+        <div class="card-body">
+            <form id="searchForm" class="needs-validation" novalidate>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="ddlClass" class="form-label">Class <span class="text-danger">*</span></label>
+                        @Html.DropDownListFor(m => m.Classes, Model.Classes, "Select Class", new { @class = "form-select", id = "ddlClass" })
+                    </div>
+                    <div class="col-md-3">
+                        <label for="ddlSection" class="form-label">Section <span class="text-danger">*</span></label>
+                        @Html.DropDownListFor(m => m.Sections, Model.Sections, "Select Section", new { @class = "form-select", id = "ddlSection" })
+                    </div>
+                    <div class="col-md-3">
+                        <label for="ddlYear" class="form-label">Year <span class="text-danger">*</span></label>
+                        @Html.DropDownListFor(m => m.Years, Model.Years, new { @class = "form-select", id = "ddlYear" })
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn search-button w-100" id="btnSearch">
+                            <i class="fas fa-search me-2"></i>Generate Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div id="summaryContainer" class="mt-4" style="display:none;">
+        <div class="summary-card">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <div class="summary-stat">
+                        <div class="stat-label">Class</div>
+                        <div class="stat-value" id="className">-</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-label">Section</div>
+                        <div class="stat-value" id="sectionName">-</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-label">Year</div>
+                        <div class="stat-value" id="yearValue">-</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-label">Total Students</div>
+                        <div class="stat-value text-info" id="totalStudents">0</div>
+                    </div>
+                    <div class="summary-stat">
+                        <div class="stat-label">Avg. Attendance</div>
+                        <div class="stat-value text-success" id="avgAttendance">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Table -->
+    <div id="reportContainer" class="mt-4" style="display:none;">
+        <div class="card">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-table me-2"></i>Yearly Attendance Details
+                    </h6>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="yearly-table" id="yearlyAttendanceTable">
+                        <thead id="tableHeader">
+                            <!-- Dynamic headers will be generated here -->
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                
+                            </tr>
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Spinner Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+    <div class="spinner-box">
+        <div class="spinner"></div>
+        <div>Generating yearly report...</div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var reportData = null;
+    var dataTable = null;
+
+    // Toast notification
+    function showToast(message, type, duration) {
+        type = type || 'success';
+        duration = duration || 4000;
+
+        var icons = {
+            success: 'check-circle',
+            error: 'times-circle',
+            warning: 'exclamation-triangle',
+            info: 'info-circle'
+        };
+
+        var toastId = 'toast_' + Date.now();
+        var toastHtml =
+            '<div class="toast toast-' + type + '" id="' + toastId + '" style="display:none;">' +
+                '<i class="fas fa-' + icons[type] + ' me-2"></i>' +
+                message +
+            '</div>';
+
+        $('#toastContainer').append(toastHtml);
+        $('#' + toastId).fadeIn(300);
+
+        setTimeout(function() {
+            $('#' + toastId).fadeOut(300, function() {
+                $(this).remove();
+            });
+        }, duration);
+    }
+
+    // Show/Hide spinner
+    function showSpinner() {
+        $('#spinnerOverlay').css('display', 'flex');
+    }
+
+    function hideSpinner() {
+        $('#spinnerOverlay').hide();
+    }
+
+    // Search button click
+    $('#btnSearch').click(function() {
+        var classId = $('#ddlClass').val();
+        var sectionId = $('#ddlSection').val();
+        var year = $('#ddlYear').val();
+
+        if (!classId || !sectionId || !year) {
+            showToast('Please select all required fields', 'warning');
+            return;
+        }
+
+        loadYearlyReport(classId, sectionId, year);
+    });
+
+    // Load yearly report
+    function loadYearlyReport(classId, sectionId, year) {
+        showSpinner();
+
+        $.ajax({
+            url: '@Url.Action("GetYearlyAttendanceReport", "Attendance")',
+            type: 'POST',
+            data: {
+                classId: classId,
+                sectionId: sectionId,
+                year: year
+            },
+            success: function(response) {
+                hideSpinner();
+
+                if (response.success) {
+                    reportData = response.data;
+                    displayReport(reportData);
+                    $('#summaryContainer').show();
+                    $('#reportContainer').show();
+                    showToast('Report generated successfully!', 'success');
+                } else {
+                    showToast(response.message || 'Failed to generate report', 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideSpinner();
+                showToast('Error generating report', 'error');
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    // Display report
+    function displayReport(data) {
+        // Update summary
+        $('#className').text(data.ClassName || 'N/A');
+        $('#sectionName').text(data.SectionName || 'N/A');
+        $('#yearValue').text(data.Year || 'N/A');
+        $('#totalStudents').text(data.TotalStudents || 0);
+
+        // Calculate average attendance
+        var totalPercentage = 0;
+        var validStudents = 0;
+        $.each(data.Students, function(i, student) {
+            if (student.AttendancePercentage > 0) {
+                totalPercentage += student.AttendancePercentage;
+                validStudents++;
+            }
+        });
+        var avgPercentage = validStudents > 0 ?
+            (totalPercentage / validStudents).toFixed(2) : 0;
+        $('#avgAttendance').text(avgPercentage + '%');
+
+        // Build table headers
+        var headerHtml = '<tr>';
+        headerHtml += '<th rowspan="2">Sr</th>';
+        headerHtml += '<th rowspan="2">Adm.</th>';
+        headerHtml += '<th rowspan="2">Roll</th>';
+        headerHtml += '<th rowspan="2">Student Name</th>';
+        headerHtml += '<th rowspan="2">Father Name</th>';
+
+        // Month headers
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        $.each(months, function(i, month) {
+            headerHtml += '<th colspan="5"  align="center" style="text-align:center">' + month + '</th>';
+        });
+
+        headerHtml += '<th colspan="6">Yearly Total</th>';
+        headerHtml += '<th rowspan="2">%</th>';
+        headerHtml += '<th rowspan="2">Grade</th>';
+        headerHtml += '</tr>';
+
+        // Sub headers
+        headerHtml += '<tr>';
+        for (var i = 0; i < 12; i++) {
+            headerHtml += '<th class="sub-header">WD</th>';
+            headerHtml += '<th class="sub-header">P</th>';
+            headerHtml += '<th class="sub-header">A</th>';
+            headerHtml += '<th class="sub-header">L</th>';
+            headerHtml += '<th class="sub-header">HD</th>';
+        }
+        headerHtml += '<th class="sub-header">WD</th>';
+        headerHtml += '<th class="sub-header">P</th>';
+        headerHtml += '<th class="sub-header">A</th>';
+        headerHtml += '<th class="sub-header">L</th>';
+        headerHtml += '<th class="sub-header">HD</th>';
+        headerHtml += '<th class="sub-header">H</th>';
+        headerHtml += '</tr>';
+
+        $('#tableHeader').html(headerHtml);
+
+        // Build table body
+        var bodyHtml = '';
+        console.log(data);
+        $.each(data.Students, function (index, student) {
+            if (index === 0) {  // Log first student details
+                console.log('Processing Student:', {
+                    SerialNo: student.SerialNo,
+                    StudentName: student.StudentName,
+                    FatherName: student.FatherName,
+                    AdmissionNo: student.AdmissionNo,
+                    RollNumber: student.RollNumber
+                });
+            }
+            var rowClass = '';
+            if (student.AttendancePercentage < 75) {
+                rowClass = 'attendance-poor';
+            } else if (student.AttendancePercentage < 85) {
+                rowClass = 'attendance-average';
+            } else if (student.AttendancePercentage < 95) {
+                rowClass = 'attendance-good';
+            } else {
+                rowClass = 'attendance-excellent';
+            }
+
+            bodyHtml += '<tr>';
+            bodyHtml += '<td>' + student.SerialNo + '</td>';
+            bodyHtml += '<td>' + (student.AdmissionNo || '-') + '</td>';
+            bodyHtml += '<td>' + (student.RollNumber || '-') + '</td>';
+            bodyHtml += '<td>' + (student.StudentName || '-') + '</td>';
+            bodyHtml += '<td>' + (student.FatherName || '-') + '</td>';
+
+            // Monthly data
+            if (student.MonthlyData && student.MonthlyData.length === 12) {
+                for (var month = 0; month < 12; month++) {
+                    var monthData = student.MonthlyData[month];
+                    if (monthData) {
+                        bodyHtml += '<td>' + (monthData.WorkingDays || 0) + '</td>';
+                        bodyHtml += '<td>' + (monthData.Present || 0) + '</td>';
+                        bodyHtml += '<td>' + (monthData.Absent || 0) + '</td>';
+                        bodyHtml += '<td>' + (monthData.Late || 0) + '</td>';
+                        bodyHtml += '<td>' + (monthData.HalfDay || 0) + '</td>';
+                    } else {
+                        bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>';
+                    }
+                }
+            }
+            else {
+                // Fill with zeros if data is missing
+                for (var m = 0; m < 12; m++) {
+                    bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>';
+                }
+            }
+
+            // Yearly totals
+            bodyHtml += '<td><strong>' + (student.TotalWorkingDays || 0) + '</strong></td>';
+            bodyHtml += '<td><strong>' + (student.TotalPresent || 0) + '</strong></td>';
+            bodyHtml += '<td><strong>' + (student.TotalAbsent || 0) + '</strong></td>';
+            bodyHtml += '<td><strong>' + (student.TotalLate || 0) + '</strong></td>';
+            bodyHtml += '<td><strong>' + (student.TotalHalfDay || 0) + '</strong></td>';
+            bodyHtml += '<td><strong>' + (student.TotalHolidays || 0) + '</strong></td>';
+
+            // Percentage with row coloring
+            bodyHtml += '<td class="' + rowClass + '"><strong>' +
+                       (student.AttendancePercentage || 0).toFixed(2) + '%</strong></td>';
+
+            // Grade with proper badge coloring
+            var gradeColor = student.AttendanceColor || 'secondary';
+            var gradeText = student.AttendanceGrade || 'N/A';
+            bodyHtml += '<td><span class="performance-badge bg-' + gradeColor + ' text-white">' +
+                       gradeText + '</span></td>';
+            bodyHtml += '</tr>';
+        });
+
+        $('#tableBody').html(bodyHtml);
+
+        // Initialize DataTable
+        if (dataTable) {
+            dataTable.destroy();
+        }
+
+        dataTable = $('#yearlyAttendanceTable').DataTable({
+            "paging": false,
+            "info": false,
+            "searching": true,
+            "ordering": true,
+            "scrollX": true,
+            "dom": 'Bfrtip',
+            "buttons": [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ]
+        });
+    }
+
+    // Export functions
+    window.exportToExcel = function() {
+        if (dataTable) {
+            $('.dt-button.buttons-excel').click();
+        }
+    };
+
+    window.exportToPDF = function() {
+        if (dataTable) {
+            $('.dt-button.buttons-pdf').click();
+        }
+    };
+
+    // Hide containers when filters change
+    $('#ddlClass, #ddlSection, #ddlYear').change(function() {
+        $('#summaryContainer').hide();
+        $('#reportContainer').hide();
+    });
+});
+</script>

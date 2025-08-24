@@ -5,6 +5,101 @@ using System.Web.Mvc;
 
 namespace ERPIndia.Models.Attendance
 {
+    public class YearlyAttendanceViewModel
+    {
+        public List<SelectListItem> Classes { get; set; }
+        public List<SelectListItem> Sections { get; set; }
+        public List<SelectListItem> Years { get; set; }
+        public int SelectedYear { get; set; }
+
+        public YearlyAttendanceViewModel()
+        {
+            Classes = new List<SelectListItem>();
+            Sections = new List<SelectListItem>();
+            Years = new List<SelectListItem>();
+            SelectedYear = DateTime.Now.Year;
+        }
+    }
+
+    // Main report data model
+    public class YearlyReportData
+    {
+        public List<StudentYearlyAttendance> Students { get; set; }
+        public List<MonthlyStats> MonthlyStatistics { get; set; }
+        public string ClassName { get; set; }
+        public string SectionName { get; set; }
+        public int Year { get; set; }
+        public string SessionYear { get; set; }
+        public DateTime GeneratedDate { get; set; }
+        public int TotalStudents { get; set; }
+
+        public YearlyReportData()
+        {
+            Students = new List<StudentYearlyAttendance>();
+            MonthlyStatistics = new List<MonthlyStats>();
+        }
+    }
+
+    // Individual student yearly attendance
+    public class StudentYearlyAttendance
+    {
+        public int SerialNo { get; set; }
+        public string StudentID { get; set; }
+        public string AdmissionNo { get; set; }
+        public string RollNumber { get; set; }
+        public string StudentName { get; set; }
+        public string FatherName { get; set; }
+        public string MobileNumber { get; set; }
+        public string ClassName { get; set; }
+        public string SectionName { get; set; }
+        public List<MonthlyAttendanceData> MonthlyData { get; set; }
+        public int TotalWorkingDays { get; set; }
+        public int TotalPresent { get; set; }
+        public int TotalAbsent { get; set; }
+        public int TotalLate { get; set; }
+        public int TotalHalfDay { get; set; }
+        public int TotalHolidays { get; set; }
+        public decimal AttendancePercentage { get; set; }
+        public string AttendanceGrade { get; set; }
+        public string AttendanceColor { get; set; }
+    }
+
+    // Monthly attendance data for a student
+    public class MonthlyAttendanceData
+    {
+        public int Month { get; set; }
+        public string MonthName { get; set; }
+       
+        public int WorkingDays { get; set; }
+        public int Present { get; set; }
+        public int Absent { get; set; }
+        public int Late { get; set; }
+        public int HalfDay { get; set; }
+        public int Holidays { get; set; }
+        public decimal AttendancePercentage { get; set; }
+
+        // Quick status indicator
+        public string StatusColor
+        {
+            get
+            {
+                if (AttendancePercentage >= 90) return "#28a745"; // Green
+                if (AttendancePercentage >= 75) return "#ffc107"; // Yellow
+                return "#dc3545"; // Red
+            }
+        }
+    }
+
+    // Monthly statistics for the entire class
+    public class MonthlyStats
+    {
+        public int Month { get; set; }
+        public string MonthName { get; set; }
+        public int TotalStudents { get; set; }
+        public decimal AverageAttendance { get; set; }
+        public decimal BestAttendance { get; set; }
+        public decimal WorstAttendance { get; set; }
+    }
     public class AttendanceViewModel
     {
         public List<SelectListItem> Classes { get; set; }

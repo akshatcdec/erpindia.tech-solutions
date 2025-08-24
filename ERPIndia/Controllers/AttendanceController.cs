@@ -22,6 +22,19 @@ namespace ERPIndia.Controllers
             _dropdownController = new DropdownController();
         }
 
+        // Data Transfer Object for Student Data
+        public class StudentData
+        {
+            public string StudentID { get; set; }
+            public string AdmissionNo { get; set; }
+            public string RollNumber { get; set; }
+            public string StudentName { get; set; }
+            public string FatherName { get; set; }
+            public string MobileNumber { get; set; }
+            public string ClassName { get; set; }
+            public string SectionName { get; set; }
+        }
+
         // GET: Attendance Entry
         public ActionResult Entry()
         {
@@ -37,6 +50,7 @@ namespace ERPIndia.Controllers
 
             return View(model);
         }
+
         public ActionResult DailyAttendance()
         {
             var classesResult = _dropdownController.GetClasses();
@@ -51,6 +65,399 @@ namespace ERPIndia.Controllers
 
             return View(model);
         }
+
+        public ActionResult YearlyReport()
+        {
+            var classesResult = _dropdownController.GetClasses();
+            var sectionsResult = _dropdownController.GetSections();
+
+            var model = new YearlyAttendanceViewModel
+            {
+                Classes = ConvertToSelectList(classesResult),
+                Sections = ConvertToSelectList(sectionsResult),
+                SelectedYear = DateTime.Now.Year,
+                Years = GetYearsList()
+            };
+
+            return View(model);
+        }
+
+        // Get yearly attendance report data
+        [HttpPost]
+        public JsonResult GetYearlyAttendanceReport(string classId, string sectionId, int year)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    var reportData = new YearlyReportData
+                    {
+                        Students = new List<StudentYearlyAttendance>(),
+                        MonthlyStatistics = new List<MonthlyStats>(),
+                        Year = year,
+                        SessionYear = CurrentSessionYear.ToString()
+                    };
+
+                    // Get all students - Using strongly typed class instead of dynamic
+                    string studentQuery = @"
+                SELECT 
+                    s.StudentID,
+                    s.AdmsnNo AS AdmissionNo,
+                    s.RollNo AS RollNumber,
+                    RTRIM(LTRIM(s.FirstName + ' ' + ISNULL(s.LastName, ''))) AS StudentName,
+                    RTRIM(LTRIM(ISNULL(s.FatherName, ''))) AS FatherName,
+                    ISNULL(s.Mobile, '') AS MobileNumber,
+                    c.ClassName,
+                    sec.SectionName
+                FROM StudentInfoBasic s
+                INNER JOIN AcademicClassMaster c ON s.ClassID = c.ClassID
+                INNER JOIN AcademicSectionMaster sec ON s.SectionID = sec.SectionID
+                WHERE s.ClassID = @ClassID 
+                    AND s.SectionID = @SectionID
+                    AND s.IsActive = 1
+                    AND s.IsDeleted = 0
+                    AND s.TenantID = @TenantID
+                    AND s.SessionID = @SessionID
+                ORDER BY CAST(s.RollNo AS INT), s.FirstName";
+
+                    var students = new List<StudentData>();
+                    using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ClassID", classId);
+                        cmd.Parameters.AddWithValue("@SectionID", sectionId);
+                        cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                        cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                students.Add(new StudentData
+                                {
+                                    StudentID = reader["StudentID"]?.ToString() ?? "",
+                                    AdmissionNo = reader["AdmissionNo"]?.ToString() ?? "",
+                                    RollNumber = reader["RollNumber"]?.ToString() ?? "",
+                                    StudentName = reader["StudentName"]?.ToString()?.Trim() ?? "",
+                                    FatherName = reader["FatherName"]?.ToString()?.Trim() ?? "",
+                                    MobileNumber = reader["MobileNumber"]?.ToString() ?? "",
+                                    ClassName = reader["ClassName"]?.ToString() ?? "",
+                                    SectionName = reader["SectionName"]?.ToString() ?? ""
+                                });
+                            }
+                        }
+                    }
+
+                    // Process each student
+                    int serialNo = 1;
+                    foreach (var student in students)
+                    {
+                        var yearlyAttendance = new StudentYearlyAttendance
+                        {
+                            SerialNo = serialNo++,
+                            StudentID = student.StudentID,
+                            AdmissionNo = student.AdmissionNo,
+                            RollNumber = student.RollNumber,
+                            StudentName = student.StudentName,
+                            FatherName = student.FatherName,
+                            MobileNumber = student.MobileNumber,
+                            ClassName = student.ClassName,
+                            SectionName = student.SectionName,
+                            MonthlyData = new List<MonthlyAttendanceData>()
+                        };
+
+                        // Get attendance for each month
+                        for (int month = 1; month <= 12; month++)
+                        {
+                            var monthData = GetMonthlyAttendanceData(conn, student.StudentID, month, year);
+                            yearlyAttendance.MonthlyData.Add(monthData);
+                        }
+
+                        // Calculate yearly totals
+                        yearlyAttendance.TotalWorkingDays = yearlyAttendance.MonthlyData.Sum(m => m.WorkingDays);
+                        yearlyAttendance.TotalPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
+                        yearlyAttendance.TotalAbsent = yearlyAttendance.MonthlyData.Sum(m => m.Absent);
+                        yearlyAttendance.TotalLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
+                        yearlyAttendance.TotalHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
+                        yearlyAttendance.TotalHolidays = yearlyAttendance.MonthlyData.Sum(m => m.Holidays);
+
+                        // Calculate percentage and grade
+                        if (yearlyAttendance.TotalWorkingDays > 0)
+                        {
+                            yearlyAttendance.AttendancePercentage =
+                                Math.Round((decimal)(yearlyAttendance.TotalPresent + yearlyAttendance.TotalLate + yearlyAttendance.TotalHalfDay * 0.5m)
+                                / yearlyAttendance.TotalWorkingDays * 100, 2);
+
+                            // Calculate grade and color
+                            yearlyAttendance.AttendanceGrade = GetAttendanceGrade(yearlyAttendance.AttendancePercentage);
+                            yearlyAttendance.AttendanceColor = GetAttendanceColor(yearlyAttendance.AttendancePercentage);
+                        }
+                        else
+                        {
+                            yearlyAttendance.AttendancePercentage = 0;
+                            yearlyAttendance.AttendanceGrade = "N/A";
+                            yearlyAttendance.AttendanceColor = "secondary";
+                        }
+
+                        reportData.Students.Add(yearlyAttendance);
+                    }
+
+                    // Calculate monthly statistics for the class
+                    for (int month = 1; month <= 12; month++)
+                    {
+                        var monthStats = CalculateMonthlyStatistics(conn, classId, sectionId, month, year);
+                        reportData.MonthlyStatistics.Add(monthStats);
+                    }
+
+                    // Set report metadata
+                    if (students.Any())
+                    {
+                        reportData.ClassName = students.First().ClassName ?? "";
+                        reportData.SectionName = students.First().SectionName ?? "";
+                    }
+                    else
+                    {
+                        // If no students, get class and section names directly
+                        string classNameQuery = "SELECT ClassName FROM AcademicClassMaster WHERE ClassID = @ClassID";
+                        string sectionNameQuery = "SELECT SectionName FROM AcademicSectionMaster WHERE SectionID = @SectionID";
+
+                        using (SqlCommand cmd = new SqlCommand(classNameQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@ClassID", classId);
+                            reportData.ClassName = cmd.ExecuteScalar()?.ToString() ?? "";
+                        }
+
+                        using (SqlCommand cmd = new SqlCommand(sectionNameQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@SectionID", sectionId);
+                            reportData.SectionName = cmd.ExecuteScalar()?.ToString() ?? "";
+                        }
+                    }
+
+                    reportData.GeneratedDate = DateTime.Now;
+                    reportData.TotalStudents = students.Count;
+
+                    return Json(new
+                    {
+                        success = true,
+                        data = reportData,
+                        message = $"Report generated for {students.Count} students"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
+
+        // Grade calculation methods
+        private string GetAttendanceGrade(decimal percentage)
+        {
+            if (percentage >= 95) return "A+";
+            if (percentage >= 90) return "A";
+            if (percentage >= 85) return "B+";
+            if (percentage >= 80) return "B";
+            if (percentage >= 75) return "C+";
+            if (percentage >= 70) return "C";
+            if (percentage >= 60) return "D";
+            return "F";
+        }
+
+        private string GetAttendanceColor(decimal percentage)
+        {
+            if (percentage >= 90) return "success";
+            if (percentage >= 75) return "primary";
+            if (percentage >= 60) return "warning";
+            return "danger";
+        }
+
+        // Helper method to get monthly attendance data for a student
+        private MonthlyAttendanceData GetMonthlyAttendanceData(SqlConnection conn, string studentId, int month, int year)
+        {
+            var monthData = new MonthlyAttendanceData
+            {
+                Month = month,
+                MonthName = new DateTime(year, month, 1).ToString("MMM"),
+                Present = 0,
+                Absent = 0,
+                Late = 0,
+                HalfDay = 0,
+                Holidays = 0,
+                WorkingDays = 0
+            };
+
+            // Get working days for the month
+            string workingDaysQuery = @"
+        WITH DateRange AS (
+            SELECT DATEFROMPARTS(@Year, @Month, 1) AS Date
+            UNION ALL
+            SELECT DATEADD(DAY, 1, Date)
+            FROM DateRange
+            WHERE Date < EOMONTH(DATEFROMPARTS(@Year, @Month, 1))
+        )
+        SELECT COUNT(*) AS WorkingDays
+        FROM DateRange
+        WHERE DATEPART(WEEKDAY, Date) NOT IN (1) -- Exclude Sunday
+            AND Date NOT IN (
+                SELECT HolidayDate 
+                FROM HolidayCalendar 
+                WHERE YEAR(HolidayDate) = @Year 
+                    AND MONTH(HolidayDate) = @Month
+                    AND IsDeleted = 0
+                    AND TenantID = @TenantID
+            )
+        OPTION (MAXRECURSION 31)";
+
+            using (SqlCommand cmd = new SqlCommand(workingDaysQuery, conn))
+            {
+                cmd.Parameters.AddWithValue("@Year", year);
+                cmd.Parameters.AddWithValue("@Month", month);
+                cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+
+                var result = cmd.ExecuteScalar();
+                monthData.WorkingDays = result != null ? Convert.ToInt32(result) : 0;
+            }
+
+            // Get attendance summary for the student
+            string attendanceQuery = @"
+        SELECT 
+            Status,
+            COUNT(*) as Count
+        FROM StudentAttendance
+        WHERE StudentID = @StudentID
+            AND YEAR(AttendanceDate) = @Year
+            AND MONTH(AttendanceDate) = @Month
+            AND IsDeleted = 0
+            AND TenantID = @TenantID
+            AND SessionID = @SessionID
+        GROUP BY Status";
+
+            using (SqlCommand cmd = new SqlCommand(attendanceQuery, conn))
+            {
+                cmd.Parameters.AddWithValue("@StudentID", studentId);
+                cmd.Parameters.AddWithValue("@Year", year);
+                cmd.Parameters.AddWithValue("@Month", month);
+                cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string status = reader["Status"].ToString();
+                        int count = Convert.ToInt32(reader["Count"]);
+
+                        switch (status)
+                        {
+                            case "Present":
+                                monthData.Present = count;
+                                break;
+                            case "Absent":
+                                monthData.Absent = count;
+                                break;
+                            case "Late":
+                                monthData.Late = count;
+                                break;
+                            case "Half Day":
+                                monthData.HalfDay = count;
+                                break;
+                            case "Holiday":
+                            case "Holy Day":
+                                monthData.Holidays = count;
+                                break;
+                        }
+                    }
+                }
+            }
+
+            // Calculate attendance percentage for the month
+            if (monthData.WorkingDays > 0)
+            {
+                monthData.AttendancePercentage =
+                    Math.Round((decimal)(monthData.Present + monthData.Late + monthData.HalfDay * 0.5m)
+                    / monthData.WorkingDays * 100, 2);
+            }
+
+            return monthData;
+        }
+
+        // Calculate monthly statistics for the entire class
+        private MonthlyStats CalculateMonthlyStatistics(SqlConnection conn, string classId, string sectionId, int month, int year)
+        {
+            var stats = new MonthlyStats
+            {
+                Month = month,
+                MonthName = new DateTime(year, month, 1).ToString("MMMM"),
+                TotalStudents = 0,
+                AverageAttendance = 0,
+                BestAttendance = 0,
+                WorstAttendance = 100
+            };
+
+            string query = @"
+        SELECT 
+            COUNT(DISTINCT s.StudentID) as TotalStudents,
+            AVG(CASE 
+                WHEN sa.Status IN ('Present', 'Late') THEN 100.0
+                WHEN sa.Status = 'Half Day' THEN 50.0
+                ELSE 0
+            END) as AverageAttendance
+        FROM StudentInfoBasic s
+        LEFT JOIN StudentAttendance sa ON s.StudentID = sa.StudentID
+            AND YEAR(sa.AttendanceDate) = @Year
+            AND MONTH(sa.AttendanceDate) = @Month
+            AND sa.IsDeleted = 0
+        WHERE s.ClassID = @ClassID
+            AND s.SectionID = @SectionID
+            AND s.IsActive = 1
+            AND s.IsDeleted = 0
+            AND s.TenantID = @TenantID
+            AND s.SessionID = @SessionID";
+
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@ClassID", classId);
+                cmd.Parameters.AddWithValue("@SectionID", sectionId);
+                cmd.Parameters.AddWithValue("@Year", year);
+                cmd.Parameters.AddWithValue("@Month", month);
+                cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        stats.TotalStudents = reader["TotalStudents"] != DBNull.Value ?
+                            Convert.ToInt32(reader["TotalStudents"]) : 0;
+                        stats.AverageAttendance = reader["AverageAttendance"] != DBNull.Value ?
+                            Convert.ToDecimal(reader["AverageAttendance"]) : 0;
+                    }
+                }
+            }
+
+            return stats;
+        }
+
+        // Generate list of years for dropdown
+        private List<SelectListItem> GetYearsList()
+        {
+            var years = new List<SelectListItem>();
+            int currentYear = DateTime.Now.Year;
+
+            for (int year = currentYear; year >= currentYear - 5; year--)
+            {
+                years.Add(new SelectListItem
+                {
+                    Value = year.ToString(),
+                    Text = year.ToString(),
+                    Selected = year == currentYear
+                });
+            }
+
+            return years;
+        }
+
         private List<SelectListItem> GetAttendanceStatusList()
         {
             return new List<SelectListItem>  {
@@ -62,6 +469,7 @@ namespace ERPIndia.Controllers
                    new SelectListItem { Value = "Holy Day", Text = "Holy Day" }
                    };
         }
+
         [HttpPost]
         public JsonResult GetDailyAttendanceReport(string classId, string sectionId, string status, DateTime date)
         {
@@ -97,7 +505,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
     AND s.TenantID = @TenantID
     AND s.SessionID = @SessionID";
 
-                    // Add filters (ONLY ONCE)
+                    // Add filters
                     if (!string.IsNullOrEmpty(classId) && classId != "All")
                     {
                         query += " AND s.ClassID = @ClassID";
@@ -108,13 +516,10 @@ WHERE sa.AttendanceDate = @AttendanceDate
                         query += " AND s.SectionID = @SectionID";
                     }
 
-                    // Note: "Not Marked" filter won't work with INNER JOIN
                     if (!string.IsNullOrEmpty(status) && status != "ALL")
                     {
                         if (status == "Not Marked")
                         {
-                            // This won't return any results with INNER JOIN
-                            // You might want to handle this differently or show a message
                             query += " AND 1=0"; // This will return no results
                         }
                         else
@@ -123,7 +528,6 @@ WHERE sa.AttendanceDate = @AttendanceDate
                         }
                     }
 
-                    // Add ORDER BY clause (ONLY ONCE)
                     query += " ORDER BY CAST(s.RollNo AS INT), s.FirstName";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -174,7 +578,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
                             Late = students.Count(s => ((dynamic)s).Status == "Late"),
                             HalfDay = students.Count(s => ((dynamic)s).Status == "Half Day"),
                             Holiday = students.Count(s => ((dynamic)s).Status == "Holiday" || ((dynamic)s).Status == "Holy Day"),
-                            NotMarked = 0 // Will always be 0 with INNER JOIN
+                            NotMarked = 0
                         };
 
                         return Json(new
@@ -194,7 +598,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
                 return Json(new { success = false, message = ex.Message });
             }
         }
-        // Export to PDF
+
         // Get students for attendance entry
         [HttpPost]
         public JsonResult GetStudentsForAttendance(string classId, string sectionId, DateTime attendanceDate)
@@ -273,6 +677,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
             return Json(options, JsonRequestBehavior.AllowGet);
         }
+
         private string ConvertTimeFormat(string time)
         {
             if (string.IsNullOrEmpty(time)) return "8:15 AM";
@@ -289,6 +694,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
             return time;
         }
+
         // Monthly Report
         public ActionResult MonthlyReport()
         {
@@ -383,7 +789,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
                                 MobileNumber = reader["MobileNumber"]?.ToString() ?? "",
                                 ClassName = reader["ClassName"].ToString(),
                                 SectionName = reader["SectionName"].ToString(),
-                                Status = reader["Status"]?.ToString() ?? "Present", // Default to Present
+                                Status = reader["Status"]?.ToString() ?? "Present",
                                 TimeIn = reader["TimeIn"]?.ToString() ?? "08:30 AM",
                                 TimeOut = reader["TimeOut"]?.ToString() ?? "02:45 PM",
                                 Source = reader["Source"]?.ToString() ?? "Manual",
@@ -397,6 +803,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
             return students;
         }
+
         public string GetSingleStringValue(string query, object parameters = null)
         {
             using (var connection = new SqlConnection(ConnectionString))
@@ -405,6 +812,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
                 return connection.QuerySingleOrDefault<string>(query, parameters);
             }
         }
+
         private dynamic GetAttendanceConfigFromDB(string classId, string sectionId)
         {
             string sqltime = string.Format("SELECT isnull(convert(VARCHAR(50),TimeIn+'|'+TimeOut),'') AS SchoolTime  FROM Tenants WHERE TenantID='{0}'", CurrentTenantID);
@@ -436,7 +844,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
                         AND IsDeleted = 0
                         AND TenantID = @TenantID
                         AND SessionID = @SessionID
-                    ORDER BY ClassID DESC, SectionID DESC"; // Prioritize specific configs
+                    ORDER BY ClassID DESC, SectionID DESC";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {

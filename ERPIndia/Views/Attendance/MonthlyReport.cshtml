@@ -326,7 +326,7 @@
                     <h6 class="mb-0">
                         <i class="fas fa-table me-2"></i>Monthly Attendance Details
                     </h6>
-                   
+
                 </div>
             </div>
             <div class="card-body">
@@ -353,6 +353,7 @@
     </div>
 </div>
 
+<!-- Updated JavaScript section for MonthlyReport.cshtml -->
 <script>
 $(document).ready(function() {
     var reportData = null;
@@ -370,7 +371,11 @@ $(document).ready(function() {
     // Clear existing data
     function clearExistingData() {
         if (dataTable) {
-            dataTable.destroy();
+            try {
+                dataTable.destroy();
+            } catch(e) {
+                console.log('DataTable destroy error:', e);
+            }
             dataTable = null;
         }
 
@@ -388,8 +393,28 @@ $(document).ready(function() {
         var month = $('#ddlMonth').val();
         var year = $('#ddlYear').val();
 
-        if (!classId || !sectionId || !month || !year) {
-            alert('Please select all required fields');
+        // Validation
+        if (!classId || classId === '') {
+            alert('Please select a class');
+            $('#ddlClass').focus();
+            return;
+        }
+
+        if (!sectionId || sectionId === '') {
+            alert('Please select a section');
+            $('#ddlSection').focus();
+            return;
+        }
+
+        if (!month || month === '') {
+            alert('Please select a month');
+            $('#ddlMonth').focus();
+            return;
+        }
+
+        if (!year || year === '') {
+            alert('Please select a year');
+            $('#ddlYear').focus();
             return;
         }
 
@@ -397,9 +422,16 @@ $(document).ready(function() {
         loadMonthlyReport(classId, sectionId, month, year);
     });
 
-    // Load monthly report
+    // Load monthly report with better error handling
     function loadMonthlyReport(classId, sectionId, month, year) {
         showSpinner();
+
+        console.log('Loading report with params:', {
+            classId: classId,
+            sectionId: sectionId,
+            month: month,
+            year: year
+        });
 
         $.ajax({
             url: '@Url.Action("GetMonthlyAttendanceReport", "Attendance")',
@@ -407,157 +439,259 @@ $(document).ready(function() {
             data: {
                 classId: classId,
                 sectionId: sectionId,
-                month: month,
-                year: year
+                month: parseInt(month),
+                year: parseInt(year)
             },
+            dataType: 'json',
+            timeout: 60000, // 60 second timeout
             success: function(response) {
                 hideSpinner();
+                console.log('Response received:', response);
 
-                if (response.success) {
+                if (response && response.success) {
                     reportData = response.data;
+
+                    if (!reportData) {
+                        alert('No data received from server');
+                        return;
+                    }
+
                     displayReport(reportData);
                     $('#summaryContainer').show();
                     $('#reportContainer').show();
+
+                    // Show success message
+                    if (response.message) {
+                        console.log('Success:', response.message);
+                    }
                 } else {
-                    alert(response.message || 'Failed to generate report');
+                    var errorMsg = 'Failed to generate report';
+                    if (response && response.message) {
+                        errorMsg = response.message;
+                    }
+                    if (response && response.details) {
+                        console.error('Error details:', response.details);
+                        errorMsg += '\n\nDetails: ' + response.details;
+                    }
+                    alert(errorMsg);
                 }
             },
             error: function(xhr, status, error) {
                 hideSpinner();
-                alert('Error generating report: ' + error);
-                console.error('Error:', error);
+
+                var errorMessage = 'Error generating report: ';
+
+                if (status === 'timeout') {
+                    errorMessage += 'Request timed out. Please try again.';
+                } else if (xhr.status === 0) {
+                    errorMessage += 'Network error. Please check your connection.';
+                } else if (xhr.status === 404) {
+                    errorMessage += 'Report endpoint not found.';
+                } else if (xhr.status === 500) {
+                    errorMessage += 'Server error occurred.';
+
+                    // Try to parse error response
+                    try {
+                        var responseJson = JSON.parse(xhr.responseText);
+                        if (responseJson && responseJson.message) {
+                            errorMessage += '\n' + responseJson.message;
+                        }
+                    } catch(e) {
+                        console.log('Could not parse error response');
+                    }
+                } else {
+                    errorMessage += error || 'Unknown error occurred';
+                }
+
+                alert(errorMessage);
+                console.error('AJAX Error:', {
+                    status: status,
+                    error: error,
+                    xhr: xhr,
+                    responseText: xhr.responseText
+                });
             }
         });
     }
 
-    // Display report
+    // Display report with error handling
     function displayReport(data) {
-        // Update summary
-        $('#className').text(data.ClassName || 'N/A');
-        $('#sectionName').text(data.SectionName || 'N/A');
-        $('#monthName').text(data.MonthName || 'N/A');
-        $('#totalStudents').text(data.TotalStudents || 0);
-        $('#workingDays').text(data.WorkingDays || 0);
-        $('#avgAttendance').text((data.AverageAttendance || 0).toFixed(2) + '%');
+        try {
+            // Validate data
+            if (!data) {
+                console.error('No data to display');
+                return;
+            }
+            console.log(JSON.stringify(data));
+            // Update summary with safe access
+            $('#className').text(data.ClassName || 'N/A');
+            $('#sectionName').text(data.SectionName || 'N/A');
+            $('#monthName').text(data.MonthName || 'N/A');
+            $('#totalStudents').text(data.TotalStudents || 0);
+            $('#workingDays').text(data.WorkingDays || 0);
 
-        // Build table headers
-        var headerHtml = '<tr>';
-        headerHtml += '<th rowspan="2" class="seq-column">SEQ.</th>';
-        headerHtml += '<th rowspan="2">STUDENT</th>';
-        headerHtml += '<th rowspan="2">FATHER</th>';
+            var avgAttendance = data.AverageAttendance || 0;
+            $('#avgAttendance').text(avgAttendance.toFixed(2) + '%');
 
-        // Date headers
-        if (data.DatesInMonth && data.DatesInMonth.length > 0) {
-            $.each(data.DatesInMonth, function(i, date) {
-                headerHtml += '<th class="day-header">' + date.Day + '</th>';
-            });
-        }
+            // Build table headers
+            var headerHtml = '<tr>';
+            headerHtml += '<th rowspan="2" class="seq-column">S.No</th>';
+            headerHtml += '<th rowspan="2">Student Name</th>';
+            headerHtml += '<th rowspan="2">Father Name</th>';
 
-        // Total headers
-        headerHtml += '<th rowspan="2" class="total-column">Total Attd.</th>';
-        headerHtml += '<th colspan="4" class="total-column">Summary</th>';
-        headerHtml += '</tr>';
-
-        // Weekday sub-headers
-        headerHtml += '<tr>';
-        if (data.DatesInMonth && data.DatesInMonth.length > 0) {
-            $.each(data.DatesInMonth, function(i, date) {
-                headerHtml += '<th class="weekday-header">' + date.WeekDay + '</th>';
-            });
-        }
-        headerHtml += '<th class="total-column">T.P</th>';
-        headerHtml += '<th class="total-column">P.A</th>';
-        headerHtml += '<th class="total-column">T.L</th>';
-        headerHtml += '<th class="total-column">T.A</th>';
-        headerHtml += '</tr>';
-
-        $('#tableHeader').html(headerHtml);
-
-        // Build table body
-        var bodyHtml = '';
-
-        if (data.Students && data.Students.length > 0) {
-            $.each(data.Students, function(index, student) {
-                var attendancePercentage = student.AttendancePercentage || 0;
-                var rowClass = '';
-
-                if (attendancePercentage < 75) {
-                    rowClass = 'attendance-poor';
-                } else if (attendancePercentage < 85) {
-                    rowClass = 'attendance-average';
-                } else if (attendancePercentage < 95) {
-                    rowClass = 'attendance-good';
-                } else {
-                    rowClass = 'attendance-excellent';
+            // Date headers - check if DatesInMonth exists
+            if (data.DatesInMonth && Array.isArray(data.DatesInMonth) && data.DatesInMonth.length > 0) {
+                $.each(data.DatesInMonth, function(i, date) {
+                    if (date && date.Day) {
+                        headerHtml += '<th class="day-header">' + date.Day + '</th>';
+                    }
+                });
+            } else {
+                console.warn('No dates in month data');
+                // Generate default dates for the month
+                var daysInMonth = new Date(data.Year, data.Month, 0).getDate();
+                for (var d = 1; d <= daysInMonth; d++) {
+                    headerHtml += '<th class="day-header">' + ('0' + d).slice(-2) + '</th>';
                 }
+            }
 
-                bodyHtml += '<tr>';
-                bodyHtml += '<td class="seq-column">' + student.SerialNo + '</td>';
-                bodyHtml += '<td class="student-info">' + student.StudentName + '</td>';
-                bodyHtml += '<td class="student-info">' + (student.FatherName || '-') + '</td>';
+            // Total headers
+            headerHtml += '<th rowspan="2" class="total-column">Total</th>';
+            headerHtml += '<th colspan="4" class="total-column">Summary</th>';
+            headerHtml += '</tr>';
 
-                // Daily attendance
+            // Weekday sub-headers
+            headerHtml += '<tr>';
+            if (data.DatesInMonth && Array.isArray(data.DatesInMonth) && data.DatesInMonth.length > 0) {
+                $.each(data.DatesInMonth, function(i, date) {
+                    if (date && date.WeekDay) {
+                        headerHtml += '<th class="weekday-header">' + date.WeekDay + '</th>';
+                    } else {
+                        headerHtml += '<th class="weekday-header">--</th>';
+                    }
+                });
+            } else {
+                var daysInMonth = new Date(data.Year, data.Month, 0).getDate();
+                for (var d = 1; d <= daysInMonth; d++) {
+                    headerHtml += '<th class="weekday-header">--</th>';
+                }
+            }
+
+            headerHtml += '<th class="total-column">P</th>';
+            headerHtml += '<th class="total-column">%</th>';
+            headerHtml += '<th class="total-column">L</th>';
+            headerHtml += '<th class="total-column">A</th>';
+            headerHtml += '</tr>';
+
+            $('#tableHeader').html(headerHtml);
+
+            // Build table body
+            var bodyHtml = '';
+
+            if (data.Students && Array.isArray(data.Students) && data.Students.length > 0) {
+                $.each(data.Students, function(index, student) {
+                    if (!student) return true; // continue to next iteration
+
+                    var attendancePercentage = student.AttendancePercentage || 0;
+                    var rowClass = '';
+
+                    if (attendancePercentage < 75) {
+                        rowClass = 'attendance-poor';
+                    } else if (attendancePercentage < 85) {
+                        rowClass = 'attendance-average';
+                    } else if (attendancePercentage < 95) {
+                        rowClass = 'attendance-good';
+                    } else {
+                        rowClass = 'attendance-excellent';
+                    }
+
+                    bodyHtml += '<tr>';
+                    bodyHtml += '<td class="seq-column">' + (student.SerialNo || (index + 1)) + '</td>';
+                    bodyHtml += '<td>' + (student.StudentName || 'N/A') + '</td>';
+                    bodyHtml += '<td>' + (student.FatherName || '-') + '</td>';
+
+                    // Daily attendance
+                    if (data.DatesInMonth && Array.isArray(data.DatesInMonth) && data.DatesInMonth.length > 0) {
+                        $.each(data.DatesInMonth, function(i, date) {
+                            if (!date) return true;
+
+                            var dayNum = parseInt(date.Day);
+                            var status = '';
+
+                            if (student.DailyAttendanceMonthly && student.DailyAttendanceMonthly[date.Day]) {
+                                status = student.DailyAttendanceMonthly[date.Day];
+                            }
+
+                            var statusClass = '';
+
+                            if (date.IsSunday || date.IsHoliday) {
+                                statusClass = 'status-su';
+                                status = status || 'H';
+                            } else if (status) {
+                                statusClass = 'status-' + status.toLowerCase();
+                            }
+
+                            bodyHtml += '<td class="' + statusClass + '">' + (status || '') + '</td>';
+                        });
+                    }
+
+                    // Totals
+                    var totalPresent = student.TotalPresent || 0;
+                    var totalAbsent = student.TotalAbsent || 0;
+                    var totalLate = student.TotalLate || 0;
+                    var totalHalfDay = student.TotalHalfDay || 0;
+
+                    var totalDays = totalPresent + totalAbsent + totalLate + totalHalfDay;
+
+                    bodyHtml += '<td class="total-column">' + totalDays + '</td>';
+                    bodyHtml += '<td class="total-column">' + totalPresent + '</td>';
+                    bodyHtml += '<td class="total-column ' + rowClass + '">' +
+                               attendancePercentage.toFixed(0) + '%</td>';
+                    bodyHtml += '<td class="total-column">' + totalLate + '</td>';
+                    bodyHtml += '<td class="total-column">' + totalAbsent + '</td>';
+                    bodyHtml += '</tr>';
+                });
+            } else {
+                var colspan = 8; // Adjust based on your columns
                 if (data.DatesInMonth && data.DatesInMonth.length > 0) {
-                    $.each(data.DatesInMonth, function(i, date) {
-                        var status = student.DailyAttendance[date.Day] || '';
-                        var statusClass = 'status-' + status.toLowerCase();
+                    colspan = 3 + data.DatesInMonth.length + 5;
+                }
+                bodyHtml = '<tr><td colspan="' + colspan + '" class="text-center">No student data available</td></tr>';
+            }
 
-                        if (date.IsSunday || date.IsHoliday) {
-                            statusClass = 'status-su';
-                            status = 'SU';
+            $('#tableBody').html(bodyHtml);
+
+            // Initialize DataTable only if we have data
+            if (data.Students && data.Students.length > 0) {
+                setTimeout(function() {
+                    try {
+                        // Check if DataTable is available
+                        if (typeof $.fn.DataTable !== 'undefined') {
+                            dataTable = $('#monthlyAttendanceTable').DataTable({
+                                "paging": false,
+                                "info": false,
+                                "searching": true,
+                                "ordering": false,
+                                "scrollX": true,
+                                "destroy": true,
+                                "language": {
+                                    "search": "Search students:"
+                                }
+                            });
+                        } else {
+                            console.log('DataTable plugin not available');
                         }
+                    } catch (error) {
+                        console.error('Error initializing DataTable:', error);
+                        // Continue without DataTable
+                    }
+                }, 100);
+            }
 
-                        bodyHtml += '<td class="' + statusClass + '">' + status + '</td>';
-                    });
-                }
-
-                // Totals
-                var totalDays = student.TotalPresent + student.TotalAbsent +
-                               student.TotalLate + student.TotalHalfDay;
-
-                bodyHtml += '<td class="total-column">' + totalDays + '</td>';
-                bodyHtml += '<td class="total-column">' + student.TotalPresent + '</td>';
-                bodyHtml += '<td class="total-column ' + rowClass + '">' +
-                           attendancePercentage.toFixed(0) + '</td>';
-                bodyHtml += '<td class="total-column">' + student.TotalLate + '</td>';
-                bodyHtml += '<td class="total-column">' + student.TotalAbsent + '</td>';
-                bodyHtml += '</tr>';
-            });
-        } else {
-            var colspan = 3 + (data.DatesInMonth ? data.DatesInMonth.length : 31) + 5;
-            bodyHtml = '<tr><td colspan="' + colspan + '" class="text-center">No data available</td></tr>';
-        }
-
-        $('#tableBody').html(bodyHtml);
-
-        // Initialize DataTable
-        if (data.Students && data.Students.length > 0) {
-            setTimeout(function() {
-                try {
-                    dataTable = $('#monthlyAttendanceTable').DataTable({
-                        "paging": false,
-                        "info": false,
-                        "searching": true,
-                        "ordering": false,
-                        "scrollX": true,
-                        "destroy": true
-                    });
-                } catch (error) {
-                    console.error('Error initializing DataTable:', error);
-                }
-            }, 100);
+        } catch (error) {
+            console.error('Error displaying report:', error);
+            alert('Error displaying report data. Please check the console for details.');
         }
     }
-
-    // Export functions
-    window.exportToExcel = function() {
-        // Implementation for Excel export
-        alert('Export to Excel functionality to be implemented');
-    };
-
-    window.exportToPDF = function() {
-        // Implementation for PDF export
-        alert('Export to PDF functionality to be implemented');
-    };
 });
 </script>

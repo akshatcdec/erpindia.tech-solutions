@@ -730,7 +730,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
         }
 
         // Monthly Report
-       
+
 
         // Get monthly attendance report data
         [HttpPost]
@@ -749,20 +749,29 @@ WHERE sa.AttendanceDate = @AttendanceDate
                         Year = year
                     };
 
-                    // Get class and section names
-                    string classNameQuery = "SELECT ClassName FROM AcademicClassMaster WHERE ClassID = @ClassID";
-                    string sectionNameQuery = "SELECT SectionName FROM AcademicSectionMaster WHERE SectionID = @SectionID";
-
-                    using (SqlCommand cmd = new SqlCommand(classNameQuery, conn))
+                    // Get class and section names first
+                    try
                     {
-                        cmd.Parameters.AddWithValue("@ClassID", classId);
-                        reportData.ClassName = cmd.ExecuteScalar()?.ToString() ?? "";
+                        string classNameQuery = "SELECT ClassName FROM AcademicClassMaster WHERE ClassID = @ClassID";
+                        using (SqlCommand cmd = new SqlCommand(classNameQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@ClassID", classId);
+                            var result = cmd.ExecuteScalar();
+                            reportData.ClassName = result?.ToString() ?? "Unknown Class";
+                        }
+
+                        string sectionNameQuery = "SELECT SectionName FROM AcademicSectionMaster WHERE SectionID = @SectionID";
+                        using (SqlCommand cmd = new SqlCommand(sectionNameQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@SectionID", sectionId);
+                            var result = cmd.ExecuteScalar();
+                            reportData.SectionName = result?.ToString() ?? "Unknown Section";
+                        }
                     }
-
-                    using (SqlCommand cmd = new SqlCommand(sectionNameQuery, conn))
+                    catch (Exception ex)
                     {
-                        cmd.Parameters.AddWithValue("@SectionID", sectionId);
-                        reportData.SectionName = cmd.ExecuteScalar()?.ToString() ?? "";
+                        // Log but continue
+                        System.Diagnostics.Debug.WriteLine($"Error getting class/section names: {ex.Message}");
                     }
 
                     // Get month name
@@ -773,10 +782,46 @@ WHERE sa.AttendanceDate = @AttendanceDate
                     var lastDay = firstDay.AddMonths(1).AddDays(-1);
                     int workingDays = 0;
 
+                    // Get holidays for the month first
+                    var holidays = new HashSet<DateTime>();
+                    try
+                    {
+                        string holidayQuery = @"
+                    SELECT HolidayDate 
+                    FROM HolidayCalendar 
+                    WHERE YEAR(HolidayDate) = @Year 
+                        AND MONTH(HolidayDate) = @Month
+                        AND IsDeleted = 0
+                        AND TenantID = @TenantID";
+
+                        using (SqlCommand cmd = new SqlCommand(holidayQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Year", year);
+                            cmd.Parameters.AddWithValue("@Month", month);
+                            cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+
+                            using (SqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    if (reader["HolidayDate"] != DBNull.Value)
+                                    {
+                                        holidays.Add(Convert.ToDateTime(reader["HolidayDate"]).Date);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error getting holidays: {ex.Message}");
+                    }
+
+                    // Build date list
                     for (var date = firstDay; date <= lastDay; date = date.AddDays(1))
                     {
                         bool isSunday = date.DayOfWeek == DayOfWeek.Sunday;
-                        bool isHoliday = CheckIfHoliday(date);
+                        bool isHoliday = holidays.Contains(date.Date);
 
                         if (!isSunday && !isHoliday)
                             workingDays++;
@@ -785,7 +830,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
                         {
                             Date = date,
                             Day = date.Day.ToString("00"),
-                            WeekDay = date.ToString("ddd").Substring(0, 2).ToUpper(),
+                            WeekDay = date.ToString("ddd").Substring(0, Math.Min(2, date.ToString("ddd").Length)).ToUpper(),
                             IsSunday = isSunday,
                             IsHoliday = isHoliday
                         });
@@ -793,45 +838,58 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
                     reportData.WorkingDays = workingDays;
 
-                    // Get all students
-                    string studentQuery = @"
-                SELECT 
-                    s.StudentID,
-                    s.AdmsnNo AS AdmissionNo,
-                    s.RollNo AS RollNumber,
-                    RTRIM(LTRIM(s.FirstName + ' ' + ISNULL(s.LastName, ''))) AS StudentName,
-                    RTRIM(LTRIM(ISNULL(s.FatherName, ''))) AS FatherName
-                FROM StudentInfoBasic s
-                WHERE s.ClassID = @ClassID 
-                    AND s.SectionID = @SectionID
-                    AND s.IsActive = 1
-                    AND s.IsDeleted = 0
-                    AND s.TenantID = @TenantID
-                    AND s.SessionID = @SessionID
-                ORDER BY CAST(s.RollNo AS INT), s.FirstName";
-
+                    // Get all students with proper error handling
                     var students = new List<StudentData>();
-                    using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+                    try
                     {
-                        cmd.Parameters.AddWithValue("@ClassID", classId);
-                        cmd.Parameters.AddWithValue("@SectionID", sectionId);
-                        cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
-                        cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+                        string studentQuery = @"
+                    SELECT 
+                        s.StudentID,
+                        s.AdmsnNo AS AdmissionNo,
+                        s.RollNo AS RollNumber,
+                        RTRIM(LTRIM(ISNULL(s.FirstName, '') + ' ' + ISNULL(s.LastName, ''))) AS StudentName,
+                        RTRIM(LTRIM(ISNULL(s.FatherName, ''))) AS FatherName
+                    FROM StudentInfoBasic s
+                    WHERE s.ClassID = @ClassID 
+                        AND s.SectionID = @SectionID
+                        AND s.IsActive = 1
+                        AND s.IsDeleted = 0
+                        AND s.TenantID = @TenantID
+                        AND s.SessionID = @SessionID
+                    ORDER BY 
+                        s.FirstName";
 
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
                         {
-                            while (reader.Read())
+                            cmd.Parameters.AddWithValue("@ClassID", classId);
+                            cmd.Parameters.AddWithValue("@SectionID", sectionId);
+                            cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                            cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                            using (SqlDataReader reader = cmd.ExecuteReader())
                             {
-                                students.Add(new StudentData
+                                while (reader.Read())
                                 {
-                                    StudentID = reader["StudentID"]?.ToString() ?? "",
-                                    AdmissionNo = reader["AdmissionNo"]?.ToString() ?? "",
-                                    RollNumber = reader["RollNumber"]?.ToString() ?? "",
-                                    StudentName = reader["StudentName"]?.ToString()?.Trim() ?? "",
-                                    FatherName = reader["FatherName"]?.ToString()?.Trim() ?? ""
-                                });
+                                    students.Add(new StudentData
+                                    {
+                                        StudentID = reader["StudentID"]?.ToString() ?? "",
+                                        AdmissionNo = reader["AdmissionNo"]?.ToString() ?? "",
+                                        RollNumber = reader["RollNumber"]?.ToString() ?? "",
+                                        StudentName = reader["StudentName"]?.ToString()?.Trim() ?? "",
+                                        FatherName = reader["FatherName"]?.ToString()?.Trim() ?? ""
+                                    });
+                                }
                             }
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = $"Error loading students: {ex.Message}",
+                            details = ex.ToString()
+                        });
                     }
 
                     reportData.TotalStudents = students.Count;
@@ -843,104 +901,152 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
                     foreach (var student in students)
                     {
-                        var monthlyAttendance = new StudentMonthlyAttendance
+                        try
                         {
-                            SerialNo = serialNo++,
-                            StudentID = student.StudentID,
-                            AdmissionNo = student.AdmissionNo,
-                            RollNumber = student.RollNumber,
-                            StudentName = student.StudentName,
-                            FatherName = student.FatherName,
-                            DailyAttendance = new Dictionary<int, string>(),
-                            TotalPresent = 0,
-                            TotalAbsent = 0,
-                            TotalLate = 0,
-                            TotalHalfDay = 0
-                        };
-
-                        // Get attendance for this student for the month
-                        string attendanceQuery = @"
-                    SELECT 
-                        DAY(AttendanceDate) as DayOfMonth,
-                        Status
-                    FROM StudentAttendance
-                    WHERE StudentID = @StudentID
-                        AND MONTH(AttendanceDate) = @Month
-                        AND YEAR(AttendanceDate) = @Year
-                        AND IsDeleted = 0
-                        AND TenantID = @TenantID
-                        AND SessionID = @SessionID";
-
-                        using (SqlCommand cmd = new SqlCommand(attendanceQuery, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@StudentID", student.StudentID);
-                            cmd.Parameters.AddWithValue("@Month", month);
-                            cmd.Parameters.AddWithValue("@Year", year);
-                            cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
-                            cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
-
-                            using (SqlDataReader reader = cmd.ExecuteReader())
+                            var monthlyAttendance = new StudentMonthlyAttendance
                             {
-                                while (reader.Read())
+                                SerialNo = serialNo++,
+                                StudentID = student.StudentID,
+                                AdmissionNo = student.AdmissionNo,
+                                RollNumber = student.RollNumber,
+                                StudentName = student.StudentName,
+                                FatherName = student.FatherName,
+                                DailyAttendanceMonthly = new Dictionary<string, string>(),
+                                TotalPresent = 0,
+                                TotalAbsent = 0,
+                                TotalLate = 0,
+                                TotalHalfDay = 0
+                            };
+
+                            // Get attendance for this student for the month
+                            string attendanceQuery = @"
+                        SELECT 
+                            DAY(AttendanceDate) as DayOfMonth,
+                            Status
+                        FROM StudentAttendance
+                        WHERE StudentID = @StudentID
+                            AND MONTH(AttendanceDate) = @Month
+                            AND YEAR(AttendanceDate) = @Year
+                            AND IsDeleted = 0
+                            AND TenantID = @TenantID
+                            AND SessionID = @SessionID";
+
+                            using (SqlCommand cmd = new SqlCommand(attendanceQuery, conn))
+                            {
+                                cmd.Parameters.AddWithValue("@StudentID", student.StudentID);
+                                cmd.Parameters.AddWithValue("@Month", month);
+                                cmd.Parameters.AddWithValue("@Year", year);
+                                cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                                cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                                using (SqlDataReader reader = cmd.ExecuteReader())
                                 {
-                                    int day = Convert.ToInt32(reader["DayOfMonth"]);
-                                    string status = reader["Status"].ToString();
-                                    string statusCode = GetStatusCode(status);
-
-                                    monthlyAttendance.DailyAttendance[day] = statusCode;
-
-                                    // Update totals
-                                    switch (status)
+                                    while (reader.Read())
                                     {
-                                        case "Present":
-                                            monthlyAttendance.TotalPresent++;
-                                            break;
-                                        case "Absent":
-                                            monthlyAttendance.TotalAbsent++;
-                                            break;
-                                        case "Late":
-                                            monthlyAttendance.TotalLate++;
-                                            break;
-                                        case "Half Day":
-                                            monthlyAttendance.TotalHalfDay++;
-                                            break;
+                                        if (reader["DayOfMonth"] != DBNull.Value && reader["Status"] != DBNull.Value)
+                                        {
+                                            int day = Convert.ToInt32(reader["DayOfMonth"]);
+                                            string status = reader["Status"].ToString();
+                                            string statusCode = GetStatusCode(status);
+
+                                            monthlyAttendance.DailyAttendanceMonthly[day.ToString("00")] = statusCode;
+
+                                            // Update totals
+                                            switch (status.ToLower())
+                                            {
+                                                case "present":
+                                                    monthlyAttendance.TotalPresent++;
+                                                    break;
+                                                case "absent":
+                                                    monthlyAttendance.TotalAbsent++;
+                                                    break;
+                                                case "late":
+                                                    monthlyAttendance.TotalLate++;
+                                                    break;
+                                                case "half day":
+                                                case "halfday":
+                                                    monthlyAttendance.TotalHalfDay++;
+                                                    break;
+                                            }
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        // Calculate attendance percentage
-                        if (workingDays > 0)
+                            // Calculate attendance percentage
+                            if (workingDays > 0)
+                            {
+                                decimal effectivePresent = monthlyAttendance.TotalPresent +
+                                                          monthlyAttendance.TotalLate +
+                                                          (monthlyAttendance.TotalHalfDay * 0.5m);
+
+                                monthlyAttendance.AttendancePercentage = Math.Round((effectivePresent / workingDays) * 100, 2);
+                                totalAttendancePercentage += monthlyAttendance.AttendancePercentage;
+                                validStudents++;
+                            }
+                            else
+                            {
+                                monthlyAttendance.AttendancePercentage = 0;
+                            }
+
+                            reportData.Students.Add(monthlyAttendance);
+                        }
+                        catch (Exception ex)
                         {
-                            monthlyAttendance.AttendancePercentage =
-                                Math.Round((decimal)(monthlyAttendance.TotalPresent + monthlyAttendance.TotalLate +
-                                monthlyAttendance.TotalHalfDay * 0.5m) / workingDays * 100, 2);
-
-                            totalAttendancePercentage += monthlyAttendance.AttendancePercentage;
-                            validStudents++;
+                            System.Diagnostics.Debug.WriteLine($"Error processing student {student.StudentName}: {ex.Message}");
+                            // Continue with next student
                         }
-
-                        reportData.Students.Add(monthlyAttendance);
                     }
 
                     // Calculate average attendance
                     reportData.AverageAttendance = validStudents > 0 ?
-                        totalAttendancePercentage / validStudents : 0;
+                        Math.Round(totalAttendancePercentage / validStudents, 2) : 0;
+                    var jsonString = JsonConvert.SerializeObject(new
+                    {
+                        success = true,
+                        data = reportData,
+                        message = $"Report generated successfully for {students.Count} students"
+                    });
 
                     return Json(new
                     {
                         success = true,
                         data = reportData,
-                        message = $"Report generated for {students.Count} students"
+                        message = $"Report generated successfully for {students.Count} students"
                     });
                 }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                // Return detailed error for debugging
+                return Json(new
+                {
+                    success = false,
+                    message = $"Error generating report: {ex.Message}",
+                    details = ex.ToString(),
+                    stackTrace = ex.StackTrace
+                });
             }
         }
 
+        // Updated GetStatusCode method to handle more cases
+        private string GetStatusCode(string status)
+        {
+            if (string.IsNullOrEmpty(status))
+                return "";
+
+            switch (status.ToLower().Trim())
+            {
+                case "present": return "P";
+                case "absent": return "A";
+                case "late": return "L";
+                case "half day":
+                case "halfday": return "HD";
+                case "holiday":
+                case "holy day": return "H";
+                default: return "";
+            }
+        }
         // Private helper methods
         private List<StudentAttendanceModel> GetStudentsWithAttendanceFromDB(string classId, string sectionId, DateTime attendanceDate)
         {
@@ -1382,18 +1488,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
             return report;
         }
 
-        private string GetStatusCode(string status)
-        {
-            switch (status)
-            {
-                case "Present": return "P";
-                case "Absent": return "A";
-                case "Late": return "L";
-                case "Half Day": return "HD";
-                case "Holiday": return "H";
-                default: return "";
-            }
-        }
+      
 
         private List<SelectListItem> ConvertToSelectList(JsonResult result)
         {

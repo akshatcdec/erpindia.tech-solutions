@@ -206,6 +206,8 @@ namespace ERPIndia.Models.Attendance
         public string AdmissionNo { get; set; }
         public string FatherName { get; set; }
         public Dictionary<int, string> DailyAttendance { get; set; } // Day -> Status
+        public Dictionary<string, string> DailyAttendanceMonthly { get; set; }
+        
         public int TotalPresent { get; set; }
         public int TotalAbsent { get; set; }
         public int TotalLate { get; set; }

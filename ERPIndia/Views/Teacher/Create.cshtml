@@ -1,7 +1,7 @@
 ﻿@model ERPIndia.TeacherManagement.Models.TeacherViewModel
 @{
     ViewBag.Title = "Add Teacher";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    
 }
 
 <style>
@@ -127,25 +127,6 @@
 </style>
 
 <div class="content content-two">
-    <!-- Page Header -->
-    <div class="d-md-flex d-block align-items-center justify-content-between mb-3">
-        <div class="my-auto mb-2">
-            <h3 class="mb-1">Add Teacher</h3>
-            <nav>
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item">
-                        <a href="@Url.Action("Index", "Home")">Dashboard</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="@Url.Action("Index", "Teacher")">Teachers</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Add Teacher</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-    <!-- /Page Header -->
-
     <div class="row">
         <div class="col-md-12">
             @using (Html.BeginForm("Create", "Teacher", FormMethod.Post, new { enctype = "multipart/form-data", id = "teacherForm" }))
@@ -153,7 +134,7 @@
                 @Html.AntiForgeryToken()
 
                 <!-- Validation Summary -->
-                @if (!ViewData.ModelState.IsValid)
+                if (!ViewData.ModelState.IsValid)
                 {
                     <div class="alert alert-danger mb-4">
                         @Html.ValidationSummary(false, "Please fix the following errors:", new { @class = "mb-0" })
@@ -931,7 +912,7 @@
             // Email validation
             $('#Basic_Email').on('blur', function() {
                 var email = $(this).val();
-                var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                var regex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
 
                 if (email && !regex.test(email)) {
                     $(this).addClass('is-invalid');
@@ -1019,7 +1000,7 @@
                 // Check email format
                 var email = $('#Basic_Email').val();
                 if (email) {
-                    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    var emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
                     if (!emailRegex.test(email)) {
                         $('#Basic_Email').addClass('is-invalid');
                         isValid = false;

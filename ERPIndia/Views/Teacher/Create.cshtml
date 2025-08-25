@@ -1,0 +1,1063 @@
+﻿@model ERPIndia.TeacherManagement.Models.TeacherViewModel
+@{
+    ViewBag.Title = "Add Teacher";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .frames {
+        background-color: #f8f9fa;
+        cursor: pointer;
+        min-height: 120px;
+    }
+
+        .frames:hover {
+            background-color: #e9ecef;
+        }
+
+    .profile-upload {
+        flex: 1;
+    }
+
+    .drag-upload-btn {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        background-color: #4a86e8;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 4px;
+    }
+
+        .drag-upload-btn input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+    .bootstrap-tagsinput {
+        width: 100%;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        padding: 0.375rem 0.75rem;
+        min-height: 38px;
+    }
+
+        .bootstrap-tagsinput .tag {
+            background-color: #007bff;
+            color: white;
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+            .bootstrap-tagsinput .tag [data-role="remove"] {
+                margin-left: 5px;
+                cursor: pointer;
+            }
+
+                .bootstrap-tagsinput .tag [data-role="remove"]:after {
+                    content: "×";
+                    padding: 0px 2px;
+                    color: white;
+                    font-weight: bold;
+                }
+
+        .bootstrap-tagsinput input {
+            border: none;
+            box-shadow: none;
+            outline: none;
+            background-color: transparent;
+            padding: 0;
+            margin: 0;
+            width: auto !important;
+            max-width: inherit;
+        }
+
+    .required:after {
+        content: " *";
+        color: red;
+    }
+
+    .input-icon {
+        position: relative;
+    }
+
+    .input-icon-addon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #6c757d;
+    }
+
+    .form-control.datetimepicker {
+        padding-right: 35px;
+    }
+
+    .avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+    }
+
+    .avatar-xxl {
+        width: 120px;
+        height: 120px;
+    }
+
+    .fs-16 {
+        font-size: 16px;
+    }
+
+    .fs-12 {
+        font-size: 12px;
+    }
+</style>
+
+<div class="content content-two">
+    <!-- Page Header -->
+    <div class="d-md-flex d-block align-items-center justify-content-between mb-3">
+        <div class="my-auto mb-2">
+            <h3 class="mb-1">Add Teacher</h3>
+            <nav>
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("Index", "Home")">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="@Url.Action("Index", "Teacher")">Teachers</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Add Teacher</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <!-- /Page Header -->
+
+    <div class="row">
+        <div class="col-md-12">
+            @using (Html.BeginForm("Create", "Teacher", FormMethod.Post, new { enctype = "multipart/form-data", id = "teacherForm" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <!-- Validation Summary -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger mb-4">
+                        @Html.ValidationSummary(false, "Please fix the following errors:", new { @class = "mb-0" })
+                    </div>
+                }
+
+                <!-- Personal Information -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-info-square-rounded fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Personal Information</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <!-- Photo Upload Section -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="d-flex align-items-center flex-wrap row-gap-3 mb-3">
+                                    <div class="d-flex align-items-center justify-content-center avatar avatar-xxl border border-dashed me-2 flex-shrink-0 text-dark frames" id="photoPreview">
+                                        <i class="ti ti-photo-plus fs-16"></i>
+                                    </div>
+                                    <div class="profile-upload">
+                                        <div class="profile-uploader d-flex align-items-center">
+                                            <div class="drag-upload-btn mb-3">
+                                                Upload
+                                                <input type="file" name="photoFile" id="photoFile" class="form-control image-sign" accept="image/*">
+                                            </div>
+                                            <a href="javascript:void(0);" class="btn btn-primary mb-3 ms-2" id="removePhotoBtn">Remove</a>
+                                        </div>
+                                        <p class="fs-12">Upload image size 4MB, Format JPG, PNG, SVG</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- All Personal Information Fields (5 columns layout for xxl, 6 columns for md) -->
+                        <div class="row row-cols-xxl-5 row-cols-md-6">
+                            <!-- Row 1 -->
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.TeacherCode, "Teacher ID", new { @class = "form-label required" })
+                                    @Html.TextBoxFor(m => m.Basic.TeacherCode, new { @class = "form-control", @readonly = "readonly" })
+                                    @Html.ValidationMessageFor(m => m.Basic.TeacherCode, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.FirstName, "First Name", new { @class = "form-label required" })
+                                    @Html.TextBoxFor(m => m.Basic.FirstName, new { @class = "form-control", maxlength = "50", placeholder = "Enter first name" })
+                                    @Html.ValidationMessageFor(m => m.Basic.FirstName, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.LastName, "Last Name", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.LastName, new { @class = "form-control", maxlength = "50", placeholder = "Enter last name" })
+                                    @Html.ValidationMessageFor(m => m.Basic.LastName, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.ClassId, "Class", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.ClassId, Model.Basic.ClassList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.ClassId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.SectionId, "Section", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.SectionId, Model.Basic.SectionList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.SectionId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <!-- Row 2 -->
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.SubjectId, "Subject", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.SubjectId, Model.Basic.SubjectList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.SubjectId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.Gender, "Gender", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.Gender, Model.Basic.GenderList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.Gender, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.PrimaryContactNumber, "Primary Contact Number", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.PrimaryContactNumber, new { @class = "form-control numeric-only", maxlength = "10", placeholder = "10-digit mobile" })
+                                    @Html.ValidationMessageFor(m => m.Basic.PrimaryContactNumber, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.Email, "Email Address", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.Email, new { @class = "form-control", type = "email", maxlength = "100", placeholder = "teacher@example.com" })
+                                    @Html.ValidationMessageFor(m => m.Basic.Email, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.BloodGroup, "Blood Group", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.BloodGroup, Model.Basic.BloodGroupList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.BloodGroup, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <!-- Row 3 -->
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.DateOfJoining, "Date of Joining", new { @class = "form-label" })
+                                    <div class="input-icon position-relative">
+                                        <span class="input-icon-addon">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                        @Html.TextBoxFor(m => m.Basic.DateOfJoining, new { @class = "form-control datetimepicker", placeholder = "DD/MM/YYYY" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.Basic.DateOfJoining, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.FatherName, "Father's Name", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.FatherName, new { @class = "form-control", maxlength = "50", placeholder = "Enter father's name" })
+                                    @Html.ValidationMessageFor(m => m.Basic.FatherName, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.MotherName, "Mother's Name", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.MotherName, new { @class = "form-control", maxlength = "50", placeholder = "Enter mother's name" })
+                                    @Html.ValidationMessageFor(m => m.Basic.MotherName, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.DateOfBirth, "Date of Birth", new { @class = "form-label" })
+                                    <div class="input-icon position-relative">
+                                        <span class="input-icon-addon">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                        @Html.TextBoxFor(m => m.Basic.DateOfBirth, new { @class = "form-control datetimepicker", placeholder = "DD/MM/YYYY" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.Basic.DateOfBirth, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.MaritalStatus, "Marital Status", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.MaritalStatus, Model.Basic.MaritalStatusList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.MaritalStatus, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <!-- Row 4 -->
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.LanguagesKnown, "Language Known", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.LanguagesKnown, new { @class = "form-control input-tags", data_role = "tagsinput", placeholder = "Type and press enter" })
+                                    @Html.ValidationMessageFor(m => m.Basic.LanguagesKnown, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.Qualification, "Qualification", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.Qualification, new { @class = "form-control", maxlength = "100", placeholder = "e.g., B.Ed, M.A." })
+                                    @Html.ValidationMessageFor(m => m.Basic.Qualification, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.WorkExperience, "Work Experience", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.WorkExperience, new { @class = "form-control", maxlength = "50", placeholder = "e.g., 5 Years" })
+                                    @Html.ValidationMessageFor(m => m.Basic.WorkExperience, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.PreviousSchool, "Previous School if Any", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.PreviousSchool, new { @class = "form-control", maxlength = "100", placeholder = "Previous school name" })
+                                    @Html.ValidationMessageFor(m => m.Basic.PreviousSchool, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.PreviousSchoolAddress, "Previous School Address", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.PreviousSchoolAddress, new { @class = "form-control", maxlength = "200", placeholder = "Full address" })
+                                    @Html.ValidationMessageFor(m => m.Basic.PreviousSchoolAddress, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <!-- Row 5 -->
+                            <div class="col-xxl col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.PreviousSchoolPhone, "Previous School Phone No", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.PreviousSchoolPhone, new { @class = "form-control numeric-only", maxlength = "15", placeholder = "Contact number" })
+                                    @Html.ValidationMessageFor(m => m.Basic.PreviousSchoolPhone, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl-3 col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.CurrentAddress, "Address", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.CurrentAddress, new { @class = "form-control", maxlength = "200", placeholder = "Current address" })
+                                    @Html.ValidationMessageFor(m => m.Basic.CurrentAddress, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl-3 col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.PermanentAddress, "Permanent Address", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.PermanentAddress, new { @class = "form-control", maxlength = "200", placeholder = "Permanent address" })
+                                    @Html.ValidationMessageFor(m => m.Basic.PermanentAddress, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl-3 col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.PANNumber, "PAN Number / ID Number", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.PANNumber, new { @class = "form-control", maxlength = "20", placeholder = "PAN or ID number" })
+                                    @Html.ValidationMessageFor(m => m.Basic.PANNumber, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl-3 col-xl-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.Status, "Status", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.Status, Model.Basic.StatusList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.Status, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <!-- Notes - Full Width -->
+                            <div class="col-xxl-12 col-xl-12">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.Notes, "Notes", new { @class = "form-label" })
+                                    @Html.TextAreaFor(m => m.Basic.Notes, new { @class = "form-control", placeholder = "Other Information", rows = "4", maxlength = "500" })
+                                    @Html.ValidationMessageFor(m => m.Basic.Notes, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Personal Information -->
+
+                <!-- Payroll -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-user-shield fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Payroll</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Payroll.EPFNo, "EPF No", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Payroll.EPFNo, new { @class = "form-control", maxlength = "30", placeholder = "EPF number" })
+                                    @Html.ValidationMessageFor(m => m.Payroll.EPFNo, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Payroll.BasicSalary, "Basic Salary", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Payroll.BasicSalary, new { @class = "form-control", type = "number", step = "0.01", placeholder = "0.00" })
+                                    @Html.ValidationMessageFor(m => m.Payroll.BasicSalary, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Payroll.ContractType, "Contract Type", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Payroll.ContractType, Model.Basic.ContractTypeList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Payroll.ContractType, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Payroll.WorkShift, "Work Shift", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Payroll.WorkShift, Model.Basic.WorkShiftList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Payroll.WorkShift, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Payroll.WorkLocation, "Work Location", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Payroll.WorkLocation, new { @class = "form-control", maxlength = "100", placeholder = "Work location" })
+                                    @Html.ValidationMessageFor(m => m.Payroll.WorkLocation, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Payroll.DateOfLeaving, "Date of Leaving", new { @class = "form-label" })
+                                    <div class="input-icon position-relative">
+                                        <span class="input-icon-addon">
+                                            <i class="ti ti-calendar"></i>
+                                        </span>
+                                        @Html.TextBoxFor(m => m.Payroll.DateOfLeaving, new { @class = "form-control datetimepicker", placeholder = "DD/MM/YYYY" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.Payroll.DateOfLeaving, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Payroll -->
+
+                <!-- Leaves -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-users fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Leaves</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-lg-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Leaves.MedicalLeaves, "Medical Leaves", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Leaves.MedicalLeaves, new { @class = "form-control numeric-only", placeholder = "0", Value = "0" })
+                                    @Html.ValidationMessageFor(m => m.Leaves.MedicalLeaves, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Leaves.CasualLeaves, "Casual Leaves", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Leaves.CasualLeaves, new { @class = "form-control numeric-only", placeholder = "0", Value = "0" })
+                                    @Html.ValidationMessageFor(m => m.Leaves.CasualLeaves, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Leaves.MaternityLeaves, "Maternity Leaves", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Leaves.MaternityLeaves, new { @class = "form-control numeric-only", placeholder = "0", Value = "0" })
+                                    @Html.ValidationMessageFor(m => m.Leaves.MaternityLeaves, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Leaves.SickLeaves, "Sick Leaves", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Leaves.SickLeaves, new { @class = "form-control numeric-only", placeholder = "0", Value = "0" })
+                                    @Html.ValidationMessageFor(m => m.Leaves.SickLeaves, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Leaves -->
+
+                <!-- Bank Details -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-map fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Bank Account Detail</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.BankDetails.AccountName, "Account Name", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.BankDetails.AccountName, new { @class = "form-control", maxlength = "100", placeholder = "Account holder name" })
+                                    @Html.ValidationMessageFor(m => m.BankDetails.AccountName, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.BankDetails.AccountNumber, "Account Number", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.BankDetails.AccountNumber, new { @class = "form-control numeric-only", maxlength = "30", placeholder = "Account number" })
+                                    @Html.ValidationMessageFor(m => m.BankDetails.AccountNumber, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.BankDetails.BankName, "Bank Name", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.BankDetails.BankName, new { @class = "form-control", maxlength = "100", placeholder = "Bank name" })
+                                    @Html.ValidationMessageFor(m => m.BankDetails.BankName, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.BankDetails.IFSCCode, "IFSC Code", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.BankDetails.IFSCCode, new { @class = "form-control", maxlength = "15", placeholder = "IFSC code" })
+                                    @Html.ValidationMessageFor(m => m.BankDetails.IFSCCode, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.BankDetails.BranchName, "Branch Name", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.BankDetails.BranchName, new { @class = "form-control", maxlength = "100", placeholder = "Branch name" })
+                                    @Html.ValidationMessageFor(m => m.BankDetails.BranchName, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Bank Details -->
+
+                <!-- Transport Information -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-bus-stop fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Transport Information</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.RouteId, "Route", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.RouteId, Model.Basic.RouteList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.RouteId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.VehicleId, "Vehicle Number", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.VehicleId, Model.Basic.VehicleList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.VehicleId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.PickupId, "Pickup Point", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.PickupId, Model.Basic.PickupList, "Select", new { @class = "form-select select2", @disabled = "disabled" })
+                                    @Html.ValidationMessageFor(m => m.Basic.PickupId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Transport Information -->
+
+                <!-- Hostel Information -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-building-fortress fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Hostel Information</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.HostelId, "Hostel", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.HostelId, Model.Basic.HostelList, "Select", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.HostelId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.RoomNo, "Room No", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.RoomNo, new { @class = "form-control", maxlength = "20", placeholder = "Room number" })
+                                    @Html.ValidationMessageFor(m => m.Basic.RoomNo, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Hostel Information -->
+
+                <!-- Social Media Links -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-building fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Social Media Links</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row rows-cols-xxl-5">
+                            <div class="col-xxl col-xl-3 col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.SocialMedia.Facebook, "Facebook", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.SocialMedia.Facebook, new { @class = "form-control", maxlength = "200", placeholder = "https://facebook.com/username" })
+                                    @Html.ValidationMessageFor(m => m.SocialMedia.Facebook, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.SocialMedia.Instagram, "Instagram", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.SocialMedia.Instagram, new { @class = "form-control", maxlength = "200", placeholder = "https://instagram.com/username" })
+                                    @Html.ValidationMessageFor(m => m.SocialMedia.Instagram, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.SocialMedia.LinkedIn, "Linked In", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.SocialMedia.LinkedIn, new { @class = "form-control", maxlength = "200", placeholder = "https://linkedin.com/in/username" })
+                                    @Html.ValidationMessageFor(m => m.SocialMedia.LinkedIn, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.SocialMedia.YouTube, "Youtube", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.SocialMedia.YouTube, new { @class = "form-control", maxlength = "200", placeholder = "https://youtube.com/@username" })
+                                    @Html.ValidationMessageFor(m => m.SocialMedia.YouTube, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-xxl col-xl-3 col-lg-4 col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.SocialMedia.Twitter, "Twitter URL", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.SocialMedia.Twitter, new { @class = "form-control", maxlength = "200", placeholder = "https://twitter.com/username" })
+                                    @Html.ValidationMessageFor(m => m.SocialMedia.Twitter, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Social Media Links -->
+
+                <!-- Documents -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-file fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Documents</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="mb-2">
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Resume</label>
+                                        <p>Upload image size of 4MB, Accepted Format PDF</p>
+                                    </div>
+                                    <div class="d-flex align-items-center flex-wrap">
+                                        <div class="btn btn-primary drag-upload-btn mb-2 me-2">
+                                            <i class="ti ti-file-upload me-1"></i>Change
+                                            <input type="file" name="resumeFile" id="resumeFile" class="form-control image_sign" accept=".pdf,.doc,.docx">
+                                        </div>
+                                        <p class="mb-2" id="resumeFileName">Resume.pdf</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-2">
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Joining Letter</label>
+                                        <p>Upload image size of 4MB, Accepted Format PDF</p>
+                                    </div>
+                                    <div class="d-flex align-items-center flex-wrap">
+                                        <div class="btn btn-primary drag-upload-btn mb-2 me-2">
+                                            <i class="ti ti-file-upload me-1"></i>Upload Document
+                                            <input type="file" name="joiningLetterFile" id="joiningLetterFile" class="form-control image_sign" accept=".pdf,.doc,.docx">
+                                        </div>
+                                        <p class="mb-2" id="joiningLetterFileName">Resume.pdf</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Documents -->
+
+                <!-- Password -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-file fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Password</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.Password, "New Password", new { @class = "form-label" })
+                                    @Html.PasswordFor(m => m.Basic.Password, new { @class = "form-control", id = "newPassword", placeholder = "Enter password" })
+                                    @Html.ValidationMessageFor(m => m.Basic.Password, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Confirm Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm password" />
+                                    <span class="text-danger" id="passwordMismatch" style="display:none;">Passwords do not match</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Password -->
+
+                <!-- Submit Buttons -->
+                <div class="text-end mb-4">
+                    <button type="button" class="btn btn-light me-3" onclick="window.location.href='@Url.Action("Index", "Teacher")'">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Teacher</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/bootstrap-tagsinput.min.js"></script>
+    <script src="~/Scripts/select2.min.js"></script>
+    <script src="~/Scripts/bootstrap-datepicker.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 with configuration
+            $('.select2').select2({
+                placeholder: "Select an option",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Initialize Date Pickers
+            $('.datetimepicker').datepicker({
+                format: 'dd/mm/yyyy',
+                autoclose: true,
+                todayHighlight: true,
+                clearBtn: true,
+                orientation: "bottom auto"
+            });
+
+            // Set today's date for Date of Joining by default
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var yyyy = today.getFullYear();
+            var todayString = dd + '/' + mm + '/' + yyyy;
+
+            if (!$('#Basic_DateOfJoining').val()) {
+                $('#Basic_DateOfJoining').val(todayString);
+            }
+
+            // Initialize Tags Input for Languages
+            $('.input-tags').tagsinput({
+                trimValue: true,
+                confirmKeys: [13, 44], // Enter and comma
+                focusClass: 'focus',
+                tagClass: 'label label-primary'
+            });
+
+            // Set default languages if empty
+            if (!$('#Basic_LanguagesKnown').val()) {
+                $('#Basic_LanguagesKnown').tagsinput('add', 'English');
+                $('#Basic_LanguagesKnown').tagsinput('add', 'Hindi');
+            }
+
+            // Photo Upload and Preview
+            $('#photoFile').change(function() {
+                readURL(this);
+            });
+
+            function readURL(input) {
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#photoPreview').html('<img src="' + e.target.result + '" style="width:100%; height:100%; object-fit:cover; border-radius: 4px;" />');
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            // Remove Photo
+            $('#removePhotoBtn').click(function() {
+                $('#photoFile').val('');
+                $('#photoPreview').html('<i class="ti ti-photo-plus fs-16"></i>');
+            });
+
+            // Document file name display
+            $('#resumeFile').change(function() {
+                var fileName = $(this).val().split('\\').pop();
+                $('#resumeFileName').text(fileName || 'No file selected');
+            });
+
+            $('#joiningLetterFile').change(function() {
+                var fileName = $(this).val().split('\\').pop();
+                $('#joiningLetterFileName').text(fileName || 'No file selected');
+            });
+
+            // Route change - Load Pickup Points dynamically
+            $('#Basic_RouteId').change(function() {
+                var routeId = $(this).val();
+                var pickupDropdown = $('#Basic_PickupId');
+
+                // Clear and disable pickup dropdown
+                pickupDropdown.empty();
+                pickupDropdown.append('<option value="">Loading...</option>');
+                pickupDropdown.prop('disabled', true);
+
+                if (routeId && routeId !== '') {
+                    $.ajax({
+                        url: '@Url.Action("GetPickupPointsByRoute", "Teacher")',
+                        type: 'GET',
+                        data: { routeId: routeId },
+                        success: function(response) {
+                            pickupDropdown.empty();
+                            pickupDropdown.append('<option value="">Select</option>');
+
+                            if (response.success && response.data && response.data.length > 0) {
+                                $.each(response.data, function(index, item) {
+                                    pickupDropdown.append('<option value="' + item.Id + '">' + item.Name + '</option>');
+                                });
+                                pickupDropdown.prop('disabled', false);
+                            } else {
+                                pickupDropdown.append('<option value="">No pickup points available</option>');
+                            }
+
+                            // Refresh Select2
+                            pickupDropdown.select2('destroy').select2({
+                                placeholder: "Select pickup point",
+                                allowClear: true,
+                                width: '100%'
+                            });
+                        },
+                        error: function() {
+                            pickupDropdown.empty();
+                            pickupDropdown.append('<option value="">Error loading pickup points</option>');
+                            pickupDropdown.prop('disabled', false);
+                        }
+                    });
+                } else {
+                    pickupDropdown.empty();
+                    pickupDropdown.append('<option value="">Select route first</option>');
+                    pickupDropdown.prop('disabled', true);
+                }
+            });
+
+            // Numeric only input fields
+            $('.numeric-only').on('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            // Password Confirmation Validation
+            $('#confirmPassword').on('keyup blur', function() {
+                var newPassword = $('#newPassword').val();
+                var confirmPassword = $(this).val();
+
+                if (confirmPassword && newPassword !== confirmPassword) {
+                    $('#passwordMismatch').show();
+                    $(this).addClass('is-invalid');
+                } else {
+                    $('#passwordMismatch').hide();
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            $('#newPassword').on('keyup blur', function() {
+                var confirmPassword = $('#confirmPassword').val();
+                if (confirmPassword) {
+                    $('#confirmPassword').trigger('keyup');
+                }
+            });
+
+            // Email validation
+            $('#Basic_Email').on('blur', function() {
+                var email = $(this).val();
+                var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (email && !regex.test(email)) {
+                    $(this).addClass('is-invalid');
+                    if (!$(this).next('.invalid-feedback').length) {
+                        $(this).after('<span class="invalid-feedback d-block">Please enter a valid email address</span>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                }
+            });
+
+            // Phone number validation (10 digits)
+            $('#Basic_PrimaryContactNumber').on('blur', function() {
+                var phone = $(this).val();
+
+                if (phone && phone.length !== 10) {
+                    $(this).addClass('is-invalid');
+                    if (!$(this).next('.invalid-feedback').length) {
+                        $(this).after('<span class="invalid-feedback d-block">Phone number must be exactly 10 digits</span>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                }
+            });
+
+            // PAN Number validation
+            $('#Basic_PANNumber').on('blur', function() {
+                var pan = $(this).val();
+                var panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+                if (pan && !panRegex.test(pan.toUpperCase())) {
+                    $(this).addClass('is-invalid');
+                    if (!$(this).next('.invalid-feedback').length) {
+                        $(this).after('<span class="invalid-feedback d-block">Invalid PAN format (e.g., ABCDE1234F)</span>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                    // Convert to uppercase
+                    $(this).val(pan.toUpperCase());
+                }
+            });
+
+            // IFSC Code validation
+            $('#BankDetails_IFSCCode').on('blur', function() {
+                var ifsc = $(this).val();
+                var ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
+                if (ifsc && !ifscRegex.test(ifsc.toUpperCase())) {
+                    $(this).addClass('is-invalid');
+                    if (!$(this).next('.invalid-feedback').length) {
+                        $(this).after('<span class="invalid-feedback d-block">Invalid IFSC code format</span>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                    // Convert to uppercase
+                    $(this).val(ifsc.toUpperCase());
+                }
+            });
+
+            // Form Validation before submit
+            $('#teacherForm').submit(function(e) {
+                var isValid = true;
+
+                // Check required fields
+                $('[required]').each(function() {
+                    if (!$(this).val()) {
+                        $(this).addClass('is-invalid');
+                        isValid = false;
+                    }
+                });
+
+                // Check password match
+                if ($('#confirmPassword').val()) {
+                    if ($('#confirmPassword').val() !== $('#newPassword').val()) {
+                        $('#passwordMismatch').show();
+                        $('#confirmPassword').addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+
+                // Check email format
+                var email = $('#Basic_Email').val();
+                if (email) {
+                    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        $('#Basic_Email').addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+
+                // Check phone number
+                var phone = $('#Basic_PrimaryContactNumber').val();
+                if (phone && phone.length !== 10) {
+                    $('#Basic_PrimaryContactNumber').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+
+                    // Scroll to first error
+                    var firstError = $('.is-invalid:first');
+                    if (firstError.length) {
+                        $('html, body').animate({
+                            scrollTop: firstError.offset().top - 100
+                        }, 500);
+                    }
+
+                    // Show alert
+                    alert('Please correct the errors in the form before submitting.');
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Remove invalid class on input
+            $('input, select, textarea').on('input change', function() {
+                if ($(this).hasClass('is-invalid') && $(this).val()) {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                }
+            });
+        });
+    </script>

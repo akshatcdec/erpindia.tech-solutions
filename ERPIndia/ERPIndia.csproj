@@ -493,6 +493,7 @@
     <Compile Include="Controllers\StudentProfileController.cs" />
     <Compile Include="Controllers\SubjectMappingController.cs" />
     <Compile Include="Controllers\TeacherAssignmentController.cs" />
+    <Compile Include="Controllers\TeacherController.cs" />
     <Compile Include="Controllers\TeacherGradeSubjectAssignmentController.cs" />
     <Compile Include="Controllers\SchoolProfileController.cs" />
     <Compile Include="Controllers\TransportPickupsController.cs" />
@@ -558,6 +559,8 @@
     <Compile Include="StudentManagement\Repository\EnquiryRepository.cs" />
     <Compile Include="StudentManagement\Repository\StudentRepository.cs" />
     <Compile Include="StudentManagement\UserService.cs" />
+    <Compile Include="TeacherManagement\Models\TeacherViewModel.cs" />
+    <Compile Include="TeacherManagement\Repository\TeacherRepository.cs" />
     <Compile Include="ViewModel\BulkUpdateViewModel.cs" />
     <Compile Include="ViewModel\ClientDetailsModel.cs" />
     <Compile Include="ViewModel\GatePassViewModel.cs" />
@@ -7861,6 +7864,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Attendance\MonthlyReport.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Teacher\Create.cshtml" />
+    <Content Include="Views\Teacher\Edit.cshtml" />
+    <Content Include="Views\Teacher\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

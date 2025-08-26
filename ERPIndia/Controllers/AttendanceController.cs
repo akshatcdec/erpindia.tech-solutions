@@ -1,4 +1,4 @@
-﻿// Controllers/AttendanceController.cs
+﻿// Controllers/AttendanceController.cs - COMPLETE FIXED VERSION
 using Dapper;
 using ERPIndia.Models.Attendance;
 using Newtonsoft.Json;
@@ -68,6 +68,7 @@ namespace ERPIndia.Controllers
 
             return View(model);
         }
+
         #region Yearly Report Methods
         public ActionResult YearlyReport()
         {
@@ -83,7 +84,7 @@ namespace ERPIndia.Controllers
             return View(model);
         }
 
-        // Get yearly attendance report data
+        // Get yearly attendance report data - FIXED VERSION
         [HttpPost]
         public JsonResult GetYearlyAttendanceReport(string classId, string sectionId)
         {
@@ -252,20 +253,32 @@ namespace ERPIndia.Controllers
                             yearlyAttendance.MonthlyData.Add(monthData);
                         }
 
-                        // Calculate yearly totals
+                        // FIXED: Calculate yearly totals with new logic
                         yearlyAttendance.TotalWorkingDays = yearlyAttendance.MonthlyData.Sum(m => m.WorkingDays);
-                        yearlyAttendance.TotalPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
-                        yearlyAttendance.TotalAbsent = yearlyAttendance.MonthlyData.Sum(m => m.Absent);
-                        yearlyAttendance.TotalLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
-                        yearlyAttendance.TotalHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
+
+                        // Get original counts
+                        int originalPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
+                        int originalLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
+                        int originalHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
+
+                        // Present + Late + Half Day all count as Present
+                        yearlyAttendance.TotalPresent = originalPresent + originalLate + originalHalfDay;
+
+                        // Store original values separately (for Excel export if needed)
+                        yearlyAttendance.TotalLate = originalLate;
+                        yearlyAttendance.TotalHalfDay = originalHalfDay;
+
+                        // Calculate absent as Working Days - All Present types
+                        yearlyAttendance.TotalAbsent = yearlyAttendance.TotalWorkingDays - yearlyAttendance.TotalPresent;
+                        if (yearlyAttendance.TotalAbsent < 0) yearlyAttendance.TotalAbsent = 0;
+
                         yearlyAttendance.TotalHolidays = yearlyAttendance.MonthlyData.Sum(m => m.Holidays);
 
                         // Calculate percentage and grade
                         if (yearlyAttendance.TotalWorkingDays > 0)
                         {
                             yearlyAttendance.AttendancePercentage =
-                                Math.Round((decimal)(yearlyAttendance.TotalPresent + yearlyAttendance.TotalLate +
-                                          yearlyAttendance.TotalHalfDay * 0.5m) / yearlyAttendance.TotalWorkingDays * 100, 2);
+                                Math.Round((decimal)yearlyAttendance.TotalPresent / yearlyAttendance.TotalWorkingDays * 100, 2);
                             yearlyAttendance.AttendanceGrade = GetAttendanceGrade(yearlyAttendance.AttendancePercentage);
                             yearlyAttendance.AttendanceColor = GetAttendanceColor(yearlyAttendance.AttendancePercentage);
                         }
@@ -333,6 +346,7 @@ namespace ERPIndia.Controllers
                 });
             }
         }
+
         [HttpPost]
         public JsonResult ExportYearlyAttendanceToExcel(string classId, string sectionId)
         {
@@ -407,7 +421,7 @@ namespace ERPIndia.Controllers
                         sectionName = cmd.ExecuteScalar()?.ToString() ?? "";
                     }
 
-                    // Define academic year months (April = 4 to March = 3) - SAME AS UI METHOD
+                    // Define academic year months (April = 4 to March = 3)
                     int[] academicMonths = { 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3 };
                     string[] monthNames = { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" };
 
@@ -514,20 +528,27 @@ namespace ERPIndia.Controllers
                             yearlyAttendance.MonthlyData.Add(monthData);
                         }
 
-                        // Calculate yearly totals
+                        // FIXED: Calculate yearly totals with new logic
                         yearlyAttendance.TotalWorkingDays = yearlyAttendance.MonthlyData.Sum(m => m.WorkingDays);
-                        yearlyAttendance.TotalPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
-                        yearlyAttendance.TotalAbsent = yearlyAttendance.MonthlyData.Sum(m => m.Absent);
-                        yearlyAttendance.TotalLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
-                        yearlyAttendance.TotalHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
+
+                        int originalPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
+                        int originalLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
+                        int originalHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
+
+                        // All count as Present
+                        yearlyAttendance.TotalPresent = originalPresent + originalLate + originalHalfDay;
+                        yearlyAttendance.TotalAbsent = yearlyAttendance.TotalWorkingDays - yearlyAttendance.TotalPresent;
+                        if (yearlyAttendance.TotalAbsent < 0) yearlyAttendance.TotalAbsent = 0;
+
+                        yearlyAttendance.TotalLate = originalLate;
+                        yearlyAttendance.TotalHalfDay = originalHalfDay;
                         yearlyAttendance.TotalHolidays = yearlyAttendance.MonthlyData.Sum(m => m.Holidays);
 
                         // Calculate percentage and grade
                         if (yearlyAttendance.TotalWorkingDays > 0)
                         {
                             yearlyAttendance.AttendancePercentage =
-                                Math.Round((decimal)(yearlyAttendance.TotalPresent + yearlyAttendance.TotalLate +
-                                          yearlyAttendance.TotalHalfDay * 0.5m) / yearlyAttendance.TotalWorkingDays * 100, 2);
+                                Math.Round((decimal)yearlyAttendance.TotalPresent / yearlyAttendance.TotalWorkingDays * 100, 2);
                             yearlyAttendance.AttendanceGrade = GetAttendanceGrade(yearlyAttendance.AttendancePercentage);
                         }
                         else
@@ -565,6 +586,11 @@ namespace ERPIndia.Controllers
                         worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
+                        currentRow++;
+                        worksheet.Cells[currentRow, 1].Value = "Yearly Attendance Report";
+                        worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
                         currentRow += 2; // Add spacing
 
                         // Create table headers
@@ -592,20 +618,20 @@ namespace ERPIndia.Controllers
                         worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
                         col++;
 
-                        // FIXED: Use academic year month order for headers
+                        // FIXED: Use academic year month order for headers and only show WD, P, A
                         foreach (var month in monthNames)
                         {
                             worksheet.Cells[headerRow, col].Value = month;
-                            worksheet.Cells[headerRow, col, headerRow, col + 3].Merge = true;
+                            worksheet.Cells[headerRow, col, headerRow, col + 2].Merge = true; // Changed from 3 to 2 (only 3 columns)
                             worksheet.Cells[headerRow, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                            col += 4;
+                            col += 3;
                         }
 
                         // Yearly Total
                         worksheet.Cells[headerRow, col].Value = "Session Total";
-                        worksheet.Cells[headerRow, col, headerRow, col + 3].Merge = true;
+                        worksheet.Cells[headerRow, col, headerRow, col + 2].Merge = true; // Changed from 3 to 2
                         worksheet.Cells[headerRow, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                        col += 4;
+                        col += 3;
 
                         worksheet.Cells[headerRow, col].Value = "%";
                         worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
@@ -618,20 +644,18 @@ namespace ERPIndia.Controllers
                         currentRow++;
                         col = 6;
 
-                        // Add sub-headers for each month (12 months)
+                        // FIXED: Add sub-headers for each month (WD, P, A only)
                         for (int i = 0; i < 12; i++)
                         {
                             worksheet.Cells[currentRow, col++].Value = "WD";
                             worksheet.Cells[currentRow, col++].Value = "P";
-                            worksheet.Cells[currentRow, col++].Value = "L";
-                            worksheet.Cells[currentRow, col++].Value = "HD";
+                            worksheet.Cells[currentRow, col++].Value = "A";
                         }
 
                         // Session totals sub-headers
                         worksheet.Cells[currentRow, col++].Value = "WD";
                         worksheet.Cells[currentRow, col++].Value = "P";
-                        worksheet.Cells[currentRow, col++].Value = "L";
-                        worksheet.Cells[currentRow, col++].Value = "HD";
+                        worksheet.Cells[currentRow, col++].Value = "A";
 
                         // Add student data
                         currentRow++;
@@ -644,20 +668,22 @@ namespace ERPIndia.Controllers
                             worksheet.Cells[currentRow, col++].Value = student.StudentName;
                             worksheet.Cells[currentRow, col++].Value = student.FatherName;
 
-                            // Monthly data in ACADEMIC YEAR ORDER (all 12 months)
+                            // FIXED: Monthly data with combined Present calculation
                             foreach (var monthData in student.MonthlyData)
                             {
+                                int totalPresent = monthData.Present + monthData.Late + monthData.HalfDay;
+                                int absent = monthData.WorkingDays - totalPresent;
+                                if (absent < 0) absent = 0;
+
                                 worksheet.Cells[currentRow, col++].Value = monthData.WorkingDays;
-                                worksheet.Cells[currentRow, col++].Value = monthData.Present;
-                                worksheet.Cells[currentRow, col++].Value = monthData.Late;
-                                worksheet.Cells[currentRow, col++].Value = monthData.HalfDay;
+                                worksheet.Cells[currentRow, col++].Value = totalPresent;
+                                worksheet.Cells[currentRow, col++].Value = absent;
                             }
 
                             // Session totals
                             worksheet.Cells[currentRow, col++].Value = student.TotalWorkingDays;
                             worksheet.Cells[currentRow, col++].Value = student.TotalPresent;
-                            worksheet.Cells[currentRow, col++].Value = student.TotalLate;
-                            worksheet.Cells[currentRow, col++].Value = student.TotalHalfDay;
+                            worksheet.Cells[currentRow, col++].Value = student.TotalAbsent;
 
                             worksheet.Cells[currentRow, col++].Value = student.AttendancePercentage.ToString("0.00") + "%";
                             worksheet.Cells[currentRow, col++].Value = student.AttendanceGrade;
@@ -704,6 +730,7 @@ namespace ERPIndia.Controllers
         }
 
         #endregion
+
         // Grade calculation methods
         private string GetAttendanceGrade(decimal percentage)
         {
@@ -725,7 +752,7 @@ namespace ERPIndia.Controllers
             return "danger";
         }
 
-        // Helper method to get monthly attendance data for a student
+        // Helper method to get monthly attendance data for a student - FIXED VERSION
         private MonthlyAttendanceData GetMonthlyAttendanceData(SqlConnection conn, string studentId, int month, int year)
         {
             var monthData = new MonthlyAttendanceData
@@ -776,7 +803,7 @@ namespace ERPIndia.Controllers
                 holidays = result != null ? Convert.ToInt32(result) : 0;
             }
 
-            // Calculate working days: Total days - Sundays - Holidays
+            // FIXED: Calculate working days: Total days - Sundays - Holidays
             monthData.WorkingDays = totalDaysInMonth - sundays - holidays;
             monthData.Holidays = holidays;
 
@@ -834,15 +861,17 @@ namespace ERPIndia.Controllers
                 }
             }
 
-            // Calculate attendance percentage
+            // FIXED: Calculate attendance percentage - Present + Late + Half Day all count as present
             if (monthData.WorkingDays > 0)
             {
-                decimal effectivePresent = monthData.Present + monthData.Late + (monthData.HalfDay * 0.5m);
+                decimal effectivePresent = monthData.Present + monthData.Late + monthData.HalfDay;
                 monthData.AttendancePercentage = Math.Round((effectivePresent / monthData.WorkingDays) * 100, 2);
             }
 
             return monthData;
-        }  // Calculate monthly statistics for the entire class
+        }
+
+        // Calculate monthly statistics for the entire class - FIXED VERSION
         private MonthlyStats CalculateMonthlyStatistics(SqlConnection conn, string classId, string sectionId, int month, int year)
         {
             var stats = new MonthlyStats
@@ -858,13 +887,13 @@ namespace ERPIndia.Controllers
             DateTime firstDayOfMonth = new DateTime(year, month, 1);
             DateTime lastDayOfMonth = new DateTime(year, month, DateTime.DaysInMonth(year, month));
 
+            // FIXED: Updated query to count all Present, Late, and Half Day as present
             string query = @"
         WITH StudentAttendanceStats AS (
             SELECT 
                 s.StudentID,
-                COUNT(DISTINCT CASE WHEN sa.Status IN ('Present', 'P') THEN sa.AttendanceDate END) as PresentDays,
-                COUNT(DISTINCT CASE WHEN sa.Status IN ('Late', 'L') THEN sa.AttendanceDate END) as LateDays,
-                COUNT(DISTINCT CASE WHEN sa.Status IN ('Half Day', 'HalfDay', 'HD', 'H') THEN sa.AttendanceDate END) as HalfDays,
+                COUNT(DISTINCT CASE WHEN sa.Status IN ('Present', 'P', 'Late', 'L', 'Half Day', 'HalfDay', 'HD', 'H') 
+                    THEN sa.AttendanceDate END) as TotalPresentDays,
                 COUNT(DISTINCT sa.AttendanceDate) as TotalRecordedDays
             FROM StudentInfoBasic s
             LEFT JOIN StudentAttendance sa ON s.StudentID = sa.StudentID
@@ -883,9 +912,9 @@ namespace ERPIndia.Controllers
         )
         SELECT 
             COUNT(*) as TotalStudents,
-            AVG((PresentDays + LateDays + (HalfDays * 0.5)) * 100.0 / NULLIF(TotalRecordedDays, 0)) as AverageAttendance,
-            MAX((PresentDays + LateDays + (HalfDays * 0.5)) * 100.0 / NULLIF(TotalRecordedDays, 0)) as BestAttendance,
-            MIN((PresentDays + LateDays + (HalfDays * 0.5)) * 100.0 / NULLIF(TotalRecordedDays, 0)) as WorstAttendance
+            AVG(TotalPresentDays * 100.0 / NULLIF(TotalRecordedDays, 0)) as AverageAttendance,
+            MAX(TotalPresentDays * 100.0 / NULLIF(TotalRecordedDays, 0)) as BestAttendance,
+            MIN(TotalPresentDays * 100.0 / NULLIF(TotalRecordedDays, 0)) as WorstAttendance
         FROM StudentAttendanceStats";
 
             using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -915,6 +944,7 @@ namespace ERPIndia.Controllers
 
             return stats;
         }
+
         public ActionResult MonthlyReport()
         {
             var classesResult = _dropdownController.GetClasses();
@@ -951,24 +981,26 @@ namespace ERPIndia.Controllers
 
             return years;
         }
+
         private List<SelectListItem> GetMonthsList()
         {
             return new List<SelectListItem>
-    {
-        new SelectListItem { Value = "4", Text = "April" },
-        new SelectListItem { Value = "5", Text = "May" },
-        new SelectListItem { Value = "6", Text = "June" },
-        new SelectListItem { Value = "7", Text = "July" },
-        new SelectListItem { Value = "8", Text = "August" },
-        new SelectListItem { Value = "9", Text = "September" },
-        new SelectListItem { Value = "10", Text = "October" },
-        new SelectListItem { Value = "11", Text = "November" },
-        new SelectListItem { Value = "12", Text = "December" },
-        new SelectListItem { Value = "1", Text = "January" },
-        new SelectListItem { Value = "2", Text = "February" },
-        new SelectListItem { Value = "3", Text = "March" }
-    };
+            {
+                new SelectListItem { Value = "4", Text = "April" },
+                new SelectListItem { Value = "5", Text = "May" },
+                new SelectListItem { Value = "6", Text = "June" },
+                new SelectListItem { Value = "7", Text = "July" },
+                new SelectListItem { Value = "8", Text = "August" },
+                new SelectListItem { Value = "9", Text = "September" },
+                new SelectListItem { Value = "10", Text = "October" },
+                new SelectListItem { Value = "11", Text = "November" },
+                new SelectListItem { Value = "12", Text = "December" },
+                new SelectListItem { Value = "1", Text = "January" },
+                new SelectListItem { Value = "2", Text = "February" },
+                new SelectListItem { Value = "3", Text = "March" }
+            };
         }
+
         private List<SelectListItem> GetAttendanceStatusList()
         {
             return new List<SelectListItem>  {
@@ -1206,10 +1238,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
             return time;
         }
 
-        // Monthly Report
-
-
-        // Get monthly attendance report data
+        // Get monthly attendance report data - FIXED VERSION
         [HttpPost]
         public JsonResult GetMonthlyAttendanceReport(string classId, string sectionId, int month, int year)
         {
@@ -1294,12 +1323,13 @@ WHERE sa.AttendanceDate = @AttendanceDate
                         System.Diagnostics.Debug.WriteLine($"Error getting holidays: {ex.Message}");
                     }
 
-                    // Build date list
+                    // Build date list - FIXED: Calculate working days correctly
                     for (var date = firstDay; date <= lastDay; date = date.AddDays(1))
                     {
                         bool isSunday = date.DayOfWeek == DayOfWeek.Sunday;
                         bool isHoliday = holidays.Contains(date.Date);
 
+                        // Working days = days that are not Sunday or Holiday
                         if (!isSunday && !isHoliday)
                             workingDays++;
 
@@ -1333,8 +1363,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
                         AND s.IsDeleted = 0
                         AND s.TenantID = @TenantID
                         AND s.SessionID = @SessionID
-                    ORDER BY 
-                        s.FirstName";
+                    ORDER BY s.FirstName";
 
                         using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
                         {
@@ -1428,7 +1457,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
                                             monthlyAttendance.DailyAttendanceMonthly[day.ToString("00")] = statusCode;
 
-                                            // Update totals
+                                            // Update totals - keep track of each type
                                             switch (status.ToLower())
                                             {
                                                 case "present":
@@ -1450,12 +1479,12 @@ WHERE sa.AttendanceDate = @AttendanceDate
                                 }
                             }
 
-                            // Calculate attendance percentage
+                            // FIXED: Calculate attendance percentage - Present + Late + Half Day all count as present
                             if (workingDays > 0)
                             {
                                 decimal effectivePresent = monthlyAttendance.TotalPresent +
                                                           monthlyAttendance.TotalLate +
-                                                          (monthlyAttendance.TotalHalfDay * 0.5m);
+                                                          monthlyAttendance.TotalHalfDay;
 
                                 monthlyAttendance.AttendancePercentage = Math.Round((effectivePresent / workingDays) * 100, 2);
                                 totalAttendancePercentage += monthlyAttendance.AttendancePercentage;
@@ -1524,6 +1553,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
                 default: return "";
             }
         }
+
         // Private helper methods
         private List<StudentAttendanceModel> GetStudentsWithAttendanceFromDB(string classId, string sectionId, DateTime attendanceDate)
         {
@@ -1964,8 +1994,6 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
             return report;
         }
-
-      
 
         private List<SelectListItem> ConvertToSelectList(JsonResult result)
         {

@@ -1,6 +1,6 @@
 ﻿@model ERPIndia.Models.Attendance.MonthlyAttendanceViewModel
 @{
-    ViewBag.Title = "Monthly Attendance Report";
+    ViewBag.Title = "Monthly Attendance";
 }
 
 <style>
@@ -250,7 +250,7 @@
         <div class="card-header bg-light">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-calendar-alt me-2"></i>Monthly Attendance Report
+                    <i class="fas fa-calendar-alt me-2"></i>Monthly Attendance
                 </h5>
             </div>
         </div>
@@ -285,48 +285,23 @@
     </div>
 
     <!-- Summary Statistics -->
-    <div id="summaryContainer" class="mt-4" style="display:none;">
-        <div class="summary-card">
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <div class="summary-stat">
-                        <div class="stat-label">Class</div>
-                        <div class="stat-value" id="className">-</div>
-                    </div>
-                    <div class="summary-stat">
-                        <div class="stat-label">Section</div>
-                        <div class="stat-value" id="sectionName">-</div>
-                    </div>
-                    <div class="summary-stat">
-                        <div class="stat-label">Month</div>
-                        <div class="stat-value" id="monthName">-</div>
-                    </div>
-                    <div class="summary-stat">
-                        <div class="stat-label">Total Students</div>
-                        <div class="stat-value text-info" id="totalStudents">0</div>
-                    </div>
-                    <div class="summary-stat">
-                        <div class="stat-label">Working Days</div>
-                        <div class="stat-value text-primary" id="workingDays">0</div>
-                    </div>
-                    <div class="summary-stat">
-                        <div class="stat-label">Avg. Attendance</div>
-                        <div class="stat-value text-success" id="avgAttendance">0%</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Report Table -->
     <div id="reportContainer" class="mt-4" style="display:none;">
         <div class="card">
             <div class="card-header bg-light">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">
-                        <i class="fas fa-table me-2"></i>Monthly Attendance Details
-                    </h6>
-
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <h6 class="mb-0">
+                            <i class="fas fa-table me-2"></i>Attendance Details
+                        </h6>
+                    </div>
+                    <div class="col-6 text-end">
+                        <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()" style="display: inline-block !important; visibility: visible !important;">
+                            <i class="fas fa-file-excel me-1"></i>Export to Excel
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
@@ -381,7 +356,6 @@ $(document).ready(function() {
 
         $('#tableHeader').empty();
         $('#tableBody').empty();
-        $('#summaryContainer').hide();
         $('#reportContainer').hide();
         reportData = null;
     }
@@ -457,7 +431,6 @@ $(document).ready(function() {
                     }
 
                     displayReport(reportData);
-                    $('#summaryContainer').show();
                     $('#reportContainer').show();
 
                     // Show success message
@@ -513,7 +486,46 @@ $(document).ready(function() {
             }
         });
     }
+    window.exportToExcel = function() {
+    var classId = $('#ddlClass').val();
+    var sectionId = $('#ddlSection').val();
 
+    if (!classId || !sectionId) {
+        showToast('Please generate the report first', 'warning');
+        return;
+    }
+
+    showSpinner();
+
+    $.ajax({
+        url: '@Url.Action("ExportMonthlyAttendanceToExcel", "Attendance")',
+        type: 'POST',
+        data: {
+            classId: classId,
+            sectionId: sectionId
+        },
+        success: function(response) {
+            hideSpinner();
+            if (response.success) {
+                // Download the file
+                var link = document.createElement('a');
+                link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + response.fileContent;
+                link.download = response.fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showToast('Excel file downloaded successfully!', 'success');
+            } else {
+                showToast('Failed to export: ' + response.message, 'error');
+            }
+        },
+        error: function(xhr, status, error) {
+            hideSpinner();
+            showToast('Error exporting to Excel: ' + error, 'error');
+        }
+    });
+};
     // Display report with error handling
     function displayReport(data) {
         try {
@@ -524,14 +536,7 @@ $(document).ready(function() {
             }
             console.log(JSON.stringify(data));
             // Update summary with safe access
-            $('#className').text(data.ClassName || 'N/A');
-            $('#sectionName').text(data.SectionName || 'N/A');
-            $('#monthName').text(data.MonthName || 'N/A');
-            $('#totalStudents').text(data.TotalStudents || 0);
-            $('#workingDays').text(data.WorkingDays || 0);
 
-            var avgAttendance = data.AverageAttendance || 0;
-            $('#avgAttendance').text(avgAttendance.toFixed(2) + '%');
 
             // Build table headers
             var headerHtml = '<tr>';

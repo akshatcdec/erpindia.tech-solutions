@@ -4,7 +4,7 @@
 }
 
 <style>
-  
+
     /* Header Card Styling */
     .filter-card {
         background: linear-gradient(to bottom, #ffffff, #f8f9fa);
@@ -314,7 +314,7 @@
                 </div>
             </div>
             <div class="card-body">
-               <!-- Table -->
+                <!-- Table -->
                 <div class="table-responsive">
                     <table class="yearly-table" id="yearlyAttendanceTable">
                         <thead id="tableHeader">
@@ -400,7 +400,7 @@ $(document).ready(function() {
     $('#btnSearch').click(function() {
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
-      
+
         if (!classId || !sectionId) {
             showToast('Please select all required fields', 'warning');
             return;
@@ -447,8 +447,7 @@ $(document).ready(function() {
         });
     }
 
-    // Display report with April to March order and only P, L, HD columns
-    // Display report with April to March order and only P, L, HD columns
+    // Display report with April to March order and only Working Days, Present, Absent columns
     function displayReport(data) {
         $('#tableHeader').empty();
         $('#tableBody').empty();
@@ -471,26 +470,24 @@ $(document).ready(function() {
             'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 
         $.each(months, function (i, month) {
-            headerHtml += '<th colspan="4" class="month-header">' + month + '</th>';
+            headerHtml += '<th colspan="3" class="month-header">' + month + '</th>';
         });
 
-        headerHtml += '<th colspan="4">Yearly Total</th>';
+        headerHtml += '<th colspan="3">Yearly Total</th>';
         headerHtml += '<th rowspan="2">%</th>';
         headerHtml += '<th rowspan="2">Grade</th>';
         headerHtml += '</tr>';
 
-        // Sub headers (WD, P, L, HD only - no Absent)
+        // Sub headers (WD, P, Absent only - removed HD and changed L to Absent)
         headerHtml += '<tr>';
         for (var i = 0; i < 12; i++) {
             headerHtml += '<th class="sub-header">WD</th>';
             headerHtml += '<th class="sub-header">P</th>';
-            headerHtml += '<th class="sub-header">L</th>';
-            headerHtml += '<th class="sub-header">HD</th>';
+            headerHtml += '<th class="sub-header">A</th>';
         }
         headerHtml += '<th class="sub-header">WD</th>';
         headerHtml += '<th class="sub-header">P</th>';
-        headerHtml += '<th class="sub-header">L</th>';
-        headerHtml += '<th class="sub-header">HD</th>';
+        headerHtml += '<th class="sub-header">A</th>';
         headerHtml += '</tr>';
 
         $('#tableHeader').html(headerHtml);
@@ -509,31 +506,47 @@ $(document).ready(function() {
                 bodyHtml += '<td>' + (student.StudentName || '-') + '</td>';
                 bodyHtml += '<td>' + (student.FatherName || '-') + '</td>';
 
-                // Monthly data - NO REORDERING NEEDED! Backend already sends in correct order
+                // Monthly data - Calculate Absent as (WorkingDays - Present - Late - HalfDay)
                 if (student.MonthlyData && student.MonthlyData.length === 12) {
                     for (var i = 0; i < 12; i++) {
-                        var monthData = student.MonthlyData[i]; // Use index directly, no reordering
+                        var monthData = student.MonthlyData[i];
                         if (monthData) {
-                            bodyHtml += '<td>' + (monthData.WorkingDays || 0) + '</td>';
-                            bodyHtml += '<td>' + (monthData.Present || 0) + '</td>';
-                            bodyHtml += '<td>' + (monthData.Late || 0) + '</td>';
-                            bodyHtml += '<td>' + (monthData.HalfDay || 0) + '</td>';
+                            var workingDays = monthData.WorkingDays || 0;
+                            var present = monthData.Present || 0;
+                            var late = monthData.Late || 0;
+                            var halfDay = monthData.HalfDay || 0;
+
+                            // Calculate absent days
+                            var absent = workingDays - present - late - halfDay;
+                            if (absent < 0) absent = 0; // Ensure no negative values
+
+                            bodyHtml += '<td>' + workingDays + '</td>';
+                            bodyHtml += '<td>' + present + '</td>';
+                            bodyHtml += '<td>' + absent + '</td>';
                         } else {
-                            bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td>';
+                            bodyHtml += '<td>0</td><td>0</td><td>0</td>';
                         }
                     }
                 } else {
                     // Fill with zeros if data is missing
                     for (var m = 0; m < 12; m++) {
-                        bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td>';
+                        bodyHtml += '<td>0</td><td>0</td><td>0</td>';
                     }
                 }
 
-                // Yearly totals (no Absent column)
-                bodyHtml += '<td><strong>' + (student.TotalWorkingDays || 0) + '</strong></td>';
-                bodyHtml += '<td><strong>' + (student.TotalPresent || 0) + '</strong></td>';
-                bodyHtml += '<td><strong>' + (student.TotalLate || 0) + '</strong></td>';
-                bodyHtml += '<td><strong>' + (student.TotalHalfDay || 0) + '</strong></td>';
+                // Yearly totals - Calculate total absent
+                var totalWorkingDays = student.TotalWorkingDays || 0;
+                var totalPresent = student.TotalPresent || 0;
+                var totalLate = student.TotalLate || 0;
+                var totalHalfDay = student.TotalHalfDay || 0;
+
+                // Calculate total absent days
+                var totalAbsent = totalWorkingDays - totalPresent - totalLate - totalHalfDay;
+                if (totalAbsent < 0) totalAbsent = 0;
+
+                bodyHtml += '<td><strong>' + totalWorkingDays + '</strong></td>';
+                bodyHtml += '<td><strong>' + totalPresent + '</strong></td>';
+                bodyHtml += '<td><strong>' + totalAbsent + '</strong></td>';
 
                 // Percentage
                 bodyHtml += '<td><strong>' + attendancePercentage.toFixed(2) + '%</strong></td>';
@@ -544,7 +557,7 @@ $(document).ready(function() {
                 bodyHtml += '</tr>';
             });
         } else {
-            bodyHtml = '<tr><td colspan="57" class="text-center">No data available</td></tr>';
+            bodyHtml = '<tr><td colspan="45" class="text-center">No data available</td></tr>';
         }
 
         $('#tableBody').html(bodyHtml);
@@ -554,7 +567,7 @@ $(document).ready(function() {
     window.exportToExcel = function() {
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
-       
+
         if (!classId || !sectionId) {
             showToast('Please generate the report first', 'warning');
             return;

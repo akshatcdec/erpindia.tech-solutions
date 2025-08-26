@@ -85,7 +85,7 @@ namespace ERPIndia.Controllers
 
         // Get yearly attendance report data
         [HttpPost]
-       public JsonResult GetYearlyAttendanceReport(string classId, string sectionId)
+        public JsonResult GetYearlyAttendanceReport(string classId, string sectionId)
         {
             try
             {
@@ -127,7 +127,7 @@ namespace ERPIndia.Controllers
                         SessionEndDate = sessionEndDate
                     };
 
-                    // Get all students - THIS WAS MISSING!
+                    // Get all students
                     string studentQuery = @"
                 SELECT 
                     s.StudentID,
@@ -151,7 +151,6 @@ namespace ERPIndia.Controllers
 
                     var students = new List<StudentData>();
 
-                    // EXECUTE THE QUERY TO GET STUDENTS
                     using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
                     {
                         cmd.Parameters.AddWithValue("@ClassID", classId);
@@ -178,14 +177,18 @@ namespace ERPIndia.Controllers
                         }
                     }
 
-                    // Set class and section names in report data
+                    // Set class and section names
                     if (students.Any())
                     {
                         reportData.ClassName = students.First().ClassName;
                         reportData.SectionName = students.First().SectionName;
                     }
 
-                    // Process each student with session-based months
+                    // Define academic year months (April = 4 to March = 3)
+                    int[] academicMonths = { 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3 };
+                    string[] monthNames = { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" };
+
+                    // Process each student
                     int serialNo = 1;
                     foreach (var student in students)
                     {
@@ -203,14 +206,50 @@ namespace ERPIndia.Controllers
                             MonthlyData = new List<MonthlyAttendanceData>()
                         };
 
-                        // Get attendance for each month within the session period
-                        DateTime currentDate = sessionStartDate;
-                        while (currentDate <= sessionEndDate)
+                        // Initialize all 12 months in academic year order (April to March)
+                        for (int i = 0; i < 12; i++)
                         {
-                            var monthData = GetMonthlyAttendanceData(conn, student.StudentID,
-                                                                    currentDate.Month, currentDate.Year);
+                            // Determine the year for each month
+                            int monthNumber = academicMonths[i];
+                            int yearForMonth = sessionStartDate.Year;
+
+                            // If month is January, February, or March, it belongs to the next calendar year
+                            if (monthNumber <= 3)
+                            {
+                                yearForMonth = sessionStartDate.Year + 1;
+                            }
+
+                            // Check if this month falls within the session dates
+                            DateTime monthStart = new DateTime(yearForMonth, monthNumber, 1);
+                            DateTime monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
+                            MonthlyAttendanceData monthData;
+
+                            // Only fetch data if the month is within session dates
+                            if (monthStart <= sessionEndDate && monthEnd >= sessionStartDate)
+                            {
+                                monthData = GetMonthlyAttendanceData(conn, student.StudentID, monthNumber, yearForMonth);
+                            }
+                            else
+                            {
+                                // Month is outside session, initialize with zeros
+                                monthData = new MonthlyAttendanceData
+                                {
+                                    Month = monthNumber,
+                                    MonthName = monthNames[i],
+                                    WorkingDays = 0,
+                                    Present = 0,
+                                    Absent = 0,
+                                    Late = 0,
+                                    HalfDay = 0,
+                                    Holidays = 0,
+                                    AttendancePercentage = 0
+                                };
+                            }
+
+                            // Override month name to ensure consistency
+                            monthData.MonthName = monthNames[i];
                             yearlyAttendance.MonthlyData.Add(monthData);
-                            currentDate = currentDate.AddMonths(1);
                         }
 
                         // Calculate yearly totals
@@ -240,30 +279,58 @@ namespace ERPIndia.Controllers
                         reportData.Students.Add(yearlyAttendance);
                     }
 
-                    // Calculate monthly statistics if needed
-                    DateTime statDate = sessionStartDate;
-                    while (statDate <= sessionEndDate)
+                    // Calculate monthly statistics for academic year
+                    for (int i = 0; i < 12; i++)
                     {
-                        var monthStats = CalculateMonthlyStatistics(conn, classId, sectionId,
-                                                                   statDate.Month, statDate.Year);
-                        reportData.MonthlyStatistics.Add(monthStats);
-                        statDate = statDate.AddMonths(1);
+                        int monthNumber = academicMonths[i];
+                        int yearForMonth = sessionStartDate.Year;
+
+                        if (monthNumber <= 3)
+                        {
+                            yearForMonth = sessionStartDate.Year + 1;
+                        }
+
+                        DateTime monthStart = new DateTime(yearForMonth, monthNumber, 1);
+                        DateTime monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
+                        // Only calculate stats if month is within session
+                        if (monthStart <= sessionEndDate && monthEnd >= sessionStartDate)
+                        {
+                            var monthStats = CalculateMonthlyStatistics(conn, classId, sectionId, monthNumber, yearForMonth);
+                            reportData.MonthlyStatistics.Add(monthStats);
+                        }
                     }
 
                     reportData.GeneratedDate = DateTime.Now;
                     reportData.TotalStudents = students.Count;
 
+                    // Add debug information
+                    var debugInfo = new
+                    {
+                        SessionStart = sessionStartDate.ToString("yyyy-MM-dd"),
+                        SessionEnd = sessionEndDate.ToString("yyyy-MM-dd"),
+                        StudentsFound = students.Count,
+                        FirstStudentData = students.FirstOrDefault() != null ?
+                            $"{students.First().StudentName} - Total Working Days: {reportData.Students.First().TotalWorkingDays}" : "No students"
+                    };
+
                     return Json(new
                     {
                         success = true,
                         data = reportData,
+                        debug = debugInfo,
                         message = $"Report generated for session {sessionName} with {students.Count} students"
                     });
                 }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                return Json(new
+                {
+                    success = false,
+                    message = "Error: " + ex.Message,
+                    stackTrace = ex.StackTrace
+                });
             }
         }
         [HttpPost]
@@ -340,8 +407,11 @@ namespace ERPIndia.Controllers
                         sectionName = cmd.ExecuteScalar()?.ToString() ?? "";
                     }
 
+                    // Define academic year months (April = 4 to March = 3) - SAME AS UI METHOD
+                    int[] academicMonths = { 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3 };
+                    string[] monthNames = { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" };
+
                     // Get students data
-                    var students = new List<StudentYearlyAttendance>();
                     string studentQuery = @"
                 SELECT 
                     s.StudentID,
@@ -358,7 +428,9 @@ namespace ERPIndia.Controllers
                     AND s.SessionID = @SessionID
                 ORDER BY CAST(s.RollNo AS INT), s.FirstName";
 
+                    var students = new List<StudentYearlyAttendance>();
                     var studentList = new List<StudentData>();
+
                     using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
                     {
                         cmd.Parameters.AddWithValue("@ClassID", classId);
@@ -382,7 +454,7 @@ namespace ERPIndia.Controllers
                         }
                     }
 
-                    // Process each student with session-based data
+                    // Process each student with ACADEMIC YEAR ORDER
                     int serialNo = 1;
                     foreach (var student in studentList)
                     {
@@ -397,23 +469,60 @@ namespace ERPIndia.Controllers
                             MonthlyData = new List<MonthlyAttendanceData>()
                         };
 
-                        // Get attendance for each month in the session
-                        DateTime currentDate = sessionStartDate;
-                        while (currentDate <= sessionEndDate)
+                        // Initialize all 12 months in ACADEMIC YEAR ORDER (April to March)
+                        for (int i = 0; i < 12; i++)
                         {
-                            var monthData = GetMonthlyAttendanceData(conn, student.StudentID,
-                                                                    currentDate.Month, currentDate.Year);
+                            int monthNumber = academicMonths[i];
+                            int yearForMonth = sessionStartDate.Year;
+
+                            // If month is January, February, or March, it belongs to the next calendar year
+                            if (monthNumber <= 3)
+                            {
+                                yearForMonth = sessionStartDate.Year + 1;
+                            }
+
+                            // Check if this month falls within the session dates
+                            DateTime monthStart = new DateTime(yearForMonth, monthNumber, 1);
+                            DateTime monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
+                            MonthlyAttendanceData monthData;
+
+                            // Only fetch data if the month is within session dates
+                            if (monthStart <= sessionEndDate && monthEnd >= sessionStartDate)
+                            {
+                                monthData = GetMonthlyAttendanceData(conn, student.StudentID, monthNumber, yearForMonth);
+                            }
+                            else
+                            {
+                                // Month is outside session, initialize with zeros
+                                monthData = new MonthlyAttendanceData
+                                {
+                                    Month = monthNumber,
+                                    MonthName = monthNames[i],
+                                    WorkingDays = 0,
+                                    Present = 0,
+                                    Absent = 0,
+                                    Late = 0,
+                                    HalfDay = 0,
+                                    Holidays = 0,
+                                    AttendancePercentage = 0
+                                };
+                            }
+
+                            // Override month name to ensure consistency
+                            monthData.MonthName = monthNames[i];
                             yearlyAttendance.MonthlyData.Add(monthData);
-                            currentDate = currentDate.AddMonths(1);
                         }
 
-                        // Calculate totals
+                        // Calculate yearly totals
                         yearlyAttendance.TotalWorkingDays = yearlyAttendance.MonthlyData.Sum(m => m.WorkingDays);
                         yearlyAttendance.TotalPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
+                        yearlyAttendance.TotalAbsent = yearlyAttendance.MonthlyData.Sum(m => m.Absent);
                         yearlyAttendance.TotalLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
                         yearlyAttendance.TotalHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
+                        yearlyAttendance.TotalHolidays = yearlyAttendance.MonthlyData.Sum(m => m.Holidays);
 
-                        // Calculate percentage
+                        // Calculate percentage and grade
                         if (yearlyAttendance.TotalWorkingDays > 0)
                         {
                             yearlyAttendance.AttendancePercentage =
@@ -452,7 +561,6 @@ namespace ERPIndia.Controllers
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
                         currentRow++;
-                        // Use session name instead of year
                         worksheet.Cells[currentRow, 1].Value = $"Class: {className}    Section: {sectionName}    Session: {sessionName}";
                         worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
@@ -484,15 +592,7 @@ namespace ERPIndia.Controllers
                         worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
                         col++;
 
-                        // Dynamic month headers based on session
-                        DateTime monthDate = sessionStartDate;
-                        var monthNames = new List<string>();
-                        while (monthDate <= sessionEndDate)
-                        {
-                            monthNames.Add(monthDate.ToString("MMM"));
-                            monthDate = monthDate.AddMonths(1);
-                        }
-
+                        // FIXED: Use academic year month order for headers
                         foreach (var month in monthNames)
                         {
                             worksheet.Cells[headerRow, col].Value = month;
@@ -518,7 +618,8 @@ namespace ERPIndia.Controllers
                         currentRow++;
                         col = 6;
 
-                        for (int i = 0; i < monthNames.Count; i++)
+                        // Add sub-headers for each month (12 months)
+                        for (int i = 0; i < 12; i++)
                         {
                             worksheet.Cells[currentRow, col++].Value = "WD";
                             worksheet.Cells[currentRow, col++].Value = "P";
@@ -543,7 +644,7 @@ namespace ERPIndia.Controllers
                             worksheet.Cells[currentRow, col++].Value = student.StudentName;
                             worksheet.Cells[currentRow, col++].Value = student.FatherName;
 
-                            // Monthly data in session order
+                            // Monthly data in ACADEMIC YEAR ORDER (all 12 months)
                             foreach (var monthData in student.MonthlyData)
                             {
                                 worksheet.Cells[currentRow, col++].Value = monthData.WorkingDays;
@@ -564,10 +665,11 @@ namespace ERPIndia.Controllers
                             currentRow++;
                         }
 
-                        // Apply styles and borders (rest of the code remains same)...
+                        // Apply styles and borders
                         var headerRange = worksheet.Cells[headerRow, 1, headerRow + 1, col - 1];
                         headerRange.Style.Font.Bold = true;
                         headerRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        headerRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
                         var tableRange = worksheet.Cells[headerRow, 1, currentRow - 1, col - 1];
                         var border = tableRange.Style.Border;
@@ -576,7 +678,10 @@ namespace ERPIndia.Controllers
                         border.Left.Style = ExcelBorderStyle.Thin;
                         border.Right.Style = ExcelBorderStyle.Thin;
 
+                        // Ensure all text is black
                         worksheet.Cells[1, 1, currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Black);
+
+                        // Auto-fit columns
                         worksheet.Cells.AutoFitColumns();
 
                         // Convert to byte array
@@ -638,6 +743,10 @@ namespace ERPIndia.Controllers
             // Count total days in month
             int totalDaysInMonth = DateTime.DaysInMonth(year, month);
 
+            // Get first and last date of the month
+            DateTime firstDayOfMonth = new DateTime(year, month, 1);
+            DateTime lastDayOfMonth = new DateTime(year, month, totalDaysInMonth);
+
             // Count Sundays
             int sundays = 0;
             for (int day = 1; day <= totalDaysInMonth; day++)
@@ -650,8 +759,8 @@ namespace ERPIndia.Controllers
             string holidayCountQuery = @"
         SELECT COUNT(*) AS HolidayCount
         FROM HolidayCalendar 
-        WHERE YEAR(HolidayDate) = @Year 
-            AND MONTH(HolidayDate) = @Month
+        WHERE HolidayDate >= @FirstDay 
+            AND HolidayDate <= @LastDay
             AND DATEPART(WEEKDAY, HolidayDate) != 1 -- Exclude Sundays
             AND IsDeleted = 0
             AND TenantID = @TenantID";
@@ -659,8 +768,8 @@ namespace ERPIndia.Controllers
             int holidays = 0;
             using (SqlCommand cmd = new SqlCommand(holidayCountQuery, conn))
             {
-                cmd.Parameters.AddWithValue("@Year", year);
-                cmd.Parameters.AddWithValue("@Month", month);
+                cmd.Parameters.AddWithValue("@FirstDay", firstDayOfMonth);
+                cmd.Parameters.AddWithValue("@LastDay", lastDayOfMonth);
                 cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
 
                 var result = cmd.ExecuteScalar();
@@ -678,8 +787,8 @@ namespace ERPIndia.Controllers
             COUNT(*) as Count
         FROM StudentAttendance
         WHERE StudentID = @StudentID
-            AND YEAR(AttendanceDate) = @Year
-            AND MONTH(AttendanceDate) = @Month
+            AND AttendanceDate >= @FirstDay 
+            AND AttendanceDate <= @LastDay
             AND IsDeleted = 0
             AND TenantID = @TenantID
             AND SessionID = @SessionID
@@ -688,8 +797,8 @@ namespace ERPIndia.Controllers
             using (SqlCommand cmd = new SqlCommand(attendanceQuery, conn))
             {
                 cmd.Parameters.AddWithValue("@StudentID", studentId);
-                cmd.Parameters.AddWithValue("@Year", year);
-                cmd.Parameters.AddWithValue("@Month", month);
+                cmd.Parameters.AddWithValue("@FirstDay", firstDayOfMonth);
+                cmd.Parameters.AddWithValue("@LastDay", lastDayOfMonth);
                 cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
                 cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
 
@@ -700,18 +809,24 @@ namespace ERPIndia.Controllers
                         string status = reader["Status"].ToString();
                         int count = Convert.ToInt32(reader["Count"]);
 
-                        switch (status)
+                        switch (status.ToLower().Trim())
                         {
-                            case "Present":
+                            case "present":
+                            case "p":
                                 monthData.Present = count;
                                 break;
-                            case "Absent":
+                            case "absent":
+                            case "a":
                                 monthData.Absent = count;
                                 break;
-                            case "Late":
+                            case "late":
+                            case "l":
                                 monthData.Late = count;
                                 break;
-                            case "Half Day":
+                            case "half day":
+                            case "halfday":
+                            case "hd":
+                            case "h":
                                 monthData.HalfDay = count;
                                 break;
                         }
@@ -722,52 +837,63 @@ namespace ERPIndia.Controllers
             // Calculate attendance percentage
             if (monthData.WorkingDays > 0)
             {
-                monthData.AttendancePercentage =
-                    Math.Round((decimal)(monthData.Present + monthData.Late + monthData.HalfDay * 0.5m)
-                    / monthData.WorkingDays * 100, 2);
+                decimal effectivePresent = monthData.Present + monthData.Late + (monthData.HalfDay * 0.5m);
+                monthData.AttendancePercentage = Math.Round((effectivePresent / monthData.WorkingDays) * 100, 2);
             }
 
             return monthData;
-        }
-        // Calculate monthly statistics for the entire class
+        }  // Calculate monthly statistics for the entire class
         private MonthlyStats CalculateMonthlyStatistics(SqlConnection conn, string classId, string sectionId, int month, int year)
         {
             var stats = new MonthlyStats
             {
                 Month = month,
-                MonthName = new DateTime(year, month, 1).ToString("MMMM"),
+                MonthName = new DateTime(year, month, 1).ToString("MMMM yyyy"), // Include year for clarity
                 TotalStudents = 0,
                 AverageAttendance = 0,
                 BestAttendance = 0,
                 WorstAttendance = 100
             };
 
+            DateTime firstDayOfMonth = new DateTime(year, month, 1);
+            DateTime lastDayOfMonth = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+
             string query = @"
+        WITH StudentAttendanceStats AS (
+            SELECT 
+                s.StudentID,
+                COUNT(DISTINCT CASE WHEN sa.Status IN ('Present', 'P') THEN sa.AttendanceDate END) as PresentDays,
+                COUNT(DISTINCT CASE WHEN sa.Status IN ('Late', 'L') THEN sa.AttendanceDate END) as LateDays,
+                COUNT(DISTINCT CASE WHEN sa.Status IN ('Half Day', 'HalfDay', 'HD', 'H') THEN sa.AttendanceDate END) as HalfDays,
+                COUNT(DISTINCT sa.AttendanceDate) as TotalRecordedDays
+            FROM StudentInfoBasic s
+            LEFT JOIN StudentAttendance sa ON s.StudentID = sa.StudentID
+                AND sa.AttendanceDate >= @FirstDay
+                AND sa.AttendanceDate <= @LastDay
+                AND sa.IsDeleted = 0
+                AND sa.TenantID = @TenantID
+                AND sa.SessionID = @SessionID
+            WHERE s.ClassID = @ClassID
+                AND s.SectionID = @SectionID
+                AND s.IsActive = 1
+                AND s.IsDeleted = 0
+                AND s.TenantID = @TenantID
+                AND s.SessionID = @SessionID
+            GROUP BY s.StudentID
+        )
         SELECT 
-            COUNT(DISTINCT s.StudentID) as TotalStudents,
-            AVG(CASE 
-                WHEN sa.Status IN ('Present', 'Late') THEN 100.0
-                WHEN sa.Status = 'Half Day' THEN 50.0
-                ELSE 0
-            END) as AverageAttendance
-        FROM StudentInfoBasic s
-        LEFT JOIN StudentAttendance sa ON s.StudentID = sa.StudentID
-            AND YEAR(sa.AttendanceDate) = @Year
-            AND MONTH(sa.AttendanceDate) = @Month
-            AND sa.IsDeleted = 0
-        WHERE s.ClassID = @ClassID
-            AND s.SectionID = @SectionID
-            AND s.IsActive = 1
-            AND s.IsDeleted = 0
-            AND s.TenantID = @TenantID
-            AND s.SessionID = @SessionID";
+            COUNT(*) as TotalStudents,
+            AVG((PresentDays + LateDays + (HalfDays * 0.5)) * 100.0 / NULLIF(TotalRecordedDays, 0)) as AverageAttendance,
+            MAX((PresentDays + LateDays + (HalfDays * 0.5)) * 100.0 / NULLIF(TotalRecordedDays, 0)) as BestAttendance,
+            MIN((PresentDays + LateDays + (HalfDays * 0.5)) * 100.0 / NULLIF(TotalRecordedDays, 0)) as WorstAttendance
+        FROM StudentAttendanceStats";
 
             using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@ClassID", classId);
                 cmd.Parameters.AddWithValue("@SectionID", sectionId);
-                cmd.Parameters.AddWithValue("@Year", year);
-                cmd.Parameters.AddWithValue("@Month", month);
+                cmd.Parameters.AddWithValue("@FirstDay", firstDayOfMonth);
+                cmd.Parameters.AddWithValue("@LastDay", lastDayOfMonth);
                 cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
                 cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
 
@@ -778,7 +904,11 @@ namespace ERPIndia.Controllers
                         stats.TotalStudents = reader["TotalStudents"] != DBNull.Value ?
                             Convert.ToInt32(reader["TotalStudents"]) : 0;
                         stats.AverageAttendance = reader["AverageAttendance"] != DBNull.Value ?
-                            Convert.ToDecimal(reader["AverageAttendance"]) : 0;
+                            Math.Round(Convert.ToDecimal(reader["AverageAttendance"]), 2) : 0;
+                        stats.BestAttendance = reader["BestAttendance"] != DBNull.Value ?
+                            Math.Round(Convert.ToDecimal(reader["BestAttendance"]), 2) : 0;
+                        stats.WorstAttendance = reader["WorstAttendance"] != DBNull.Value ?
+                            Math.Round(Convert.ToDecimal(reader["WorstAttendance"]), 2) : 100;
                     }
                 }
             }

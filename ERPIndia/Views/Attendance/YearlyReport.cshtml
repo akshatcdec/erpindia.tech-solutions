@@ -448,6 +448,7 @@ $(document).ready(function() {
     }
 
     // Display report with April to March order and only P, L, HD columns
+    // Display report with April to March order and only P, L, HD columns
     function displayReport(data) {
         $('#tableHeader').empty();
         $('#tableBody').empty();
@@ -457,7 +458,6 @@ $(document).ready(function() {
             dataTable = null;
         }
 
-      
         // Build table headers (April to March)
         var headerHtml = '<tr>';
         headerHtml += '<th rowspan="2">Sr</th>';
@@ -468,9 +468,9 @@ $(document).ready(function() {
 
         // Month headers (April to March)
         var months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-                     'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+            'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 
-        $.each(months, function(i, month) {
+        $.each(months, function (i, month) {
             headerHtml += '<th colspan="4" class="month-header">' + month + '</th>';
         });
 
@@ -509,13 +509,10 @@ $(document).ready(function() {
                 bodyHtml += '<td>' + (student.StudentName || '-') + '</td>';
                 bodyHtml += '<td>' + (student.FatherName || '-') + '</td>';
 
-                // Monthly data - reorder from April (index 3) to March (index 2)
-                var monthOrder = [3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2];
-
+                // Monthly data - NO REORDERING NEEDED! Backend already sends in correct order
                 if (student.MonthlyData && student.MonthlyData.length === 12) {
-                    for (var i = 0; i < monthOrder.length; i++) {
-                        var monthIndex = monthOrder[i];
-                        var monthData = student.MonthlyData[monthIndex];
+                    for (var i = 0; i < 12; i++) {
+                        var monthData = student.MonthlyData[i]; // Use index directly, no reordering
                         if (monthData) {
                             bodyHtml += '<td>' + (monthData.WorkingDays || 0) + '</td>';
                             bodyHtml += '<td>' + (monthData.Present || 0) + '</td>';

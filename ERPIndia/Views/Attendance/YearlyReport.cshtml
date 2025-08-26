@@ -1,9 +1,10 @@
 ﻿@model ERPIndia.Models.Attendance.YearlyAttendanceViewModel
 @{
-    ViewBag.Title = "Yearly Attendance Report";
+    ViewBag.Title = "Yearly Attendance";
 }
 
 <style>
+  
     /* Header Card Styling */
     .filter-card {
         background: linear-gradient(to bottom, #ffffff, #f8f9fa);
@@ -21,8 +22,8 @@
     }
 
         .yearly-table thead th {
-            background: linear-gradient(to bottom, #1c79eb, #2c78bf, #155ab5);
-            color: white !important;
+            background: linear-gradient(to bottom, #f0f0f0, #e0e0e0, #d0d0d0);
+            color: black !important;
             padding: 8px 5px;
             text-align: center;
             font-size: 11px;
@@ -30,7 +31,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
-            border: 1px solid #ddd !important;
+            border: 1px solid #999 !important;
         }
 
         .yearly-table tbody tr:nth-child(odd) {
@@ -42,60 +43,37 @@
         }
 
         .yearly-table tbody tr:hover {
-            background-color: #e3f2fd;
+            background-color: #e8e8e8;
         }
 
         .yearly-table tbody td {
             padding: 6px 4px;
-            border: 1px solid #dee2e6;
+            border: 1px solid #999;
             text-align: center;
             font-size: 11px;
+            color: black !important;
         }
 
     /* Month headers */
     .month-header {
-        background: #2c78bf !important;
-        color: white;
+        background: #e0e0e0 !important;
+        color: black !important;
         font-weight: bold;
-        writing-mode: vertical-lr;
-        text-orientation: mixed;
         padding: 5px 2px;
-        min-width: 30px;
     }
 
     .sub-header {
-        background: #4a90e2 !important;
-        color: white;
+        background: #f0f0f0 !important;
+        color: black !important;
         font-size: 10px;
         padding: 4px 2px;
-    }
-
-    /* Status indicators */
-    .attendance-excellent {
-        background: #d4edda;
-        color: #155724;
-        font-weight: bold;
-    }
-
-    .attendance-good {
-        background: #cce5ff;
-        color: #004085;
-    }
-
-    .attendance-average {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .attendance-poor {
-        background: #f8d7da;
-        color: #721c24;
+        font-weight: 600;
     }
 
     /* Button Styling */
     .search-button {
         background: linear-gradient(to bottom, #1c79eb, #2c78bf, #155ab5);
-        color: white;
+        color: white !important;
         padding: 0.5rem 1.5rem;
         border: none;
         border-radius: 5px;
@@ -109,19 +87,26 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-    /* Export buttons */
-    .export-button {
-        background: #28a745;
-        color: white;
-        padding: 8px 15px;
-        border: none;
+    /* Export button - ensure visibility */
+    .btn-success {
+        background-color: #28a745 !important;
+        border-color: #28a745 !important;
+        color: white !important;
+        padding: 6px 12px;
+        font-size: 14px;
         border-radius: 4px;
-        margin: 0 5px;
         cursor: pointer;
+        display: inline-block !important;
+        visibility: visible !important;
     }
 
-        .export-button:hover {
-            background: #218838;
+        .btn-success:hover {
+            background-color: #218838 !important;
+            border-color: #1e7e34 !important;
+        }
+
+        .btn-success i {
+            color: white !important;
         }
 
     /* Summary cards */
@@ -139,14 +124,14 @@
     }
 
     .stat-label {
-        color: #666;
+        color: black !important;
         font-size: 12px;
     }
 
     .stat-value {
         font-size: 20px;
         font-weight: bold;
-        color: #333;
+        color: black !important;
     }
 
     /* Spinner */
@@ -168,6 +153,7 @@
         padding: 30px;
         border-radius: 10px;
         text-align: center;
+        color: black !important;
     }
 
     .spinner {
@@ -206,30 +192,27 @@
         animation: slideIn 0.3s;
         font-weight: 500;
         font-size: 14px;
+        color: black !important;
     }
 
     .toast-success {
         background: #d4edda;
         border-left: 4px solid #28a745;
-        color: #155724;
     }
 
     .toast-error {
         background: #f8d7da;
         border-left: 4px solid #dc3545;
-        color: #721c24;
     }
 
     .toast-warning {
         background: #fff3cd;
         border-left: 4px solid #ffc107;
-        color: #856404;
     }
 
     .toast-info {
         background: #d1ecf1;
         border-left: 4px solid #17a2b8;
-        color: #0c5460;
     }
 
     @@keyframes slideIn {
@@ -256,13 +239,12 @@
 
             .yearly-table thead th {
                 font-size: 9px;
+                color: black !important;
             }
-    }
 
-    /* Student info styling */
-    .student-info {
-        text-align: left !important;
-        font-weight: 500;
+            .yearly-table tbody td {
+                color: black !important;
+            }
     }
 
     /* Performance badge */
@@ -271,39 +253,14 @@
         border-radius: 3px;
         font-size: 10px;
         font-weight: bold;
+        color: black !important;
+        background: #f0f0f0 !important;
+        border: 1px solid #999;
     }
 
-    /* Grade badges colors */
-    .bg-success {
-        background: #28a745 !important;
-    }
-
-    .bg-primary {
-        background: #007bff !important;
-    }
-
-    .bg-warning {
-        background: #ffc107 !important;
-    }
-
-    .bg-danger {
-        background: #dc3545 !important;
-    }
-
-    .bg-secondary {
-        background: #6c757d !important;
-    }
-
-    .text-white {
-        color: white !important;
-    }
-
-    .text-info {
-        color: #17a2b8 !important;
-    }
-
-    .text-success {
-        color: #28a745 !important;
+    /* Ensure all form controls have black text */
+    .form-select, .form-label {
+        color: black !important;
     }
 </style>
 
@@ -313,7 +270,7 @@
         <div class="card-header bg-light">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-chart-line me-2"></i>Yearly Attendance Report
+                    <i class="fas fa-chart-line me-2"></i>Yearly Attendance
                 </h5>
             </div>
         </div>
@@ -343,58 +300,25 @@
         </div>
     </div>
 
-    <!-- Summary Statistics -->
-    <div id="summaryContainer" class="mt-4" style="display:none;">
-        <div class="summary-card">
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <div class="summary-stat">
-                        <div class="stat-label">Class</div>
-                        <div class="stat-value" id="className">-</div>
-                    </div>
-                    <div class="summary-stat">
-                        <div class="stat-label">Section</div>
-                        <div class="stat-value" id="sectionName">-</div>
-                    </div>
-                    <div class="summary-stat">
-                        <div class="stat-label">Year</div>
-                        <div class="stat-value" id="yearValue">-</div>
-                    </div>
-                    <div class="summary-stat">
-                        <div class="stat-label">Total Students</div>
-                        <div class="stat-value text-info" id="totalStudents">0</div>
-                    </div>
-                    <div class="summary-stat">
-                        <div class="stat-label">Avg. Attendance</div>
-                        <div class="stat-value text-success" id="avgAttendance">0%</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Report Table -->
     <div id="reportContainer" class="mt-4" style="display:none;">
         <div class="card">
             <div class="card-header bg-light">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">
-                        <i class="fas fa-table me-2"></i>Yearly Attendance Details
-                    </h6>
-                    <div class="no-print">
-                        <button class="export-button" onclick="exportToExcel()">
-                            <i class="fas fa-file-excel me-1"></i>Excel
-                        </button>
-                        <button class="export-button" onclick="exportToPDF()">
-                            <i class="fas fa-file-pdf me-1"></i>PDF
-                        </button>
-                        <button class="export-button" onclick="window.print()">
-                            <i class="fas fa-print me-1"></i>Print
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <h6 class="mb-0">
+                            <i class="fas fa-table me-2"></i>Attendance Details
+                        </h6>
+                    </div>
+                    <div class="col-6 text-end">
+                        <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()" style="display: inline-block !important; visibility: visible !important;">
+                            <i class="fas fa-file-excel me-1"></i>Export to Excel
                         </button>
                     </div>
                 </div>
             </div>
             <div class="card-body">
+               <!-- Table -->
                 <div class="table-responsive">
                     <table class="yearly-table" id="yearlyAttendanceTable">
                         <thead id="tableHeader">
@@ -464,26 +388,20 @@ $(document).ready(function() {
         $('#spinnerOverlay').hide();
     }
 
-    // Clear existing data and DataTable
+    // Clear existing data
     function clearExistingData() {
-        // Destroy DataTable if it exists
         if (dataTable) {
             dataTable.destroy();
             dataTable = null;
         }
 
-        // Clear the table completely
         $('#tableHeader').empty();
         $('#tableBody').empty();
-
-        // Clear summary data
         $('#className').text('-');
         $('#sectionName').text('-');
         $('#yearValue').text('-');
         $('#totalStudents').text('0');
         $('#avgAttendance').text('0%');
-
-        // Reset report data
         reportData = null;
     }
 
@@ -498,18 +416,13 @@ $(document).ready(function() {
             return;
         }
 
-        // Clear existing data before loading new data
         clearExistingData();
-
         loadYearlyReport(classId, sectionId, year);
     });
 
     // Load yearly report
     function loadYearlyReport(classId, sectionId, year) {
         showSpinner();
-
-        // Hide containers while loading
-        $('#summaryContainer').hide();
         $('#reportContainer').hide();
 
         $.ajax({
@@ -520,20 +433,18 @@ $(document).ready(function() {
                 sectionId: sectionId,
                 year: year
             },
-            cache: false, // Prevent caching
+            cache: false,
             success: function(response) {
                 hideSpinner();
 
                 if (response.success) {
                     reportData = response.data;
                     displayReport(reportData);
-                    $('#summaryContainer').show();
                     $('#reportContainer').show();
                     showToast('Report generated successfully!', 'success');
                 } else {
                     showToast(response.message || 'Failed to generate report', 'error');
-                    clearExistingData(); // Clear any partial data
-                    $('#summaryContainer').hide();
+                    clearExistingData();
                     $('#reportContainer').hide();
                 }
             },
@@ -541,47 +452,24 @@ $(document).ready(function() {
                 hideSpinner();
                 showToast('Error generating report: ' + error, 'error');
                 console.error('Error:', error);
-                clearExistingData(); // Clear any partial data
-                $('#summaryContainer').hide();
+                clearExistingData();
                 $('#reportContainer').hide();
             }
         });
     }
 
-    // Display report
+    // Display report with April to March order and only P, L, HD columns
     function displayReport(data) {
-        // Clear any existing table content first
         $('#tableHeader').empty();
         $('#tableBody').empty();
 
-        // Destroy existing DataTable if it exists
         if (dataTable) {
             dataTable.destroy();
             dataTable = null;
         }
 
-        // Update summary
-        $('#className').text(data.ClassName || 'N/A');
-        $('#sectionName').text(data.SectionName || 'N/A');
-        $('#yearValue').text(data.Year || 'N/A');
-        $('#totalStudents').text(data.TotalStudents || 0);
-
-        // Calculate average attendance
-        var totalPercentage = 0;
-        var validStudents = 0;
-        if (data.Students && data.Students.length > 0) {
-            $.each(data.Students, function(i, student) {
-                if (student.AttendancePercentage > 0) {
-                    totalPercentage += parseFloat(student.AttendancePercentage);
-                    validStudents++;
-                }
-            });
-        }
-        var avgPercentage = validStudents > 0 ?
-            (totalPercentage / validStudents).toFixed(2) : 0;
-        $('#avgAttendance').text(avgPercentage + '%');
-
-        // Build table headers
+      
+        // Build table headers (April to March)
         var headerHtml = '<tr>';
         headerHtml += '<th rowspan="2">Sr</th>';
         headerHtml += '<th rowspan="2">Adm.</th>';
@@ -589,34 +477,31 @@ $(document).ready(function() {
         headerHtml += '<th rowspan="2">Student Name</th>';
         headerHtml += '<th rowspan="2">Father Name</th>';
 
-        // Month headers
-        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        // Month headers (April to March)
+        var months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+                     'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 
         $.each(months, function(i, month) {
-            headerHtml += '<th colspan="5" align="center" style="text-align:center">' + month + '</th>';
+            headerHtml += '<th colspan="4" class="month-header">' + month + '</th>';
         });
 
-        headerHtml += '<th colspan="6">Yearly Total</th>';
+        headerHtml += '<th colspan="4">Yearly Total</th>';
         headerHtml += '<th rowspan="2">%</th>';
         headerHtml += '<th rowspan="2">Grade</th>';
         headerHtml += '</tr>';
 
-        // Sub headers
+        // Sub headers (WD, P, L, HD only - no Absent)
         headerHtml += '<tr>';
         for (var i = 0; i < 12; i++) {
             headerHtml += '<th class="sub-header">WD</th>';
             headerHtml += '<th class="sub-header">P</th>';
-            headerHtml += '<th class="sub-header">A</th>';
             headerHtml += '<th class="sub-header">L</th>';
             headerHtml += '<th class="sub-header">HD</th>';
         }
         headerHtml += '<th class="sub-header">WD</th>';
         headerHtml += '<th class="sub-header">P</th>';
-        headerHtml += '<th class="sub-header">A</th>';
         headerHtml += '<th class="sub-header">L</th>';
         headerHtml += '<th class="sub-header">HD</th>';
-        headerHtml += '<th class="sub-header">H</th>';
         headerHtml += '</tr>';
 
         $('#tableHeader').html(headerHtml);
@@ -627,17 +512,6 @@ $(document).ready(function() {
         if (data.Students && data.Students.length > 0) {
             $.each(data.Students, function (index, student) {
                 var attendancePercentage = parseFloat(student.AttendancePercentage) || 0;
-                var rowClass = '';
-
-                if (attendancePercentage < 75) {
-                    rowClass = 'attendance-poor';
-                } else if (attendancePercentage < 85) {
-                    rowClass = 'attendance-average';
-                } else if (attendancePercentage < 95) {
-                    rowClass = 'attendance-good';
-                } else {
-                    rowClass = 'attendance-excellent';
-                }
 
                 bodyHtml += '<tr>';
                 bodyHtml += '<td>' + (student.SerialNo || (index + 1)) + '</td>';
@@ -646,133 +520,98 @@ $(document).ready(function() {
                 bodyHtml += '<td>' + (student.StudentName || '-') + '</td>';
                 bodyHtml += '<td>' + (student.FatherName || '-') + '</td>';
 
-                // Monthly data
+                // Monthly data - reorder from April (index 3) to March (index 2)
+                var monthOrder = [3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2];
+
                 if (student.MonthlyData && student.MonthlyData.length === 12) {
-                    for (var month = 0; month < 12; month++) {
-                        var monthData = student.MonthlyData[month];
+                    for (var i = 0; i < monthOrder.length; i++) {
+                        var monthIndex = monthOrder[i];
+                        var monthData = student.MonthlyData[monthIndex];
                         if (monthData) {
                             bodyHtml += '<td>' + (monthData.WorkingDays || 0) + '</td>';
                             bodyHtml += '<td>' + (monthData.Present || 0) + '</td>';
-                            bodyHtml += '<td>' + (monthData.Absent || 0) + '</td>';
                             bodyHtml += '<td>' + (monthData.Late || 0) + '</td>';
                             bodyHtml += '<td>' + (monthData.HalfDay || 0) + '</td>';
                         } else {
-                            bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>';
+                            bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td>';
                         }
                     }
                 } else {
                     // Fill with zeros if data is missing
                     for (var m = 0; m < 12; m++) {
-                        bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>';
+                        bodyHtml += '<td>0</td><td>0</td><td>0</td><td>0</td>';
                     }
                 }
 
-                // Yearly totals
+                // Yearly totals (no Absent column)
                 bodyHtml += '<td><strong>' + (student.TotalWorkingDays || 0) + '</strong></td>';
                 bodyHtml += '<td><strong>' + (student.TotalPresent || 0) + '</strong></td>';
-                bodyHtml += '<td><strong>' + (student.TotalAbsent || 0) + '</strong></td>';
                 bodyHtml += '<td><strong>' + (student.TotalLate || 0) + '</strong></td>';
                 bodyHtml += '<td><strong>' + (student.TotalHalfDay || 0) + '</strong></td>';
-                bodyHtml += '<td><strong>' + (student.TotalHolidays || 0) + '</strong></td>';
 
-                // Percentage with row coloring
-                bodyHtml += '<td class="' + rowClass + '"><strong>' +
-                           attendancePercentage.toFixed(2) + '%</strong></td>';
+                // Percentage
+                bodyHtml += '<td><strong>' + attendancePercentage.toFixed(2) + '%</strong></td>';
 
-                // Grade with proper badge coloring
-                var gradeColor = student.AttendanceColor || 'secondary';
+                // Grade
                 var gradeText = student.AttendanceGrade || 'N/A';
-                bodyHtml += '<td><span class="performance-badge bg-' + gradeColor + ' text-white">' +
-                           gradeText + '</span></td>';
+                bodyHtml += '<td><span class="performance-badge">' + gradeText + '</span></td>';
                 bodyHtml += '</tr>';
             });
         } else {
-            bodyHtml = '<tr><td colspan="73" class="text-center">No data available</td></tr>';
+            bodyHtml = '<tr><td colspan="57" class="text-center">No data available</td></tr>';
         }
 
         $('#tableBody').html(bodyHtml);
-
-        // Initialize DataTable only if there's data
-        if (data.Students && data.Students.length > 0) {
-            // Small delay to ensure DOM is ready
-            setTimeout(function() {
-                try {
-                    dataTable = $('#yearlyAttendanceTable').DataTable({
-                        "paging": false,
-                        "info": false,
-                        "searching": true,
-                        "ordering": true,
-                        "scrollX": true,
-                        "destroy": true, // Ensure clean initialization
-                        "dom": 'Bfrtip',
-                        "buttons": [
-                            {
-                                extend: 'copy',
-                                text: 'Copy',
-                                className: 'dt-button'
-                                
-                            },
-                            {
-                                extend: 'csv',
-                                text: 'CSV',
-                                className: 'dt-button',
-                                title: 'AttendanceReport_' + new Date().getTime()
-                               
-                            },
-                            {
-                                extend: 'excel',
-                                text: 'Excel',
-                                className: 'dt-button',
-                                title: 'AttendanceReport_' + new Date().getTime()
-                                
-                            },
-                            {
-                                extend: 'pdf',
-                                text: 'PDF',
-                                className: 'dt-button',
-                                title: 'Attendance Report',
-                                orientation: 'landscape',
-                                pageSize: 'A4'
-                               
-                            },
-                            {
-                                extend: 'print',
-                                text: 'Print',
-                                className: 'dt-button',
-                                title: 'Attendance Report'
-                               
-                            }
-                        ],
-                    });
-                } catch (error) {
-                    console.error('Error initializing DataTable:', error);
-                }
-            }, 100);
-        }
     }
 
-    // Export functions
+    // Export to Excel function
     window.exportToExcel = function() {
-        if (dataTable) {
-            $('.dt-button.buttons-excel').click();
-        } else {
-            showToast('No data available to export', 'warning');
-        }
-    };
+        var classId = $('#ddlClass').val();
+        var sectionId = $('#ddlSection').val();
+        var year = $('#ddlYear').val();
 
-    window.exportToPDF = function() {
-        if (dataTable) {
-            $('.dt-button.buttons-pdf').click();
-        } else {
-            showToast('No data available to export', 'warning');
+        if (!classId || !sectionId || !year) {
+            showToast('Please generate the report first', 'warning');
+            return;
         }
+
+        showSpinner();
+
+        $.ajax({
+            url: '@Url.Action("ExportYearlyAttendanceToExcel", "Attendance")',
+            type: 'POST',
+            data: {
+                classId: classId,
+                sectionId: sectionId,
+                year: year
+            },
+            success: function(response) {
+                hideSpinner();
+                if (response.success) {
+                    // Download the file
+                    var link = document.createElement('a');
+                    link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + response.fileContent;
+                    link.download = response.fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    showToast('Excel file downloaded successfully!', 'success');
+                } else {
+                    showToast('Failed to export: ' + response.message, 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideSpinner();
+                showToast('Error exporting to Excel: ' + error, 'error');
+            }
+        });
     };
 
     // Hide containers and clear data when filters change
     $('#ddlClass, #ddlSection, #ddlYear').change(function() {
-        $('#summaryContainer').hide();
         $('#reportContainer').hide();
-        clearExistingData(); // Clear data when filters change
+        clearExistingData();
     });
 
     // Prevent form submission on Enter key

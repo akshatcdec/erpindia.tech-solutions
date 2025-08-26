@@ -2,11 +2,14 @@
 using Dapper;
 using ERPIndia.Models.Attendance;
 using Newtonsoft.Json;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.Linq;
 using System.Web.Mvc;
 
@@ -65,7 +68,7 @@ namespace ERPIndia.Controllers
 
             return View(model);
         }
-
+        #region Yearly Report Methods
         public ActionResult YearlyReport()
         {
             var classesResult = _dropdownController.GetClasses();
@@ -99,7 +102,7 @@ namespace ERPIndia.Controllers
                         SessionYear = CurrentSessionYear.ToString()
                     };
 
-                    // Get all students - Using strongly typed class instead of dynamic
+                    // Get all students
                     string studentQuery = @"
                 SELECT 
                     s.StudentID,
@@ -188,7 +191,6 @@ namespace ERPIndia.Controllers
                                 Math.Round((decimal)(yearlyAttendance.TotalPresent + yearlyAttendance.TotalLate + yearlyAttendance.TotalHalfDay * 0.5m)
                                 / yearlyAttendance.TotalWorkingDays * 100, 2);
 
-                            // Calculate grade and color
                             yearlyAttendance.AttendanceGrade = GetAttendanceGrade(yearlyAttendance.AttendancePercentage);
                             yearlyAttendance.AttendanceColor = GetAttendanceColor(yearlyAttendance.AttendancePercentage);
                         }
@@ -217,7 +219,6 @@ namespace ERPIndia.Controllers
                     }
                     else
                     {
-                        // If no students, get class and section names directly
                         string classNameQuery = "SELECT ClassName FROM AcademicClassMaster WHERE ClassID = @ClassID";
                         string sectionNameQuery = "SELECT SectionName FROM AcademicSectionMaster WHERE SectionID = @SectionID";
 
@@ -250,7 +251,315 @@ namespace ERPIndia.Controllers
                 return Json(new { success = false, message = "Error: " + ex.Message });
             }
         }
+        [HttpPost]
+        public JsonResult ExportYearlyAttendanceToExcel(string classId, string sectionId, int year)
+        {
+            try
+            {
+                // Set EPPlus License (for version 5+ only, skip for 4.5.3.3)
+                // ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+
+                    // Get school details
+                    string schoolName = "";
+                    string schoolAddress = "";
+                    string schoolQuery = @"
+                SELECT 
+                    ISNULL(PrintTitle, 'School Name') as SchoolName,
+                    ISNULL(Line1, 'School Address') as Address
+                FROM Tenants 
+                WHERE TenantID = @TenantID";
+
+                    using (SqlCommand cmd = new SqlCommand(schoolQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                schoolName = reader["SchoolName"].ToString();
+                                schoolAddress = reader["Address"].ToString();
+                            }
+                        }
+                    }
+
+                    // Get class and section names
+                    string className = "";
+                    string sectionName = "";
+
+                    string classQuery = "SELECT ClassName FROM AcademicClassMaster WHERE ClassID = @ClassID";
+                    using (SqlCommand cmd = new SqlCommand(classQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ClassID", classId);
+                        className = cmd.ExecuteScalar()?.ToString() ?? "";
+                    }
+
+                    string sectionQuery = "SELECT SectionName FROM AcademicSectionMaster WHERE SectionID = @SectionID";
+                    using (SqlCommand cmd = new SqlCommand(sectionQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SectionID", sectionId);
+                        sectionName = cmd.ExecuteScalar()?.ToString() ?? "";
+                    }
+
+                    // Get students data
+                    var students = new List<StudentYearlyAttendance>();
+                    string studentQuery = @"
+                SELECT 
+                    s.StudentID,
+                    s.AdmsnNo AS AdmissionNo,
+                    s.RollNo AS RollNumber,
+                    RTRIM(LTRIM(s.FirstName + ' ' + ISNULL(s.LastName, ''))) AS StudentName,
+                    RTRIM(LTRIM(ISNULL(s.FatherName, ''))) AS FatherName
+                FROM StudentInfoBasic s
+                WHERE s.ClassID = @ClassID 
+                    AND s.SectionID = @SectionID
+                    AND s.IsActive = 1
+                    AND s.IsDeleted = 0
+                    AND s.TenantID = @TenantID
+                    AND s.SessionID = @SessionID
+                ORDER BY CAST(s.RollNo AS INT), s.FirstName";
+
+                    var studentList = new List<StudentData>();
+                    using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ClassID", classId);
+                        cmd.Parameters.AddWithValue("@SectionID", sectionId);
+                        cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                        cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                studentList.Add(new StudentData
+                                {
+                                    StudentID = reader["StudentID"]?.ToString() ?? "",
+                                    AdmissionNo = reader["AdmissionNo"]?.ToString() ?? "",
+                                    RollNumber = reader["RollNumber"]?.ToString() ?? "",
+                                    StudentName = reader["StudentName"]?.ToString()?.Trim() ?? "",
+                                    FatherName = reader["FatherName"]?.ToString()?.Trim() ?? ""
+                                });
+                            }
+                        }
+                    }
+
+                    // Process each student
+                    int serialNo = 1;
+                    foreach (var student in studentList)
+                    {
+                        var yearlyAttendance = new StudentYearlyAttendance
+                        {
+                            SerialNo = serialNo++,
+                            StudentID = student.StudentID,
+                            AdmissionNo = student.AdmissionNo,
+                            RollNumber = student.RollNumber,
+                            StudentName = student.StudentName,
+                            FatherName = student.FatherName,
+                            MonthlyData = new List<MonthlyAttendanceData>()
+                        };
+
+                        // Get attendance for each month
+                        for (int month = 1; month <= 12; month++)
+                        {
+                            var monthData = GetMonthlyAttendanceData(conn, student.StudentID, month, year);
+                            yearlyAttendance.MonthlyData.Add(monthData);
+                        }
+
+                        // Calculate totals
+                        yearlyAttendance.TotalWorkingDays = yearlyAttendance.MonthlyData.Sum(m => m.WorkingDays);
+                        yearlyAttendance.TotalPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
+                        yearlyAttendance.TotalLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
+                        yearlyAttendance.TotalHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
+
+                        // Calculate percentage
+                        if (yearlyAttendance.TotalWorkingDays > 0)
+                        {
+                            yearlyAttendance.AttendancePercentage =
+                                Math.Round((decimal)(yearlyAttendance.TotalPresent + yearlyAttendance.TotalLate + yearlyAttendance.TotalHalfDay * 0.5m)
+                                / yearlyAttendance.TotalWorkingDays * 100, 2);
+                            yearlyAttendance.AttendanceGrade = GetAttendanceGrade(yearlyAttendance.AttendancePercentage);
+                        }
+                        else
+                        {
+                            yearlyAttendance.AttendancePercentage = 0;
+                            yearlyAttendance.AttendanceGrade = "N/A";
+                        }
+
+                        students.Add(yearlyAttendance);
+                    }
+
+                    // Create Excel package
+                    using (var package = new ExcelPackage())
+                    {
+                        var worksheet = package.Workbook.Worksheets.Add("Yearly Attendance");
+
+                        // Set all cells to black font from the start
+                        worksheet.Cells.Style.Font.Color.SetColor(System.Drawing.Color.Black);
+
+                        // Add Header Information
+                        int currentRow = 1;
+                        worksheet.Cells[currentRow, 1].Value = schoolName;
+                        worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Size = 14;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        currentRow++;
+                        worksheet.Cells[currentRow, 1].Value = schoolAddress;
+                        worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        currentRow++;
+                        worksheet.Cells[currentRow, 1].Value = $"Class: {className}    Section: {sectionName}    Session: {year}-{year + 1}";
+                        worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        currentRow += 2; // Add spacing
+
+                        // Create table headers
+                        int headerRow = currentRow;
+                        int col = 1;
+
+                        // Student info headers
+                        worksheet.Cells[headerRow, col].Value = "Sr";
+                        worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
+                        col++;
+
+                        worksheet.Cells[headerRow, col].Value = "Adm. No";
+                        worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
+                        col++;
+
+                        worksheet.Cells[headerRow, col].Value = "Roll No";
+                        worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
+                        col++;
+
+                        worksheet.Cells[headerRow, col].Value = "Student Name";
+                        worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
+                        col++;
+
+                        worksheet.Cells[headerRow, col].Value = "Father Name";
+                        worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
+                        col++;
+
+                        // Month headers (April to March)
+                        string[] months = { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" };
+
+                        foreach (var month in months)
+                        {
+                            worksheet.Cells[headerRow, col].Value = month;
+                            worksheet.Cells[headerRow, col, headerRow, col + 3].Merge = true;
+                            worksheet.Cells[headerRow, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                            col += 4;
+                        }
+
+                        // Yearly Total
+                        worksheet.Cells[headerRow, col].Value = "Yearly Total";
+                        worksheet.Cells[headerRow, col, headerRow, col + 3].Merge = true;
+                        worksheet.Cells[headerRow, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        col += 4;
+
+                        worksheet.Cells[headerRow, col].Value = "%";
+                        worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
+                        col++;
+
+                        worksheet.Cells[headerRow, col].Value = "Grade";
+                        worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
+
+                        // Sub headers
+                        currentRow++;
+                        col = 6;
+
+                        for (int i = 0; i < 12; i++)
+                        {
+                            worksheet.Cells[currentRow, col++].Value = "WD";
+                            worksheet.Cells[currentRow, col++].Value = "P";
+                            worksheet.Cells[currentRow, col++].Value = "L";
+                            worksheet.Cells[currentRow, col++].Value = "HD";
+                        }
+
+                        // Yearly totals sub-headers
+                        worksheet.Cells[currentRow, col++].Value = "WD";
+                        worksheet.Cells[currentRow, col++].Value = "P";
+                        worksheet.Cells[currentRow, col++].Value = "L";
+                        worksheet.Cells[currentRow, col++].Value = "HD";
+
+                        // Add student data
+                        currentRow++;
+                        foreach (var student in students)
+                        {
+                            col = 1;
+                            worksheet.Cells[currentRow, col++].Value = student.SerialNo;
+                            worksheet.Cells[currentRow, col++].Value = student.AdmissionNo;
+                            worksheet.Cells[currentRow, col++].Value = student.RollNumber;
+                            worksheet.Cells[currentRow, col++].Value = student.StudentName;
+                            worksheet.Cells[currentRow, col++].Value = student.FatherName;
+
+                            // Monthly data - April to March order
+                            int[] monthOrder = { 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2 };
+
+                            foreach (int monthIndex in monthOrder)
+                            {
+                                var monthData = student.MonthlyData[monthIndex];
+                                worksheet.Cells[currentRow, col++].Value = monthData.WorkingDays;
+                                worksheet.Cells[currentRow, col++].Value = monthData.Present;
+                                worksheet.Cells[currentRow, col++].Value = monthData.Late;
+                                worksheet.Cells[currentRow, col++].Value = monthData.HalfDay;
+                            }
+
+                            // Yearly totals
+                            worksheet.Cells[currentRow, col++].Value = student.TotalWorkingDays;
+                            worksheet.Cells[currentRow, col++].Value = student.TotalPresent;
+                            worksheet.Cells[currentRow, col++].Value = student.TotalLate;
+                            worksheet.Cells[currentRow, col++].Value = student.TotalHalfDay;
+
+                            worksheet.Cells[currentRow, col++].Value = student.AttendancePercentage.ToString("0.00") + "%";
+                            worksheet.Cells[currentRow, col++].Value = student.AttendanceGrade;
+
+                            currentRow++;
+                        }
+
+                        // Style the header rows (without background color to avoid pattern type error)
+                        var headerRange = worksheet.Cells[headerRow, 1, headerRow + 1, col - 1];
+                        headerRange.Style.Font.Bold = true;
+                        headerRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        // Apply borders to the table
+                        var tableRange = worksheet.Cells[headerRow, 1, currentRow - 1, col - 1];
+                        var border = tableRange.Style.Border;
+                        border.Top.Style = ExcelBorderStyle.Thin;
+                        border.Bottom.Style = ExcelBorderStyle.Thin;
+                        border.Left.Style = ExcelBorderStyle.Thin;
+                        border.Right.Style = ExcelBorderStyle.Thin;
+
+                        // Set all cells to black font (ensure override)
+                        worksheet.Cells[1, 1, currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Black);
+
+                        // Auto-fit columns
+                        worksheet.Cells.AutoFitColumns();
+
+                        // Convert to byte array
+                        byte[] fileBytes = package.GetAsByteArray();
+                        string fileName = $"YearlyAttendance_{className}_{sectionName}_{year}.xlsx";
+
+                        return Json(new
+                        {
+                            success = true,
+                            fileContent = Convert.ToBase64String(fileBytes),
+                            fileName = fileName
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }  
+        
+        #endregion
         // Grade calculation methods
         private string GetAttendanceGrade(decimal percentage)
         {
@@ -287,37 +596,41 @@ namespace ERPIndia.Controllers
                 WorkingDays = 0
             };
 
-            // Get working days for the month
-            string workingDaysQuery = @"
-        WITH DateRange AS (
-            SELECT DATEFROMPARTS(@Year, @Month, 1) AS Date
-            UNION ALL
-            SELECT DATEADD(DAY, 1, Date)
-            FROM DateRange
-            WHERE Date < EOMONTH(DATEFROMPARTS(@Year, @Month, 1))
-        )
-        SELECT COUNT(*) AS WorkingDays
-        FROM DateRange
-        WHERE DATEPART(WEEKDAY, Date) NOT IN (1) -- Exclude Sunday
-            AND Date NOT IN (
-                SELECT HolidayDate 
-                FROM HolidayCalendar 
-                WHERE YEAR(HolidayDate) = @Year 
-                    AND MONTH(HolidayDate) = @Month
-                    AND IsDeleted = 0
-                    AND TenantID = @TenantID
-            )
-        OPTION (MAXRECURSION 31)";
+            // Count total days in month
+            int totalDaysInMonth = DateTime.DaysInMonth(year, month);
 
-            using (SqlCommand cmd = new SqlCommand(workingDaysQuery, conn))
+            // Count Sundays
+            int sundays = 0;
+            for (int day = 1; day <= totalDaysInMonth; day++)
+            {
+                if (new DateTime(year, month, day).DayOfWeek == DayOfWeek.Sunday)
+                    sundays++;
+            }
+
+            // Count holidays (excluding Sundays to avoid double counting)
+            string holidayCountQuery = @"
+        SELECT COUNT(*) AS HolidayCount
+        FROM HolidayCalendar 
+        WHERE YEAR(HolidayDate) = @Year 
+            AND MONTH(HolidayDate) = @Month
+            AND DATEPART(WEEKDAY, HolidayDate) != 1 -- Exclude Sundays
+            AND IsDeleted = 0
+            AND TenantID = @TenantID";
+
+            int holidays = 0;
+            using (SqlCommand cmd = new SqlCommand(holidayCountQuery, conn))
             {
                 cmd.Parameters.AddWithValue("@Year", year);
                 cmd.Parameters.AddWithValue("@Month", month);
                 cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
 
                 var result = cmd.ExecuteScalar();
-                monthData.WorkingDays = result != null ? Convert.ToInt32(result) : 0;
+                holidays = result != null ? Convert.ToInt32(result) : 0;
             }
+
+            // Calculate working days: Total days - Sundays - Holidays
+            monthData.WorkingDays = totalDaysInMonth - sundays - holidays;
+            monthData.Holidays = holidays;
 
             // Get attendance summary for the student
             string attendanceQuery = @"
@@ -362,16 +675,12 @@ namespace ERPIndia.Controllers
                             case "Half Day":
                                 monthData.HalfDay = count;
                                 break;
-                            case "Holiday":
-                            case "Holy Day":
-                                monthData.Holidays = count;
-                                break;
                         }
                     }
                 }
             }
 
-            // Calculate attendance percentage for the month
+            // Calculate attendance percentage
             if (monthData.WorkingDays > 0)
             {
                 monthData.AttendancePercentage =
@@ -381,7 +690,6 @@ namespace ERPIndia.Controllers
 
             return monthData;
         }
-
         // Calculate monthly statistics for the entire class
         private MonthlyStats CalculateMonthlyStatistics(SqlConnection conn, string classId, string sectionId, int month, int year)
         {

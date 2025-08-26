@@ -1,23 +1,25 @@
-﻿using ERPIndia.Class.BLL;
+﻿using AutoMapper;
+using ERPIndia.Class.BLL;
 using ERPIndia.Class.Helper;
 using ERPIndia.Models;
+using ERPIndia.Models.SystemSettings;
+using ERPIndia.Models.TokenAuth;
+using ERPIndia.Utilities;
+using Hangfire;
+using Hangfire.SqlServer;
+using log4net.Config;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using Hangfire;
-using Hangfire.SqlServer;
-using System.Diagnostics;
-using System.Threading;
-using AutoMapper;
-using ERPIndia.Models.SystemSettings;
-using log4net.Config;
-using System.IO;
-using ERPIndia.Utilities;
-using ERPIndia.Models.TokenAuth;
 using System.Web.Security;
 
 namespace ERPIndia
@@ -100,6 +102,9 @@ namespace ERPIndia
         #endregion
         protected void Application_Start()
         {
+            
+
+
             XmlConfigurator.Configure(new FileInfo(Server.MapPath("~/log4net.config")));
             ViewEngines.Engines.Clear();
             ViewEngines.Engines.Add(new RazorViewEngine());

@@ -38,7 +38,7 @@
             padding: 4px 2px;
             border: 1px solid #dee2e6;
             text-align: center;
-            font-size: 10px;
+            font-size: 12px;
             min-width: 25px;
         }
 
@@ -285,6 +285,36 @@
         top: 0;
         z-index: 10;
         border: 1px solid #999 !important;
+    }
+    /* Status cell colors - updated for colored text on white background */
+    .status-p {
+        background-color: white;
+        color: #008000;
+        font-weight: bold;
+    }
+
+    .status-a {
+        background-color: white;
+        color: #FF0000;
+        font-weight: bold;
+    }
+
+    .status-l {
+        background-color: white;
+        color: #FF6600;
+        font-weight: bold;
+    }
+
+    .status-hd {
+        background-color: white;
+        color: #0000FF;
+        font-weight: bold;
+    }
+
+    .status-su, .status-h {
+        background-color: white;
+        color: #FFB300;
+        font-weight: bold;
     }
 </style>
 
@@ -597,7 +627,6 @@ $(document).ready(function() {
         });
     };
 
-    // Display report with session date handling
     function displayReport(data, colors) {
         try {
             if (!data) {
@@ -608,10 +637,10 @@ $(document).ready(function() {
             // Build table headers
             var headerHtml = '<tr>';
             headerHtml += '<th rowspan="2">S.No</th>';
-            headerHtml += '<th rowspan="2">Roll No</th>';
-            headerHtml += '<th rowspan="2">Admission No</th>';
-            headerHtml += '<th rowspan="2">Student Name</th>';
-            headerHtml += '<th rowspan="2">Father Name</th>';
+            headerHtml += '<th rowspan="2">Adm</th>';
+            headerHtml += '<th rowspan="2">Roll</th>';
+            headerHtml += '<th rowspan="2">Student</th>';
+            headerHtml += '<th rowspan="2">Father</th>';
 
             // Date headers - handle days outside session
             if (data.DatesInMonth && Array.isArray(data.DatesInMonth) && data.DatesInMonth.length > 0) {
@@ -644,8 +673,12 @@ $(document).ready(function() {
                         // Handle days outside session
                         if (date.IsWithinSession === false) {
                             style = ' style="background-color: ' + (colors.outsideSession || '#E0E0E0') + ';"';
-                        } else if (date.IsSunday || date.IsHoliday) {
+                        } else if (date.IsHoliday) {
+                            // Holiday gets yellow background
                             style = ' style="background-color: #FFFF00;"';
+                        } else if (date.IsSunday) {
+                            // Sunday gets gray background
+                            style = ' style="background-color: #D3D3D3;"';
                         }
 
                         headerHtml += '<th' + style + '>' + date.WeekDay + '</th>';
@@ -655,9 +688,9 @@ $(document).ready(function() {
 
             // Sub-headers for breakdown
             headerHtml += '<th>P</th>';
+            headerHtml += '<th>A</th>';
             headerHtml += '<th>L</th>';
             headerHtml += '<th>H</th>';
-            headerHtml += '<th>A</th>';
             headerHtml += '</tr>';
 
             $('#tableHeader').html(headerHtml);
@@ -673,12 +706,12 @@ $(document).ready(function() {
 
                     bodyHtml += '<tr>';
                     bodyHtml += '<td>' + (student.SerialNo || (index + 1)) + '</td>';
-                    bodyHtml += '<td>' + (student.RollNumber || '-') + '</td>';
                     bodyHtml += '<td>' + (student.AdmissionNo || '-') + '</td>';
+                    bodyHtml += '<td>' + (student.RollNumber || '-') + '</td>';
                     bodyHtml += '<td style="text-align: left;">' + (student.StudentName || 'N/A') + '</td>';
                     bodyHtml += '<td style="text-align: left;">' + (student.FatherName || '-') + '</td>';
 
-                    // Daily attendance cells with proper colors
+                    // Daily attendance cells with white background and colored text
                     if (data.DatesInMonth && Array.isArray(data.DatesInMonth) && data.DatesInMonth.length > 0) {
                         $.each(data.DatesInMonth, function (i, date) {
                             if (!date) return true;
@@ -688,13 +721,19 @@ $(document).ready(function() {
 
                             // Check if day is outside session
                             if (date.IsWithinSession === false) {
-                                cellStyle = 'style="background-color: ' + (colors.outsideSession || '#E0E0E0') + ';"';
+                                cellStyle = 'style="background-color: white; color: #999999;"';
                                 status = '-';
                             }
-                            // Check for Sunday/Holiday within session
-                            else if (date.IsSunday || date.IsHoliday) {
+                            // Check for Holiday (yellow background)
+                            else if (date.IsHoliday) {
                                 cellStyle = 'style="background-color: #FFFF00; color: #000; font-weight: bold;"';
-                                status = 'H';
+                                status = '';
+                            }
+                            // Check for Sunday (gray text on white background)
+                            else if (date.IsSunday) {
+                                cellStyle = 'style="background: linear-gradient(to bottom, #f0f0f0, #e0e0e0, #d0d0d0); color:  black!important; font-weight: bold;"';
+                                status = 'SU'; 
+                               
                             }
                             // Regular attendance status
                             else if (student.DailyAttendanceMonthly && student.DailyAttendanceMonthly[date.Day]) {
@@ -702,19 +741,27 @@ $(document).ready(function() {
 
                                 switch (status.toUpperCase()) {
                                     case 'P':
-                                        cellStyle = 'style="background-color: ' + (colors.present || '#008000') + '; color: white; font-weight: bold;"';
+                                        // Green text on white background for Present
+                                        cellStyle = 'style="background-color: white; color: ' + (colors.present || '#008000') + '; font-weight: bold;"';
                                         break;
                                     case 'A':
-                                        cellStyle = 'style="background-color: ' + (colors.absent || '#FF0000') + '; color: white; font-weight: bold;"';
+                                        // Red text on white background for Absent
+                                        cellStyle = 'style="background-color: white; color: ' + (colors.absent || '#FF0000') + '; font-weight: bold;"';
                                         break;
                                     case 'L':
-                                        cellStyle = 'style="background-color: ' + (colors.late || '#FF6600') + '; color: white; font-weight: bold;"';
+                                        // Orange text on white background for Late
+                                        cellStyle = 'style="background-color: white; color: ' + (colors.late || '#FF6600') + '; font-weight: bold;"';
                                         break;
-                                    case 'H':
                                     case 'HD':
-                                        cellStyle = 'style="background-color: ' + (colors.halfDay || '#0000FF') + '; color: white; font-weight: bold;"';
+                                        // Blue text on white background for Half Day
+                                        cellStyle = 'style="background-color: white; color: ' + (colors.present || '#008000') + '; font-weight: bold;"';
+                                        break;
+                                    default:
+                                        cellStyle = 'style="background-color: white;"';
                                         break;
                                 }
+                            } else {
+                                cellStyle = 'style="background-color: white;"';
                             }
 
                             bodyHtml += '<td ' + cellStyle + '>' + (status || '') + '</td>';
@@ -730,7 +777,7 @@ $(document).ready(function() {
                     var workingDays = data.WorkingDays || 0;
 
                     // Display totals
-                    bodyHtml += '<td style="font-weight: bold;">' + workingDays + '</td>';
+                    bodyHtml += '<td style="font-weight: bold; background-color: #E7E1FD; color: #604DB6;">' + workingDays + '</td>';
                     bodyHtml += '<td style="font-weight: bold; background-color: #d4edda;">' + effectivePresent + '</td>';
 
                     // Percentage with color coding
@@ -746,11 +793,12 @@ $(document).ready(function() {
                     bodyHtml += '<td style="font-weight: bold; ' + percentStyle + '">' +
                         attendancePercentage.toFixed(1) + '%</td>';
 
-                    // Breakdown
-                    bodyHtml += '<td>' + totalPresent + '</td>';
-                    bodyHtml += '<td>' + totalLate + '</td>';
-                    bodyHtml += '<td>' + totalHalfDay + '</td>';
-                    bodyHtml += '<td>' + totalAbsent + '</td>';
+                    // Breakdown with colored backgrounds and black text
+                    // Present - Green background
+                    bodyHtml += '<td style="background-color: ' + (colors.present || '#008000') + '; color: white; font-weight: bold;">' + totalPresent + '</td>';
+                    bodyHtml += '<td style="background-color: ' + (colors.absent || '#FF0000') + '; color: white; font-weight: bold;">' + totalAbsent + '</td>';
+                    bodyHtml += '<td style="background-color: ' + (colors.late || '#FF6600') + '; color: white; font-weight: bold;">' + totalLate + '</td>';
+                    bodyHtml += '<td style="background-color: ' + (colors.halfDay || '#0000FF') + '; color: white; font-weight: bold;">' + totalHalfDay + '</td>';
                     bodyHtml += '</tr>';
                 });
             }

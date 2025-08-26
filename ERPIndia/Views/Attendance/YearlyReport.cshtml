@@ -286,10 +286,6 @@
                         @Html.DropDownListFor(m => m.Sections, Model.Sections, "Select Section", new { @class = "form-select", id = "ddlSection" })
                     </div>
                     <div class="col-md-3">
-                        <label for="ddlYear" class="form-label">Year <span class="text-danger">*</span></label>
-                        @Html.DropDownListFor(m => m.Years, Model.Years, new { @class = "form-select", id = "ddlYear" })
-                    </div>
-                    <div class="col-md-3">
                         <label class="form-label">&nbsp;</label>
                         <button type="button" class="btn search-button w-100" id="btnSearch">
                             <i class="fas fa-search me-2"></i>Generate Report
@@ -397,11 +393,6 @@ $(document).ready(function() {
 
         $('#tableHeader').empty();
         $('#tableBody').empty();
-        $('#className').text('-');
-        $('#sectionName').text('-');
-        $('#yearValue').text('-');
-        $('#totalStudents').text('0');
-        $('#avgAttendance').text('0%');
         reportData = null;
     }
 
@@ -409,19 +400,18 @@ $(document).ready(function() {
     $('#btnSearch').click(function() {
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
-        var year = $('#ddlYear').val();
-
-        if (!classId || !sectionId || !year) {
+      
+        if (!classId || !sectionId) {
             showToast('Please select all required fields', 'warning');
             return;
         }
 
         clearExistingData();
-        loadYearlyReport(classId, sectionId, year);
+        loadYearlyReport(classId, sectionId);
     });
 
     // Load yearly report
-    function loadYearlyReport(classId, sectionId, year) {
+    function loadYearlyReport(classId, sectionId) {
         showSpinner();
         $('#reportContainer').hide();
 
@@ -430,8 +420,7 @@ $(document).ready(function() {
             type: 'POST',
             data: {
                 classId: classId,
-                sectionId: sectionId,
-                year: year
+                sectionId: sectionId
             },
             cache: false,
             success: function(response) {
@@ -568,9 +557,8 @@ $(document).ready(function() {
     window.exportToExcel = function() {
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
-        var year = $('#ddlYear').val();
-
-        if (!classId || !sectionId || !year) {
+       
+        if (!classId || !sectionId) {
             showToast('Please generate the report first', 'warning');
             return;
         }
@@ -582,8 +570,7 @@ $(document).ready(function() {
             type: 'POST',
             data: {
                 classId: classId,
-                sectionId: sectionId,
-                year: year
+                sectionId: sectionId
             },
             success: function(response) {
                 hideSpinner();

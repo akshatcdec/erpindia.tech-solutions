@@ -78,8 +78,6 @@ namespace ERPIndia.Controllers
             {
                 Classes = ConvertToSelectList(classesResult),
                 Sections = ConvertToSelectList(sectionsResult),
-                SelectedYear = DateTime.Now.Year,
-                Years = GetYearsList()
             };
 
             return View(model);
@@ -87,22 +85,49 @@ namespace ERPIndia.Controllers
 
         // Get yearly attendance report data
         [HttpPost]
-        public JsonResult GetYearlyAttendanceReport(string classId, string sectionId, int year)
+       public JsonResult GetYearlyAttendanceReport(string classId, string sectionId)
         {
             try
             {
                 using (SqlConnection conn = new SqlConnection(ConnectionString))
                 {
                     conn.Open();
+
+                    // Get current session details
+                    DateTime sessionStartDate = DateTime.MinValue;
+                    DateTime sessionEndDate = DateTime.MinValue;
+                    string sessionName = "";
+
+                    string sessionQuery = @"
+                SELECT StartDate, EndDate, SessionName 
+                FROM AcademicSessionMaster 
+                WHERE SessionID = @SessionID";
+
+                    using (SqlCommand cmd = new SqlCommand(sessionQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                sessionStartDate = Convert.ToDateTime(reader["StartDate"]);
+                                sessionEndDate = Convert.ToDateTime(reader["EndDate"]);
+                                sessionName = reader["SessionName"]?.ToString() ?? "";
+                            }
+                        }
+                    }
+
                     var reportData = new YearlyReportData
                     {
                         Students = new List<StudentYearlyAttendance>(),
                         MonthlyStatistics = new List<MonthlyStats>(),
-                        Year = year,
-                        SessionYear = CurrentSessionYear.ToString()
+                        SessionYear = CurrentSessionYear.ToString(),
+                        SessionName = sessionName,
+                        SessionStartDate = sessionStartDate,
+                        SessionEndDate = sessionEndDate
                     };
 
-                    // Get all students
+                    // Get all students - THIS WAS MISSING!
                     string studentQuery = @"
                 SELECT 
                     s.StudentID,
@@ -125,6 +150,8 @@ namespace ERPIndia.Controllers
                 ORDER BY CAST(s.RollNo AS INT), s.FirstName";
 
                     var students = new List<StudentData>();
+
+                    // EXECUTE THE QUERY TO GET STUDENTS
                     using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
                     {
                         cmd.Parameters.AddWithValue("@ClassID", classId);
@@ -151,7 +178,14 @@ namespace ERPIndia.Controllers
                         }
                     }
 
-                    // Process each student
+                    // Set class and section names in report data
+                    if (students.Any())
+                    {
+                        reportData.ClassName = students.First().ClassName;
+                        reportData.SectionName = students.First().SectionName;
+                    }
+
+                    // Process each student with session-based months
                     int serialNo = 1;
                     foreach (var student in students)
                     {
@@ -169,11 +203,14 @@ namespace ERPIndia.Controllers
                             MonthlyData = new List<MonthlyAttendanceData>()
                         };
 
-                        // Get attendance for each month
-                        for (int month = 1; month <= 12; month++)
+                        // Get attendance for each month within the session period
+                        DateTime currentDate = sessionStartDate;
+                        while (currentDate <= sessionEndDate)
                         {
-                            var monthData = GetMonthlyAttendanceData(conn, student.StudentID, month, year);
+                            var monthData = GetMonthlyAttendanceData(conn, student.StudentID,
+                                                                    currentDate.Month, currentDate.Year);
                             yearlyAttendance.MonthlyData.Add(monthData);
+                            currentDate = currentDate.AddMonths(1);
                         }
 
                         // Calculate yearly totals
@@ -188,9 +225,8 @@ namespace ERPIndia.Controllers
                         if (yearlyAttendance.TotalWorkingDays > 0)
                         {
                             yearlyAttendance.AttendancePercentage =
-                                Math.Round((decimal)(yearlyAttendance.TotalPresent + yearlyAttendance.TotalLate + yearlyAttendance.TotalHalfDay * 0.5m)
-                                / yearlyAttendance.TotalWorkingDays * 100, 2);
-
+                                Math.Round((decimal)(yearlyAttendance.TotalPresent + yearlyAttendance.TotalLate +
+                                          yearlyAttendance.TotalHalfDay * 0.5m) / yearlyAttendance.TotalWorkingDays * 100, 2);
                             yearlyAttendance.AttendanceGrade = GetAttendanceGrade(yearlyAttendance.AttendancePercentage);
                             yearlyAttendance.AttendanceColor = GetAttendanceColor(yearlyAttendance.AttendancePercentage);
                         }
@@ -204,35 +240,14 @@ namespace ERPIndia.Controllers
                         reportData.Students.Add(yearlyAttendance);
                     }
 
-                    // Calculate monthly statistics for the class
-                    for (int month = 1; month <= 12; month++)
+                    // Calculate monthly statistics if needed
+                    DateTime statDate = sessionStartDate;
+                    while (statDate <= sessionEndDate)
                     {
-                        var monthStats = CalculateMonthlyStatistics(conn, classId, sectionId, month, year);
+                        var monthStats = CalculateMonthlyStatistics(conn, classId, sectionId,
+                                                                   statDate.Month, statDate.Year);
                         reportData.MonthlyStatistics.Add(monthStats);
-                    }
-
-                    // Set report metadata
-                    if (students.Any())
-                    {
-                        reportData.ClassName = students.First().ClassName ?? "";
-                        reportData.SectionName = students.First().SectionName ?? "";
-                    }
-                    else
-                    {
-                        string classNameQuery = "SELECT ClassName FROM AcademicClassMaster WHERE ClassID = @ClassID";
-                        string sectionNameQuery = "SELECT SectionName FROM AcademicSectionMaster WHERE SectionID = @SectionID";
-
-                        using (SqlCommand cmd = new SqlCommand(classNameQuery, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@ClassID", classId);
-                            reportData.ClassName = cmd.ExecuteScalar()?.ToString() ?? "";
-                        }
-
-                        using (SqlCommand cmd = new SqlCommand(sectionNameQuery, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@SectionID", sectionId);
-                            reportData.SectionName = cmd.ExecuteScalar()?.ToString() ?? "";
-                        }
+                        statDate = statDate.AddMonths(1);
                     }
 
                     reportData.GeneratedDate = DateTime.Now;
@@ -242,7 +257,7 @@ namespace ERPIndia.Controllers
                     {
                         success = true,
                         data = reportData,
-                        message = $"Report generated for {students.Count} students"
+                        message = $"Report generated for session {sessionName} with {students.Count} students"
                     });
                 }
             }
@@ -252,16 +267,37 @@ namespace ERPIndia.Controllers
             }
         }
         [HttpPost]
-        public JsonResult ExportYearlyAttendanceToExcel(string classId, string sectionId, int year)
+        public JsonResult ExportYearlyAttendanceToExcel(string classId, string sectionId)
         {
             try
             {
-                // Set EPPlus License (for version 5+ only, skip for 4.5.3.3)
-                // ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
                 using (SqlConnection conn = new SqlConnection(ConnectionString))
                 {
                     conn.Open();
+
+                    // Get session details first
+                    DateTime sessionStartDate = DateTime.MinValue;
+                    DateTime sessionEndDate = DateTime.MinValue;
+                    string sessionName = "";
+
+                    string sessionQuery = @"
+                SELECT StartDate, EndDate, SessionName 
+                FROM AcademicSessionMaster 
+                WHERE SessionID = @SessionID";
+
+                    using (SqlCommand cmd = new SqlCommand(sessionQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                sessionStartDate = Convert.ToDateTime(reader["StartDate"]);
+                                sessionEndDate = Convert.ToDateTime(reader["EndDate"]);
+                                sessionName = reader["SessionName"]?.ToString() ?? "";
+                            }
+                        }
+                    }
 
                     // Get school details
                     string schoolName = "";
@@ -346,7 +382,7 @@ namespace ERPIndia.Controllers
                         }
                     }
 
-                    // Process each student
+                    // Process each student with session-based data
                     int serialNo = 1;
                     foreach (var student in studentList)
                     {
@@ -361,11 +397,14 @@ namespace ERPIndia.Controllers
                             MonthlyData = new List<MonthlyAttendanceData>()
                         };
 
-                        // Get attendance for each month
-                        for (int month = 1; month <= 12; month++)
+                        // Get attendance for each month in the session
+                        DateTime currentDate = sessionStartDate;
+                        while (currentDate <= sessionEndDate)
                         {
-                            var monthData = GetMonthlyAttendanceData(conn, student.StudentID, month, year);
+                            var monthData = GetMonthlyAttendanceData(conn, student.StudentID,
+                                                                    currentDate.Month, currentDate.Year);
                             yearlyAttendance.MonthlyData.Add(monthData);
+                            currentDate = currentDate.AddMonths(1);
                         }
 
                         // Calculate totals
@@ -378,8 +417,8 @@ namespace ERPIndia.Controllers
                         if (yearlyAttendance.TotalWorkingDays > 0)
                         {
                             yearlyAttendance.AttendancePercentage =
-                                Math.Round((decimal)(yearlyAttendance.TotalPresent + yearlyAttendance.TotalLate + yearlyAttendance.TotalHalfDay * 0.5m)
-                                / yearlyAttendance.TotalWorkingDays * 100, 2);
+                                Math.Round((decimal)(yearlyAttendance.TotalPresent + yearlyAttendance.TotalLate +
+                                          yearlyAttendance.TotalHalfDay * 0.5m) / yearlyAttendance.TotalWorkingDays * 100, 2);
                             yearlyAttendance.AttendanceGrade = GetAttendanceGrade(yearlyAttendance.AttendancePercentage);
                         }
                         else
@@ -413,7 +452,8 @@ namespace ERPIndia.Controllers
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
                         currentRow++;
-                        worksheet.Cells[currentRow, 1].Value = $"Class: {className}    Section: {sectionName}    Session: {year}-{year + 1}";
+                        // Use session name instead of year
+                        worksheet.Cells[currentRow, 1].Value = $"Class: {className}    Section: {sectionName}    Session: {sessionName}";
                         worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
@@ -444,10 +484,16 @@ namespace ERPIndia.Controllers
                         worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
                         col++;
 
-                        // Month headers (April to March)
-                        string[] months = { "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar" };
+                        // Dynamic month headers based on session
+                        DateTime monthDate = sessionStartDate;
+                        var monthNames = new List<string>();
+                        while (monthDate <= sessionEndDate)
+                        {
+                            monthNames.Add(monthDate.ToString("MMM"));
+                            monthDate = monthDate.AddMonths(1);
+                        }
 
-                        foreach (var month in months)
+                        foreach (var month in monthNames)
                         {
                             worksheet.Cells[headerRow, col].Value = month;
                             worksheet.Cells[headerRow, col, headerRow, col + 3].Merge = true;
@@ -456,7 +502,7 @@ namespace ERPIndia.Controllers
                         }
 
                         // Yearly Total
-                        worksheet.Cells[headerRow, col].Value = "Yearly Total";
+                        worksheet.Cells[headerRow, col].Value = "Session Total";
                         worksheet.Cells[headerRow, col, headerRow, col + 3].Merge = true;
                         worksheet.Cells[headerRow, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         col += 4;
@@ -472,7 +518,7 @@ namespace ERPIndia.Controllers
                         currentRow++;
                         col = 6;
 
-                        for (int i = 0; i < 12; i++)
+                        for (int i = 0; i < monthNames.Count; i++)
                         {
                             worksheet.Cells[currentRow, col++].Value = "WD";
                             worksheet.Cells[currentRow, col++].Value = "P";
@@ -480,7 +526,7 @@ namespace ERPIndia.Controllers
                             worksheet.Cells[currentRow, col++].Value = "HD";
                         }
 
-                        // Yearly totals sub-headers
+                        // Session totals sub-headers
                         worksheet.Cells[currentRow, col++].Value = "WD";
                         worksheet.Cells[currentRow, col++].Value = "P";
                         worksheet.Cells[currentRow, col++].Value = "L";
@@ -497,19 +543,16 @@ namespace ERPIndia.Controllers
                             worksheet.Cells[currentRow, col++].Value = student.StudentName;
                             worksheet.Cells[currentRow, col++].Value = student.FatherName;
 
-                            // Monthly data - April to March order
-                            int[] monthOrder = { 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1, 2 };
-
-                            foreach (int monthIndex in monthOrder)
+                            // Monthly data in session order
+                            foreach (var monthData in student.MonthlyData)
                             {
-                                var monthData = student.MonthlyData[monthIndex];
                                 worksheet.Cells[currentRow, col++].Value = monthData.WorkingDays;
                                 worksheet.Cells[currentRow, col++].Value = monthData.Present;
                                 worksheet.Cells[currentRow, col++].Value = monthData.Late;
                                 worksheet.Cells[currentRow, col++].Value = monthData.HalfDay;
                             }
 
-                            // Yearly totals
+                            // Session totals
                             worksheet.Cells[currentRow, col++].Value = student.TotalWorkingDays;
                             worksheet.Cells[currentRow, col++].Value = student.TotalPresent;
                             worksheet.Cells[currentRow, col++].Value = student.TotalLate;
@@ -521,12 +564,11 @@ namespace ERPIndia.Controllers
                             currentRow++;
                         }
 
-                        // Style the header rows (without background color to avoid pattern type error)
+                        // Apply styles and borders (rest of the code remains same)...
                         var headerRange = worksheet.Cells[headerRow, 1, headerRow + 1, col - 1];
                         headerRange.Style.Font.Bold = true;
                         headerRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
-                        // Apply borders to the table
                         var tableRange = worksheet.Cells[headerRow, 1, currentRow - 1, col - 1];
                         var border = tableRange.Style.Border;
                         border.Top.Style = ExcelBorderStyle.Thin;
@@ -534,15 +576,12 @@ namespace ERPIndia.Controllers
                         border.Left.Style = ExcelBorderStyle.Thin;
                         border.Right.Style = ExcelBorderStyle.Thin;
 
-                        // Set all cells to black font (ensure override)
                         worksheet.Cells[1, 1, currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Black);
-
-                        // Auto-fit columns
                         worksheet.Cells.AutoFitColumns();
 
                         // Convert to byte array
                         byte[] fileBytes = package.GetAsByteArray();
-                        string fileName = $"YearlyAttendance_{className}_{sectionName}_{year}.xlsx";
+                        string fileName = $"YearlyAttendance_{className}_{sectionName}_{sessionName.Replace("/", "_")}.xlsx";
 
                         return Json(new
                         {
@@ -557,8 +596,8 @@ namespace ERPIndia.Controllers
             {
                 return Json(new { success = false, message = "Error: " + ex.Message });
             }
-        }  
-        
+        }
+
         #endregion
         // Grade calculation methods
         private string GetAttendanceGrade(decimal percentage)

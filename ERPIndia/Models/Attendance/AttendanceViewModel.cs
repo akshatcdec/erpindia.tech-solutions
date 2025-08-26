@@ -45,15 +45,11 @@ namespace ERPIndia.Models.Attendance
     {
         public List<SelectListItem> Classes { get; set; }
         public List<SelectListItem> Sections { get; set; }
-        public List<SelectListItem> Years { get; set; }
-        public int SelectedYear { get; set; }
 
         public YearlyAttendanceViewModel()
         {
             Classes = new List<SelectListItem>();
             Sections = new List<SelectListItem>();
-            Years = new List<SelectListItem>();
-            SelectedYear = DateTime.Now.Year;
         }
     }
 
@@ -68,7 +64,9 @@ namespace ERPIndia.Models.Attendance
         public string SessionYear { get; set; }
         public DateTime GeneratedDate { get; set; }
         public int TotalStudents { get; set; }
-
+        public string SessionName { get; set; }
+        public DateTime SessionStartDate { get; set; }
+        public DateTime SessionEndDate { get; set; }
         public YearlyReportData()
         {
             Students = new List<StudentYearlyAttendance>();

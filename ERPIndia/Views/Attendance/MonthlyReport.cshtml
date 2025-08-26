@@ -20,18 +20,7 @@
         font-size: 11px;
     }
 
-        .monthly-table thead th {
-            background: linear-gradient(to bottom, #1c79eb, #2c78bf, #155ab5);
-            color: white !important;
-            padding: 5px 3px;
-            text-align: center;
-            font-size: 10px;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            border: 1px solid #ddd !important;
-        }
+        
 
         .monthly-table tbody tr:nth-child(odd) {
             background-color: #ffffff;
@@ -242,6 +231,61 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
+
+
+    /* Force header styling */
+    .monthly-table thead th {
+        background: linear-gradient(to bottom, #f0f0f0, #e0e0e0, #d0d0d0);
+        color: black !important;
+        padding: 8px 5px;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border: 1px solid #999 !important;
+    }
+
+        /* Override any inline styles for headers */
+        .monthly-table thead th.day-header,
+        .monthly-table thead th.weekday-header {
+            background-color: #D3D3D3 !important;
+            color: #000000 !important;
+        }
+
+        /* Special styling for Sunday/Holiday date headers */
+        .monthly-table thead th.holiday-header {
+            background-color: #FFFF00 !important;
+            color: #000000 !important;
+            font-weight: bold !important;
+        }
+
+    /* Summary row */
+    .summary-row {
+        background-color: #D3D3D3 !important;
+        font-weight: bold !important;
+        color: #000000 !important;
+    }
+
+        .summary-row td {
+            background-color: #D3D3D3 !important;
+            color: #000000 !important;
+            font-weight: bold !important;
+        }
+  
+    .monthly thead th {
+        background: linear-gradient(to bottom, #f0f0f0, #e0e0e0, #d0d0d0);
+        color: black !important;
+        padding: 8px 5px;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border: 1px solid #999 !important;
+    }
 </style>
 
 <div class="container-fluid">
@@ -269,10 +313,6 @@
                         <label for="ddlMonth" class="form-label">Month <span class="text-danger">*</span></label>
                         @Html.DropDownListFor(m => m.Months, Model.Months, new { @class = "form-select", id = "ddlMonth" })
                     </div>
-                    <div class="col-md-2">
-                        <label for="ddlYear" class="form-label">Year <span class="text-danger">*</span></label>
-                        @Html.DropDownListFor(m => m.Years, Model.Years, new { @class = "form-select", id = "ddlYear" })
-                    </div>
                     <div class="col-md-3">
                         <label class="form-label">&nbsp;</label>
                         <button type="button" class="btn search-button w-100" id="btnSearch">
@@ -285,8 +325,6 @@
     </div>
 
     <!-- Summary Statistics -->
-    
-
     <!-- Report Table -->
     <div id="reportContainer" class="mt-4" style="display:none;">
         <div class="card">
@@ -334,6 +372,34 @@ $(document).ready(function() {
     var reportData = null;
     var dataTable = null;
 
+    function showToast(message, type, duration) {
+        type = type || 'success';
+        duration = duration || 4000;
+
+        var icons = {
+            success: 'check-circle',
+            error: 'times-circle',
+            warning: 'exclamation-triangle',
+            info: 'info-circle'
+        };
+
+        var toastId = 'toast_' + Date.now();
+        var toastHtml =
+            '<div class="toast toast-' + type + '" id="' + toastId + '" style="display:none;">' +
+            '<i class="fas fa-' + icons[type] + ' me-2"></i>' +
+            message +
+            '</div>';
+
+        $('#toastContainer').append(toastHtml);
+        $('#' + toastId).fadeIn(300);
+
+        setTimeout(function () {
+            $('#' + toastId).fadeOut(300, function () {
+                $(this).remove();
+            });
+        }, duration);
+    }
+
     // Show/Hide spinner
     function showSpinner() {
         $('#spinnerOverlay').css('display', 'flex');
@@ -364,47 +430,39 @@ $(document).ready(function() {
     $('#btnSearch').click(function() {
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
-        var month = $('#ddlMonth').val();
-        var year = $('#ddlYear').val();
+        var monthYear = $('#ddlMonth').val(); // Changed from separate month/year
 
         // Validation
         if (!classId || classId === '') {
-            alert('Please select a class');
+            showToast('Please select a class', 'warning');
             $('#ddlClass').focus();
             return;
         }
 
         if (!sectionId || sectionId === '') {
-            alert('Please select a section');
+            showToast('Please select a section', 'warning');
             $('#ddlSection').focus();
             return;
         }
 
-        if (!month || month === '') {
-            alert('Please select a month');
+        if (!monthYear || monthYear === '') {
+            showToast('Please select a month', 'warning');
             $('#ddlMonth').focus();
             return;
         }
 
-        if (!year || year === '') {
-            alert('Please select a year');
-            $('#ddlYear').focus();
-            return;
-        }
-
         clearExistingData();
-        loadMonthlyReport(classId, sectionId, month, year);
+        loadMonthlyReport(classId, sectionId, monthYear);
     });
 
-    // Load monthly report with better error handling
-    function loadMonthlyReport(classId, sectionId, month, year) {
+    // Load monthly report with session date handling
+    function loadMonthlyReport(classId, sectionId, monthYear) {
         showSpinner();
 
         console.log('Loading report with params:', {
             classId: classId,
             sectionId: sectionId,
-            month: month,
-            year: year
+            monthYear: monthYear
         });
 
         $.ajax({
@@ -413,11 +471,10 @@ $(document).ready(function() {
             data: {
                 classId: classId,
                 sectionId: sectionId,
-                month: parseInt(month),
-                year: parseInt(year)
+                monthYear: monthYear // Send combined month-year value
             },
             dataType: 'json',
-            timeout: 60000, // 60 second timeout
+            timeout: 60000,
             success: function(response) {
                 hideSpinner();
                 console.log('Response received:', response);
@@ -426,27 +483,38 @@ $(document).ready(function() {
                     reportData = response.data;
 
                     if (!reportData) {
-                        alert('No data received from server');
+                        showToast('No data received from server', 'error');
                         return;
                     }
 
-                    displayReport(reportData);
+                    // Show session info if partial month
+                    if (response.sessionInfo && response.sessionInfo.isPartialMonth) {
+                        showToast('Note: This month partially falls within the session period (' +
+                            response.sessionInfo.effectiveStart + ' to ' +
+                            response.sessionInfo.effectiveEnd + ')', 'info', 6000);
+                    }
+
+                    displayReport(reportData, response.colors);
                     $('#reportContainer').show();
 
-                    // Show success message
+                    // Update report header with session info
+                    if (response.sessionInfo) {
+                        $('#sessionInfo').html(
+                            '<small class="text-muted">Session: ' + response.sessionInfo.sessionName +
+                            ' (' + response.sessionInfo.sessionStart + ' to ' + response.sessionInfo.sessionEnd + ')</small>'
+                        );
+                    }
+
                     if (response.message) {
-                        console.log('Success:', response.message);
+                        showToast(response.message, 'success');
                     }
                 } else {
-                    var errorMsg = 'Failed to generate report';
-                    if (response && response.message) {
-                        errorMsg = response.message;
-                    }
+                    var errorMsg = response && response.message ? response.message : 'Failed to generate report';
+                    showToast(errorMsg, 'error');
+
                     if (response && response.details) {
                         console.error('Error details:', response.details);
-                        errorMsg += '\n\nDetails: ' + response.details;
                     }
-                    alert(errorMsg);
                 }
             },
             error: function(xhr, status, error) {
@@ -463,7 +531,6 @@ $(document).ready(function() {
                 } else if (xhr.status === 500) {
                     errorMessage += 'Server error occurred.';
 
-                    // Try to parse error response
                     try {
                         var responseJson = JSON.parse(xhr.responseText);
                         if (responseJson && responseJson.message) {
@@ -476,7 +543,7 @@ $(document).ready(function() {
                     errorMessage += error || 'Unknown error occurred';
                 }
 
-                alert(errorMessage);
+                showToast(errorMessage, 'error');
                 console.error('AJAX Error:', {
                     status: status,
                     error: error,
@@ -486,106 +553,111 @@ $(document).ready(function() {
             }
         });
     }
+
+    // Export to Excel function
     window.exportToExcel = function() {
-    var classId = $('#ddlClass').val();
-    var sectionId = $('#ddlSection').val();
+        var classId = $('#ddlClass').val();
+        var sectionId = $('#ddlSection').val();
+        var monthYear = $('#ddlMonthYear').val();
 
-    if (!classId || !sectionId) {
-        showToast('Please generate the report first', 'warning');
-        return;
-    }
-
-    showSpinner();
-
-    $.ajax({
-        url: '@Url.Action("ExportMonthlyAttendanceToExcel", "Attendance")',
-        type: 'POST',
-        data: {
-            classId: classId,
-            sectionId: sectionId
-        },
-        success: function(response) {
-            hideSpinner();
-            if (response.success) {
-                // Download the file
-                var link = document.createElement('a');
-                link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + response.fileContent;
-                link.download = response.fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                showToast('Excel file downloaded successfully!', 'success');
-            } else {
-                showToast('Failed to export: ' + response.message, 'error');
-            }
-        },
-        error: function(xhr, status, error) {
-            hideSpinner();
-            showToast('Error exporting to Excel: ' + error, 'error');
+        if (!classId || !sectionId || !monthYear) {
+            showToast('Please generate the report first', 'warning');
+            return;
         }
-    });
-};
-    // Display report with error handling
-    function displayReport(data) {
+
+        showSpinner();
+
+        $.ajax({
+            url: '@Url.Action("ExportMonthlyAttendanceToExcel", "Attendance")',
+            type: 'POST',
+            data: {
+                classId: classId,
+                sectionId: sectionId,
+                monthYear: monthYear // Send combined month-year
+            },
+            success: function(response) {
+                hideSpinner();
+                if (response.success) {
+                    var link = document.createElement('a');
+                    link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + response.fileContent;
+                    link.download = response.fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    showToast('Excel file downloaded successfully!', 'success');
+                } else {
+                    showToast('Failed to export: ' + response.message, 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideSpinner();
+                showToast('Error exporting to Excel: ' + error, 'error');
+            }
+        });
+    };
+
+    // Display report with session date handling
+    function displayReport(data, colors) {
         try {
-            // Validate data
             if (!data) {
                 console.error('No data to display');
                 return;
             }
-            console.log(JSON.stringify(data));
-            // Update summary with safe access
-
 
             // Build table headers
             var headerHtml = '<tr>';
-            headerHtml += '<th rowspan="2" class="seq-column">S.No</th>';
+            headerHtml += '<th rowspan="2">S.No</th>';
+            headerHtml += '<th rowspan="2">Roll No</th>';
+            headerHtml += '<th rowspan="2">Admission No</th>';
             headerHtml += '<th rowspan="2">Student Name</th>';
             headerHtml += '<th rowspan="2">Father Name</th>';
 
-            // Date headers - check if DatesInMonth exists
+            // Date headers - handle days outside session
             if (data.DatesInMonth && Array.isArray(data.DatesInMonth) && data.DatesInMonth.length > 0) {
-                $.each(data.DatesInMonth, function(i, date) {
+                $.each(data.DatesInMonth, function (i, date) {
                     if (date && date.Day) {
-                        headerHtml += '<th class="day-header">' + date.Day + '</th>';
+                        var headerClass = '';
+                        if (date.IsWithinSession === false) {
+                            headerClass = ' class="outside-session"';
+                        }
+                        headerHtml += '<th' + headerClass + '>' + date.Day + '</th>';
                     }
                 });
-            } else {
-                console.warn('No dates in month data');
-                // Generate default dates for the month
-                var daysInMonth = new Date(data.Year, data.Month, 0).getDate();
-                for (var d = 1; d <= daysInMonth; d++) {
-                    headerHtml += '<th class="day-header">' + ('0' + d).slice(-2) + '</th>';
-                }
             }
 
             // Total headers
-            headerHtml += '<th rowspan="2" class="total-column">Total</th>';
-            headerHtml += '<th colspan="4" class="total-column">Summary</th>';
+            headerHtml += '<th rowspan="2">WD</th>';
+            headerHtml += '<th rowspan="2">Total<br/>P</th>';
+            headerHtml += '<th rowspan="2">%</th>';
+            headerHtml += '<th colspan="4">Breakdown</th>';
             headerHtml += '</tr>';
 
-            // Weekday sub-headers
+            // Second row - weekday headers
             headerHtml += '<tr>';
             if (data.DatesInMonth && Array.isArray(data.DatesInMonth) && data.DatesInMonth.length > 0) {
-                $.each(data.DatesInMonth, function(i, date) {
+                $.each(data.DatesInMonth, function (i, date) {
                     if (date && date.WeekDay) {
-                        headerHtml += '<th class="weekday-header">' + date.WeekDay + '</th>';
-                    } else {
-                        headerHtml += '<th class="weekday-header">--</th>';
+                        var headerClass = '';
+                        var style = '';
+
+                        // Handle days outside session
+                        if (date.IsWithinSession === false) {
+                            style = ' style="background-color: ' + (colors.outsideSession || '#E0E0E0') + ';"';
+                        } else if (date.IsSunday || date.IsHoliday) {
+                            style = ' style="background-color: #FFFF00;"';
+                        }
+
+                        headerHtml += '<th' + style + '>' + date.WeekDay + '</th>';
                     }
                 });
-            } else {
-                var daysInMonth = new Date(data.Year, data.Month, 0).getDate();
-                for (var d = 1; d <= daysInMonth; d++) {
-                    headerHtml += '<th class="weekday-header">--</th>';
-                }
             }
 
-            headerHtml += '<th class="total-column">P</th>';
-            headerHtml += '<th class="total-column">%</th>';
-            headerHtml += '<th class="total-column">L</th>';
-            headerHtml += '<th class="total-column">A</th>';
+            // Sub-headers for breakdown
+            headerHtml += '<th>P</th>';
+            headerHtml += '<th>L</th>';
+            headerHtml += '<th>H</th>';
+            headerHtml += '<th>A</th>';
             headerHtml += '</tr>';
 
             $('#tableHeader').html(headerHtml);
@@ -594,108 +666,121 @@ $(document).ready(function() {
             var bodyHtml = '';
 
             if (data.Students && Array.isArray(data.Students) && data.Students.length > 0) {
-                $.each(data.Students, function(index, student) {
-                    if (!student) return true; // continue to next iteration
+                $.each(data.Students, function (index, student) {
+                    if (!student) return true;
 
                     var attendancePercentage = student.AttendancePercentage || 0;
-                    var rowClass = '';
-
-                    if (attendancePercentage < 75) {
-                        rowClass = 'attendance-poor';
-                    } else if (attendancePercentage < 85) {
-                        rowClass = 'attendance-average';
-                    } else if (attendancePercentage < 95) {
-                        rowClass = 'attendance-good';
-                    } else {
-                        rowClass = 'attendance-excellent';
-                    }
 
                     bodyHtml += '<tr>';
-                    bodyHtml += '<td class="seq-column">' + (student.SerialNo || (index + 1)) + '</td>';
-                    bodyHtml += '<td>' + (student.StudentName || 'N/A') + '</td>';
-                    bodyHtml += '<td>' + (student.FatherName || '-') + '</td>';
+                    bodyHtml += '<td>' + (student.SerialNo || (index + 1)) + '</td>';
+                    bodyHtml += '<td>' + (student.RollNumber || '-') + '</td>';
+                    bodyHtml += '<td>' + (student.AdmissionNo || '-') + '</td>';
+                    bodyHtml += '<td style="text-align: left;">' + (student.StudentName || 'N/A') + '</td>';
+                    bodyHtml += '<td style="text-align: left;">' + (student.FatherName || '-') + '</td>';
 
-                    // Daily attendance
+                    // Daily attendance cells with proper colors
                     if (data.DatesInMonth && Array.isArray(data.DatesInMonth) && data.DatesInMonth.length > 0) {
-                        $.each(data.DatesInMonth, function(i, date) {
+                        $.each(data.DatesInMonth, function (i, date) {
                             if (!date) return true;
 
-                            var dayNum = parseInt(date.Day);
                             var status = '';
+                            var cellStyle = '';
 
-                            if (student.DailyAttendanceMonthly && student.DailyAttendanceMonthly[date.Day]) {
+                            // Check if day is outside session
+                            if (date.IsWithinSession === false) {
+                                cellStyle = 'style="background-color: ' + (colors.outsideSession || '#E0E0E0') + ';"';
+                                status = '-';
+                            }
+                            // Check for Sunday/Holiday within session
+                            else if (date.IsSunday || date.IsHoliday) {
+                                cellStyle = 'style="background-color: #FFFF00; color: #000; font-weight: bold;"';
+                                status = 'H';
+                            }
+                            // Regular attendance status
+                            else if (student.DailyAttendanceMonthly && student.DailyAttendanceMonthly[date.Day]) {
                                 status = student.DailyAttendanceMonthly[date.Day];
+
+                                switch (status.toUpperCase()) {
+                                    case 'P':
+                                        cellStyle = 'style="background-color: ' + (colors.present || '#008000') + '; color: white; font-weight: bold;"';
+                                        break;
+                                    case 'A':
+                                        cellStyle = 'style="background-color: ' + (colors.absent || '#FF0000') + '; color: white; font-weight: bold;"';
+                                        break;
+                                    case 'L':
+                                        cellStyle = 'style="background-color: ' + (colors.late || '#FF6600') + '; color: white; font-weight: bold;"';
+                                        break;
+                                    case 'H':
+                                    case 'HD':
+                                        cellStyle = 'style="background-color: ' + (colors.halfDay || '#0000FF') + '; color: white; font-weight: bold;"';
+                                        break;
+                                }
                             }
 
-                            var statusClass = '';
-
-                            if (date.IsSunday || date.IsHoliday) {
-                                statusClass = 'status-su';
-                                status = status || 'H';
-                            } else if (status) {
-                                statusClass = 'status-' + status.toLowerCase();
-                            }
-
-                            bodyHtml += '<td class="' + statusClass + '">' + (status || '') + '</td>';
+                            bodyHtml += '<td ' + cellStyle + '>' + (status || '') + '</td>';
                         });
                     }
 
-                    // Totals
+                    // Calculate totals
                     var totalPresent = student.TotalPresent || 0;
                     var totalAbsent = student.TotalAbsent || 0;
                     var totalLate = student.TotalLate || 0;
                     var totalHalfDay = student.TotalHalfDay || 0;
+                    var effectivePresent = student.TotalEffectivePresent || (totalPresent + totalLate + totalHalfDay);
+                    var workingDays = data.WorkingDays || 0;
 
-                    var totalDays = totalPresent + totalAbsent + totalLate + totalHalfDay;
+                    // Display totals
+                    bodyHtml += '<td style="font-weight: bold;">' + workingDays + '</td>';
+                    bodyHtml += '<td style="font-weight: bold; background-color: #d4edda;">' + effectivePresent + '</td>';
 
-                    bodyHtml += '<td class="total-column">' + totalDays + '</td>';
-                    bodyHtml += '<td class="total-column">' + totalPresent + '</td>';
-                    bodyHtml += '<td class="total-column ' + rowClass + '">' +
-                               attendancePercentage.toFixed(0) + '%</td>';
-                    bodyHtml += '<td class="total-column">' + totalLate + '</td>';
-                    bodyHtml += '<td class="total-column">' + totalAbsent + '</td>';
+                    // Percentage with color coding
+                    var percentStyle = '';
+                    if (attendancePercentage >= 90) {
+                        percentStyle = 'background-color: #d4edda; color: #155724;';
+                    } else if (attendancePercentage >= 75) {
+                        percentStyle = 'background-color: #fff3cd; color: #856404;';
+                    } else {
+                        percentStyle = 'background-color: #f8d7da; color: #721c24;';
+                    }
+
+                    bodyHtml += '<td style="font-weight: bold; ' + percentStyle + '">' +
+                        attendancePercentage.toFixed(1) + '%</td>';
+
+                    // Breakdown
+                    bodyHtml += '<td>' + totalPresent + '</td>';
+                    bodyHtml += '<td>' + totalLate + '</td>';
+                    bodyHtml += '<td>' + totalHalfDay + '</td>';
+                    bodyHtml += '<td>' + totalAbsent + '</td>';
                     bodyHtml += '</tr>';
                 });
-            } else {
-                var colspan = 8; // Adjust based on your columns
-                if (data.DatesInMonth && data.DatesInMonth.length > 0) {
-                    colspan = 3 + data.DatesInMonth.length + 5;
-                }
-                bodyHtml = '<tr><td colspan="' + colspan + '" class="text-center">No student data available</td></tr>';
             }
 
             $('#tableBody').html(bodyHtml);
 
-            // Initialize DataTable only if we have data
-            if (data.Students && data.Students.length > 0) {
-                setTimeout(function() {
-                    try {
-                        // Check if DataTable is available
-                        if (typeof $.fn.DataTable !== 'undefined') {
-                            dataTable = $('#monthlyAttendanceTable').DataTable({
-                                "paging": false,
-                                "info": false,
-                                "searching": true,
-                                "ordering": false,
-                                "scrollX": true,
-                                "destroy": true,
-                                "language": {
-                                    "search": "Search students:"
-                                }
-                            });
-                        } else {
-                            console.log('DataTable plugin not available');
-                        }
-                    } catch (error) {
-                        console.error('Error initializing DataTable:', error);
-                        // Continue without DataTable
-                    }
-                }, 100);
+            // Update summary information
+            if (data.IsPartialMonth) {
+                $('#monthSummary').html(
+                    '<div class="alert alert-info">' +
+                    '<i class="fas fa-info-circle"></i> ' +
+                    'Showing data for effective session days only. ' +
+                    'Working Days: ' + data.WorkingDays + ' | ' +
+                    'Effective Days: ' + data.EffectiveDaysInMonth + ' | ' +
+                    'Total Students: ' + data.TotalStudents +
+                    '</div>'
+                );
+            } else {
+                $('#monthSummary').html(
+                    '<div class="alert alert-success">' +
+                    'Working Days: ' + data.WorkingDays + ' | ' +
+                    'Total Students: ' + data.TotalStudents + ' | ' +
+                    'Average Attendance: ' + (data.AverageAttendance || 0).toFixed(2) + '%' +
+                    '</div>'
+                );
             }
 
         } catch (error) {
             console.error('Error displaying report:', error);
-            alert('Error displaying report data. Please check the console for details.');
+            showToast('Error displaying report data', 'error');
         }
     }
 });

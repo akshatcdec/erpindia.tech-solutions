@@ -26,9 +26,18 @@ namespace ERPIndia.Models.Attendance
         public int Year { get; set; }
         public int TotalStudents { get; set; }
         public int WorkingDays { get; set; }
-        public decimal AverageAttendance { get; set; }
+        public int TotalDaysInMonth { get; set; }
+        public int EffectiveDaysInMonth { get; set; }
+        
+        public int TotalSundays { get; set; }
+        public int TotalHolidays { get; set; }
+       public decimal AverageAttendance { get; set; }
         public List<DateInfo> DatesInMonth { get; set; }
         public List<StudentMonthlyAttendance> Students { get; set; }
+        public bool IsPartialMonth { get; internal set; }
+        public DateTime SessionEndDate { get; internal set; }
+        public DateTime SessionStartDate { get; internal set; }
+        public string SessionName { get; internal set; }
     }
 
     public class DateInfo
@@ -38,9 +47,12 @@ namespace ERPIndia.Models.Attendance
         public string WeekDay { get; set; }
         public bool IsSunday { get; set; }
         public bool IsHoliday { get; set; }
+        public bool IsWithinSession { get; set; }
+        
+        public string DayColor { get; set; }  // Added for UI color coding
     }
 
-   
+
     public class YearlyAttendanceViewModel
     {
         public List<SelectListItem> Classes { get; set; }
@@ -201,15 +213,19 @@ namespace ERPIndia.Models.Attendance
         public string StudentID { get; set; }
         public string StudentName { get; set; }
         public string RollNumber { get; set; }
+
         public string AdmissionNo { get; set; }
         public string FatherName { get; set; }
         public Dictionary<int, string> DailyAttendance { get; set; } // Day -> Status
         public Dictionary<string, string> DailyAttendanceMonthly { get; set; }
-        
+        public Dictionary<string, string> DailyAttendanceColors { get; set; }  // Added for color coding
+
         public int TotalPresent { get; set; }
         public int TotalAbsent { get; set; }
         public int TotalLate { get; set; }
         public int TotalHalfDay { get; set; }
+
+        public int TotalEffectivePresent { get; set; }  // Present + Late + Half Day
     }
 
     public class AttendanceStatusOption

@@ -362,7 +362,7 @@ namespace ERPIndia.Controllers
                     string sessionName = "";
 
                     string sessionQuery = @"
-                SELECT StartDate, EndDate, SessionName 
+                SELECT StartDate, EndDate,PrintName as SessionName 
                 FROM AcademicSessionMaster 
                 WHERE SessionID = @SessionID";
 
@@ -579,19 +579,32 @@ namespace ERPIndia.Controllers
                         currentRow++;
                         worksheet.Cells[currentRow, 1].Value = schoolAddress;
                         worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
                         currentRow++;
                         worksheet.Cells[currentRow, 1].Value = $"Class: {className}    Section: {sectionName}    Session: {sessionName}";
                         worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
                         currentRow++;
-                        worksheet.Cells[currentRow, 1].Value = "Yearly Attendance Report";
+                        worksheet.Cells[currentRow, 1].Value = "Yearly Attendance Report".ToUpper();
                         worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        worksheet.Cells[currentRow, 1, currentRow, 10].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        worksheet.Cells[currentRow, 1, currentRow, 10].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+
+                        currentRow++;
+                        worksheet.Cells[currentRow, 1].Value = "GRADE SCALE: A+ (95–100) | A (90–94) | B+ (85–89) | B (80–84) | C+ (75–79) | C (70–74) | D (60–69) | F (Below 60)".ToUpper();
+                        worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
-                        currentRow += 2; // Add spacing
+                        // Add gray background color
+                        
+                        currentRow += 3; // Add spacing
 
                         // Create table headers
                         int headerRow = currentRow;
@@ -656,6 +669,10 @@ namespace ERPIndia.Controllers
                         worksheet.Cells[currentRow, col++].Value = "WD";
                         worksheet.Cells[currentRow, col++].Value = "P";
                         worksheet.Cells[currentRow, col++].Value = "A";
+                        
+                        var fullHeaderRange = worksheet.Cells[headerRow, 1, currentRow, 46]; // currentRow includes sub-header row
+                        fullHeaderRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        fullHeaderRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
 
                         // Add student data
                         currentRow++;

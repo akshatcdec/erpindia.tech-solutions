@@ -499,8 +499,8 @@
                         <i class="fas fa-users me-2"></i>
                         <span id="classInfo"></span>
                         <span class="attendance-summary badge bg-info" id="studentCount">0 students</span>
-                        <span class="attendance-summary badge bg-success" id="presentCount">0 present</span>
-                        <span class="attendance-summary badge bg-danger" id="absentCount">0 absent</span>
+                        <span class="attendance-summary badge bg-success" id="presentCount" style="display:none">0 present</span>
+                        <span class="attendance-summary badge bg-danger" id="absentCount" style="display:none">0 absent</span>
                     </h6>
                     <div>
                         <select id="batchStatus" class="form-select form-select-sm d-inline-block" style="width: 150px;">
@@ -509,7 +509,6 @@
                             <option value="Absent">Absent</option>
                             <option value="Late">Late</option>
                             <option value="Half Day">Half Day</option>
-                            <option value="Holiday">Holiday</option>
                         </select>
                         <button class="btn btn-sm batch-apply-btn ms-2" onclick="applyBatchStatus()">
                             Apply to Selected
@@ -1016,7 +1015,6 @@ $(document).ready(function() {
                             '<option value="Absent"' + (status === 'Absent' ? ' selected' : '') + '>Absent</option>' +
                             '<option value="Late"' + (status === 'Late' ? ' selected' : '') + '>Late</option>' +
                             '<option value="Half Day"' + (status === 'Half Day' ? ' selected' : '') + '>Half Day</option>' +
-                            '<option value="Holiday"' + (status === 'Holiday' ? ' selected' : '') + '>Holiday</option>' +
                         '</select>' +
                      '</td>' +
                      '<td>Manual</td>' +
@@ -1065,55 +1063,7 @@ $(document).ready(function() {
             "scrollX": true,
             "lengthChange": false, // hides the length menu dropdown
             "responsive": false,
-            "dom": 'Bfrtip',
-            "buttons": [
-                {
-                    extend: 'copy',
-                    text: 'Copy',
-                    className: 'dt-button',
-                    exportOptions: {
-                        columns: exportColumns
-                    }
-                },
-                {
-                    extend: 'csv',
-                    text: 'CSV',
-                    className: 'dt-button',
-                    title: 'AttendanceReport_' + new Date().getTime(),
-                    exportOptions: {
-                        columns: exportColumns
-                    }
-                },
-                {
-                    extend: 'excel',
-                    text: 'Excel',
-                    className: 'dt-button',
-                    title: 'AttendanceReport_' + new Date().getTime(),
-                    exportOptions: {
-                        columns: exportColumns
-                    }
-                },
-                {
-                    extend: 'pdf',
-                    text: 'PDF',
-                    className: 'dt-button',
-                    title: 'Attendance Report',
-                    orientation: 'landscape',
-                    pageSize: 'A4',
-                    exportOptions: {
-                        columns: exportColumns
-                    }
-                },
-                {
-                    extend: 'print',
-                    text: 'Print',
-                    className: 'dt-button',
-                    title: 'Attendance Report',
-                    exportOptions: {
-                        columns: exportColumns
-                    }
-                }
-            ],
+            "dom": 'frtip',
             "language": {
                 "search": "Search students:",
                 "lengthMenu": "Show _MENU_ entries",

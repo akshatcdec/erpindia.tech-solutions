@@ -54,6 +54,26 @@
             color: black !important;
         }
 
+    /* Working Days column styling - Light Gray Background */
+    .wd-column-header {
+        background: #e8e8e8 !important;
+        color: black !important;
+        font-weight: 700;
+        border: 1px solid #999 !important;
+    }
+
+    .wd-column-data {
+        background-color: #f5f5f5 !important;
+        color: black !important;
+        font-weight: 600;
+        border: 1px solid #999 !important;
+    }
+
+    /* Hover effect for WD columns */
+    .yearly-table tbody tr:hover .wd-column-data {
+        background-color: #e0e0e0 !important;
+    }
+
     /* Month headers */
     .month-header {
         background: #e0e0e0 !important;
@@ -245,6 +265,12 @@
             .yearly-table tbody td {
                 color: black !important;
             }
+        /* Ensure WD columns are visible in print */
+        .wd-column-data {
+            background-color: #f5f5f5 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
     }
 
     /* Performance badge */
@@ -301,12 +327,15 @@
         <div class="card">
             <div class="card-header bg-light">
                 <div class="row align-items-center">
-                    <div class="col-6">
+                    <div class="col-10">
                         <h6 class="mb-0">
-                            <i class="fas fa-table me-2"></i>Attendance Details
+                            <i class="fas fa-table me-2"></i>Attendance Details :-
+                            <span style="padding: 4px; text-align: center; font-size: 11px; color: #495057 !important; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; font-weight: 600; box-shadow: 0 2px 8px rgba(255,193,7,0.2); display: inline-block; margin-top: 4px; letter-spacing: 0.5px;">
+                                🎯 GRADE SCALE: A+ (95–100) | A (90–94) | B+ (85–89) | B (80–84) | C+ (75–79) | C (70–74) | D (60–69) | F (Below 60)
+                            </span>
                         </h6>
                     </div>
-                    <div class="col-6 text-end">
+                    <div class="col-2 text-end">
                         <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()" style="display: inline-block !important; visibility: visible !important;">
                             <i class="fas fa-file-excel me-1"></i>Export to Excel
                         </button>
@@ -462,8 +491,8 @@ $(document).ready(function() {
         headerHtml += '<th rowspan="2">Sr</th>';
         headerHtml += '<th rowspan="2">Adm.</th>';
         headerHtml += '<th rowspan="2">Roll</th>';
-        headerHtml += '<th rowspan="2">Student Name</th>';
-        headerHtml += '<th rowspan="2">Father Name</th>';
+        headerHtml += '<th rowspan="2">Student</th>';
+        headerHtml += '<th rowspan="2">Father </th>';
 
         // Month headers (April to March)
         var months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
@@ -478,14 +507,14 @@ $(document).ready(function() {
         headerHtml += '<th rowspan="2">Grade</th>';
         headerHtml += '</tr>';
 
-        // Sub headers (WD, P, Absent only - removed HD and changed L to Absent)
+        // Sub headers (WD, P, Absent only - with WD columns highlighted)
         headerHtml += '<tr>';
         for (var i = 0; i < 12; i++) {
-            headerHtml += '<th class="sub-header">WD</th>';
+            headerHtml += '<th class="sub-header wd-column-header">WD</th>';
             headerHtml += '<th class="sub-header">P</th>';
             headerHtml += '<th class="sub-header">A</th>';
         }
-        headerHtml += '<th class="sub-header">WD</th>';
+        headerHtml += '<th class="sub-header wd-column-header">WD</th>';
         headerHtml += '<th class="sub-header">P</th>';
         headerHtml += '<th class="sub-header">A</th>';
         headerHtml += '</tr>';
@@ -520,17 +549,17 @@ $(document).ready(function() {
                             var absent = workingDays - present - late - halfDay;
                             if (absent < 0) absent = 0; // Ensure no negative values
 
-                            bodyHtml += '<td>' + workingDays + '</td>';
+                            bodyHtml += '<td class="wd-column-data">' + workingDays + '</td>';
                             bodyHtml += '<td>' + present + '</td>';
                             bodyHtml += '<td>' + absent + '</td>';
                         } else {
-                            bodyHtml += '<td>0</td><td>0</td><td>0</td>';
+                            bodyHtml += '<td class="wd-column-data">0</td><td>0</td><td>0</td>';
                         }
                     }
                 } else {
                     // Fill with zeros if data is missing
                     for (var m = 0; m < 12; m++) {
-                        bodyHtml += '<td>0</td><td>0</td><td>0</td>';
+                        bodyHtml += '<td class="wd-column-data">0</td><td>0</td><td>0</td>';
                     }
                 }
 
@@ -544,7 +573,7 @@ $(document).ready(function() {
                 var totalAbsent = totalWorkingDays - totalPresent - totalLate - totalHalfDay;
                 if (totalAbsent < 0) totalAbsent = 0;
 
-                bodyHtml += '<td><strong>' + totalWorkingDays + '</strong></td>';
+                bodyHtml += '<td class="wd-column-data"><strong>' + totalWorkingDays + '</strong></td>';
                 bodyHtml += '<td><strong>' + totalPresent + '</strong></td>';
                 bodyHtml += '<td><strong>' + totalAbsent + '</strong></td>';
 

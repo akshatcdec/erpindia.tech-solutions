@@ -188,22 +188,15 @@ const HolidayManager = (function() {
                     "render": function (data) {
                         if (data) {
                             try {
-                                // Handle different date formats that might come from server
                                 let date;
-
-                                // If it's already a Date object
                                 if (data instanceof Date) {
                                     date = data;
                                 }
-                                // If it's a string in ISO format or similar
                                 else if (typeof data === 'string') {
-                                    // Handle SQL Server datetime format
                                     if (data.indexOf('/Date(') !== -1) {
-                                        // Handle .NET JSON date format /Date(1234567890)/
                                         const timestamp = parseInt(data.replace(/\/Date\((\d+)\)\//, '$1'));
                                         date = new Date(timestamp);
                                     } else {
-                                        // Standard ISO string
                                         date = new Date(data);
                                     }
                                 }
@@ -211,12 +204,10 @@ const HolidayManager = (function() {
                                     return 'Invalid Date';
                                 }
 
-                                // Check if date is valid
                                 if (isNaN(date.getTime())) {
                                     return 'Invalid Date';
                                 }
 
-                                // Format as DD/MM/YYYY
                                 const day = date.getDate().toString().padStart(2, '0');
                                 const month = (date.getMonth() + 1).toString().padStart(2, '0');
                                 const year = date.getFullYear();
@@ -272,7 +263,6 @@ const HolidayManager = (function() {
         });
     };
 
-    // Check if the holiday name already exists for the same session
     const checkForDuplicateHoliday = async function (holidayName, currentId = '') {
         const sessionId = $('#sessionId').val();
 
@@ -287,7 +277,6 @@ const HolidayManager = (function() {
                 },
                 success: function (result) {
                     if (result.success) {
-                        // Check if the holiday name already exists (excluding the current record if we're editing)
                         const isDuplicate = result.data.some(item => {
                             return item.HolidayName.toLowerCase() === holidayName.toLowerCase() &&
                                    item.HolidayID.toString() !== currentId.toString();
@@ -306,11 +295,10 @@ const HolidayManager = (function() {
         });
     };
 
-    const getFormData = function () {
-        // Get date value as string from input field
+    const getFormData = function (includeDeleteAttendance = false) {
         const holidayDateValue = $('#holidayDate').val();
 
-        return {
+        const data = {
             HolidayID: $('#holidayId').val(),
             HolidayName: $('#holidayName').val().trim(),
             HolidayType: $('#holidayType').val(),
@@ -318,8 +306,11 @@ const HolidayManager = (function() {
             SessionID: $('#sessionId').val(),
             SessionYear: parseInt($('#sessionYear').val()),
             IsActive: $('#isActive').is(':checked'),
-            holidayDateString: holidayDateValue // Send as string parameter
+            holidayDateString: holidayDateValue,
+            deleteAttendanceIfExists: includeDeleteAttendance
         };
+
+        return data;
     };
 
     const bindEvents = function() {
@@ -327,16 +318,14 @@ const HolidayManager = (function() {
         $(elements.form).on('submit', async function(e) {
             e.preventDefault();
 
-            // Disable submit button to prevent double submission
             $(elements.submitBtn).prop('disabled', true);
 
             try {
                 const isValid = await validateForm();
 
                 if (isValid) {
-                    saveHoliday();
+                    saveHoliday(false); // Start with deleteAttendanceIfExists = false
                 } else {
-                    // Re-enable submit button if validation fails
                     $(elements.submitBtn).prop('disabled', false);
                 }
             } catch (error) {
@@ -402,7 +391,6 @@ const HolidayManager = (function() {
                 }
             } catch (error) {
                 console.error("Error checking for duplicates:", error);
-                // If there's an error checking duplicates, we'll let the server-side validation catch it
             }
         }
 
@@ -419,7 +407,6 @@ const HolidayManager = (function() {
         $(elements.submitBtn).text('Save');
         $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
 
-        // Get the next sort order
         getNextSortOrder();
     };
 
@@ -441,19 +428,126 @@ const HolidayManager = (function() {
         });
     };
 
-    const saveHoliday = function() {
-        const holidayData = getFormData();
+    const saveHoliday = function(deleteAttendanceIfExists = false) {
+        const holidayData = getFormData(deleteAttendanceIfExists);
         const isUpdate = holidayData.HolidayID !== '';
 
         if (isUpdate) {
-            performAjaxOperation(apiEndpoints.update, holidayData, 'updating');
+            performAjaxOperationWithAttendanceCheck(apiEndpoints.update, holidayData, 'updating');
         } else {
-            performAjaxOperation(apiEndpoints.create, holidayData, 'creating');
+            performAjaxOperationWithAttendanceCheck(apiEndpoints.create, holidayData, 'creating');
         }
     };
 
+    const performAjaxOperationWithAttendanceCheck = function(url, data, operationType) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                $(elements.submitBtn).prop('disabled', true);
+                $(elements.cancelBtn).prop('disabled', true);
+            },
+            success: function(result) {
+                if (result.attendanceExists) {
+                    // Show confirmation dialog for attendance deletion
+                    let messageText = result.message;
+                    if (result.attendanceCount) {
+                        messageText += `\n\nThis will delete ${result.attendanceCount} attendance record(s).`;
+                    }
+                    messageText += "\n\nThis action cannot be undone.";
+
+                    swal({
+                        title: "Attendance Records Found!",
+                        text: messageText,
+                        icon: "warning",
+                        buttons: {
+                            cancel: {
+                                text: "Cancel",
+                                value: false,
+                                visible: true,
+                                className: "",
+                                closeModal: true,
+                            },
+                            confirm: {
+                                text: "Delete Attendance & Continue",
+                                value: true,
+                                visible: true,
+                                className: "swal-button--danger",
+                                closeModal: true
+                            }
+                        },
+                        dangerMode: true,
+                    })
+                    .then((willDelete) => {
+                        if (willDelete) {
+                            // User confirmed - resend with deleteAttendanceIfExists = true
+                            data.deleteAttendanceIfExists = true;
+                            performAjaxOperation(url, data, operationType);
+                        } else {
+                            // User cancelled - re-enable buttons
+                            $(elements.submitBtn).prop('disabled', false);
+                            $(elements.cancelBtn).prop('disabled', false);
+                        }
+                    });
+                } else if (result.success) {
+                    // Success - normal flow
+                    if (operationType !== 'deleting') {
+                        resetForm();
+                    }
+                    refreshDataTable();
+
+                    Notification.show(result.message, 'success');
+                } else {
+                    // Error
+                    Notification.show(result.message || `Failed while ${operationType} the holiday.`, 'error');
+                    $(elements.submitBtn).prop('disabled', false);
+                    $(elements.cancelBtn).prop('disabled', false);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`${operationType} error:`, error);
+                Notification.show(`An error occurred while ${operationType} the holiday.`, 'error');
+                $(elements.submitBtn).prop('disabled', false);
+                $(elements.cancelBtn).prop('disabled', false);
+            }
+        });
+    };
+
+    const performAjaxOperation = function(url, data, operationType) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                $(elements.submitBtn).prop('disabled', true);
+                $(elements.cancelBtn).prop('disabled', true);
+            },
+            success: function(result) {
+                if (result.success) {
+                    if (operationType !== 'deleting') {
+                        resetForm();
+                    }
+                    refreshDataTable();
+                    Notification.show(result.message, 'success');
+                } else {
+                    Notification.show(result.message || `Failed while ${operationType} the holiday.`, 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`${operationType} error:`, error);
+                Notification.show(`An error occurred while ${operationType} the holiday.`, 'error');
+            },
+            complete: function() {
+                $(elements.submitBtn).prop('disabled', false);
+                $(elements.cancelBtn).prop('disabled', false);
+            }
+        });
+    };
+
     const loadHolidayForEdit = function(id) {
-        // Get holiday data by ID
         $.ajax({
             url: apiEndpoints.getById,
             type: 'GET',
@@ -462,23 +556,18 @@ const HolidayManager = (function() {
                 if (result.success && result.data) {
                     const holidayData = result.data;
 
-                    // Populate the form with holiday data
                     $(elements.idField).val(holidayData.HolidayID);
                     $('#holidayName').val(holidayData.HolidayName);
                     $('#holidayType').val(holidayData.HolidayType);
                     $('#sortOrder').val(holidayData.SortOrder);
                     $('#isActive').prop('checked', holidayData.IsActive);
 
-                    // Set the date - the server now returns it in YYYY-MM-DD format
-                    // which is exactly what HTML date inputs expect
                     if (holidayData.HolidayDate) {
                         $('#holidayDate').val(holidayData.HolidayDate);
                     }
 
-                    // Update UI to indicate edit mode
                     $(elements.submitBtn).text('Update');
 
-                    // Scroll to form for better UX
                     $('html, body').animate({
                         scrollTop: $(elements.form).offset().top - 100
                     }, 500);
@@ -512,53 +601,12 @@ const HolidayManager = (function() {
         performAjaxOperation(apiEndpoints.delete, { id: id }, 'deleting');
     };
 
-    const performAjaxOperation = function(url, data, operationType) {
-        $.ajax({
-            url: url,
-            type: 'POST',
-            data: data,
-            cache: false,
-            beforeSend: function() {
-                // Disable buttons during operation
-                $(elements.submitBtn).prop('disabled', true);
-                $(elements.cancelBtn).prop('disabled', true);
-            },
-            success: function(result) {
-                if (result.success) {
-                    // Reset form if it's a create or update operation
-                    if (operationType !== 'deleting') {
-                        resetForm();
-                    }
-
-                    // Refresh the data table
-                    refreshDataTable();
-
-                    // Show success message
-                    Notification.show(result.message, 'success');
-                } else {
-                    // Show error message
-                    Notification.show(result.message || `Failed while ${operationType} the holiday.`, 'error');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error(`${operationType} error:`, error);
-                Notification.show(`An error occurred while ${operationType} the holiday.`, 'error');
-            },
-            complete: function() {
-                // Re-enable buttons
-                $(elements.submitBtn).prop('disabled', false);
-                $(elements.cancelBtn).prop('disabled', false);
-            }
-        });
-    };
-
     const refreshDataTable = function() {
         if (dataTable) {
             dataTable.ajax.reload();
             return;
         }
 
-        // Fallback if datatable reference is lost
         if ($.fn.DataTable.isDataTable(elements.datatable)) {
             $(elements.datatable).DataTable().ajax.reload();
         }
@@ -576,7 +624,6 @@ const HolidayManager = (function() {
 
 /**
  * Notification Module
- * Handles all notifications in a consistent way
  */
 const Notification = (function() {
     return {
@@ -603,7 +650,6 @@ $(document).ready(function() {
         Notification.show("Session information is missing. Some features may not work correctly.", "warning");
     }
 
-    // Initialize the manager
     HolidayManager.init();
 });
 </script>
@@ -620,7 +666,6 @@ $(document).ready(function() {
         border-color: #dc3545;
     }
 
-    /* DataTable styling */
     div.dataTables_wrapper div.dataTables_filter {
         text-align: right;
     }
@@ -633,7 +678,6 @@ $(document).ready(function() {
         padding-top: 5px;
     }
 
-    /* Make buttons look consistent */
     .dt-button {
         padding: 5px 10px;
         margin-right: 5px;
@@ -647,7 +691,6 @@ $(document).ready(function() {
             background-color: #e8e8e8;
         }
 
-    /* Responsive adjustments */
     @@media (max-width: 767px) {
         div.dataTables_wrapper div.dataTables_filter,
         div.dataTables_wrapper div.dataTables_length,
@@ -658,13 +701,39 @@ $(document).ready(function() {
         }
     }
 
-    /* Holiday type specific styling */
-    .holiday-type-National { background-color: #e3f2fd; }
-    .holiday-type-Religious { background-color: #f3e5f5; }
-    .holiday-type-Cultural { background-color: #e8f5e8; }
-    .holiday-type-Regional { background-color: #fff3e0; }
-    .holiday-type-Academic { background-color: #f1f8e9; }
-    .holiday-type-Festival { background-color: #fce4ec; }
-    .holiday-type-Vacation { background-color: #e0f2f1; }
-    .holiday-type-Other { background-color: #f5f5f5; }
+    .holiday-type-National {
+        background-color: #e3f2fd;
+    }
+
+    .holiday-type-Religious {
+        background-color: #f3e5f5;
+    }
+
+    .holiday-type-Cultural {
+        background-color: #e8f5e8;
+    }
+
+    .holiday-type-Regional {
+        background-color: #fff3e0;
+    }
+
+    .holiday-type-Academic {
+        background-color: #f1f8e9;
+    }
+
+    .holiday-type-Festival {
+        background-color: #fce4ec;
+    }
+
+    .holiday-type-Vacation {
+        background-color: #e0f2f1;
+    }
+
+    .holiday-type-Other {
+        background-color: #f5f5f5;
+    }
+
+    .swal-button--danger {
+        background-color: #dc3545 !important;
+    }
 </style>

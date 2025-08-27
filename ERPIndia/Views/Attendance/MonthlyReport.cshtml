@@ -18,29 +18,28 @@
         width: 100%;
         border-collapse: collapse;
         font-size: 11px;
+        border: 1px solid black;
     }
 
-        
+    .monthly-table tbody tr:nth-child(odd) {
+        background-color: #ffffff;
+    }
 
-        .monthly-table tbody tr:nth-child(odd) {
-            background-color: #ffffff;
-        }
+    .monthly-table tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
 
-        .monthly-table tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
+    .monthly-table tbody tr:hover {
+        background-color: #e3f2fd;
+    }
 
-        .monthly-table tbody tr:hover {
-            background-color: #e3f2fd;
-        }
-
-        .monthly-table tbody td {
-            padding: 4px 2px;
-            border: 1px solid #dee2e6;
-            text-align: center;
-            font-size: 12px;
-            min-width: 25px;
-        }
+    .monthly-table tbody td {
+        padding: 4px 2px;
+        border: 1px solid black !important;
+        text-align: center;
+        font-size: 12px;
+        min-width: 25px;
+    }
 
     /* Day headers */
     .day-header {
@@ -48,6 +47,7 @@
         color: white;
         font-size: 10px;
         padding: 3px 2px;
+        border: 1px solid black !important;
     }
 
     .weekday-header {
@@ -55,6 +55,7 @@
         color: white;
         font-size: 9px;
         padding: 2px 1px;
+        border: 1px solid black !important;
     }
 
     /* Status cell colors */
@@ -90,7 +91,7 @@
     .total-column {
         background-color: #f0f0f0;
         font-weight: bold;
-        border-left: 2px solid #333 !important;
+        border-left: 2px solid black !important;
     }
 
     .attendance-excellent {
@@ -122,6 +123,7 @@
         left: 0;
         background: white;
         z-index: 5;
+        border: 1px solid black !important;
     }
 
     .seq-column {
@@ -130,6 +132,7 @@
         background: white;
         z-index: 5;
         width: 40px;
+        border: 1px solid black !important;
     }
 
     /* Summary cards */
@@ -215,6 +218,7 @@
             font-size: 9px;
         }
     }
+
     /* Button Styling */
     .search-button {
         background: linear-gradient(to bottom, #1c79eb, #2c78bf, #155ab5);
@@ -232,7 +236,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-
     /* Force header styling */
     .monthly-table thead th {
         background: linear-gradient(to bottom, #f0f0f0, #e0e0e0, #d0d0d0);
@@ -244,7 +247,7 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        border: 1px solid #999 !important;
+        border: 1px solid black !important;
     }
 
         /* Override any inline styles for headers */
@@ -252,6 +255,7 @@
         .monthly-table thead th.weekday-header {
             background-color: #D3D3D3 !important;
             color: #000000 !important;
+            border: 1px solid black !important;
         }
 
         /* Special styling for Sunday/Holiday date headers */
@@ -259,6 +263,7 @@
             background-color: #FFFF00 !important;
             color: #000000 !important;
             font-weight: bold !important;
+            border: 1px solid black !important;
         }
 
     /* Summary row */
@@ -272,8 +277,9 @@
             background-color: #D3D3D3 !important;
             color: #000000 !important;
             font-weight: bold !important;
+            border: 1px solid black !important;
         }
-  
+
     .monthly thead th {
         background: linear-gradient(to bottom, #f0f0f0, #e0e0e0, #d0d0d0);
         color: black !important;
@@ -284,37 +290,52 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        border: 1px solid #999 !important;
+        border: 1px solid black !important;
     }
+
     /* Status cell colors - updated for colored text on white background */
     .status-p {
         background-color: white;
         color: #008000;
         font-weight: bold;
+        border: 1px solid black !important;
     }
 
     .status-a {
         background-color: white;
         color: #FF0000;
         font-weight: bold;
+        border: 1px solid black !important;
     }
 
     .status-l {
         background-color: white;
         color: #FF6600;
         font-weight: bold;
+        border: 1px solid black !important;
     }
 
     .status-hd {
         background-color: white;
         color: #0000FF;
         font-weight: bold;
+        border: 1px solid black !important;
     }
 
     .status-su, .status-h {
         background-color: white;
         color: #FFB300;
         font-weight: bold;
+        border: 1px solid black !important;
+    }
+
+    /* Additional table row borders */
+    .monthly-table tbody tr {
+        border: 1px solid black;
+    }
+
+    .monthly-table thead tr {
+        border: 1px solid black;
     }
 </style>
 
@@ -763,8 +784,12 @@ $(document).ready(function() {
                             } else {
                                 cellStyle = 'style="background-color: white;"';
                             }
-
-                            bodyHtml += '<td ' + cellStyle + '>' + (status || '') + '</td>';
+                            if (status == 'HD') {
+                                bodyHtml += '<td ' + cellStyle + '>H</td>';
+                            }
+                            else {
+                                bodyHtml += '<td ' + cellStyle + '>' + (status || '') + '</td>';
+                            }
                         });
                     }
 

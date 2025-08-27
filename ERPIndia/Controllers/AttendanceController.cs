@@ -53,7 +53,59 @@ namespace ERPIndia.Controllers
 
             return View(model);
         }
+        public class AttendanceValidationResult
+        {
+            public bool IsValid { get; set; }
+            public List<string> Messages { get; set; }
+        }
+        private AttendanceValidationResult ValidateAttendanceDate(DateTime attendanceDate)
+        {
+            var result = new AttendanceValidationResult { IsValid = true, Messages = new List<string>() };
 
+            // Check if date is in future
+            if (attendanceDate.Date > DateTime.Today)
+            {
+                result.IsValid = false;
+                result.Messages.Add("Cannot mark attendance for future dates");
+            }
+
+            // Check if Sunday
+            if (attendanceDate.DayOfWeek == DayOfWeek.Sunday)
+            {
+                result.IsValid = false;
+                result.Messages.Add("Cannot mark attendance on Sunday");
+            }
+
+            // Check if holiday
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+                string query = @"
+            SELECT HolidayName 
+            FROM HolidayCalendar 
+            WHERE HolidayDate = @Date 
+                AND IsDeleted = 0 
+                AND IsActive = 1
+                AND TenantID = @TenantID
+                AND SessionID = @SessionID";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Date", attendanceDate.Date);
+                    cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                    cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                    var holidayName = cmd.ExecuteScalar()?.ToString();
+                    if (!string.IsNullOrEmpty(holidayName))
+                    {
+                        result.IsValid = false;
+                        result.Messages.Add($"Cannot mark attendance on holiday: {holidayName}");
+                    }
+                }
+            }
+
+            return result;
+        }
         public ActionResult DailyAttendance()
         {
             var classesResult = _dropdownController.GetClasses();
@@ -1295,6 +1347,19 @@ WHERE sa.AttendanceDate = @AttendanceDate
         {
             try
             {
+                // Server-side validation
+                var validation = ValidateAttendanceDate(attendanceDate);
+                if (!validation.IsValid)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        validationError = true,
+                        messages = validation.Messages,
+                        message = string.Join(". ", validation.Messages)
+                    });
+                }
+
                 var students = GetStudentsWithAttendanceFromDB(classId, sectionId, attendanceDate);
                 var config = GetAttendanceConfigFromDB(classId, sectionId);
                 var isHoliday = CheckIfHoliday(attendanceDate);
@@ -1313,7 +1378,6 @@ WHERE sa.AttendanceDate = @AttendanceDate
                 return Json(new { success = false, message = "Error loading data: " + ex.Message });
             }
         }
-
         // Save attendance
         [HttpPost]
         public JsonResult SaveAttendance()
@@ -1326,6 +1390,18 @@ WHERE sa.AttendanceDate = @AttendanceDate
                 {
                     var json = reader.ReadToEnd();
                     var request = JsonConvert.DeserializeObject<SaveAttendanceRequest>(json);
+
+                    // Server-side validation
+                    var validation = ValidateAttendanceDate(request.AttendanceDate);
+                    if (!validation.IsValid)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            validationError = true,
+                            message = string.Join(". ", validation.Messages)
+                        });
+                    }
 
                     if (request == null || request.Attendance == null || !request.Attendance.Any())
                     {
@@ -1384,7 +1460,53 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
             return time;
         }
+        [HttpGet]
+        public JsonResult GetHolidaysForValidation()
+        {
+            try
+            {
+                var holidays = new List<object>();
 
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    string query = @"
+                SELECT 
+                    HolidayDate,
+                    HolidayName
+                FROM HolidayCalendar
+                WHERE IsDeleted = 0
+                    AND IsActive = 1
+                    AND TenantID = @TenantID
+                    AND SessionID = @SessionID
+                ORDER BY HolidayDate";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                        cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                holidays.Add(new
+                                {
+                                    date = Convert.ToDateTime(reader["HolidayDate"]).ToString("yyyy-MM-dd"),
+                                    name = reader["HolidayName"].ToString()
+                                });
+                            }
+                        }
+                    }
+                }
+
+                return Json(new { success = true, holidays = holidays }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
         // Get monthly attendance report data - FIXED VERSION
         [HttpPost]
     

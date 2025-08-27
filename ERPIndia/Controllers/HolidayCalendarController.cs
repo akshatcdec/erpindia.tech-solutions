@@ -29,6 +29,8 @@ namespace ERPIndia.Controllers
 
     public class HolidayCalendarController : BaseController
     {
+        string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
         public ActionResult ManageHolidays()
         {
             // Retrieve values from session
@@ -41,7 +43,7 @@ namespace ERPIndia.Controllers
 
             return View();
         }
-
+       
         [HttpPost]
         public JsonResult GetAllHolidays(string sessionId, int sessionYear, bool checkDuplicate = false, string holidayName = null, string holidayDate = null)
         {
@@ -64,8 +66,7 @@ namespace ERPIndia.Controllers
                 }
 
                 // Connection string from Web.config
-                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-
+               
                 using (var connection = new SqlConnection(connectionString))
                 {
                     // If we're just checking for duplicates, use a simpler query

@@ -570,19 +570,42 @@ $(document).ready(function() {
     var currentSectionId = '';
     var currentDate = '';
     var studentsData = [];
+    var holidayDates = {};
     var defaultConfig = {
         DefaultTimeIn: "8:30 AM",
-        DefaultTimeOut: "2:45 PM"  // Default fallback values
+        DefaultTimeOut: "2:45 PM"
     };
     var originalAttendance = {};
     var modifiedAttendance = {};
-    var flatpickrInstances = {}; // Store Flatpickr instances for cleanup
+    var flatpickrInstances = {};
+
+    // Load holidays on page load
+    loadHolidays();
+
+    // Load holidays from database
+    function loadHolidays() {
+        $.ajax({
+            url: '@Url.Action("GetHolidaysForValidation", "Attendance")',
+            type: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    holidayDates = {};
+                    response.holidays.forEach(function(holiday) {
+                        holidayDates[holiday.date] = holiday.name;
+                    });
+                    console.log('Holidays loaded:', holidayDates);
+                }
+            },
+            error: function() {
+                console.error('Failed to load holidays');
+            }
+        });
+    }
 
     // Time conversion helper functions
     function convertTo12Hour(time24) {
         if (!time24) return '08:30 AM';
 
-        // Handle if already in 12-hour format
         if (time24.includes('AM') || time24.includes('PM')) {
             return time24;
         }
@@ -604,15 +627,12 @@ $(document).ready(function() {
     function convertTo24Hour(time12) {
         if (!time12) return '08:30';
 
-        // Handle if already in 24-hour format
         if (!time12.includes('AM') && !time12.includes('PM')) {
             return time12;
         }
 
-        // Clean up the input
         time12 = time12.trim();
 
-        // Split time and modifier (AM/PM)
         var parts = time12.split(' ');
         if (parts.length !== 2) {
             console.error('Invalid time format:', time12);
@@ -631,19 +651,61 @@ $(document).ready(function() {
         var hours = parseInt(timeParts[0]);
         var minutes = timeParts[1];
 
-        // Convert to 24-hour format
         if (modifier === 'PM' && hours !== 12) {
             hours = hours + 12;
         } else if (modifier === 'AM' && hours === 12) {
             hours = 0;
         }
 
-        // Ensure two-digit format
         hours = hours.toString().padStart(2, '0');
 
         var result = hours + ':' + minutes;
         console.log('Converted', time12, 'to', result);
         return result;
+    }
+
+    // Complete date validation function
+    function validateDate(dateString) {
+        var errors = [];
+        var warnings = [];
+
+        if (!dateString) {
+            errors.push('Please select a date');
+            return { isValid: false, errors: errors, warnings: warnings };
+        }
+
+        var selectedDate = new Date(dateString + 'T00:00:00');
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        selectedDate.setHours(0, 0, 0, 0);
+
+        // Check future date
+        if (selectedDate > today) {
+            errors.push('Cannot mark attendance for future dates');
+        }
+
+        // Check Sunday
+        if (selectedDate.getDay() === 0) {
+            errors.push('Cannot mark attendance on Sunday');
+        }
+
+        // Check holidays from database
+        if (holidayDates[dateString]) {
+            errors.push('Cannot mark attendance on holiday: ' + holidayDates[dateString]);
+        }
+
+        return {
+            isValid: errors.length === 0,
+            errors: errors,
+            warnings: warnings
+        };
+    }
+
+    // Get day name from date
+    function getDayName(dateString) {
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var date = new Date(dateString + 'T00:00:00');
+        return days[date.getDay()];
     }
 
     // Destroy all Flatpickr instances
@@ -658,26 +720,22 @@ $(document).ready(function() {
 
     // Initialize Flatpickr time pickers
     function initializeTimePickers() {
-        // Destroy existing instances first
         destroyAllFlatpickrs();
 
-        // Initialize time-in pickers
         $('.time-in').each(function() {
             var $this = $(this);
             var currentValue = $this.val() || defaultConfig.DefaultTimeIn || '8:30 AM';
             var studentId = $this.data('studentid');
             var instanceKey = 'timein_' + studentId;
 
-            // Ensure data-time24 is set initially
             if (!$this.attr('data-time24')) {
                 $this.attr('data-time24', convertTo24Hour(currentValue));
             }
 
-            // Create Flatpickr instance
             flatpickrInstances[instanceKey] = flatpickr($this[0], {
                 enableTime: true,
                 noCalendar: true,
-                dateFormat: "h:i K",  // 12-hour format with AM/PM
+                dateFormat: "h:i K",
                 time_24hr: false,
                 defaultDate: currentValue,
                 minuteIncrement: 15,
@@ -698,23 +756,20 @@ $(document).ready(function() {
             });
         });
 
-        // Initialize time-out pickers
         $('.time-out').each(function() {
             var $this = $(this);
             var currentValue = $this.val() || defaultConfig.DefaultTimeOut || '2:45 PM';
             var studentId = $this.data('studentid');
             var instanceKey = 'timeout_' + studentId;
 
-            // Ensure data-time24 is set initially
             if (!$this.attr('data-time24')) {
                 $this.attr('data-time24', convertTo24Hour(currentValue));
             }
 
-            // Create Flatpickr instance
             flatpickrInstances[instanceKey] = flatpickr($this[0], {
                 enableTime: true,
                 noCalendar: true,
-                dateFormat: "h:i K",  // 12-hour format with AM/PM
+                dateFormat: "h:i K",
                 time_24hr: false,
                 defaultDate: currentValue,
                 minuteIncrement: 15,
@@ -774,65 +829,55 @@ $(document).ready(function() {
         $('#spinnerOverlay').hide();
     }
 
-    // Configuration for restricted days
-    var restrictedDays = {
-        sunday: true,      // Set to true to restrict Sunday
-        saturday: false,   // Set to true to restrict Saturday as well
-        autoAdjust: true  // Automatically adjust to next valid day
-    };
+    // Date change event handler with validation - ONLY SHOW TOAST
+    // Date change event handler with validation - ONLY SHOW TOAST
+    $('#attendanceDate').change(function () {
+        var selectedDate = $(this).val();
 
-    // Get next valid date from a restricted day
-    function getNextValidDate(dateString) {
-        var date = new Date(dateString);
-        var dayOfWeek = date.getDay();
+        // Remove any existing validation messages
+        $('#dateValidationMsg').remove();
 
-        // If Sunday and restricted, move to Monday
-        if (dayOfWeek === 0 && restrictedDays.sunday) {
-            date.setDate(date.getDate() + 1);
-        }
-        // If Saturday and restricted, move to Monday
-        else if (dayOfWeek === 6 && restrictedDays.saturday) {
-            date.setDate(date.getDate() + 2);
+        if (!selectedDate) {
+            $(this).removeClass('border-danger');
+            $('#btnSearch').prop('disabled', false);
+            return;
         }
 
-        // Format date as YYYY-MM-DD
-        var year = date.getFullYear();
-        var month = String(date.getMonth() + 1).padStart(2, '0');
-        var day = String(date.getDate()).padStart(2, '0');
+        var validation = validateDate(selectedDate);
 
-        return year + '-' + month + '-' + day;
-    }
+        if (!validation.isValid) {
+            // Add visual indicator to date field
+            $(this).addClass('border-danger');
 
-    // Check if date is a restricted day
-    function isRestrictedDay(dateString) {
-        var date = new Date(dateString);
-        var dayOfWeek = date.getDay();
+            // Just disable search button - don't change text
+            $('#btnSearch').hide();
 
-        if (restrictedDays.sunday && dayOfWeek === 0) {
-            return { restricted: true, dayName: 'Sunday' };
+            // ONLY show toast - no duplicate message
+            showToast(validation.errors.join('. '), 'error', 5000);
+
+            // Hide attendance container if visible
+            $('#attendanceContainer').hide();
+            if (dataTable) {
+                dataTable.destroy();
+                dataTable = null;
+            }
+        } else {
+            // Valid date - clear all validation indicators
+            $(this).removeClass('border-danger');
+
+            // Enable search button
+            $('#btnSearch').show();
+
+            console.log('Valid date selected:', getDayName(selectedDate));
         }
-        if (restrictedDays.saturday && dayOfWeek === 6) {
-            return { restricted: true, dayName: 'Saturday' };
-        }
+    });
 
-        return { restricted: false, dayName: null };
-    }
-
-    // Get day name from date
-    function getDayName(dateString) {
-        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        var date = new Date(dateString);
-        return days[date.getDay()];
-    }
-
-    // Search button click
-    $('#btnSearch').click(function() {
+    // Search button click with validation
+    // Search button click with validation
+    $('#btnSearch').click(function () {
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
         var date = $('#attendanceDate').val();
-        currentClassId = classId;
-        currentSectionId = sectionId;
-        currentDate = date;
 
         var errors = [];
         if (!classId) errors.push('Please select a class');
@@ -844,51 +889,20 @@ $(document).ready(function() {
             return;
         }
 
-        // Check if selected date is a restricted day
-        var restrictionCheck = isRestrictedDay(date);
-        if (restrictionCheck.restricted) {
-            if (restrictedDays.autoAdjust) {
-                // Auto-adjust to next valid date
-                var nextValidDate = getNextValidDate(date);
-                var nextDayName = getDayName(nextValidDate);
-
-                showToast('Cannot mark attendance for ' + restrictionCheck.dayName +
-                         '! Automatically adjusted to ' + nextDayName + '.', 'info', 5000);
-
-                // Set the new date
-                $('#attendanceDate').val(nextValidDate);
-                currentDate = nextValidDate;
-
-                // Trigger change event to update validation
-                $('#attendanceDate').trigger('change');
-
-                // Load data for the adjusted date
-                setTimeout(function() {
-                    loadAttendanceData(classId, sectionId, nextValidDate);
-                }, 500);
-            } else {
-                // Don't auto-adjust, just show error
-                showToast('Attendance cannot be marked for ' + restrictionCheck.dayName + '! ' +
-                         restrictionCheck.dayName + ' is a holiday. Please select a working day.', 'error', 5000);
-
-                // Hide attendance container if it was visible
-                $('#attendanceContainer').hide();
-                if (dataTable) {
-                    dataTable.destroy();
-                    dataTable = null;
-                }
-
-                return; // Don't proceed with loading students
-            }
-        } else {
-            // Valid date - proceed normally
-            var dayName = getDayName(date);
-            console.log('Selected day:', dayName);
-            loadAttendanceData(classId, sectionId, date);
+        var dateValidation = validateDate(date);
+        if (!dateValidation.isValid) {
+            showToast(dateValidation.errors.join('. '), 'error', 5000);
+            return;
         }
+
+        currentClassId = classId;
+        currentSectionId = sectionId;
+        currentDate = date;
+
+        loadAttendanceData(classId, sectionId, date);
     });
 
-    // Load attendance data
+    // Load attendance data with server validation handling
     function loadAttendanceData(classId, sectionId, date) {
         showSpinner();
 
@@ -906,18 +920,14 @@ $(document).ready(function() {
                 if (response.success) {
                     studentsData = response.students;
 
-                    // IMPORTANT: Store the config from server response
                     if (response.config) {
                         defaultConfig = response.config;
                         console.log('Config received from server:', defaultConfig);
-                        console.log('Default TimeIn:', defaultConfig.DefaultTimeIn);
-                        console.log('Default TimeOut:', defaultConfig.DefaultTimeOut);
                     }
 
                     originalAttendance = {};
                     modifiedAttendance = {};
 
-                    // Store original attendance
                     if (response.existingAttendance) {
                         $.each(response.existingAttendance, function(i, att) {
                             originalAttendance[att.StudentID] = {
@@ -934,10 +944,19 @@ $(document).ready(function() {
                     showToast('Data loaded successfully! ' + response.students.length + ' students found', 'success');
 
                     if (response.isHoliday) {
-                        showToast('Note: Selected date is a holiday', 'info');
+                        showToast('Note: Selected date is marked as a holiday in the system', 'warning');
                     }
                 } else {
-                    showToast(response.message || 'Failed to load data', 'error');
+                    // Handle validation errors from server - ONLY show toast
+                    if (response.validationError) {
+                        showToast(response.message, 'error', 5000);
+                        $('#attendanceContainer').hide();
+
+                        // Also update the date field to show it's invalid
+                        $('#attendanceDate').addClass('border-danger');
+                    } else {
+                        showToast(response.message || 'Failed to load data', 'error');
+                    }
                 }
             },
             error: function(xhr, status, error) {
@@ -960,29 +979,21 @@ $(document).ready(function() {
             return;
         }
 
-        // Update student count
         $('#studentCount').text(data.students.length + ' students');
-
-        // Update class info
         $('#classInfo').text('Student List');
 
-        // Build table body
         var bodyHtml = '';
         $.each(data.students, function(index, student) {
             var existingAtt = originalAttendance[student.StudentID] || {};
             var status = existingAtt.Status || student.Status || 'Present';
 
-            // FIXED: Use config defaults properly
-            // Convert config times to 24-hour format
             var defaultTimeIn24 = convertTo24Hour(defaultConfig.DefaultTimeIn || '8:30 AM');
             var defaultTimeOut24 = convertTo24Hour(defaultConfig.DefaultTimeOut || '2:45 PM');
 
-            // Get time values with proper fallback to config defaults
             var timeIn = existingAtt.TimeIn || student.TimeIn || defaultTimeIn24;
             var timeOut = existingAtt.TimeOut || student.TimeOut || defaultTimeOut24;
             var note = existingAtt.Note || student.Note || '';
 
-            // Ensure times are in proper 24-hour format (if they're not already)
             if (timeIn && (timeIn.includes('AM') || timeIn.includes('PM'))) {
                 timeIn = convertTo24Hour(timeIn);
             }
@@ -990,14 +1001,8 @@ $(document).ready(function() {
                 timeOut = convertTo24Hour(timeOut);
             }
 
-            // Convert times to 12-hour format for display
             var timeIn12 = convertTo12Hour(timeIn);
             var timeOut12 = convertTo12Hour(timeOut);
-
-            console.log('Student:', student.StudentName,
-                       'TimeIn:', timeIn, '->', timeIn12,
-                       'TimeOut:', timeOut, '->', timeOut12,
-                       'Using Config Defaults:', defaultConfig.DefaultTimeIn, defaultConfig.DefaultTimeOut);
 
             bodyHtml += '<tr data-studentid="' + student.StudentID + '">' +
                      '<td class="text-center"><input type="checkbox" class="student-checkbox row-checkbox"></td>' +
@@ -1036,32 +1041,22 @@ $(document).ready(function() {
         });
 
         $('#attendanceTableBody').html(bodyHtml);
-
-        // Initialize DataTable
         initializeDataTable();
     }
 
     // Initialize DataTable
     function initializeDataTable() {
-        // Destroy existing DataTable if exists
         if (dataTable) {
             dataTable.destroy();
         }
 
-        // Calculate which columns should be exportable (exclude checkbox column)
-        var exportColumns = [];
-        for (var i = 1; i < $('#tableHeader th').length; i++) {
-            exportColumns.push(i);
-        }
-
-        // Initialize new DataTable
         dataTable = $('#attendanceDataTable').DataTable({
             "paging": false,
             "info": false,
-            "pageLength": -1, // Always show all
-            "order": [[1, "asc"]], // Order by SR
+            "pageLength": -1,
+            "order": [[1, "asc"]],
             "scrollX": true,
-            "lengthChange": false, // hides the length menu dropdown
+            "lengthChange": false,
             "responsive": false,
             "dom": 'frtip',
             "language": {
@@ -1078,33 +1073,28 @@ $(document).ready(function() {
             "columnDefs": [
                 {
                     "orderable": false,
-                    "targets": [0] // Disable ordering for checkbox column
+                    "targets": [0]
                 }
             ],
             "drawCallback": function(settings) {
-                // Re-bind events after DataTable redraw
                 bindAttendanceEvents();
                 updateAttendanceSummary();
             }
         });
 
-        // Initial binding
         bindAttendanceEvents();
         updateAttendanceSummary();
     }
 
     // Bind attendance events
     function bindAttendanceEvents() {
-        // Remove ALL previous event handlers to prevent duplicates
         $('.status-dropdown').off();
         $('.note-input').off();
         $('#selectAll').off();
         $('.row-checkbox').off();
 
-        // Initialize time pickers with Flatpickr
         initializeTimePickers();
 
-        // Status change
         $('.status-dropdown').on('change', function() {
             var $this = $(this);
             updateStatusColor($this);
@@ -1112,12 +1102,10 @@ $(document).ready(function() {
             updateAttendanceSummary();
         });
 
-        // Note changes
         $('.note-input').on('change input', function() {
             trackModification($(this));
         });
 
-        // Select all checkbox
         $('#selectAll').on('change', function() {
             var isChecked = $(this).prop('checked');
             if (dataTable) {
@@ -1130,7 +1118,6 @@ $(document).ready(function() {
             }
         });
 
-        // Individual row checkbox
         $('.row-checkbox').on('change', function() {
             var $row = $(this).closest('tr');
             if ($(this).is(':checked')) {
@@ -1139,13 +1126,11 @@ $(document).ready(function() {
                 $row.removeClass('selected-row');
             }
 
-            // Update select all checkbox
             var totalCheckboxes = $('.row-checkbox').length;
             var checkedCheckboxes = $('.row-checkbox:checked').length;
             $('#selectAll').prop('checked', totalCheckboxes === checkedCheckboxes);
         });
 
-        // Apply initial status colors
         $('.status-dropdown').each(function() {
             updateStatusColor($(this));
         });
@@ -1189,14 +1174,12 @@ $(document).ready(function() {
             return;
         }
 
-        // Get current time values - prioritize data-time24 attribute
         var $timeIn = $row.find('.time-in');
         var $timeOut = $row.find('.time-out');
 
         var timeInValue = $timeIn.attr('data-time24');
         var timeOutValue = $timeOut.attr('data-time24');
 
-        // If data-time24 not set, convert from display value
         if (!timeInValue || timeInValue === 'undefined') {
             var timeIn12 = $timeIn.val();
             if (timeIn12 && (timeIn12.includes('AM') || timeIn12.includes('PM'))) {
@@ -1224,7 +1207,6 @@ $(document).ready(function() {
             Note: $row.find('.note-input').val()
         };
 
-        // Use config defaults for original data comparison
         var originalData = originalAttendance[studentId] || {
             Status: 'Present',
             TimeIn: convertTo24Hour(defaultConfig.DefaultTimeIn || '08:30 AM'),
@@ -1236,7 +1218,6 @@ $(document).ready(function() {
         console.log('Current data:', currentData);
         console.log('Original data:', originalData);
 
-        // Check if data has changed
         var hasChanged = JSON.stringify(currentData) !== JSON.stringify(originalData);
 
         if (hasChanged) {
@@ -1248,9 +1229,6 @@ $(document).ready(function() {
             $row.removeClass('modified-row');
             console.log('Data unchanged - removed modification');
         }
-
-        // Enable/disable save button
-        //$('#btnSave').prop('disabled', Object.keys(modifiedAttendance).length === 0);
     }
 
     // Update attendance summary
@@ -1272,8 +1250,8 @@ $(document).ready(function() {
         }
 
         $('#studentCount').text(totalCount + ' students');
-        $('#presentCount').text(presentCount + ' present');
-        $('#absentCount').text(absentCount + ' absent');
+        $('#presentCount').text(presentCount + ' present').show();
+        $('#absentCount').text(absentCount + ' absent').show();
     }
 
     // Apply batch status
@@ -1306,14 +1284,19 @@ $(document).ready(function() {
         }
     };
 
-    // Save attendance
+    // Save attendance with validation
     $('#btnSave').click(function() {
+        var dateValidation = validateDate(currentDate);
+        if (!dateValidation.isValid) {
+            showToast('Cannot save: ' + dateValidation.errors.join('. '), 'error');
+            return;
+        }
+
         if (!confirm('Do you want to save attendance for all students?')) {
             return;
         }
 
         var attendanceData = [];
-        var debugData = []; // For debugging
 
         if (dataTable) {
             dataTable.$('tbody tr').each(function() {
@@ -1322,27 +1305,16 @@ $(document).ready(function() {
                 var $timeIn = $row.find('.time-in');
                 var $timeOut = $row.find('.time-out');
 
-                // Debug: Log current state
-                console.log('=====================================');
-                console.log('Processing Student ID:', studentId);
-                console.log('Time-IN element value:', $timeIn.val());
-                console.log('Time-IN data-time24:', $timeIn.attr('data-time24'));
-                console.log('Time-OUT element value:', $timeOut.val());
-                console.log('Time-OUT data-time24:', $timeOut.attr('data-time24'));
-
-                // Method 1: Try to get from data-time24 attribute
                 var timeInValue = $timeIn.attr('data-time24');
                 var timeOutValue = $timeOut.attr('data-time24');
 
-                // Method 2: If no data-time24, get current display value and convert
                 if (!timeInValue || timeInValue === 'undefined') {
                     var timeIn12 = $timeIn.val();
-                    console.log('Converting Time-IN from display:', timeIn12);
                     if (timeIn12) {
                         if (timeIn12.includes('AM') || timeIn12.includes('PM')) {
                             timeInValue = convertTo24Hour(timeIn12);
                         } else {
-                            timeInValue = timeIn12; // Already in 24-hour format
+                            timeInValue = timeIn12;
                         }
                     } else {
                         timeInValue = convertTo24Hour(defaultConfig.DefaultTimeIn || '08:30 AM');
@@ -1351,21 +1323,16 @@ $(document).ready(function() {
 
                 if (!timeOutValue || timeOutValue === 'undefined') {
                     var timeOut12 = $timeOut.val();
-                    console.log('Converting Time-OUT from display:', timeOut12);
                     if (timeOut12) {
                         if (timeOut12.includes('AM') || timeOut12.includes('PM')) {
                             timeOutValue = convertTo24Hour(timeOut12);
                         } else {
-                            timeOutValue = timeOut12; // Already in 24-hour format
+                            timeOutValue = timeOut12;
                         }
                     } else {
                         timeOutValue = convertTo24Hour(defaultConfig.DefaultTimeOut || '2:45 PM');
                     }
                 }
-
-                console.log('FINAL Time-IN to save:', timeInValue);
-                console.log('FINAL Time-OUT to save:', timeOutValue);
-                console.log('=====================================');
 
                 var attendanceRecord = {
                     StudentID: studentId,
@@ -1376,13 +1343,6 @@ $(document).ready(function() {
                 };
 
                 attendanceData.push(attendanceRecord);
-
-                // Store for final debug output
-                debugData.push({
-                    StudentID: studentId,
-                    TimeIn: timeInValue,
-                    TimeOut: timeOutValue
-                });
             });
         }
 
@@ -1390,18 +1350,6 @@ $(document).ready(function() {
             showToast('No data to save', 'error');
             return;
         }
-
-        // Final debug output - what we're sending to server
-        console.log('===== FINAL DATA BEING SENT TO SERVER =====');
-        console.log('Total Records:', attendanceData.length);
-        console.table(debugData);
-        console.log('Full Payload:', JSON.stringify({
-            Attendance: attendanceData,
-            ClassId: currentClassId,
-            SectionId: currentSectionId,
-            AttendanceDate: currentDate
-        }, null, 2));
-        console.log('============================================');
 
         showSpinner();
         $('#btnSave').prop('disabled', true)
@@ -1422,14 +1370,15 @@ $(document).ready(function() {
 
                 if (response.success) {
                     showToast(response.message || 'Attendance saved successfully!', 'success');
-
-                    // Reload the page after 1 second
                     setTimeout(function() {
                         location.reload();
                     }, 1000);
-
                 } else {
-                    showToast(response.message || 'Failed to save', 'error');
+                    if (response.validationError) {
+                        showToast('Validation Error: ' + response.message, 'error', 5000);
+                    } else {
+                        showToast(response.message || 'Failed to save', 'error');
+                    }
                     $('#btnSave').html('<i class="fas fa-save me-2"></i>Save Attendance')
                         .prop('disabled', false);
                 }
@@ -1445,7 +1394,7 @@ $(document).ready(function() {
         });
     });
 
-    // Export to Excel using DataTable
+    // Export to Excel
     $('#btnExportData').click(function() {
         if (dataTable) {
             $('.dt-button.buttons-excel').click();
@@ -1454,86 +1403,28 @@ $(document).ready(function() {
         }
     });
 
-    // Hide container when filters change and cleanup Flatpickr instances
-    $('#ddlClass, #ddlSection, #attendanceDate').change(function() {
+    // Hide container when filters change
+    $('#ddlClass, #ddlSection').change(function() {
         $('#attendanceContainer').hide();
         if (dataTable) {
             dataTable.destroy();
             dataTable = null;
         }
-        destroyAllFlatpickrs(); // Clean up Flatpickr instances
+        destroyAllFlatpickrs();
         modifiedAttendance = {};
         originalAttendance = {};
     });
 
-    // Add date change validation
-    $('#attendanceDate').change(function() {
-        var selectedDate = $(this).val();
+    // Set date constraints on page load
+    var today = new Date();
+    var todayString = today.toISOString().split('T')[0];
+    $('#attendanceDate').attr('max', todayString);
 
-        if (selectedDate) {
-            var restrictionCheck = isRestrictedDay(selectedDate);
-
-            if (restrictionCheck.restricted) {
-                // Show validation message
-                $('#dateValidationMsg').html(
-                    '<i class="fas fa-exclamation-circle"></i> ' +
-                    restrictionCheck.dayName + ' is a holiday. Please select a working day (Monday to Friday).'
-                ).addClass('show');
-
-                // Show toast notification
-                showToast('Warning: ' + restrictionCheck.dayName + ' is not allowed for attendance!', 'error', 5000);
-
-                // Add red border to indicate invalid selection
-                $(this).addClass('border-danger');
-
-                // Disable search button and change its appearance
-                $('#btnSearch').prop('disabled', true)
-                              .removeClass('search-button')
-                              .addClass('btn-secondary')
-                              .html('<i class="fas fa-ban me-2"></i>Cannot Search (' + restrictionCheck.dayName + ' Selected)');
-            } else {
-                // Valid date selected
-                var dayName = getDayName(selectedDate);
-                console.log('Valid day selected:', dayName);
-
-                // Hide validation message
-                $('#dateValidationMsg').removeClass('show');
-
-                // Remove red border if date is valid
-                $(this).removeClass('border-danger');
-
-                // Enable search button and restore its appearance
-                $('#btnSearch').prop('disabled', false)
-                              .removeClass('btn-secondary')
-                              .addClass('search-button')
-                              .html('<i class="fas fa-search me-2"></i>Search');
-            }
-        } else {
-            // No date selected
-            $('#dateValidationMsg').removeClass('show');
-            $(this).removeClass('border-danger');
-            $('#btnSearch').prop('disabled', false)
-                          .removeClass('btn-secondary')
-                          .addClass('search-button')
-                          .html('<i class="fas fa-search me-2"></i>Search');
-        }
-    });
-
-    // Check initial date on page load
+    // Trigger validation on initial date
     var initialDate = $('#attendanceDate').val();
     if (initialDate) {
         $('#attendanceDate').trigger('change');
     }
-
-    // Set max date to today and min date (optional)
-    var today = new Date();
-    var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0');
-    var yyyy = today.getFullYear();
-    var todayString = yyyy + '-' + mm + '-' + dd;
-
-    // Set max date to today (can't mark future attendance)
-    $('#attendanceDate').attr('max', todayString);
 
     // Cleanup on page unload
     $(window).on('beforeunload', function() {

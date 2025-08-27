@@ -452,7 +452,6 @@
     <Compile Include="Controllers\ReportController.cs" />
     <Compile Include="Controllers\FeeDefaulterController.cs" />
     <Compile Include="Controllers\IDCardController.cs" />
-    <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="Controllers\DropdownController.cs" />
     <Compile Include="Controllers\DropDownUtilityController.cs" />
     <Compile Include="Controllers\FeeCategoryController.cs" />

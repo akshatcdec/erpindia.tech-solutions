@@ -43,7 +43,7 @@ namespace ERPIndia.Controllers
 
             return View();
         }
-       
+
         [HttpPost]
         public JsonResult GetAllHolidays(string sessionId, int sessionYear, bool checkDuplicate = false, string holidayName = null, string holidayDate = null)
         {
@@ -65,8 +65,6 @@ namespace ERPIndia.Controllers
                     });
                 }
 
-                // Connection string from Web.config
-               
                 using (var connection = new SqlConnection(connectionString))
                 {
                     // If we're just checking for duplicates, use a simpler query
@@ -216,7 +214,6 @@ namespace ERPIndia.Controllers
                     return Json(new { success = false, message = "Invalid holiday ID" }, JsonRequestBehavior.AllowGet);
                 }
 
-                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
                 using (var connection = new SqlConnection(connectionString))
                 {
                     string sql = @"SELECT * FROM HolidayCalendar 
@@ -235,7 +232,6 @@ namespace ERPIndia.Controllers
 
                     if (holidayData != null)
                     {
-                        // Return the date in a format that can be easily parsed by JavaScript
                         var result = new
                         {
                             success = true,
@@ -243,7 +239,7 @@ namespace ERPIndia.Controllers
                             {
                                 HolidayID = holidayData.HolidayID,
                                 HolidayName = holidayData.HolidayName,
-                                HolidayDate = holidayData.HolidayDate.ToString("yyyy-MM-dd"), // HTML date input format
+                                HolidayDate = holidayData.HolidayDate.ToString("yyyy-MM-dd"),
                                 HolidayType = holidayData.HolidayType,
                                 SortOrder = holidayData.SortOrder,
                                 SessionID = holidayData.SessionID,
@@ -284,7 +280,6 @@ namespace ERPIndia.Controllers
                     return Json(new { success = false, message = "Invalid session ID" }, JsonRequestBehavior.AllowGet);
                 }
 
-                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
                 using (var connection = new SqlConnection(connectionString))
                 {
                     string sql = @"SELECT ISNULL(MAX(SortOrder), 0) + 1 
@@ -353,8 +348,68 @@ namespace ERPIndia.Controllers
             return count > 0;
         }
 
+        private bool IsAttendanceExistsForDate(SqlConnection connection, DateTime holidayDate, Guid sessionId)
+        {
+            string sql = @"SELECT COUNT(*) FROM StudentAttendance 
+                          WHERE AttendanceDate = @AttendanceDate 
+                          AND SessionID = @SessionID
+                          AND TenantID = @TenantID 
+                          AND IsDeleted = 0";
+
+            var parameters = new
+            {
+                AttendanceDate = holidayDate.Date,
+                SessionID = sessionId,
+                TenantID = CurrentTenantID
+            };
+
+            int count = connection.ExecuteScalar<int>(sql, parameters);
+            return count > 0;
+        }
+
+        private int GetAttendanceCountForDate(SqlConnection connection, DateTime holidayDate, Guid sessionId)
+        {
+            string sql = @"SELECT COUNT(*) FROM StudentAttendance 
+                          WHERE AttendanceDate = @AttendanceDate 
+                          AND SessionID = @SessionID
+                          AND TenantID = @TenantID 
+                          AND IsDeleted = 0";
+
+            var parameters = new
+            {
+                AttendanceDate = holidayDate.Date,
+                SessionID = sessionId,
+                TenantID = CurrentTenantID
+            };
+
+            return connection.ExecuteScalar<int>(sql, parameters);
+        }
+
+        private int DeleteAttendanceForDate(SqlConnection connection, DateTime holidayDate, Guid sessionId)
+        {
+            string sql = @"UPDATE StudentAttendance 
+                          SET IsDeleted = 1,
+                              ModifiedBy = @ModifiedBy,
+                              ModifiedDate = @ModifiedDate
+                          WHERE AttendanceDate = @AttendanceDate 
+                          AND SessionID = @SessionID
+                          AND TenantID = @TenantID 
+                          AND IsDeleted = 0";
+
+            var parameters = new
+            {
+                AttendanceDate = holidayDate.Date,
+                SessionID = sessionId,
+                TenantID = CurrentTenantID,
+                ModifiedBy = CurrentTenantUserID,
+                ModifiedDate = DateTime.Now
+            };
+
+            return connection.Execute(sql, parameters);
+        }
+
         [HttpPost]
-        public JsonResult InsertHoliday(Holiday holidayData, string holidayDateString = null)
+        public JsonResult InsertHoliday(Holiday holidayData, string holidayDateString = null, bool deleteAttendanceIfExists = false)
         {
             try
             {
@@ -380,7 +435,7 @@ namespace ERPIndia.Controllers
                     DateTime parsedDate;
                     if (DateTime.TryParse(holidayDateString, out parsedDate))
                     {
-                        holidayData.HolidayDate = parsedDate.Date; // Ensure time component is removed
+                        holidayData.HolidayDate = parsedDate.Date;
                     }
                     else
                     {
@@ -389,27 +444,47 @@ namespace ERPIndia.Controllers
                 }
                 else
                 {
-                    // Try to use the existing HolidayDate if no string provided
                     if (holidayData.HolidayDate == DateTime.MinValue || holidayData.HolidayDate == default(DateTime))
                     {
                         return Json(new { success = false, message = "Holiday date is required" });
                     }
-                    // Ensure only date part is used
                     holidayData.HolidayDate = holidayData.HolidayDate.Date;
                 }
 
                 // Set tenant and user information
-                holidayData.HolidayID = Guid.NewGuid();  // Generate new ID
+                holidayData.HolidayID = Guid.NewGuid();
                 holidayData.TenantID = CurrentTenantID;
                 holidayData.TenantCode = Utils.ParseInt(CurrentTenantCode);
                 holidayData.CreatedBy = CurrentTenantUserID;
                 holidayData.CreatedDate = DateTime.Now;
                 holidayData.IsDeleted = false;
 
-                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
                 using (var connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
+
+                    // Check for attendance records
+                    int attendanceCount = GetAttendanceCountForDate(connection, holidayData.HolidayDate, holidayData.SessionID);
+
+                    if (attendanceCount > 0)
+                    {
+                        if (!deleteAttendanceIfExists)
+                        {
+                            // Return with a flag indicating attendance exists
+                            return Json(new
+                            {
+                                success = false,
+                                attendanceExists = true,
+                                attendanceCount = attendanceCount,
+                                message = $"Student attendance records ({attendanceCount} records) exist for {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Do you want to delete these attendance records and create the holiday?"
+                            });
+                        }
+                        else
+                        {
+                            // Delete attendance records
+                            int deletedCount = DeleteAttendanceForDate(connection, holidayData.HolidayDate, holidayData.SessionID);
+                        }
+                    }
 
                     // Check for duplicate holiday name in the same session
                     if (IsHolidayNameDuplicate(connection, holidayData))
@@ -424,17 +499,21 @@ namespace ERPIndia.Controllers
                     }
 
                     string sql = @"INSERT INTO HolidayCalendar 
-                                  (HolidayID, SortOrder, HolidayDate, HolidayName, HolidayType, SessionID, TenantID, TenantCode, 
-                                   IsActive, IsDeleted, CreatedBy, CreatedDate) 
-                                  VALUES 
-                                  (@HolidayID, @SortOrder, @HolidayDate, @HolidayName, @HolidayType, @SessionID, @TenantID, @TenantCode, 
-                                   @IsActive, @IsDeleted, @CreatedBy, @CreatedDate)";
+                          (HolidayID, SortOrder, HolidayDate, HolidayName, HolidayType, SessionID, TenantID, TenantCode, 
+                           IsActive, IsDeleted, CreatedBy, CreatedDate) 
+                          VALUES 
+                          (@HolidayID, @SortOrder, @HolidayDate, @HolidayName, @HolidayType, @SessionID, @TenantID, @TenantCode, 
+                           @IsActive, @IsDeleted, @CreatedBy, @CreatedDate)";
 
                     int rowsAffected = connection.Execute(sql, holidayData);
 
                     if (rowsAffected > 0)
                     {
-                        return Json(new { success = true, message = "Holiday created successfully!" });
+                        string successMessage = deleteAttendanceIfExists && attendanceCount > 0
+                            ? $"Holiday created successfully! {attendanceCount} attendance records were deleted."
+                            : "Holiday created successfully!";
+
+                        return Json(new { success = true, message = successMessage });
                     }
                     else
                     {
@@ -449,7 +528,7 @@ namespace ERPIndia.Controllers
         }
 
         [HttpPost]
-        public JsonResult UpdateHoliday(Holiday holidayData, string holidayDateString = null)
+        public JsonResult UpdateHoliday(Holiday holidayData, string holidayDateString = null, bool deleteAttendanceIfExists = false)
         {
             try
             {
@@ -475,7 +554,7 @@ namespace ERPIndia.Controllers
                     DateTime parsedDate;
                     if (DateTime.TryParse(holidayDateString, out parsedDate))
                     {
-                        holidayData.HolidayDate = parsedDate.Date; // Ensure time component is removed
+                        holidayData.HolidayDate = parsedDate.Date;
                     }
                     else
                     {
@@ -484,12 +563,10 @@ namespace ERPIndia.Controllers
                 }
                 else
                 {
-                    // Try to use the existing HolidayDate if no string provided
                     if (holidayData.HolidayDate == DateTime.MinValue || holidayData.HolidayDate == default(DateTime))
                     {
                         return Json(new { success = false, message = "Holiday date is required" });
                     }
-                    // Ensure only date part is used
                     holidayData.HolidayDate = holidayData.HolidayDate.Date;
                 }
 
@@ -498,40 +575,128 @@ namespace ERPIndia.Controllers
                 holidayData.ModifiedBy = CurrentTenantUserID;
                 holidayData.ModifiedDate = DateTime.Now;
 
-                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
                 using (var connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
 
-                    // Check for duplicate holiday name in the same session
-                    if (IsHolidayNameDuplicate(connection, holidayData))
+                    // Get the existing holiday record
+                    string getCurrentHolidaySql = @"SELECT HolidayDate, SessionID FROM HolidayCalendar 
+                                                   WHERE HolidayID = @HolidayID 
+                                                   AND TenantID = @TenantID 
+                                                   AND IsDeleted = 0";
+
+                    var existingHoliday = connection.QueryFirstOrDefault<dynamic>(getCurrentHolidaySql, new
+                    {
+                        HolidayID = holidayData.HolidayID,
+                        TenantID = holidayData.TenantID
+                    });
+
+                    if (existingHoliday == null)
+                    {
+                        return Json(new { success = false, message = "Holiday not found" });
+                    }
+
+                    DateTime existingDate = ((DateTime)existingHoliday.HolidayDate).Date;
+                    Guid sessionId = existingHoliday.SessionID;
+
+                    // Use the session ID from the existing holiday if not provided
+                    if (holidayData.SessionID == Guid.Empty)
+                    {
+                        holidayData.SessionID = sessionId;
+                    }
+
+                    // Check for attendance on the new date
+                    int attendanceCount = GetAttendanceCountForDate(connection, holidayData.HolidayDate, holidayData.SessionID);
+
+                    if (attendanceCount > 0)
+                    {
+                        if (!deleteAttendanceIfExists)
+                        {
+                            string warningMessage = existingDate != holidayData.HolidayDate.Date
+                                ? $"Cannot change holiday to {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Student attendance records ({attendanceCount} records) exist for this date. Do you want to delete these attendance records and update the holiday?"
+                                : $"Student attendance records ({attendanceCount} records) exist for {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Do you want to delete these attendance records and update the holiday?";
+
+                            return Json(new
+                            {
+                                success = false,
+                                attendanceExists = true,
+                                attendanceCount = attendanceCount,
+                                message = warningMessage
+                            });
+                        }
+                        else
+                        {
+                            // Delete attendance records
+                            int deletedCount = DeleteAttendanceForDate(connection, holidayData.HolidayDate, holidayData.SessionID);
+                        }
+                    }
+
+                    // Check for duplicate holiday name
+                    string checkNameSql = @"SELECT COUNT(*) FROM HolidayCalendar 
+                                          WHERE TenantID = @TenantID 
+                                          AND SessionID = @SessionID 
+                                          AND HolidayName = @HolidayName 
+                                          AND IsDeleted = 0
+                                          AND HolidayID != @HolidayID";
+
+                    var nameParams = new
+                    {
+                        holidayData.TenantID,
+                        holidayData.SessionID,
+                        holidayData.HolidayName,
+                        holidayData.HolidayID
+                    };
+
+                    int nameCount = connection.ExecuteScalar<int>(checkNameSql, nameParams);
+                    if (nameCount > 0)
                     {
                         return Json(new { success = false, message = "A holiday with this name already exists for the current session" });
                     }
 
-                    // Check for duplicate holiday date in the same session
-                    if (IsHolidayDateDuplicate(connection, holidayData))
+                    // Check for duplicate holiday date
+                    string checkDateSql = @"SELECT COUNT(*) FROM HolidayCalendar 
+                                          WHERE TenantID = @TenantID 
+                                          AND SessionID = @SessionID 
+                                          AND HolidayDate = @HolidayDate 
+                                          AND IsDeleted = 0
+                                          AND HolidayID != @HolidayID";
+
+                    var dateParams = new
+                    {
+                        holidayData.TenantID,
+                        holidayData.SessionID,
+                        HolidayDate = holidayData.HolidayDate.Date,
+                        holidayData.HolidayID
+                    };
+
+                    int dateCount = connection.ExecuteScalar<int>(checkDateSql, dateParams);
+                    if (dateCount > 0)
                     {
                         return Json(new { success = false, message = "A holiday already exists on this date for the current session" });
                     }
 
-                    string sql = @"UPDATE HolidayCalendar 
-                                  SET HolidayName = @HolidayName, 
-                                      HolidayDate = @HolidayDate,
-                                      HolidayType = @HolidayType,
-                                      SortOrder = @SortOrder, 
-                                      IsActive = @IsActive, 
-                                      ModifiedBy = @ModifiedBy, 
-                                      ModifiedDate = @ModifiedDate 
-                                  WHERE HolidayID = @HolidayID 
-                                  AND TenantID = @TenantID 
-                                  AND IsDeleted = 0";
+                    // Perform the update
+                    string updateSql = @"UPDATE HolidayCalendar 
+                                       SET HolidayName = @HolidayName, 
+                                           HolidayDate = @HolidayDate,
+                                           HolidayType = @HolidayType,
+                                           SortOrder = @SortOrder, 
+                                           IsActive = @IsActive, 
+                                           ModifiedBy = @ModifiedBy, 
+                                           ModifiedDate = @ModifiedDate 
+                                       WHERE HolidayID = @HolidayID 
+                                       AND TenantID = @TenantID 
+                                       AND IsDeleted = 0";
 
-                    int rowsAffected = connection.Execute(sql, holidayData);
+                    int rowsAffected = connection.Execute(updateSql, holidayData);
 
                     if (rowsAffected > 0)
                     {
-                        return Json(new { success = true, message = "Holiday updated successfully!" });
+                        string successMessage = deleteAttendanceIfExists && attendanceCount > 0
+                            ? $"Holiday updated successfully! {attendanceCount} attendance records were deleted."
+                            : "Holiday updated successfully!";
+
+                        return Json(new { success = true, message = successMessage });
                     }
                     else
                     {
@@ -541,7 +706,7 @@ namespace ERPIndia.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
@@ -557,10 +722,9 @@ namespace ERPIndia.Controllers
                     return Json(new { success = false, message = "Invalid holiday ID" });
                 }
 
-                string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
                 using (var connection = new SqlConnection(connectionString))
                 {
-                    // Instead of hard delete, we'll perform a soft delete
+                    // Soft delete
                     string sql = @"UPDATE HolidayCalendar 
                                   SET IsDeleted = 1, 
                                       ModifiedBy = @ModifiedBy, 

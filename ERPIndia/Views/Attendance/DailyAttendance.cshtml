@@ -3,7 +3,6 @@
     ViewBag.Title = "Student Daily Attendance";
 }
 
-
 <!-- Add Flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
@@ -116,6 +115,55 @@
         opacity: 0.6;
         cursor: not-allowed;
         transform: none !important;
+    }
+
+    /* Invalid date selection styling */
+    .border-danger {
+        border: 2px solid #dc3545 !important;
+        background-color: #fff5f5 !important;
+        animation: shake 0.3s;
+    }
+
+    @@keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+        25% {
+            transform: translateX(-5px);
+        }
+        75% {
+            transform: translateX(5px);
+        }
+    }
+
+    /* Date validation message */
+    .date-validation-msg {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+        padding: 5px 10px;
+        background-color: #f8d7da;
+        border-left: 3px solid #dc3545;
+        border-radius: 3px;
+    }
+
+    .date-validation-msg.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+        color: #dc3545 !important;
+        font-weight: bold;
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Editable cells */
@@ -303,8 +351,6 @@
         outline: none;
     }
 
-    
-
     /* Responsive adjustments */
     @@media (max-width: 768px) {
         .filter-row {
@@ -346,6 +392,7 @@
                     <div class="col-md-3">
                         <label for="attendanceDate" class="form-label">Date <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="attendanceDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                        <div class="date-validation-msg" id="dateValidationMsg"></div>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">&nbsp;</label>
@@ -409,8 +456,6 @@
     </div>
 </div>
 
-
-
 <!-- Add Flatpickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
@@ -419,6 +464,74 @@ $(document).ready(function() {
     var dataTable = null;
     var currentData = [];
     var flatpickrInstances = {};
+    var holidayDates = {};
+
+    // Load holidays on page load - NEW ADDITION
+    loadHolidays();
+
+    // Load holidays from database - NEW ADDITION
+    function loadHolidays() {
+        $.ajax({
+            url: '@Url.Action("GetHolidaysForValidation", "Attendance")',
+            type: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    holidayDates = {};
+                    response.holidays.forEach(function(holiday) {
+                        holidayDates[holiday.date] = holiday.name;
+                    });
+                    console.log('Holidays loaded:', holidayDates);
+                }
+            },
+            error: function() {
+                console.error('Failed to load holidays');
+            }
+        });
+    }
+
+    // Complete date validation function - NEW ADDITION
+    function validateDate(dateString) {
+        var errors = [];
+        var warnings = [];
+
+        if (!dateString) {
+            errors.push('Please select a date');
+            return { isValid: false, errors: errors, warnings: warnings };
+        }
+
+        var selectedDate = new Date(dateString + 'T00:00:00');
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        selectedDate.setHours(0, 0, 0, 0);
+
+        // Check future date
+        if (selectedDate > today) {
+            errors.push('Cannot view attendance for future dates');
+        }
+
+        // Check Sunday
+        if (selectedDate.getDay() === 0) {
+            errors.push('Cannot view attendance on Sunday');
+        }
+
+        // Check holidays from database
+        if (holidayDates[dateString]) {
+            errors.push('Cannot view attendance on holiday: ' + holidayDates[dateString]);
+        }
+
+        return {
+            isValid: errors.length === 0,
+            errors: errors,
+            warnings: warnings
+        };
+    }
+
+    // Get day name from date - NEW ADDITION
+    function getDayName(dateString) {
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var date = new Date(dateString + 'T00:00:00');
+        return days[date.getDay()];
+    }
 
     // Toast notification function
     function showToast(message, type, duration) {
@@ -458,11 +571,79 @@ $(document).ready(function() {
         $('#spinnerOverlay').hide();
     }
 
-    // Search button click
+    // Date change event handler with validation - NEW ADDITION
+    $('#attendanceDate').change(function() {
+        var selectedDate = $(this).val();
+
+        // Remove any existing validation messages
+        $('#dateValidationMsg').removeClass('show').text('');
+
+        if (!selectedDate) {
+            $(this).removeClass('border-danger');
+            $('#btnSearch').prop('disabled', false).show();
+            return;
+        }
+
+        var validation = validateDate(selectedDate);
+
+        if (!validation.isValid) {
+            // Add visual indicator to date field
+            $(this).addClass('border-danger');
+
+            // Hide search button for invalid dates
+            $('#btnSearch').hide();
+
+            // Show toast notification
+            showToast(validation.errors.join('. '), 'error', 5000);
+
+            // Show validation message below date field
+            $('#dateValidationMsg')
+                .text(validation.errors.join('. '))
+                .addClass('show');
+
+            // Hide attendance container if visible
+            $('#attendanceContainer').hide();
+            if (dataTable) {
+                dataTable.destroy();
+                dataTable = null;
+            }
+        } else {
+            // Valid date - clear all validation indicators
+            $(this).removeClass('border-danger');
+            $('#dateValidationMsg').removeClass('show').text('');
+
+            // Show and enable search button
+            $('#btnSearch').prop('disabled', false).show();
+
+            console.log('Valid date selected:', getDayName(selectedDate));
+        }
+    });
+
+    // Search button click with validation - UPDATED
     $('#btnSearch').click(function() {
+        var classId = $('#ddlClass').val();
+        var sectionId = $('#ddlSection').val();
         var selectedDate = $('#attendanceDate').val();
 
-        // Validate date is not in future
+        // Basic validation
+        var errors = [];
+        if (!classId) errors.push('Please select a class');
+        if (!sectionId) errors.push('Please select a section');
+        if (!selectedDate) errors.push('Please select a date');
+
+        if (errors.length > 0) {
+            showToast(errors.join(', '), 'warning');
+            return;
+        }
+
+        // Date validation - NEW ADDITION
+        var dateValidation = validateDate(selectedDate);
+        if (!dateValidation.isValid) {
+            showToast(dateValidation.errors.join('. '), 'error', 5000);
+            $('#attendanceDate').addClass('border-danger');
+            return;
+        }
+
         loadAttendanceData();
     });
 
@@ -486,7 +667,7 @@ $(document).ready(function() {
         return true;
     }
 
-    // Load attendance data
+    // Load attendance data - UPDATED with validation handling
     function loadAttendanceData() {
         var classId = $('#ddlClass').val();
         var sectionId = $('#ddlSection').val();
@@ -520,6 +701,11 @@ $(document).ready(function() {
                 hideSpinner();
 
                 if (response.success) {
+                    // Handle holiday warning from server - NEW ADDITION
+                    if (response.isHoliday) {
+                        showToast('Note: Selected date is marked as a holiday in the system', 'warning');
+                    }
+
                     // Validate data structure
                     if (isValidAttendanceData(response.data)) {
                         currentData = response.data;
@@ -533,8 +719,14 @@ $(document).ready(function() {
                         handleNoData(date, 'No attendance data available for this date');
                     }
                 } else {
-                    // Server returned an error
-                    handleNoData(date, response.message || 'No attendance data available');
+                    // Server returned an error with validation - NEW ADDITION
+                    if (response.validationError) {
+                        showToast(response.message, 'error', 5000);
+                        $('#attendanceDate').addClass('border-danger');
+                        $('#attendanceContainer').hide();
+                    } else {
+                        handleNoData(date, response.message || 'No attendance data available');
+                    }
                 }
             },
             error: function(xhr, status, error) {
@@ -863,11 +1055,19 @@ $(document).ready(function() {
         });
     }
 
-    // Save field
+    // Save field with validation - UPDATED
     function saveField($cell, value) {
         var studentId = $cell.closest('tr').data('studentid');
         var field = $cell.data('field');
         var date = $('#attendanceDate').val();
+
+        // Validate date before saving - NEW ADDITION
+        var dateValidation = validateDate(date);
+        if (!dateValidation.isValid) {
+            showToast('Cannot save: ' + dateValidation.errors.join('. '), 'error');
+            loadAttendanceData(); // Reload to revert changes
+            return;
+        }
 
         // Update display
         if (field === 'Status') {
@@ -892,7 +1092,12 @@ $(document).ready(function() {
                     showToast('Updated successfully', 'success', 2000);
                     updateAttendanceSummary();
                 } else {
-                    showToast('Failed to save: ' + response.message, 'error');
+                    // Handle server-side validation errors - NEW ADDITION
+                    if (response.validationError) {
+                        showToast('Validation Error: ' + response.message, 'error', 5000);
+                    } else {
+                        showToast('Failed to save: ' + response.message, 'error');
+                    }
                     loadAttendanceData(); // Reload on failure
                 }
             },
@@ -931,11 +1136,17 @@ $(document).ready(function() {
         }
     });
 
-    // Hide container when filters change
+    // Hide container when filters change - UPDATED
     $('#ddlClass, #ddlSection, #ddlStatus, #attendanceDate').change(function() {
         // Clear all existing data when any filter changes
         clearAttendanceData();
         $('#attendanceContainer').hide();
+
+        // Clear validation state except for date field
+        if (this.id !== 'attendanceDate') {
+            $('#attendanceDate').removeClass('border-danger');
+            $('#dateValidationMsg').removeClass('show').text('');
+        }
     });
 
     // Set max date to today
@@ -946,12 +1157,21 @@ $(document).ready(function() {
     var todayString = yyyy + '-' + mm + '-' + dd;
     $('#attendanceDate').attr('max', todayString);
 
-    // Auto-load on page load if all criteria are selected
+    // Trigger validation on initial date - NEW ADDITION
+    var initialDate = $('#attendanceDate').val();
+    if (initialDate) {
+        $('#attendanceDate').trigger('change');
+    }
+
+    // Auto-load on page load if all criteria are selected and date is valid
     if ($('#ddlClass').val() && $('#ddlSection').val() && $('#attendanceDate').val()) {
-        // Delay to ensure all elements are properly initialized
-        setTimeout(function() {
-            $('#btnSearch').click();
-        }, 500);
+        var validation = validateDate($('#attendanceDate').val());
+        if (validation.isValid) {
+            // Delay to ensure all elements are properly initialized
+            setTimeout(function() {
+                $('#btnSearch').click();
+            }, 500);
+        }
     }
 });
 </script>

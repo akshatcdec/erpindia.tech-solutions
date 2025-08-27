@@ -1203,12 +1203,10 @@ namespace ERPIndia.Controllers
         private List<SelectListItem> GetAttendanceStatusList()
         {
             return new List<SelectListItem>  {
-                   new SelectListItem { Value = "ALL", Text = "ALL" },
                    new SelectListItem { Value = "Present", Text = "Present" },
                    new SelectListItem { Value = "Absent", Text = "Absent" },
                    new SelectListItem { Value = "Late", Text = "Late" },
-                   new SelectListItem { Value = "Half Day", Text = "Half Day" },
-                   new SelectListItem { Value = "Holy Day", Text = "Holy Day" }
+                   new SelectListItem { Value = "Half Day", Text = "Half Day" }
                    };
         }
 
@@ -1217,6 +1215,76 @@ namespace ERPIndia.Controllers
         {
             try
             {
+                // ============== VALIDATION SECTION START ==============
+
+                // 1. Validate future date
+                if (date.Date > DateTime.Today)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        validationError = true,
+                        message = "Cannot view attendance for future dates"
+                    });
+                }
+
+                // 2. Validate Sunday
+                if (date.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        validationError = true,
+                        message = "Cannot view attendance on Sunday"
+                    });
+                }
+
+                // 3. Check holidays from database
+                bool isHoliday = false;
+                string holidayName = "";
+
+                using (SqlConnection holidayConn = new SqlConnection(ConnectionString))
+                {
+                    holidayConn.Open();
+                    string holidayQuery = @"
+                SELECT TOP 1 HolidayName 
+                FROM HolidayCalendar 
+                WHERE CAST(HolidayDate AS DATE) = @Date 
+                    AND IsActive = 1 
+                    AND IsDeleted = 0 
+                    AND TenantID = @TenantID";
+
+                    using (SqlCommand holidayCmd = new SqlCommand(holidayQuery, holidayConn))
+                    {
+                        holidayCmd.Parameters.AddWithValue("@Date", date.Date);
+                        holidayCmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+
+                        var result = holidayCmd.ExecuteScalar();
+                        if (result != null)
+                        {
+                            isHoliday = true;
+                            holidayName = result.ToString();
+                        }
+                    }
+                }
+
+                // If it's a holiday and user is trying to view attendance, show warning but allow viewing
+                // (You can change this to block access if needed)
+                if (isHoliday && !string.IsNullOrEmpty(holidayName))
+                {
+                    // Optional: Block access on holidays
+                    // return Json(new
+                    // {
+                    //     success = false,
+                    //     validationError = true,
+                    //     message = $"Cannot view attendance on holiday: {holidayName}"
+                    // });
+
+                    // Or just set a flag to warn the user
+                }
+
+                // ============== VALIDATION SECTION END ==============
+
                 using (SqlConnection conn = new SqlConnection(ConnectionString))
                 {
                     conn.Open();
@@ -1330,18 +1398,203 @@ WHERE sa.AttendanceDate = @AttendanceDate
                             summary = summary,
                             reportDate = date.ToString("dd-MMM-yyyy"),
                             className = classId == "All" ? "All Classes" : students.FirstOrDefault() != null ? ((dynamic)students.First()).ClassName : "",
-                            sectionName = sectionId == "All" ? "All Sections" : students.FirstOrDefault() != null ? ((dynamic)students.First()).SectionName : ""
+                            sectionName = sectionId == "All" ? "All Sections" : students.FirstOrDefault() != null ? ((dynamic)students.First()).SectionName : "",
+                            isHoliday = isHoliday,  // Include holiday flag
+                            holidayName = holidayName  // Include holiday name if applicable
                         });
                     }
                 }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new
+                {
+                    success = false,
+                    message = "An error occurred: " + ex.Message,
+                    validationError = false
+                });
+            }
+        }
+        public JsonResult QuickSaveAttendance(int studentId, string field, string _value, DateTime date)
+        {
+            try
+            {
+                // ============== VALIDATION SECTION START ==============
+
+                // 1. Validate future date
+                if (date.Date > DateTime.Today)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        validationError = true,
+                        message = "Cannot save attendance for future dates"
+                    });
+                }
+
+                // 2. Validate Sunday
+                if (date.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        validationError = true,
+                        message = "Cannot save attendance on Sunday"
+                    });
+                }
+
+                // 3. Check holidays from database
+                using (SqlConnection holidayConn = new SqlConnection(ConnectionString))
+                {
+                    holidayConn.Open();
+                    string holidayQuery = @"
+                SELECT TOP 1 HolidayName 
+                FROM HolidayMaster 
+                WHERE CAST(HolidayDate AS DATE) = @Date 
+                    AND IsActive = 1 
+                    AND IsDeleted = 0 
+                    AND TenantID = @TenantID";
+
+                    using (SqlCommand holidayCmd = new SqlCommand(holidayQuery, holidayConn))
+                    {
+                        holidayCmd.Parameters.AddWithValue("@Date", date.Date);
+                        holidayCmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+
+                        var holidayName = holidayCmd.ExecuteScalar();
+                        if (holidayName != null)
+                        {
+                            return Json(new
+                            {
+                                success = false,
+                                validationError = true,
+                                message = $"Cannot save attendance on holiday: {holidayName}"
+                            });
+                        }
+                    }
+                }
+
+                // ============== VALIDATION SECTION END ==============
+
+                // Your existing save logic here
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+
+                    // Check if record exists
+                    string checkQuery = @"
+                SELECT COUNT(*) 
+                FROM StudentAttendance 
+                WHERE StudentID = @StudentID 
+                    AND AttendanceDate = @Date 
+                    AND IsDeleted = 0";
+
+                    using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                    {
+                        checkCmd.Parameters.AddWithValue("@StudentID", studentId);
+                        checkCmd.Parameters.AddWithValue("@Date", date.Date);
+
+                        int exists = (int)checkCmd.ExecuteScalar();
+
+                        string updateQuery = "";
+
+                        if (exists > 0)
+                        {
+                            // Update existing record
+                            switch (field.ToLower())
+                            {
+                                case "status":
+                                    updateQuery = @"
+                                UPDATE StudentAttendance 
+                                SET Status = @Value, 
+                                    ModifiedBy = @ModifiedBy, 
+                                    ModifiedDate = GETDATE() 
+                                WHERE StudentID = @StudentID 
+                                    AND AttendanceDate = @Date 
+                                    AND IsDeleted = 0";
+                                    break;
+
+                                case "timein":
+                                    updateQuery = @"
+                                UPDATE StudentAttendance 
+                                SET TimeIn = @Value, 
+                                    ModifiedBy = @ModifiedBy, 
+                                    ModifiedDate = GETDATE() 
+                                WHERE StudentID = @StudentID 
+                                    AND AttendanceDate = @Date 
+                                    AND IsDeleted = 0";
+                                    break;
+
+                                case "timeout":
+                                    updateQuery = @"
+                                UPDATE StudentAttendance 
+                                SET TimeOut = @Value, 
+                                    ModifiedBy = @ModifiedBy, 
+                                    ModifiedDate = GETDATE() 
+                                WHERE StudentID = @StudentID 
+                                    AND AttendanceDate = @Date 
+                                    AND IsDeleted = 0";
+                                    break;
+
+                                case "note":
+                                    updateQuery = @"
+                                UPDATE StudentAttendance 
+                                SET Note = @Value, 
+                                    ModifiedBy = @ModifiedBy, 
+                                    ModifiedDate = GETDATE() 
+                                WHERE StudentID = @StudentID 
+                                    AND AttendanceDate = @Date 
+                                    AND IsDeleted = 0";
+                                    break;
+                            }
+
+                            if (!string.IsNullOrEmpty(updateQuery))
+                            {
+                                using (SqlCommand updateCmd = new SqlCommand(updateQuery, conn))
+                                {
+                                    updateCmd.Parameters.AddWithValue("@StudentID", studentId);
+                                    updateCmd.Parameters.AddWithValue("@Date", date.Date);
+                                    if (string.IsNullOrWhiteSpace(_value))
+                                    updateCmd.Parameters.AddWithValue("@Value", DBNull.Value);
+                                    else
+                                        updateCmd.Parameters.AddWithValue("@Value", _value);
+                                    updateCmd.Parameters.AddWithValue("@ModifiedBy", CurrentTenantUserID); // Assuming you have current user
+
+                                    updateCmd.ExecuteNonQuery();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Insert new record if needed
+                            // This case might not be needed for quick save, but included for completeness
+                            return Json(new
+                            {
+                                success = false,
+                                message = "No attendance record found for this student on selected date"
+                            });
+                        }
+                    }
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Updated successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Error saving data: " + ex.Message
+                });
             }
         }
 
+
         // Get students for attendance entry
+
         [HttpPost]
         public JsonResult GetStudentsForAttendance(string classId, string sectionId, DateTime attendanceDate)
         {
@@ -1438,7 +1691,6 @@ WHERE sa.AttendanceDate = @AttendanceDate
                 new AttendanceStatusOption { Value = "Absent", Text = "Absent", ColorClass = "status-absent" },
                 new AttendanceStatusOption { Value = "Late", Text = "Late", ColorClass = "status-late" },
                 new AttendanceStatusOption { Value = "Half Day", Text = "Half Day", ColorClass = "status-halfday" },
-                new AttendanceStatusOption { Value = "Holiday", Text = "Holiday", ColorClass = "status-holiday" }
             };
 
             return Json(options, JsonRequestBehavior.AllowGet);

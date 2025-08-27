@@ -317,7 +317,7 @@
 
     .status-hd {
         background-color: white;
-        color: #0000FF;
+        color: black;
         font-weight: bold;
         border: 1px solid black !important;
     }
@@ -726,11 +726,11 @@ $(document).ready(function() {
                     var attendancePercentage = student.AttendancePercentage || 0;
 
                     bodyHtml += '<tr>';
-                    bodyHtml += '<td>' + (student.SerialNo || (index + 1)) + '</td>';
-                    bodyHtml += '<td>' + (student.AdmissionNo || '-') + '</td>';
-                    bodyHtml += '<td>' + (student.RollNumber || '-') + '</td>';
-                    bodyHtml += '<td style="text-align: left;">' + (student.StudentName || 'N/A') + '</td>';
-                    bodyHtml += '<td style="text-align: left;">' + (student.FatherName || '-') + '</td>';
+                    bodyHtml += '<td style="color:black;">' + (student.SerialNo || (index + 1)) + '</td>';
+                    bodyHtml += '<td style="color:black;">' + (student.AdmissionNo || '-') + '</td>';
+                    bodyHtml += '<td style="color:black;">' + (student.RollNumber || '-') + '</td>';
+                    bodyHtml += '<td style="color:black;">' + (student.StudentName || 'N/A') + '</td>';
+                    bodyHtml += '<td style="color:black;">' + (student.FatherName || '-') + '</td>';
 
                     // Daily attendance cells with white background and colored text
                     if (data.DatesInMonth && Array.isArray(data.DatesInMonth) && data.DatesInMonth.length > 0) {
@@ -775,7 +775,7 @@ $(document).ready(function() {
                                         break;
                                     case 'HD':
                                         // Blue text on white background for Half Day
-                                        cellStyle = 'style="background-color: white; color: ' + (colors.present || '#008000') + '; font-weight: bold;"';
+                                        cellStyle = 'style="background-color: white; color: ' + (colors.present || '#0b1af0') + '; font-weight: bold;"';
                                         break;
                                     default:
                                         cellStyle = 'style="background-color: white;"';
@@ -785,7 +785,7 @@ $(document).ready(function() {
                                 cellStyle = 'style="background-color: white;"';
                             }
                             if (status == 'HD') {
-                                bodyHtml += '<td ' + cellStyle + '>H</td>';
+                                bodyHtml += '<td style="background-color:white;color: #0b1af0; font-weight: bold;">H</td>';
                             }
                             else {
                                 bodyHtml += '<td ' + cellStyle + '>' + (status || '') + '</td>';

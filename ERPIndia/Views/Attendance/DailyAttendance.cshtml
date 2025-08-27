@@ -34,53 +34,51 @@
         z-index: 10;
         border: 1px solid #ddd !important;
     }
-
-    .attendance-table tbody tr:nth-child(odd) {
-        background-color: #ffffff;
+    table.table.dataTable > thead > tr th {
+        text-align: center;
     }
-
-    .attendance-table tbody tr:nth-child(even) {
-        background-color: #f8f9fa;
-    }
-
-    .attendance-table tbody tr:hover {
-        background-color: #e3f2fd;
+        table .table.dataTable > tbody > tr:nth-child(even) td {
+        background-color: #cdd0d7;
+        color: #515B73;
+        border-bottom: 1px solid #E9EDF4;
+        padding: 12px 20px;
     }
 
     .attendance-table tbody td {
         padding: 8px;
+        background-color:antiquewhite;
         border: 1px solid #dee2e6;
         text-align: center;
     }
 
     /* Status Color Coding */
     .status-present {
-        background-color: #d4edda;
-        color: #155724;
+        background-color: #1abe17;
+        color: white;
         padding: 4px 8px;
         border-radius: 4px;
         font-weight: 600;
     }
 
     .status-absent {
-        background-color: #f8d7da;
-        color: #721c24;
+        background-color: #E82646 !important;
+        color: white;
         padding: 4px 8px;
         border-radius: 4px;
         font-weight: 600;
     }
 
     .status-late {
-        background-color: #fff3cd;
-        color: #856404;
+        background-color: #972e2e;
+        color: white;
         padding: 4px 8px;
         border-radius: 4px;
         font-weight: 600;
     }
 
     .status-halfday {
-        background-color: #cce5ff;
-        color: #004085;
+        background-color: blue;
+        color: white;
         padding: 4px 8px;
         border-radius: 4px;
         font-weight: 600;
@@ -117,6 +115,23 @@
         transform: none !important;
     }
 
+    /* Roll Number and Student Name Badges */
+    .badge-roll {
+        background-color: #ffc107 !important;
+        color: #212529 !important;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+
+    .badge-stu {
+        background-color: yellow !important;
+        color: #212529 !important;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+
     /* Invalid date selection styling */
     .border-danger {
         border: 2px solid #dc3545 !important;
@@ -125,15 +140,9 @@
     }
 
     @@keyframes shake {
-        0%, 100% {
-            transform: translateX(0);
-        }
-        25% {
-            transform: translateX(-5px);
-        }
-        75% {
-            transform: translateX(5px);
-        }
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
     }
 
     /* Date validation message */
@@ -356,11 +365,18 @@
         .filter-row {
             flex-direction: column;
         }
-
         .filter-item {
             width: 100%;
             margin-bottom: 10px;
         }
+    }
+
+    .studentname {
+        background-color: #ffc107;
+        color: #212529;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: 600;
     }
 </style>
 
@@ -379,18 +395,20 @@
                 <div class="row g-3">
                     <div class="col-md-2">
                         <label for="ddlClass" class="form-label">Class <span class="text-danger">*</span></label>
-                        @Html.DropDownListFor(m => m.Classes, Model.Classes, "Select Class", new { @class = "form-select", id = "ddlClass" })
+                        @Html.DropDownListFor(m => m.Classes, Model.Classes, "All", new { @class = "form-select", id = "ddlClass" })
                     </div>
                     <div class="col-md-2">
                         <label for="ddlSection" class="form-label">Section <span class="text-danger">*</span></label>
-                        @Html.DropDownListFor(m => m.Sections, Model.Sections, "Select Section", new { @class = "form-select", id = "ddlSection" })
+                        @Html.DropDownListFor(m => m.Sections, Model.Sections, "All", new { @class = "form-select", id = "ddlSection" })
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="ddlStatus" class="form-label">Status</label>
                         @Html.DropDownListFor(m => m.StatusOptions, Model.StatusOptions, "All Status", new { @class = "form-select", id = "ddlStatus" })
                     </div>
-                    <div class="col-md-3">
-                        <label for="attendanceDate" class="form-label">Date <span class="text-danger">*</span></label>
+                    <div class="col-md-2">
+                        <label for="attendanceDate" class="form-label">
+                            Date <span class="text-danger">*</span>
+                        </label>
                         <input type="date" class="form-control" id="attendanceDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
                         <div class="date-validation-msg" id="dateValidationMsg"></div>
                     </div>
@@ -416,6 +434,8 @@
                         <span class="attendance-summary badge bg-info" id="studentCount">0 students</span>
                         <span class="attendance-summary badge bg-success" id="presentCount">0 present</span>
                         <span class="attendance-summary badge bg-danger" id="absentCount">0 absent</span>
+                        <span class="attendance-summary badge bg-warning text-dark" id="lateCount">0 late</span>
+                        <span class="attendance-summary badge bg-primary" id="halfDayCount">0 half day</span>
                     </h6>
                 </div>
             </div>
@@ -426,10 +446,10 @@
                             <tr>
                                 <th>Adm.</th>
                                 <th>Roll</th>
-                                <th>Class</th>
-                                <th>Name</th>
-                                <th>Father</th>
-                                <th>Mobile</th>
+                                <th align="center" style="text-align:center">Class</th>
+                                <th align="center" style="text-align:center">Name</th>
+                                <th align="center" style="text-align:center">Father</th>
+                                <th align="center" style="text-align:center">Mobile</th>
                                 <th>Status</th>
                                 <th>Time-In</th>
                                 <th>Time-Out</th>
@@ -625,10 +645,10 @@ $(document).ready(function() {
         var sectionId = $('#ddlSection').val();
         var selectedDate = $('#attendanceDate').val();
 
-        // Basic validation
+        // Note: "All" is now a valid option for class and section
+        // Remove validation that prevents selection of "All"
+
         var errors = [];
-        if (!classId) errors.push('Please select a class');
-        if (!sectionId) errors.push('Please select a section');
         if (!selectedDate) errors.push('Please select a date');
 
         if (errors.length > 0) {
@@ -674,9 +694,8 @@ $(document).ready(function() {
         var status = $('#ddlStatus').val();
         var date = $('#attendanceDate').val();
 
+        // Modified to allow "All" for class and section
         var errors = [];
-        if (!classId) errors.push('Please select a class');
-        if (!sectionId) errors.push('Please select a section');
         if (!date) errors.push('Please select a date');
 
         if (errors.length > 0) {
@@ -692,8 +711,8 @@ $(document).ready(function() {
             url: '@Url.Action("GetDailyAttendanceReport", "Attendance")',
             type: 'POST',
             data: {
-                classId: classId,
-                sectionId: sectionId,
+                classId: classId || 'All',
+                sectionId: sectionId || 'All',
                 status: status,
                 date: date
             },
@@ -748,10 +767,12 @@ $(document).ready(function() {
         // Clear the table body
         $('#attendanceTableBody').empty();
 
-        // Reset summary badges
+        // Reset ALL summary badges including late and half day
         $('#studentCount').text('0 students');
         $('#presentCount').text('0 present');
         $('#absentCount').text('0 absent');
+        $('#lateCount').text('0 late');
+        $('#halfDayCount').text('0 half day');
 
         // Clear current data
         currentData = [];
@@ -849,9 +870,9 @@ $(document).ready(function() {
 
             html += '<tr data-studentid="' + student.StudentID + '">';
             html += '<td>' + (student.AdmissionNo || '-') + '</td>';
-            html += '<td><span class="badge bg-danger">' + (student.RollNumber || '-') + '</span></td>';
+            html += '<td><span class="badge badge-roll">' + (student.RollNumber || '-') + '</span></td>';
             html += '<td>' + student.ClassName + '-' + student.SectionName + '</td>';
-            html += '<td class="student-info-cell"><strong>' + student.StudentName + '</strong></td>';
+            html += '<td><span class="badge badge-stu">' + student.StudentName + '</span></td>';
             html += '<td class="student-info-cell">' + (student.FatherName || '-') + '</td>';
             html += '<td>' + (student.MobileNumber || '-') + '</td>';
             html += '<td><span class="' + statusClass + '">' + student.Status + '</span></td>';
@@ -864,6 +885,8 @@ $(document).ready(function() {
 
         // Initialize or reinitialize DataTable
         initializeDataTable();
+        updateAttendanceSummary();
+    
     }
 
     // Initialize DataTable with export buttons
@@ -873,15 +896,16 @@ $(document).ready(function() {
             dataTable.destroy();
         }
         var exportColumns = [];
-        for (var i = 1; i < $('#tableHeader th').length; i++) {
+        for (var i = 0; i < 9; i++) {  // Updated to include all columns
             exportColumns.push(i);
         }
         // Initialize new DataTable
         dataTable = $('#attendanceDataTable').DataTable({
             "paging": false,
+            "stripeClasses": [], 
             "info": false,
             "pageLength": -1, // Always show all
-            "order": [[1, "asc"]], // Order by SR
+            "order": [[1, "asc"]], // Order by Roll
             "scrollX": true,
             "lengthChange": false, // hides the length menu dropdown
             "responsive": false,
@@ -1033,7 +1057,6 @@ $(document).ready(function() {
             select += '<option value="Absent"' + (currentValue === 'Absent' ? ' selected' : '') + '>Absent</option>';
             select += '<option value="Late"' + (currentValue === 'Late' ? ' selected' : '') + '>Late</option>';
             select += '<option value="Half Day"' + (currentValue === 'Half Day' ? ' selected' : '') + '>Half Day</option>';
-            select += '<option value="Holiday"' + (currentValue === 'Holiday' || currentValue === 'Holy Day' ? ' selected' : '') + '>Holiday</option>';
             select += '</select>';
 
             $cell.html(select);
@@ -1112,21 +1135,50 @@ $(document).ready(function() {
     function updateAttendanceSummary() {
         var presentCount = 0;
         var absentCount = 0;
+        var lateCount = 0;
+        var halfDayCount = 0;
         var totalCount = 0;
 
-        $('#attendanceTableBody tr').each(function() {
+        $('#attendanceTableBody tr').each(function () {
             totalCount++;
-            var status = $(this).find('.editable-status span').text();
-            if (status === 'Present') {
-                presentCount++;
-            } else if (status === 'Absent') {
-                absentCount++;
+            var statusElement = $(this).find('td:eq(6) span'); // Status is in the 7th column (index 6)
+            var status = statusElement.text().trim();
+
+            switch (status) {
+                case 'Present':
+                    presentCount++;
+                    break;
+                case 'Absent':
+                    absentCount++;
+                    break;
+                case 'Late':
+                    lateCount++;
+                    break;
+                case 'Half Day':
+                    halfDayCount++;
+                    break;
             }
         });
 
+        // Update all badges with counts
         $('#studentCount').text(totalCount + ' students');
         $('#presentCount').text(presentCount + ' present');
         $('#absentCount').text(absentCount + ' absent');
+        $('#lateCount').text(lateCount + ' late');
+        $('#halfDayCount').text(halfDayCount + ' half day');
+
+        // Show/hide badges based on counts (optional - for cleaner UI)
+        if (lateCount === 0) {
+            $('#lateCount').hide();
+        } else {
+            $('#lateCount').show();
+        }
+
+        if (halfDayCount === 0) {
+            $('#halfDayCount').hide();
+        } else {
+            $('#halfDayCount').show();
+        }
     }
 
     // Trigger search on enter key

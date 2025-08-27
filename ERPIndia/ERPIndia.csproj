@@ -447,6 +447,7 @@
     <Compile Include="Controllers\GatePassPrnController.cs" />
     <Compile Include="Controllers\GradeConfigurationController.cs" />
     <Compile Include="Controllers\GradeSubjectMappingController.cs" />
+    <Compile Include="Controllers\HolidayCalendarController.cs" />
     <Compile Include="Controllers\NoticeController.cs" />
     <Compile Include="Controllers\ReportController.cs" />
     <Compile Include="Controllers\FeeDefaulterController.cs" />
@@ -7869,6 +7870,9 @@
     <Content Include="Views\Teacher\Create.cshtml" />
     <Content Include="Views\Teacher\Edit.cshtml" />
     <Content Include="Views\Teacher\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\HolidayCalendar\ManageHolidays.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

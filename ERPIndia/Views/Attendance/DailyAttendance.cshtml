@@ -617,9 +617,6 @@ $(document).ready(function() {
             showToast(validation.errors.join('. '), 'error', 5000);
 
             // Show validation message below date field
-            $('#dateValidationMsg')
-                .text(validation.errors.join('. '))
-                .addClass('show');
 
             // Hide attendance container if visible
             $('#attendanceContainer').hide();

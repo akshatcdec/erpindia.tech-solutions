@@ -476,7 +476,7 @@ namespace ERPIndia.Controllers
                                 success = false,
                                 attendanceExists = true,
                                 attendanceCount = attendanceCount,
-                                message = $"Student attendance ({attendanceCount} records) exist for {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Do you want to delete these attendance records and create the holiday?"
+                                message = $"Student attendance {attendanceCount} records exist for {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Do you want to delete these attendance records and create the holiday?"
                             });
                         }
                         else

@@ -28,7 +28,7 @@
                                 <input type="hidden" id="sessionYear" value="@sessionYear">
                                 <div class="col-xl-12 col-lg-12 col-12 form-group">
                                     <label>Holiday Name *</label>
-                                    <input type="text" id="holidayName" placeholder="" autocomplete="off" class="form-control required">
+                                    <input type="text" id="holidayName" placeholder="" maxlength="50" autocomplete="off" class="form-control required">
                                 </div>
                             </div>
                             <div class="row">
@@ -453,10 +453,6 @@ const HolidayManager = (function() {
                 if (result.attendanceExists) {
                     // Show confirmation dialog for attendance deletion
                     let messageText = result.message;
-                    if (result.attendanceCount) {
-                        messageText += `\n\nThis will delete ${result.attendanceCount} attendance record(s).`;
-                    }
-                    messageText += "\n\nThis action cannot be undone.";
 
                     swal({
                         title: "Attendance Records Found!",
@@ -471,7 +467,7 @@ const HolidayManager = (function() {
                                 closeModal: true,
                             },
                             confirm: {
-                                text: "Delete Attendance & Continue",
+                                text: "Delete & Proceed",
                                 value: true,
                                 visible: true,
                                 className: "swal-button--danger",

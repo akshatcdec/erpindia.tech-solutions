@@ -476,7 +476,7 @@ namespace ERPIndia.Controllers
                                 success = false,
                                 attendanceExists = true,
                                 attendanceCount = attendanceCount,
-                                message = $"Student attendance records ({attendanceCount} records) exist for {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Do you want to delete these attendance records and create the holiday?"
+                                message = $"Student attendance ({attendanceCount} records) exist for {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Do you want to delete these attendance records and create the holiday?"
                             });
                         }
                         else
@@ -612,9 +612,10 @@ namespace ERPIndia.Controllers
                     {
                         if (!deleteAttendanceIfExists)
                         {
-                            string warningMessage = existingDate != holidayData.HolidayDate.Date
-                                ? $"Cannot change holiday to {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Student attendance records ({attendanceCount} records) exist for this date. Do you want to delete these attendance records and update the holiday?"
-                                : $"Student attendance records ({attendanceCount} records) exist for {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Do you want to delete these attendance records and update the holiday?";
+                           // string warningMessage = existingDate != holidayData.HolidayDate.Date
+                             //   ? $"Cannot change holiday to {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Student attendance records ({attendanceCount} records) exist for this date. Do you want to delete these attendance records and update the holiday?"
+                               // : $"Student attendance records ({attendanceCount} records) exist for {holidayData.HolidayDate.ToString("dd-MMM-yyyy")}. Do you want to delete these attendance records and update the holiday?";
+                            string warningMessage = $"Delete {attendanceCount} records for {holidayData.HolidayDate:dd-MMM-yyyy} and mark holiday ?";
 
                             return Json(new
                             {

@@ -2434,7 +2434,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
                                             case "halfday":
                                             case "hd":
                                             case "h":
-                                                monthlyAttendance.DailyAttendanceMonthly[dayKey] = "HD";
+                                                monthlyAttendance.DailyAttendanceMonthly[dayKey] = "H";
                                                 monthlyAttendance.TotalHalfDay++;
                                                 break;
                                         }
@@ -2503,7 +2503,7 @@ WHERE sa.AttendanceDate = @AttendanceDate
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
                         currentRow++;
-                        worksheet.Cells[currentRow, 1].Value = "Legend: P=Present, A=Absent, L=Late, HD=Half Day, S=Sunday, H=Holiday";
+                        worksheet.Cells[currentRow, 1].Value = "Legend: P=Present, A=Absent, L=Late, H=Half Day, SU=Sunday";
                         worksheet.Cells[currentRow, 1, currentRow, 40].Merge = true;
                         worksheet.Cells[currentRow, 1].Style.Font.Italic = true;
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
@@ -2530,25 +2530,11 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
                             // Add day of week below
                             worksheet.Cells[headerRow + 1, col].Value = currentDate.ToString("ddd").Substring(0, 2).ToUpper();
-
-                            // Color Sunday columns
-                            if (currentDate.DayOfWeek == DayOfWeek.Sunday)
-                            {
-                                worksheet.Cells[headerRow, col, headerRow + 1, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                                worksheet.Cells[headerRow, col, headerRow + 1, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
-                            }
-
-                            // Color holiday columns
-                            if (holidays.Contains(currentDate.Date))
-                            {
-                                worksheet.Cells[headerRow, col, headerRow + 1, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                                worksheet.Cells[headerRow, col, headerRow + 1, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightYellow);
-                            }
-
                             col++;
                         }
 
                         // Summary headers
+                        int totalStartCol = col;
                         worksheet.Cells[headerRow, col].Value = "Total";
                         worksheet.Cells[headerRow, col, headerRow, col + 3].Merge = true;
                         worksheet.Cells[headerRow, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
@@ -2556,13 +2542,15 @@ WHERE sa.AttendanceDate = @AttendanceDate
                         worksheet.Cells[headerRow + 1, col++].Value = "P";
                         worksheet.Cells[headerRow + 1, col++].Value = "A";
                         worksheet.Cells[headerRow + 1, col++].Value = "L";
-                        worksheet.Cells[headerRow + 1, col++].Value = "HD";
+                        worksheet.Cells[headerRow + 1, col++].Value = "H";
 
                         worksheet.Cells[headerRow, col].Value = "%";
                         worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
 
+                        int lastColumn = col; // Store the last column index
+
                         // Format header rows
-                        var fullHeaderRange = worksheet.Cells[headerRow, 1, headerRow + 1, col];
+                        var fullHeaderRange = worksheet.Cells[headerRow, 1, headerRow + 1, lastColumn];
                         fullHeaderRange.Style.Font.Bold = true;
                         fullHeaderRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         fullHeaderRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
@@ -2571,6 +2559,8 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
                         // Add student data
                         currentRow = headerRow + 2;
+                        int dataStartRow = currentRow;
+
                         foreach (var student in students)
                         {
                             col = 1;
@@ -2595,36 +2585,19 @@ WHERE sa.AttendanceDate = @AttendanceDate
                                 }
                                 else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
                                 {
-                                    cellValue = "S";
+                                    cellValue = "SU";
                                     worksheet.Cells[currentRow, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                                    worksheet.Cells[currentRow, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                                    worksheet.Cells[currentRow, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                                 }
                                 else if (holidays.Contains(currentDate.Date))
                                 {
-                                    cellValue = "H";
+                                    cellValue = "";
                                     worksheet.Cells[currentRow, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                                    worksheet.Cells[currentRow, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightYellow);
+                                    worksheet.Cells[currentRow, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                                 }
                                 else if (student.DailyAttendanceMonthly.ContainsKey(day.ToString()))
                                 {
                                     cellValue = student.DailyAttendanceMonthly[day.ToString()];
-
-                                    // Apply color based on status
-                                    switch (cellValue)
-                                    {
-                                        case "P":
-                                            worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Green);
-                                            break;
-                                        case "A":
-                                            worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Red);
-                                            break;
-                                        case "L":
-                                            worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Orange);
-                                            break;
-                                        case "HD":
-                                            worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Blue);
-                                            break;
-                                    }
                                 }
 
                                 worksheet.Cells[currentRow, col].Value = cellValue;
@@ -2638,22 +2611,14 @@ WHERE sa.AttendanceDate = @AttendanceDate
                             worksheet.Cells[currentRow, col++].Value = student.TotalLate;
                             worksheet.Cells[currentRow, col++].Value = student.TotalHalfDay;
                             worksheet.Cells[currentRow, col].Value = student.AttendancePercentage.ToString("0.0") + "%";
-
-                            // Color code percentage
-                            if (student.AttendancePercentage >= 90)
-                                worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Green);
-                            else if (student.AttendancePercentage >= 75)
-                                worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Blue);
-                            else if (student.AttendancePercentage >= 60)
-                                worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Orange);
-                            else
-                                worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Red);
-
                             currentRow++;
                         }
 
+                        int dataEndRow = currentRow - 1;
+
                         // Add summary row
                         currentRow++;
+                        int summaryRow = currentRow;
                         worksheet.Cells[currentRow, 1].Value = "Average Attendance:";
                         worksheet.Cells[currentRow, 1, currentRow, 5].Merge = true;
                         worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
@@ -2664,19 +2629,64 @@ WHERE sa.AttendanceDate = @AttendanceDate
                         worksheet.Cells[currentRow, 6].Value = averageAttendance.ToString("0.0") + "%";
                         worksheet.Cells[currentRow, 6].Style.Font.Bold = true;
 
-                        // Apply borders to all data cells
-                        var tableRange = worksheet.Cells[headerRow, 1, currentRow - 1, col];
-                        var border = tableRange.Style.Border;
-                        border.Top.Style = ExcelBorderStyle.Thin;
-                        border.Bottom.Style = ExcelBorderStyle.Thin;
-                        border.Left.Style = ExcelBorderStyle.Thin;
-                        border.Right.Style = ExcelBorderStyle.Thin;
+                        // ===============================
+                        // APPLY BORDERS TO ALL CELLS
+                        // ===============================
+
+                        // 1. Apply borders to header cells (2 rows)
+                        for (int row = headerRow; row <= headerRow + 1; row++)
+                        {
+                            for (int column = 1; column <= lastColumn; column++)
+                            {
+                                var cell = worksheet.Cells[row, column];
+                                cell.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                                cell.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                                cell.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                                cell.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                            }
+                        }
+
+                        // 2. Apply borders to all data rows
+                        for (int row = dataStartRow; row <= dataEndRow; row++)
+                        {
+                            for (int column = 1; column <= lastColumn; column++)
+                            {
+                                var cell = worksheet.Cells[row, column];
+                                cell.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                                cell.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                                cell.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                                cell.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                            }
+                        }
+
+                        // 3. Apply borders to summary row
+                        for (int column = 1; column <= 6; column++)
+                        {
+                            var cell = worksheet.Cells[summaryRow, column];
+                            cell.Style.Border.Top.Style = ExcelBorderStyle.Medium;
+                            cell.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
+                            cell.Style.Border.Left.Style = ExcelBorderStyle.Medium;
+                            cell.Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                        }
+
+                        // 4. Apply thicker border around the entire table
+                        var entireTableRange = worksheet.Cells[headerRow, 1, dataEndRow, lastColumn];
+                        entireTableRange.Style.Border.BorderAround(ExcelBorderStyle.Medium);
+
+                        // 5. Center align all attendance cells
+                        for (int row = dataStartRow; row <= dataEndRow; row++)
+                        {
+                            for (int column = dayStartCol; column <= lastColumn; column++)
+                            {
+                                worksheet.Cells[row, column].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                            }
+                        }
 
                         // Auto-fit columns with max width
-                        for (int i = 1; i <= col; i++)
+                        for (int i = 1; i <= lastColumn; i++)
                         {
                             worksheet.Column(i).AutoFit();
-                            if (i >= dayStartCol && i < dayStartCol + 31)
+                            if (i >= dayStartCol && i < totalStartCol)
                             {
                                 worksheet.Column(i).Width = 4; // Narrow columns for days
                             }

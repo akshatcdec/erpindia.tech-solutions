@@ -157,12 +157,12 @@
 
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-user-clock text-warning"></i>&nbsp;
+                        <i class="fas fa-user-clock text-primary"></i>&nbsp;
                         <span style="color:black; font-weight:bold;">
                              Today Late
                         </span>
                     </div>
-                    <span class="fw-bold text-warning fs-4">: @Model.AttendanceSummary.TodayLeave</span>
+                    <span class="fw-bold text-primary fs-4">: @Model.AttendanceSummary.TodayLeave</span>
                 </div>
             </div>
         </div>
@@ -1193,79 +1193,85 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             // Initialize Attendance Chart
-            var attendanceOptions = {
-                chart: {
-                    type: 'bar',
-                    height: '100%',
-                    toolbar: {
-                        show: false
-                    }
-                },
-                series: [
-                    {
-                        name: "Total Present",
-                        data: [@string.Join(",", Model.ClasswiseAttendance.Select(x => x.TotalPresent))],
-                        color: '#28a745'
-                    },
-                    {
-                        name: "Total Strength",
-                        data: [@string.Join(",", Model.ClasswiseAttendance.Select(x => x.TotalStrength))],
-                        color: '#007bff'
-                    }
-                ],
-                xaxis: {
-                    categories: [@Html.Raw(string.Join(",", Model.ClasswiseAttendance.Select(x => string.Format("'{0}'", x.ClassName))))],
-                    labels: {
-                        rotate: -45,
-                        style: {
-                            fontSize: '10px'
-                        }
-                    }
-                },
-                yaxis: {
-                    title: {
-                        text: 'Number of Students'
-                    }
-                },
-                tooltip: {
-                    y: {
-                        formatter: function(val) {
-                            return val + ' Students';
-                        }
-                    }
-                },
-                plotOptions: {
-                    bar: {
-                        columnWidth: '60%',
-                        distributed: false,
-                        borderRadius: 2
-                    }
-                },
-                dataLabels: {
-                    enabled: false
-                },
-                legend: {
-                    position: 'top',
-                    horizontalAlign: 'center'
-                },
-                grid: {
-                    borderColor: '#e7e7e7',
-                    row: {
-                        colors: ['#f3f3f3', 'transparent'],
-                        opacity: 0.5
-                    }
-                },
-                responsive: [{
-                    breakpoint: 480,
-                    options: {
-                        legend: {
-                            position: 'bottom',
-                            offsetX: -10,
-                            offsetY: 0
-                        }
-                    }
-                }]
-            };
+           var attendanceOptions = {
+    chart: {
+        type: 'bar',
+        height: '100%',
+        toolbar: {
+            show: false
+        }
+    },
+    series: [
+        {
+            name: "Total Strength",
+            data: [@string.Join(",", Model.ClasswiseAttendance.Select(x => x.TotalStrength))],
+            color: '#007bff'   // Blue
+        },
+        {
+            name: "Total Present",
+            data: [@string.Join(",", Model.ClasswiseAttendance.Select(x => x.TotalPresent))],
+            color: '#28a745'   // Green
+        },
+        {
+            name: "Total Absent",
+            data: [@string.Join(",", Model.ClasswiseAttendance.Select(x => x.TotalAbsent))],
+            color: '#dc3545'   // Red
+        }
+    ],
+    xaxis: {
+        categories: [@Html.Raw(string.Join(",", Model.ClasswiseAttendance.Select(x => string.Format("'{0}'", x.ClassName))))],
+        labels: {
+            rotate: -45,
+            style: {
+                fontSize: '10px'
+            }
+        }
+    },
+    yaxis: {
+        title: {
+            text: 'Number of Students'
+        }
+    },
+    tooltip: {
+        y: {
+            formatter: function(val) {
+                return val + ' Students';
+            }
+        }
+    },
+    plotOptions: {
+        bar: {
+            columnWidth: '60%',
+            distributed: false,
+            borderRadius: 2
+        }
+    },
+    dataLabels: {
+        enabled: false
+    },
+    legend: {
+        position: 'top',
+        horizontalAlign: 'center'
+    },
+    grid: {
+        borderColor: '#e7e7e7',
+        row: {
+            colors: ['#f3f3f3', 'transparent'],
+            opacity: 0.5
+        }
+    },
+    responsive: [{
+        breakpoint: 480,
+        options: {
+            legend: {
+                position: 'bottom',
+                offsetX: -10,
+                offsetY: 0
+            }
+        }
+    }]
+};
+
 
             var attendanceChart = new ApexCharts(document.querySelector("#attendanceChart"), attendanceOptions);
             attendanceChart.render();

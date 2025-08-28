@@ -613,6 +613,7 @@ namespace DashboardModels
         public string ClassName { get; set; }
         public int TotalPresent { get; set; }
         public int TotalStrength { get; set; }
+        public int TotalAbsent { get; set; }
     }
 
     // Income/Expense Breakdown (for donut charts)

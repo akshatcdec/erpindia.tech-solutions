@@ -2698,7 +2698,8 @@ WHERE sa.AttendanceDate = @AttendanceDate
 
                         // Add footer
                         currentRow += 2;
-                        worksheet.Cells[currentRow, 1].Value = $"Report Generated: {DateTime.Now.ToString("dd-MMM-yyyy HH:mm")}";
+                        worksheet.Cells[currentRow, 1].Value = $"Report Generated: {DateTime.Now.ToString("dd-MMM-yyyy hh:mm tt")}";
+
                         worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
                         worksheet.Cells[currentRow, 1].Style.Font.Italic = true;
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;

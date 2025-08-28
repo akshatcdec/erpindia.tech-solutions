@@ -381,12 +381,12 @@
         <div class="card">
             <div class="card-header bg-light">
                 <div class="row align-items-center">
-                    <div class="col-6">
+                    <div class="col-10">
                         <h6 class="mb-0">
                             <i class="fas fa-table me-2"></i>Attendance Details
                         </h6>
                     </div>
-                    <div class="col-6 text-end">
+                    <div class="col-2 text-end">
                         <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()" style="display: inline-block !important; visibility: visible !important;">
                             <i class="fas fa-file-excel me-1"></i>Export to Excel
                         </button>
@@ -606,47 +606,90 @@ $(document).ready(function() {
     }
 
     // Export to Excel function
-    window.exportToExcel = function() {
-        var classId = $('#ddlClass').val();
-        var sectionId = $('#ddlSection').val();
-        var monthYear = $('#ddlMonthYear').val();
+   // Fixed Export to Excel function
+window.exportToExcel = function() {
+    var classId = $('#ddlClass').val();
+    var sectionId = $('#ddlSection').val();
+    var monthYear = $('#ddlMonth').val();  // FIXED: Changed from #ddlMonthYear to #ddlMonth
 
-        if (!classId || !sectionId || !monthYear) {
-            showToast('Please generate the report first', 'warning');
-            return;
-        }
+    if (!classId || !sectionId || !monthYear) {
+        showToast('Please generate the report first', 'warning');
+        return;
+    }
 
-        showSpinner();
+    console.log('Exporting with params:', {
+        classId: classId,
+        sectionId: sectionId,
+        monthYear: monthYear
+    });
 
-        $.ajax({
-            url: '@Url.Action("ExportMonthlyAttendanceToExcel", "Attendance")',
-            type: 'POST',
-            data: {
-                classId: classId,
-                sectionId: sectionId,
-                monthYear: monthYear // Send combined month-year
-            },
-            success: function(response) {
-                hideSpinner();
-                if (response.success) {
-                    var link = document.createElement('a');
-                    link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + response.fileContent;
-                    link.download = response.fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+    showSpinner();
 
-                    showToast('Excel file downloaded successfully!', 'success');
-                } else {
-                    showToast('Failed to export: ' + response.message, 'error');
-                }
-            },
-            error: function(xhr, status, error) {
-                hideSpinner();
-                showToast('Error exporting to Excel: ' + error, 'error');
+    $.ajax({
+        url: '@Url.Action("ExportMonthlyAttendanceToExcel", "Attendance")',
+        type: 'POST',
+        data: {
+            classId: classId,
+            sectionId: sectionId,
+            monthYear: monthYear  // This will now send the correct value
+        },
+        timeout: 60000,  // 60 second timeout for large exports
+        success: function(response) {
+            hideSpinner();
+
+            console.log('Export response:', response);
+
+            if (response && response.success) {
+                // Create download link
+                var link = document.createElement('a');
+                link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + response.fileContent;
+                link.download = response.fileName || 'MonthlyAttendance.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showToast('Excel file downloaded successfully!', 'success');
+            } else {
+                var errorMsg = response && response.message ? response.message : 'Failed to export';
+                showToast('Export failed: ' + errorMsg, 'error');
+                console.error('Export error:', response);
             }
-        });
-    };
+        },
+        error: function(xhr, status, error) {
+            hideSpinner();
+
+            var errorMessage = 'Error exporting to Excel: ';
+
+            if (status === 'timeout') {
+                errorMessage += 'Request timed out. The file might be too large.';
+            } else if (xhr.status === 0) {
+                errorMessage += 'Network error. Please check your connection.';
+            } else if (xhr.status === 500) {
+                errorMessage += 'Server error occurred.';
+
+                // Try to get more details from response
+                try {
+                    var responseJson = JSON.parse(xhr.responseText);
+                    if (responseJson && responseJson.message) {
+                        errorMessage += ' Details: ' + responseJson.message;
+                    }
+                } catch(e) {
+                    console.log('Could not parse error response');
+                }
+            } else {
+                errorMessage += error || 'Unknown error occurred';
+            }
+
+            showToast(errorMessage, 'error');
+            console.error('Export AJAX Error:', {
+                status: status,
+                error: error,
+                xhr: xhr,
+                responseText: xhr.responseText
+            });
+        }
+    });
+};
 
     function displayReport(data, colors) {
         try {
@@ -753,8 +796,8 @@ $(document).ready(function() {
                             // Check for Sunday (gray text on white background)
                             else if (date.IsSunday) {
                                 cellStyle = 'style="background: linear-gradient(to bottom, #f0f0f0, #e0e0e0, #d0d0d0); color:  black!important; font-weight: bold;"';
-                                status = 'SU'; 
-                               
+                                status = 'SU';
+
                             }
                             // Regular attendance status
                             else if (student.DailyAttendanceMonthly && student.DailyAttendanceMonthly[date.Day]) {

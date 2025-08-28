@@ -374,32 +374,31 @@ namespace ERPIndia.Controllers
                             yearlyAttendance.MonthlyData.Add(monthData);
                         }
 
-                        // FIXED: Calculate yearly totals with new logic
+                        // FIXED: Calculate yearly totals with correct logic
                         yearlyAttendance.TotalWorkingDays = yearlyAttendance.MonthlyData.Sum(m => m.WorkingDays);
 
-                        // Get original counts
-                        int originalPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
-                        int originalLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
-                        int originalHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
+                        // Get individual counts from monthly data
+                        int monthlyPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
+                        int monthlyLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
+                        int monthlyHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
 
-                        // Present + Late + Half Day all count as Present
-                        yearlyAttendance.TotalPresent = originalPresent + originalLate + originalHalfDay;
+                        // Store original counts for reference
+                        yearlyAttendance.TotalLate = monthlyLate;
+                        yearlyAttendance.TotalHalfDay = monthlyHalfDay;
 
-                        // Store original values separately (for Excel export if needed)
-                        yearlyAttendance.TotalLate = originalLate;
-                        yearlyAttendance.TotalHalfDay = originalHalfDay;
+                        // CRITICAL FIX: Calculate effective present (Present + Late + Half Day)
+                        yearlyAttendance.TotalPresent = monthlyPresent + monthlyLate + monthlyHalfDay;
 
-                        // Calculate absent as Working Days - All Present types
-                        yearlyAttendance.TotalAbsent = yearlyAttendance.TotalWorkingDays - yearlyAttendance.TotalPresent;
-                        if (yearlyAttendance.TotalAbsent < 0) yearlyAttendance.TotalAbsent = 0;
+                        // Calculate absent as Working Days - Effective Present
+                        yearlyAttendance.TotalAbsent = Math.Max(0, yearlyAttendance.TotalWorkingDays - yearlyAttendance.TotalPresent);
 
                         yearlyAttendance.TotalHolidays = yearlyAttendance.MonthlyData.Sum(m => m.Holidays);
 
                         // Calculate percentage and grade
                         if (yearlyAttendance.TotalWorkingDays > 0)
                         {
-                            yearlyAttendance.AttendancePercentage =
-                                Math.Round((decimal)yearlyAttendance.TotalPresent / yearlyAttendance.TotalWorkingDays * 100, 2);
+                            decimal attendancePercentage = (decimal)yearlyAttendance.TotalPresent / yearlyAttendance.TotalWorkingDays * 100;
+                            yearlyAttendance.AttendancePercentage = Math.Round(attendancePercentage, 2);
                             yearlyAttendance.AttendanceGrade = GetAttendanceGrade(yearlyAttendance.AttendancePercentage);
                             yearlyAttendance.AttendanceColor = GetAttendanceColor(yearlyAttendance.AttendancePercentage);
                         }
@@ -445,7 +444,8 @@ namespace ERPIndia.Controllers
                         SessionEnd = sessionEndDate.ToString("yyyy-MM-dd"),
                         StudentsFound = students.Count,
                         FirstStudentData = students.FirstOrDefault() != null ?
-                            $"{students.First().StudentName} - Total Working Days: {reportData.Students.First().TotalWorkingDays}" : "No students"
+                            $"{students.First().StudentName} - Total Working Days: {reportData.Students.First().TotalWorkingDays}, Total Present: {reportData.Students.First().TotalPresent}" : "No students",
+                        CalculationMethod = "Present + Late + Half Day = Total Present"
                     };
 
                     return Json(new
@@ -483,7 +483,7 @@ namespace ERPIndia.Controllers
                     string sessionName = "";
 
                     string sessionQuery = @"
-                SELECT StartDate, EndDate,PrintName as SessionName 
+                SELECT StartDate, EndDate, PrintName as SessionName 
                 FROM AcademicSessionMaster 
                 WHERE SessionID = @SessionID";
 
@@ -501,7 +501,7 @@ namespace ERPIndia.Controllers
                         }
                     }
 
-                    // Get school details
+                    // Get school details and class/section names
                     string schoolName = "";
                     string schoolAddress = "";
                     string schoolQuery = @"
@@ -649,27 +649,31 @@ namespace ERPIndia.Controllers
                             yearlyAttendance.MonthlyData.Add(monthData);
                         }
 
-                        // FIXED: Calculate yearly totals with new logic
+                        // CRITICAL FIX: Calculate yearly totals with CORRECT logic
                         yearlyAttendance.TotalWorkingDays = yearlyAttendance.MonthlyData.Sum(m => m.WorkingDays);
 
-                        int originalPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
-                        int originalLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
-                        int originalHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
+                        // Get individual counts from monthly data
+                        int monthlyPresent = yearlyAttendance.MonthlyData.Sum(m => m.Present);
+                        int monthlyLate = yearlyAttendance.MonthlyData.Sum(m => m.Late);
+                        int monthlyHalfDay = yearlyAttendance.MonthlyData.Sum(m => m.HalfDay);
 
-                        // All count as Present
-                        yearlyAttendance.TotalPresent = originalPresent + originalLate + originalHalfDay;
-                        yearlyAttendance.TotalAbsent = yearlyAttendance.TotalWorkingDays - yearlyAttendance.TotalPresent;
-                        if (yearlyAttendance.TotalAbsent < 0) yearlyAttendance.TotalAbsent = 0;
+                        // Store original counts for reference
+                        yearlyAttendance.TotalLate = monthlyLate;
+                        yearlyAttendance.TotalHalfDay = monthlyHalfDay;
 
-                        yearlyAttendance.TotalLate = originalLate;
-                        yearlyAttendance.TotalHalfDay = originalHalfDay;
+                        // CRITICAL FIX: Total Present = Present + Late + Half Day
+                        yearlyAttendance.TotalPresent = monthlyPresent + monthlyLate + monthlyHalfDay;
+
+                        // Calculate absent as Working Days - Effective Present
+                        yearlyAttendance.TotalAbsent = Math.Max(0, yearlyAttendance.TotalWorkingDays - yearlyAttendance.TotalPresent);
+
                         yearlyAttendance.TotalHolidays = yearlyAttendance.MonthlyData.Sum(m => m.Holidays);
 
                         // Calculate percentage and grade
                         if (yearlyAttendance.TotalWorkingDays > 0)
                         {
-                            yearlyAttendance.AttendancePercentage =
-                                Math.Round((decimal)yearlyAttendance.TotalPresent / yearlyAttendance.TotalWorkingDays * 100, 2);
+                            decimal attendancePercentage = (decimal)yearlyAttendance.TotalPresent / yearlyAttendance.TotalWorkingDays * 100;
+                            yearlyAttendance.AttendancePercentage = Math.Round(attendancePercentage, 2);
                             yearlyAttendance.AttendanceGrade = GetAttendanceGrade(yearlyAttendance.AttendancePercentage);
                         }
                         else
@@ -681,7 +685,7 @@ namespace ERPIndia.Controllers
                         students.Add(yearlyAttendance);
                     }
 
-                    // Create Excel package
+                    // Create Excel package with the corrected data
                     using (var package = new ExcelPackage())
                     {
                         var worksheet = package.Workbook.Worksheets.Add("Yearly Attendance");
@@ -723,8 +727,6 @@ namespace ERPIndia.Controllers
                         worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
                         worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
-                        // Add gray background color
-                        
                         currentRow += 3; // Add spacing
 
                         // Create table headers
@@ -752,18 +754,18 @@ namespace ERPIndia.Controllers
                         worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
                         col++;
 
-                        // FIXED: Use academic year month order for headers and only show WD, P, A
+                        // Monthly headers (WD, P, A for each month)
                         foreach (var month in monthNames)
                         {
                             worksheet.Cells[headerRow, col].Value = month;
-                            worksheet.Cells[headerRow, col, headerRow, col + 2].Merge = true; // Changed from 3 to 2 (only 3 columns)
+                            worksheet.Cells[headerRow, col, headerRow, col + 2].Merge = true;
                             worksheet.Cells[headerRow, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                             col += 3;
                         }
 
-                        // Yearly Total
+                        // Session Total
                         worksheet.Cells[headerRow, col].Value = "Session Total";
-                        worksheet.Cells[headerRow, col, headerRow, col + 2].Merge = true; // Changed from 3 to 2
+                        worksheet.Cells[headerRow, col, headerRow, col + 2].Merge = true;
                         worksheet.Cells[headerRow, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                         col += 3;
 
@@ -778,7 +780,7 @@ namespace ERPIndia.Controllers
                         currentRow++;
                         col = 6;
 
-                        // FIXED: Add sub-headers for each month (WD, P, A only)
+                        // Sub-headers for each month (WD, P, A only)
                         for (int i = 0; i < 12; i++)
                         {
                             worksheet.Cells[currentRow, col++].Value = "WD";
@@ -790,8 +792,8 @@ namespace ERPIndia.Controllers
                         worksheet.Cells[currentRow, col++].Value = "WD";
                         worksheet.Cells[currentRow, col++].Value = "P";
                         worksheet.Cells[currentRow, col++].Value = "A";
-                        
-                        var fullHeaderRange = worksheet.Cells[headerRow, 1, currentRow, 46]; // currentRow includes sub-header row
+
+                        var fullHeaderRange = worksheet.Cells[headerRow, 1, currentRow, col - 1];
                         fullHeaderRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
                         fullHeaderRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
 
@@ -806,21 +808,20 @@ namespace ERPIndia.Controllers
                             worksheet.Cells[currentRow, col++].Value = student.StudentName;
                             worksheet.Cells[currentRow, col++].Value = student.FatherName;
 
-                            // FIXED: Monthly data with combined Present calculation
+                            // FIXED: Monthly data with combined Present calculation (Present + Late + Half Day)
                             foreach (var monthData in student.MonthlyData)
                             {
-                                int totalPresent = monthData.Present + monthData.Late + monthData.HalfDay;
-                                int absent = monthData.WorkingDays - totalPresent;
-                                if (absent < 0) absent = 0;
+                                int totalEffectivePresent = monthData.Present + monthData.Late + monthData.HalfDay;
+                                int absent = Math.Max(0, monthData.WorkingDays - totalEffectivePresent);
 
                                 worksheet.Cells[currentRow, col++].Value = monthData.WorkingDays;
-                                worksheet.Cells[currentRow, col++].Value = totalPresent;
+                                worksheet.Cells[currentRow, col++].Value = totalEffectivePresent;
                                 worksheet.Cells[currentRow, col++].Value = absent;
                             }
 
-                            // Session totals
+                            // Session totals (using the corrected calculation)
                             worksheet.Cells[currentRow, col++].Value = student.TotalWorkingDays;
-                            worksheet.Cells[currentRow, col++].Value = student.TotalPresent;
+                            worksheet.Cells[currentRow, col++].Value = student.TotalPresent; // This now includes Present + Late + Half Day
                             worksheet.Cells[currentRow, col++].Value = student.TotalAbsent;
 
                             worksheet.Cells[currentRow, col++].Value = student.AttendancePercentage.ToString("0.00") + "%";
@@ -941,14 +942,14 @@ namespace ERPIndia.Controllers
                 holidays = result != null ? Convert.ToInt32(result) : 0;
             }
 
-            // FIXED: Calculate working days: Total days - Sundays - Holidays
+            // Calculate working days: Total days - Sundays - Holidays
             monthData.WorkingDays = totalDaysInMonth - sundays - holidays;
             monthData.Holidays = holidays;
 
             // Get attendance summary for the student
             string attendanceQuery = @"
         SELECT 
-            Status,
+            LOWER(RTRIM(LTRIM(Status))) as CleanStatus,
             COUNT(*) as Count
         FROM StudentAttendance
         WHERE StudentID = @StudentID
@@ -957,7 +958,7 @@ namespace ERPIndia.Controllers
             AND IsDeleted = 0
             AND TenantID = @TenantID
             AND SessionID = @SessionID
-        GROUP BY Status";
+        GROUP BY LOWER(RTRIM(LTRIM(Status)))";
 
             using (SqlCommand cmd = new SqlCommand(attendanceQuery, conn))
             {
@@ -971,10 +972,11 @@ namespace ERPIndia.Controllers
                 {
                     while (reader.Read())
                     {
-                        string status = reader["Status"].ToString();
+                        string cleanStatus = reader["CleanStatus"].ToString();
                         int count = Convert.ToInt32(reader["Count"]);
 
-                        switch (status.ToLower().Trim())
+                        // FIXED: More robust status matching
+                        switch (cleanStatus)
                         {
                             case "present":
                             case "p":
@@ -999,7 +1001,7 @@ namespace ERPIndia.Controllers
                 }
             }
 
-            // FIXED: Calculate attendance percentage - Present + Late + Half Day all count as present
+            // Calculate attendance percentage (Present + Late + Half Day as effective present)
             if (monthData.WorkingDays > 0)
             {
                 decimal effectivePresent = monthData.Present + monthData.Late + monthData.HalfDay;
@@ -1008,7 +1010,6 @@ namespace ERPIndia.Controllers
 
             return monthData;
         }
-
         // Calculate monthly statistics for the entire class - FIXED VERSION
         private MonthlyStats CalculateMonthlyStatistics(SqlConnection conn, string classId, string sectionId, int month, int year)
         {
@@ -2177,139 +2178,543 @@ WHERE sa.AttendanceDate = @AttendanceDate
                 });
             }
         }
-        //[HttpPost]
-        //public JsonResult ExportMonthlyAttendanceToExcel(string classId, string sectionId, int month, int year)
-        //{
-        //    try
-        //    {
-        //        using (SqlConnection conn = new SqlConnection(ConnectionString))
-        //        {
-        //            conn.Open();
+        [HttpPost]
+        public JsonResult ExportMonthlyAttendanceToExcel(string classId, string sectionId, string monthYear)
+        {
+            try
+            {
+                // Parse month and year from the combined value
+                string[] parts = monthYear.Split('-');
+                int month = int.Parse(parts[0]);
+                int year = int.Parse(parts[1]);
 
-        //            // Get school details
-        //            string schoolName = "";
-        //            string schoolAddress = "";
-        //            string schoolQuery = @"
-        //        SELECT 
-        //            ISNULL(PrintTitle, 'School Name') as SchoolName,
-        //            ISNULL(Line1, 'School Address') as Address
-        //        FROM Tenants 
-        //        WHERE TenantID = @TenantID";
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
 
-        //            using (SqlCommand cmd = new SqlCommand(schoolQuery, conn))
-        //            {
-        //                cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
-        //                using (SqlDataReader reader = cmd.ExecuteReader())
-        //                {
-        //                    if (reader.Read())
-        //                    {
-        //                        schoolName = reader["SchoolName"].ToString();
-        //                        schoolAddress = reader["Address"].ToString();
-        //                    }
-        //                }
-        //            }
+                    // Get session details first
+                    DateTime sessionStartDate = DateTime.MinValue;
+                    DateTime sessionEndDate = DateTime.MinValue;
+                    string sessionName = "";
 
-        //            // Get class and section names
-        //            string className = "";
-        //            string sectionName = "";
+                    string sessionQuery = @"
+                SELECT StartDate, EndDate, PrintName as SessionName 
+                FROM AcademicSessionMaster 
+                WHERE SessionID = @SessionID";
 
-        //            string classQuery = "SELECT ClassName FROM AcademicClassMaster WHERE ClassID = @ClassID";
-        //            using (SqlCommand cmd = new SqlCommand(classQuery, conn))
-        //            {
-        //                cmd.Parameters.AddWithValue("@ClassID", classId);
-        //                className = cmd.ExecuteScalar()?.ToString() ?? "";
-        //            }
+                    using (SqlCommand cmd = new SqlCommand(sessionQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                sessionStartDate = Convert.ToDateTime(reader["StartDate"]);
+                                sessionEndDate = Convert.ToDateTime(reader["EndDate"]);
+                                sessionName = reader["SessionName"]?.ToString() ?? "";
+                            }
+                        }
+                    }
 
-        //            string sectionQuery = "SELECT SectionName FROM AcademicSectionMaster WHERE SectionID = @SectionID";
-        //            using (SqlCommand cmd = new SqlCommand(sectionQuery, conn))
-        //            {
-        //                cmd.Parameters.AddWithValue("@SectionID", sectionId);
-        //                sectionName = cmd.ExecuteScalar()?.ToString() ?? "";
-        //            }
+                    // Get school details
+                    string schoolName = "";
+                    string schoolAddress = "";
+                    string schoolQuery = @"
+                SELECT 
+                    ISNULL(PrintTitle, 'School Name') as SchoolName,
+                    ISNULL(Line1, 'School Address') as Address
+                FROM Tenants 
+                WHERE TenantID = @TenantID";
 
-        //            // Get session year
-        //            string sessionYear = "";
-        //            string sessionQuery = "SELECT SessionName FROM AcademicSessionMaster WHERE SessionID = @SessionID";
-        //            using (SqlCommand cmd = new SqlCommand(sessionQuery, conn))
-        //            {
-        //                cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
-        //                sessionYear = cmd.ExecuteScalar()?.ToString() ?? "2025-26";
-        //            }
+                    using (SqlCommand cmd = new SqlCommand(schoolQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                schoolName = reader["SchoolName"].ToString();
+                                schoolAddress = reader["Address"].ToString();
+                            }
+                        }
+                    }
 
-        //            // Build the report data (reuse the logic from GetMonthlyAttendanceReport)
-        //            // [Include the same logic for building report data]
+                    // Get class and section names
+                    string className = "";
+                    string sectionName = "";
 
-        //            // Create Excel package
-        //            using (var package = new ExcelPackage())
-        //            {
-        //                var worksheet = package.Workbook.Worksheets.Add("Monthly Attendance");
+                    string classQuery = "SELECT ClassName FROM AcademicClassMaster WHERE ClassID = @ClassID";
+                    using (SqlCommand cmd = new SqlCommand(classQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ClassID", classId);
+                        className = cmd.ExecuteScalar()?.ToString() ?? "";
+                    }
 
-        //                // Set all cells to black font
-        //                worksheet.Cells.Style.Font.Color.SetColor(System.Drawing.Color.Black);
+                    string sectionQuery = "SELECT SectionName FROM AcademicSectionMaster WHERE SectionID = @SectionID";
+                    using (SqlCommand cmd = new SqlCommand(sectionQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SectionID", sectionId);
+                        sectionName = cmd.ExecuteScalar()?.ToString() ?? "";
+                    }
 
-        //                // Add Header Information
-        //                int currentRow = 1;
-        //                worksheet.Cells[currentRow, 1].Value = schoolName;
-        //                worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
-        //                worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
-        //                worksheet.Cells[currentRow, 1].Style.Font.Size = 14;
-        //                worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    // Calculate effective dates for the month within session
+                    DateTime selectedMonthStart = new DateTime(year, month, 1);
+                    DateTime selectedMonthEnd = selectedMonthStart.AddMonths(1).AddDays(-1);
+                    DateTime effectiveStartDate = selectedMonthStart < sessionStartDate ? sessionStartDate : selectedMonthStart;
+                    DateTime effectiveEndDate = selectedMonthEnd > sessionEndDate ? sessionEndDate : selectedMonthEnd;
 
-        //                currentRow++;
-        //                worksheet.Cells[currentRow, 1].Value = schoolAddress;
-        //                worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
-        //                worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    // Check if month is completely outside session
+                    if (selectedMonthEnd < sessionStartDate || selectedMonthStart > sessionEndDate)
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = $"Selected month is outside the session period"
+                        });
+                    }
 
-        //                currentRow++;
-        //                worksheet.Cells[currentRow, 1].Value = $"Class: {className} | Section: {sectionName} | Month: {new DateTime(year, month, 1).ToString("MMMM yyyy")} | Session: {sessionYear}";
-        //                worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
-        //                worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
-        //                worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    // Count working days
+                    int totalDaysInMonth = DateTime.DaysInMonth(year, month);
+                    int effectiveDaysInMonth = 0;
+                    int sundays = 0;
 
-        //                currentRow++;
-        //                worksheet.Cells[currentRow, 1].Value = "MONTHLY ATTENDANCE REPORT";
-        //                worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
-        //                worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
-        //                worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    for (DateTime date = effectiveStartDate; date <= effectiveEndDate; date = date.AddDays(1))
+                    {
+                        if (date.DayOfWeek == DayOfWeek.Sunday)
+                            sundays++;
+                        effectiveDaysInMonth++;
+                    }
 
-        //                currentRow += 2;
+                    // Get holidays (excluding Sundays)
+                    var holidays = new HashSet<DateTime>();
+                    int holidayCount = 0;
+                    string holidayQuery = @"
+                SELECT HolidayDate, HolidayName
+                FROM HolidayCalendar 
+                WHERE HolidayDate >= @EffectiveStartDate
+                    AND HolidayDate <= @EffectiveEndDate
+                    AND DATEPART(WEEKDAY, HolidayDate) != 1 -- Exclude Sundays
+                    AND IsDeleted = 0
+                    AND TenantID = @TenantID";
 
-        //                // [Add table headers and data similar to yearly report but for monthly data]
-        //                // Headers: S.No, Student, Father, [Days 1-31], Total, P, %, A, L
+                    using (SqlCommand cmd = new SqlCommand(holidayQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@EffectiveStartDate", effectiveStartDate);
+                        cmd.Parameters.AddWithValue("@EffectiveEndDate", effectiveEndDate);
+                        cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
 
-        //                // Apply borders
-        //                var tableRange = worksheet.Cells[currentRow, 1, currentRow + students.Count, 36];
-        //                var border = tableRange.Style.Border;
-        //                border.Top.Style = ExcelBorderStyle.Thin;
-        //                border.Bottom.Style = ExcelBorderStyle.Thin;
-        //                border.Left.Style = ExcelBorderStyle.Thin;
-        //                border.Right.Style = ExcelBorderStyle.Thin;
-        //                border.Top.Color.SetColor(System.Drawing.Color.Black);
-        //                border.Bottom.Color.SetColor(System.Drawing.Color.Black);
-        //                border.Left.Color.SetColor(System.Drawing.Color.Black);
-        //                border.Right.Color.SetColor(System.Drawing.Color.Black);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                if (reader["HolidayDate"] != DBNull.Value)
+                                {
+                                    holidays.Add(Convert.ToDateTime(reader["HolidayDate"]).Date);
+                                    holidayCount++;
+                                }
+                            }
+                        }
+                    }
 
-        //                // Auto-fit columns
-        //                worksheet.Cells.AutoFitColumns();
+                    int workingDays = effectiveDaysInMonth - sundays - holidayCount;
 
-        //                // Convert to byte array
-        //                byte[] fileBytes = package.GetAsByteArray();
-        //                string fileName = $"MonthlyAttendance_{className}_{sectionName}_{new DateTime(year, month, 1).ToString("MMM_yyyy")}.xlsx";
+                    // Get students data
+                    var students = new List<StudentMonthlyAttendance>();
+                    string studentQuery = @"
+                SELECT 
+                    s.StudentID,
+                    s.AdmsnNo AS AdmissionNo,
+                    s.RollNo AS RollNumber,
+                    RTRIM(LTRIM(ISNULL(s.FirstName, '') + ' ' + ISNULL(s.LastName, ''))) AS StudentName,
+                    RTRIM(LTRIM(ISNULL(s.FatherName, ''))) AS FatherName
+                FROM StudentInfoBasic s
+                WHERE s.ClassID = @ClassID 
+                    AND s.SectionID = @SectionID
+                    AND s.IsActive = 1
+                    AND s.IsDeleted = 0
+                    AND s.TenantID = @TenantID
+                    AND s.SessionID = @SessionID
+                ORDER BY CAST(s.RollNo AS INT), s.FirstName";
 
-        //                return Json(new
-        //                {
-        //                    success = true,
-        //                    fileContent = Convert.ToBase64String(fileBytes),
-        //                    fileName = fileName
-        //                });
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { success = false, message = "Error: " + ex.Message });
-        //    }
-        //}
+                    var studentList = new List<StudentData>();
+
+                    using (SqlCommand cmd = new SqlCommand(studentQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@ClassID", classId);
+                        cmd.Parameters.AddWithValue("@SectionID", sectionId);
+                        cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                        cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                studentList.Add(new StudentData
+                                {
+                                    StudentID = reader["StudentID"]?.ToString() ?? "",
+                                    AdmissionNo = reader["AdmissionNo"]?.ToString() ?? "",
+                                    RollNumber = reader["RollNumber"]?.ToString() ?? "",
+                                    StudentName = reader["StudentName"]?.ToString()?.Trim() ?? "",
+                                    FatherName = reader["FatherName"]?.ToString()?.Trim() ?? ""
+                                });
+                            }
+                        }
+                    }
+
+                    // Process each student
+                    int serialNo = 1;
+                    foreach (var student in studentList)
+                    {
+                        var monthlyAttendance = new StudentMonthlyAttendance
+                        {
+                            SerialNo = serialNo++,
+                            StudentID = student.StudentID,
+                            AdmissionNo = student.AdmissionNo,
+                            RollNumber = student.RollNumber,
+                            StudentName = student.StudentName,
+                            FatherName = student.FatherName,
+                            DailyAttendanceMonthly = new Dictionary<string, string>(),
+                            TotalPresent = 0,
+                            TotalAbsent = 0,
+                            TotalLate = 0,
+                            TotalHalfDay = 0
+                        };
+
+                        // Get attendance for each day of the month
+                        string attendanceQuery = @"
+                    SELECT 
+                        DAY(AttendanceDate) as DayOfMonth,
+                        AttendanceDate,
+                        Status
+                    FROM StudentAttendance
+                    WHERE StudentID = @StudentID
+                        AND AttendanceDate >= @EffectiveStartDate
+                        AND AttendanceDate <= @EffectiveEndDate
+                        AND IsDeleted = 0
+                        AND TenantID = @TenantID
+                        AND SessionID = @SessionID";
+
+                        using (SqlCommand cmd = new SqlCommand(attendanceQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@StudentID", student.StudentID);
+                            cmd.Parameters.AddWithValue("@EffectiveStartDate", effectiveStartDate);
+                            cmd.Parameters.AddWithValue("@EffectiveEndDate", effectiveEndDate);
+                            cmd.Parameters.AddWithValue("@TenantID", CurrentTenantID);
+                            cmd.Parameters.AddWithValue("@SessionID", CurrentSessionID);
+
+                            using (SqlDataReader reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    if (reader["DayOfMonth"] != DBNull.Value && reader["Status"] != DBNull.Value)
+                                    {
+                                        int day = Convert.ToInt32(reader["DayOfMonth"]);
+                                        string status = reader["Status"].ToString();
+                                        string dayKey = day.ToString();
+
+                                        // Map status to code and count
+                                        switch (status.ToLower().Trim())
+                                        {
+                                            case "present":
+                                            case "p":
+                                                monthlyAttendance.DailyAttendanceMonthly[dayKey] = "P";
+                                                monthlyAttendance.TotalPresent++;
+                                                break;
+                                            case "absent":
+                                            case "a":
+                                                monthlyAttendance.DailyAttendanceMonthly[dayKey] = "A";
+                                                monthlyAttendance.TotalAbsent++;
+                                                break;
+                                            case "late":
+                                            case "l":
+                                                monthlyAttendance.DailyAttendanceMonthly[dayKey] = "L";
+                                                monthlyAttendance.TotalLate++;
+                                                break;
+                                            case "half day":
+                                            case "halfday":
+                                            case "hd":
+                                            case "h":
+                                                monthlyAttendance.DailyAttendanceMonthly[dayKey] = "HD";
+                                                monthlyAttendance.TotalHalfDay++;
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Calculate effective present and percentage
+                        decimal effectivePresent = monthlyAttendance.TotalPresent + monthlyAttendance.TotalLate + monthlyAttendance.TotalHalfDay;
+                        monthlyAttendance.TotalEffectivePresent = (int)effectivePresent;
+
+                        // Recalculate absent based on working days
+                        monthlyAttendance.TotalAbsent = Math.Max(0, workingDays - monthlyAttendance.TotalEffectivePresent);
+
+                        if (workingDays > 0)
+                        {
+                            monthlyAttendance.AttendancePercentage = Math.Round((effectivePresent / workingDays) * 100, 1);
+                        }
+                        else
+                        {
+                            monthlyAttendance.AttendancePercentage = 0;
+                        }
+
+                        students.Add(monthlyAttendance);
+                    }
+
+                    // Create Excel package
+                    using (var package = new ExcelPackage())
+                    {
+                        var worksheet = package.Workbook.Worksheets.Add("Monthly Attendance");
+
+                        // Set all cells to black font
+                        worksheet.Cells.Style.Font.Color.SetColor(System.Drawing.Color.Black);
+
+                        // Add Header Information
+                        int currentRow = 1;
+                        worksheet.Cells[currentRow, 1].Value = schoolName.ToUpper();
+                        worksheet.Cells[currentRow, 1, currentRow, 40].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Size = 14;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        currentRow++;
+                        worksheet.Cells[currentRow, 1].Value = schoolAddress;
+                        worksheet.Cells[currentRow, 1, currentRow, 40].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        currentRow++;
+                        worksheet.Cells[currentRow, 1].Value = $"MONTHLY ATTENDANCE REPORT - {new DateTime(year, month, 1).ToString("MMMM yyyy")}".ToUpper();
+                        worksheet.Cells[currentRow, 1, currentRow, 40].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        worksheet.Cells[currentRow, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        worksheet.Cells[currentRow, 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+
+                        currentRow++;
+                        worksheet.Cells[currentRow, 1].Value = $"Class: {className} | Section: {sectionName} | Session: {sessionName}";
+                        worksheet.Cells[currentRow, 1, currentRow, 40].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        currentRow++;
+                        worksheet.Cells[currentRow, 1].Value = $"Working Days: {workingDays} | Holidays: {holidayCount} | Sundays: {sundays}";
+                        worksheet.Cells[currentRow, 1, currentRow, 40].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        currentRow++;
+                        worksheet.Cells[currentRow, 1].Value = "Legend: P=Present, A=Absent, L=Late, HD=Half Day, S=Sunday, H=Holiday";
+                        worksheet.Cells[currentRow, 1, currentRow, 40].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Italic = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        currentRow += 2; // Add spacing
+
+                        // Create table headers
+                        int headerRow = currentRow;
+                        int col = 1;
+
+                        // Main headers
+                        worksheet.Cells[headerRow, col++].Value = "S.No";
+                        worksheet.Cells[headerRow, col++].Value = "Adm No";
+                        worksheet.Cells[headerRow, col++].Value = "Roll No";
+                        worksheet.Cells[headerRow, col++].Value = "Student Name";
+                        worksheet.Cells[headerRow, col++].Value = "Father Name";
+
+                        // Day headers (1-31)
+                        int dayStartCol = col;
+                        for (int day = 1; day <= totalDaysInMonth; day++)
+                        {
+                            var currentDate = new DateTime(year, month, day);
+                            worksheet.Cells[headerRow, col].Value = day.ToString();
+
+                            // Add day of week below
+                            worksheet.Cells[headerRow + 1, col].Value = currentDate.ToString("ddd").Substring(0, 2).ToUpper();
+
+                            // Color Sunday columns
+                            if (currentDate.DayOfWeek == DayOfWeek.Sunday)
+                            {
+                                worksheet.Cells[headerRow, col, headerRow + 1, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                worksheet.Cells[headerRow, col, headerRow + 1, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                            }
+
+                            // Color holiday columns
+                            if (holidays.Contains(currentDate.Date))
+                            {
+                                worksheet.Cells[headerRow, col, headerRow + 1, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                worksheet.Cells[headerRow, col, headerRow + 1, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightYellow);
+                            }
+
+                            col++;
+                        }
+
+                        // Summary headers
+                        worksheet.Cells[headerRow, col].Value = "Total";
+                        worksheet.Cells[headerRow, col, headerRow, col + 3].Merge = true;
+                        worksheet.Cells[headerRow, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        worksheet.Cells[headerRow + 1, col++].Value = "P";
+                        worksheet.Cells[headerRow + 1, col++].Value = "A";
+                        worksheet.Cells[headerRow + 1, col++].Value = "L";
+                        worksheet.Cells[headerRow + 1, col++].Value = "HD";
+
+                        worksheet.Cells[headerRow, col].Value = "%";
+                        worksheet.Cells[headerRow, col, headerRow + 1, col].Merge = true;
+
+                        // Format header rows
+                        var fullHeaderRange = worksheet.Cells[headerRow, 1, headerRow + 1, col];
+                        fullHeaderRange.Style.Font.Bold = true;
+                        fullHeaderRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        fullHeaderRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                        fullHeaderRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        fullHeaderRange.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+
+                        // Add student data
+                        currentRow = headerRow + 2;
+                        foreach (var student in students)
+                        {
+                            col = 1;
+                            worksheet.Cells[currentRow, col++].Value = student.SerialNo;
+                            worksheet.Cells[currentRow, col++].Value = student.AdmissionNo;
+                            worksheet.Cells[currentRow, col++].Value = student.RollNumber;
+                            worksheet.Cells[currentRow, col++].Value = student.StudentName;
+                            worksheet.Cells[currentRow, col++].Value = student.FatherName;
+
+                            // Daily attendance
+                            for (int day = 1; day <= totalDaysInMonth; day++)
+                            {
+                                var currentDate = new DateTime(year, month, day);
+                                string cellValue = "";
+
+                                // Check if date is within session
+                                if (currentDate < effectiveStartDate || currentDate > effectiveEndDate)
+                                {
+                                    cellValue = "-";
+                                    worksheet.Cells[currentRow, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                    worksheet.Cells[currentRow, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                                }
+                                else if (currentDate.DayOfWeek == DayOfWeek.Sunday)
+                                {
+                                    cellValue = "S";
+                                    worksheet.Cells[currentRow, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                    worksheet.Cells[currentRow, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.Yellow);
+                                }
+                                else if (holidays.Contains(currentDate.Date))
+                                {
+                                    cellValue = "H";
+                                    worksheet.Cells[currentRow, col].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                    worksheet.Cells[currentRow, col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightYellow);
+                                }
+                                else if (student.DailyAttendanceMonthly.ContainsKey(day.ToString()))
+                                {
+                                    cellValue = student.DailyAttendanceMonthly[day.ToString()];
+
+                                    // Apply color based on status
+                                    switch (cellValue)
+                                    {
+                                        case "P":
+                                            worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Green);
+                                            break;
+                                        case "A":
+                                            worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Red);
+                                            break;
+                                        case "L":
+                                            worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Orange);
+                                            break;
+                                        case "HD":
+                                            worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Blue);
+                                            break;
+                                    }
+                                }
+
+                                worksheet.Cells[currentRow, col].Value = cellValue;
+                                worksheet.Cells[currentRow, col].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                                col++;
+                            }
+
+                            // Summary data
+                            worksheet.Cells[currentRow, col++].Value = student.TotalPresent;
+                            worksheet.Cells[currentRow, col++].Value = student.TotalAbsent;
+                            worksheet.Cells[currentRow, col++].Value = student.TotalLate;
+                            worksheet.Cells[currentRow, col++].Value = student.TotalHalfDay;
+                            worksheet.Cells[currentRow, col].Value = student.AttendancePercentage.ToString("0.0") + "%";
+
+                            // Color code percentage
+                            if (student.AttendancePercentage >= 90)
+                                worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Green);
+                            else if (student.AttendancePercentage >= 75)
+                                worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Blue);
+                            else if (student.AttendancePercentage >= 60)
+                                worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Orange);
+                            else
+                                worksheet.Cells[currentRow, col].Style.Font.Color.SetColor(System.Drawing.Color.Red);
+
+                            currentRow++;
+                        }
+
+                        // Add summary row
+                        currentRow++;
+                        worksheet.Cells[currentRow, 1].Value = "Average Attendance:";
+                        worksheet.Cells[currentRow, 1, currentRow, 5].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Bold = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+                        decimal averageAttendance = students.Count > 0 ?
+                            students.Average(s => s.AttendancePercentage) : 0;
+                        worksheet.Cells[currentRow, 6].Value = averageAttendance.ToString("0.0") + "%";
+                        worksheet.Cells[currentRow, 6].Style.Font.Bold = true;
+
+                        // Apply borders to all data cells
+                        var tableRange = worksheet.Cells[headerRow, 1, currentRow - 1, col];
+                        var border = tableRange.Style.Border;
+                        border.Top.Style = ExcelBorderStyle.Thin;
+                        border.Bottom.Style = ExcelBorderStyle.Thin;
+                        border.Left.Style = ExcelBorderStyle.Thin;
+                        border.Right.Style = ExcelBorderStyle.Thin;
+
+                        // Auto-fit columns with max width
+                        for (int i = 1; i <= col; i++)
+                        {
+                            worksheet.Column(i).AutoFit();
+                            if (i >= dayStartCol && i < dayStartCol + 31)
+                            {
+                                worksheet.Column(i).Width = 4; // Narrow columns for days
+                            }
+                            else if (worksheet.Column(i).Width > 30)
+                            {
+                                worksheet.Column(i).Width = 30;
+                            }
+                        }
+
+                        // Add footer
+                        currentRow += 2;
+                        worksheet.Cells[currentRow, 1].Value = $"Report Generated: {DateTime.Now.ToString("dd-MMM-yyyy HH:mm")}";
+                        worksheet.Cells[currentRow, 1, currentRow, 10].Merge = true;
+                        worksheet.Cells[currentRow, 1].Style.Font.Italic = true;
+                        worksheet.Cells[currentRow, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        // Convert to byte array
+                        byte[] fileBytes = package.GetAsByteArray();
+                        string fileName = $"MonthlyAttendance_{className}_{sectionName}_{new DateTime(year, month, 1).ToString("MMM_yyyy")}.xlsx";
+
+                        return Json(new
+                        {
+                            success = true,
+                            fileContent = Convert.ToBase64String(fileBytes),
+                            fileName = fileName
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Error generating Excel: " + ex.Message
+                });
+            }
+        }
         private string GetUpdatedStatusCode(string status)
         {
             if (string.IsNullOrEmpty(status))

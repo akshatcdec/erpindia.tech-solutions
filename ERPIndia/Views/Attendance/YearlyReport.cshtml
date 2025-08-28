@@ -549,7 +549,7 @@ $(document).ready(function() {
                             if (absent < 0) absent = 0; // Ensure no negative values
 
                             bodyHtml += '<td class="wd-column-data">' + workingDays + '</td>';
-                            bodyHtml += '<td>' + present + '</td>';
+                            bodyHtml += '<td>' + (present + late+ halfDay) + '</td>';
                             bodyHtml += '<td>' + absent + '</td>';
                         } else {
                             bodyHtml += '<td class="wd-column-data">0</td><td>0</td><td>0</td>';

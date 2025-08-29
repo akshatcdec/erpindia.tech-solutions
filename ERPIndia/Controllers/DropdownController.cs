@@ -47,6 +47,7 @@ namespace ERPIndia.Controllers
             _connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
         }
 
+
         [HttpGet]
         public JsonResult GetPickupPointsByRoute(Guid routeId)
         {

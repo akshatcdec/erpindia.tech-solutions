@@ -154,22 +154,23 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">Employee ID (Auto Generate)</label>
+                                    <label class="form-label">Employee ID</label>
                                     @Html.TextBoxFor(m => m.Basic.TeacherCode, new { @class = "form-control", @readonly = "readonly", placeholder = "Auto-generated" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label required">Designation</label>
-                                    <select class="form-select select2" name="Designation">
-                                        <option value="">Select Designation</option>
-                                        <option value="Principal">Principal</option>
-                                        <option value="Vice Principal">Vice Principal</option>
-                                        <option value="Teacher">Teacher</option>
-                                        <option value="Assistant Teacher">Assistant Teacher</option>
-                                        <option value="Lab Assistant">Lab Assistant</option>
-                                        <option value="Librarian">Librarian</option>
-                                    </select>
+                                    @Html.DropDownListFor(m => m.Basic.Designation, new List<SelectListItem> {
+                                        new SelectListItem { Value = "", Text = "Select Designation" },
+                                        new SelectListItem { Value = "Principal", Text = "Principal" },
+                                        new SelectListItem { Value = "Vice Principal", Text = "Vice Principal" },
+                                        new SelectListItem { Value = "Teacher", Text = "Teacher" },
+                                        new SelectListItem { Value = "Assistant Teacher", Text = "Assistant Teacher" },
+                                        new SelectListItem { Value = "Lab Assistant", Text = "Lab Assistant" },
+                                        new SelectListItem { Value = "Librarian", Text = "Librarian" }
+                                    }, new { @class = "form-select select2", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.Designation, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -179,32 +180,57 @@
                                         <span class="input-icon-addon">
                                             <i class="ti ti-calendar"></i>
                                         </span>
-                                        @Html.TextBoxFor(m => m.Basic.DateOfJoining, new { @class = "form-control datetimepicker", placeholder = "DD/MM/YYYY" })
+                                        @Html.TextBoxFor(m => m.Basic.DateOfJoining, new { @class = "form-control datetimepicker", placeholder = "DD/MM/YYYY", required = "required" })
                                     </div>
+                                    @Html.ValidationMessageFor(m => m.Basic.DateOfJoining, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.Qualification, "Qualification", new { @class = "form-label required" })
-                                    @Html.TextBoxFor(m => m.Basic.Qualification, new { @class = "form-control", maxlength = "100", placeholder = "e.g., B.Ed, M.A." })
+                                    @Html.TextBoxFor(m => m.Basic.Qualification, new { @class = "form-control", maxlength = "100", placeholder = "e.g., B.Ed, M.A.", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.Qualification, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.WorkExperience, "Work Experience", new { @class = "form-label required" })
-                                    @Html.TextBoxFor(m => m.Basic.WorkExperience, new { @class = "form-control", maxlength = "50", placeholder = "e.g., 5 Years" })
+                                    @Html.TextBoxFor(m => m.Basic.WorkExperience, new { @class = "form-control", maxlength = "50", placeholder = "e.g., 5 Years", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.WorkExperience, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Experience Details</label>
-                                    <input type="text" class="form-control" name="ExperienceDetails" maxlength="200" placeholder="Previous experience details" />
+                                    @Html.TextBoxFor(m => m.Basic.ExperienceDetails, new { @class = "form-control", maxlength = "200", placeholder = "Previous experience details" })
+                                </div>
+                            </div>
+
+                            <!-- Teacher-specific fields (conditional) -->
+                            <div class="col-md-4 teacher-fields" style="display:none;">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.ClassId, "Class", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.ClassId, Model.Basic.ClassList, "Select Class", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.ClassId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-4 teacher-fields" style="display:none;">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.SubjectId, "Subject", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Basic.SubjectId, Model.Basic.SubjectList, "Select Subject", new { @class = "form-select select2" })
+                                    @Html.ValidationMessageFor(m => m.Basic.SubjectId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-4 teacher-fields" style="display:none;">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.OtherSubject, "OtherSubject", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.OtherSubject, new { @class = "form-control", placeholder = "Additional notes about academic background", rows = "3", maxlength = "500" })
                                 </div>
                             </div>
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label class="form-label">Note</label>
-                                    @Html.TextAreaFor(m => m.Basic.Notes, new { @class = "form-control", placeholder = "Additional notes about academic background", rows = "3", maxlength = "500" })
+                                    @Html.TextBoxFor(m => m.Basic.Notes, new { @class = "form-control", placeholder = "Additional notes about academic background", rows = "3", maxlength = "500" })
                                 </div>
                             </div>
                         </div>
@@ -240,7 +266,7 @@
                                                 </div>
                                                 <a href="javascript:void(0);" class="btn btn-primary mb-3 ms-2" id="removePhotoBtn">Remove</a>
                                             </div>
-                                            <p class="fs-12">Upload image size 4MB, Format JPG, PNG, SVG</p>
+                                            <p class="fs-12">Upload image size less than 100KB Format JPG or use camera</p>
                                         </div>
                                     </div>
                                 </div>
@@ -253,38 +279,41 @@
                                     <label class="form-label required">Employee Name</label>
                                     <input type="text" class="form-control" name="EmployeeName" maxlength="100" placeholder="Enter full name" required />
                                 </div>
-                            </div>
-                            <div class="col-md-4">
+                            </div><div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.FatherName, "Father's Name", new { @class = "form-label required" })
-                                    @Html.TextBoxFor(m => m.Basic.FatherName, new { @class = "form-control", maxlength = "50", placeholder = "Enter father's name" })
+                                    @Html.TextBoxFor(m => m.Basic.FatherName, new { @class = "form-control", maxlength = "50", placeholder = "Enter father's name", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.FatherName, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.MotherName, "Mother's Name", new { @class = "form-label required" })
-                                    @Html.TextBoxFor(m => m.Basic.MotherName, new { @class = "form-control", maxlength = "50", placeholder = "Enter mother's name" })
+                                    @Html.TextBoxFor(m => m.Basic.MotherName, new { @class = "form-control", maxlength = "50", placeholder = "Enter mother's name", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.MotherName, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.Gender, "Gender", new { @class = "form-label required" })
-                                    @Html.DropDownListFor(m => m.Basic.Gender, Model.Basic.GenderList, "Select", new { @class = "form-select select2" })
+                                    @Html.DropDownListFor(m => m.Basic.Gender, Model.Basic.GenderList, "Select", new { @class = "form-select select2", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.Gender, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label required">Religion</label>
-                                    <select class="form-select select2" name="Religion">
-                                        <option value="">Select Religion</option>
-                                        <option value="Hindu">Hindu</option>
-                                        <option value="Muslim">Muslim</option>
-                                        <option value="Christian">Christian</option>
-                                        <option value="Sikh">Sikh</option>
-                                        <option value="Buddhist">Buddhist</option>
-                                        <option value="Jain">Jain</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                    @Html.DropDownListFor(m => m.Basic.Religion, new List<SelectListItem> {
+                                        new SelectListItem { Value = "", Text = "Select Religion" },
+                                        new SelectListItem { Value = "Hindu", Text = "Hindu" },
+                                        new SelectListItem { Value = "Muslim", Text = "Muslim" },
+                                        new SelectListItem { Value = "Christian", Text = "Christian" },
+                                        new SelectListItem { Value = "Sikh", Text = "Sikh" },
+                                        new SelectListItem { Value = "Buddhist", Text = "Buddhist" },
+                                        new SelectListItem { Value = "Jain", Text = "Jain" },
+                                        new SelectListItem { Value = "Other", Text = "Other" }
+                                    }, new { @class = "form-select select2", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.Religion, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -307,13 +336,15 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.MaritalStatus, "Marital Status", new { @class = "form-label required" })
-                                    @Html.DropDownListFor(m => m.Basic.MaritalStatus, Model.Basic.MaritalStatusList, "Select", new { @class = "form-select select2" })
+                                    @Html.DropDownListFor(m => m.Basic.MaritalStatus, Model.Basic.MaritalStatusList, "Select", new { @class = "form-select select2", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.MaritalStatus, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.PrimaryContactNumber, "Mobile No", new { @class = "form-label required" })
-                                    @Html.TextBoxFor(m => m.Basic.PrimaryContactNumber, new { @class = "form-control numeric-only", maxlength = "10", placeholder = "10-digit mobile" })
+                                    @Html.TextBoxFor(m => m.Basic.PrimaryContactNumber, new { @class = "form-control numeric-only", maxlength = "10", placeholder = "10-digit mobile", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.PrimaryContactNumber, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -325,7 +356,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Aadhar No.</label>
-                                    <input type="text" class="form-control numeric-only" name="AadharNo" maxlength="12" placeholder="12-digit Aadhar" />
+                                    @Html.TextBoxFor(m => m.Basic.AadharNumber, new { @class = "form-control numeric-only", maxlength = "12", placeholder = "12-digit Aadhar" })
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -337,7 +368,8 @@
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.CurrentAddress, "Address", new { @class = "form-label required" })
-                                    @Html.TextAreaFor(m => m.Basic.CurrentAddress, new { @class = "form-control", rows = "2", maxlength = "200", placeholder = "Complete address" })
+                                    @Html.TextAreaFor(m => m.Basic.CurrentAddress, new { @class = "form-control", rows = "2", maxlength = "200", placeholder = "Complete address", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.CurrentAddress, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                         </div>
@@ -360,25 +392,26 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Payroll.BasicSalary, "Salary", new { @class = "form-label required" })
-                                    @Html.TextBoxFor(m => m.Payroll.BasicSalary, new { @class = "form-control", type = "number", step = "0.01", placeholder = "0.00" })
+                                    @Html.TextBoxFor(m => m.Payroll.BasicSalary, new { @class = "form-control", type = "number", step = "0.01", placeholder = "0.00", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Payroll.BasicSalary, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Late Fine (Per Hour)</label>
-                                    <input type="number" class="form-control" name="LateFinePerHour" step="0.01" placeholder="0.00" />
+                                    @Html.TextBoxFor(m => m.Payroll.LateFinePerHour, new { @class = "form-control", type = "number", step = "0.01", placeholder = "0.00" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label required">Time-in</label>
-                                    <input type="time" class="form-control" name="TimeIn" value="09:00" />
+                                    @Html.TextBoxFor(m => m.Basic.TimeIn, new { @class = "form-control", type = "time", Value = "09:00", required = "required" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label required">Time-Out</label>
-                                    <input type="time" class="form-control" name="TimeOut" value="17:00" />
+                                    @Html.TextBoxFor(m => m.Basic.TimeOut, new { @class = "form-control", type = "time", Value = "17:00", required = "required" })
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -395,7 +428,7 @@
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label class="form-label">Note</label>
-                                    <textarea class="form-control" name="PayrollNote" rows="3" maxlength="500" placeholder="Additional payroll notes"></textarea>
+                                    @Html.TextAreaFor(m => m.Payroll.PayrollNote, new { @class = "form-control", rows = "3", maxlength = "500", placeholder = "Additional payroll notes" })
                                 </div>
                             </div>
                         </div>
@@ -530,7 +563,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">UPI ID</label>
-                                    <input type="text" class="form-control" name="UPIID" maxlength="50" placeholder="name@upi" />
+                                    @Html.TextBoxFor(m => m.BankDetails.UPIID, new { @class = "form-control", maxlength = "50", placeholder = "name@upi" })
                                 </div>
                             </div>
                         </div>
@@ -588,10 +621,10 @@
                             <div class="col-md-6">
                                 <div class="mb-3 mb-md-0">
                                     @Html.LabelFor(m => m.Basic.Status, "Status", new { @class = "form-label" })
-                                    <select class="form-select" name="Status">
-                                        <option value="Active" selected>Active</option>
-                                        <option value="Inactive">Inactive</option>
-                                    </select>
+                                    @Html.DropDownListFor(m => m.Basic.Status, new List<SelectListItem> {
+                                        new SelectListItem { Value = "Active", Text = "Active", Selected = true },
+                                        new SelectListItem { Value = "Inactive", Text = "Inactive" }
+                                    }, new { @class = "form-select" })
                                 </div>
                             </div>
                             <div class="col-md-6 text-end">
@@ -621,6 +654,24 @@
             allowClear: true,
             width: '100%'
         });
+
+        // Show/Hide Teacher-specific fields based on Designation
+        $('#Basic_Designation').change(function () {
+            var designation = $(this).val();
+            if (designation === 'Teacher' || designation === 'Assistant Teacher') {
+                $('.teacher-fields').fadeIn();
+            } else {
+                $('.teacher-fields').fadeOut();
+                $('#Basic_ClassId').val('').trigger('change.select2');
+                $('#Basic_SubjectId').val('').trigger('change.select2');
+            }
+        });
+
+        // Check on page load if Teacher is already selected
+        var initialDesignation = $('#Basic_Designation').val();
+        if (initialDesignation === 'Teacher' || initialDesignation === 'Assistant Teacher') {
+            $('.teacher-fields').show();
+        }
 
         // Initialize Date Pickers
         $('.datetimepicker').datepicker({
@@ -711,7 +762,7 @@
         });
 
         // Aadhar validation (12 digits)
-        $('[name="AadharNo"]').on('blur', function () {
+        $('#Basic_AadharNumber').on('blur', function () {
             var aadhar = $(this).val();
 
             if (aadhar && aadhar.length !== 12) {
@@ -761,62 +812,6 @@
                     $(this).val(ifsc.toUpperCase());
                 }
             }
-        });
-
-        // Form Validation before submit
-        $('#employeeForm').submit(function (e) {
-            var isValid = true;
-
-            // Check required fields
-            $('[required], .required').each(function () {
-                var input = $(this).is('label') ? $(this).parent().find('input, select, textarea').first() : $(this);
-                if (!input.val() || input.val() === '') {
-                    input.addClass('is-invalid');
-                    isValid = false;
-                }
-            });
-
-            // Check email format
-            var email = $('#Basic_Email').val();
-            if (email) {
-                var emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
-                if (!emailRegex.test(email)) {
-                    $('#Basic_Email').addClass('is-invalid');
-                    isValid = false;
-                }
-            }
-
-            // Check phone number
-            var phone = $('#Basic_PrimaryContactNumber').val();
-            if (phone && phone.length !== 10) {
-                $('#Basic_PrimaryContactNumber').addClass('is-invalid');
-                isValid = false;
-            }
-
-            // Check Aadhar if provided
-            var aadhar = $('[name="AadharNo"]').val();
-            if (aadhar && aadhar.length !== 12) {
-                $('[name="AadharNo"]').addClass('is-invalid');
-                isValid = false;
-            }
-
-            if (!isValid) {
-                e.preventDefault();
-
-                // Scroll to first error
-                var firstError = $('.is-invalid:first');
-                if (firstError.length) {
-                    $('html, body').animate({
-                        scrollTop: firstError.offset().top - 100
-                    }, 500);
-                }
-
-                // Show alert
-                alert('Please correct the errors in the form before submitting.');
-                return false;
-            }
-
-            return true;
         });
 
         // Remove invalid class on input

@@ -15,7 +15,7 @@ namespace ERPIndia.TeacherManagement.Models
             Leaves = new TeacherLeaves();
             BankDetails = new TeacherBankDetails();
             SocialMedia = new TeacherSocialMedia();
-            Documents = new TeacherDocuments();
+            Documents = new List<TeacherDocument>();
         }
 
         public TeacherBasic Basic { get; set; }
@@ -23,7 +23,7 @@ namespace ERPIndia.TeacherManagement.Models
         public TeacherLeaves Leaves { get; set; }
         public TeacherBankDetails BankDetails { get; set; }
         public TeacherSocialMedia SocialMedia { get; set; }
-        public TeacherDocuments Documents { get; set; }
+        public IEnumerable<TeacherDocument> Documents { get; set; }
     }
 
     public class TeacherBasic
@@ -31,7 +31,7 @@ namespace ERPIndia.TeacherManagement.Models
         public Guid TeacherId { get; set; }
 
         [Required]
-        [Display(Name = "Teacher ID")]
+        [Display(Name = "Teacher Code")]
         public string TeacherCode { get; set; }
 
         [Required]
@@ -41,6 +41,37 @@ namespace ERPIndia.TeacherManagement.Models
         [Display(Name = "Last Name")]
         public string LastName { get; set; }
 
+        // HR Organization Fields
+        [Display(Name = "Designation")]
+        public string DesignationId { get; set; }
+
+        [Display(Name = "Department")]
+        public string DepartmentId { get; set; }
+
+        [Display(Name = "Employee Type")]
+        public string EmployeeTypeId { get; set; }
+
+        [Display(Name = "Branch")]
+        public string BranchId { get; set; }
+
+        [Display(Name = "Manager")]
+        public string ManagerId { get; set; }
+
+        // Denormalized Name Fields (for display/reporting)
+        public string DesignationName { get; set; }
+        public string DepartmentName { get; set; }
+        public string EmployeeTypeName { get; set; }
+        public string BranchName { get; set; }
+        public string ManagerName { get; set; }
+        public string ClassName { get; set; }
+        public string SectionName { get; set; }
+        public string SubjectName { get; set; }
+        public string RouteName { get; set; }
+        public string VehicleName { get; set; }
+        public string PickupName { get; set; }
+        public string HostelName { get; set; }
+
+        // Academic Information
         [Display(Name = "Class")]
         public string ClassId { get; set; }
 
@@ -50,8 +81,15 @@ namespace ERPIndia.TeacherManagement.Models
         [Display(Name = "Subject")]
         public string SubjectId { get; set; }
 
+        [Display(Name = "Other Subject")]
+        public string OtherSubject { get; set; }
+
+        // Personal Information
         [Display(Name = "Gender")]
         public string Gender { get; set; }
+
+        [Display(Name = "Religion")]
+        public string Religion { get; set; }
 
         [Display(Name = "Primary Contact Number")]
         [Phone]
@@ -84,11 +122,23 @@ namespace ERPIndia.TeacherManagement.Models
         [Display(Name = "Languages Known")]
         public string LanguagesKnown { get; set; }
 
+        // Professional Information
         [Display(Name = "Qualification")]
         public string Qualification { get; set; }
 
         [Display(Name = "Work Experience")]
         public string WorkExperience { get; set; }
+
+        [Display(Name = "Experience Details")]
+        public string ExperienceDetails { get; set; }
+
+        [Display(Name = "Time In")]
+        [DataType(DataType.Time)]
+        public string TimeIn { get; set; }
+
+        [Display(Name = "Time Out")]
+        [DataType(DataType.Time)]
+        public string TimeOut { get; set; }
 
         [Display(Name = "Previous School")]
         public string PreviousSchool { get; set; }
@@ -99,18 +149,30 @@ namespace ERPIndia.TeacherManagement.Models
         [Display(Name = "Previous School Phone")]
         public string PreviousSchoolPhone { get; set; }
 
+        // Address Information
         [Display(Name = "Current Address")]
         public string CurrentAddress { get; set; }
 
         [Display(Name = "Permanent Address")]
         public string PermanentAddress { get; set; }
 
-        [Display(Name = "PAN Number / ID Number")]
+        // Government IDs
+        [Display(Name = "PAN Number")]
         public string PANNumber { get; set; }
 
         [Display(Name = "Aadhar Number")]
         public string AadharNumber { get; set; }
 
+        [Display(Name = "UAN Number")]
+        public string UANNo { get; set; }
+
+        [Display(Name = "NPS Number")]
+        public string NPSNo { get; set; }
+
+        [Display(Name = "PF Number")]
+        public string PFNO { get; set; }
+
+        // Status and Notes
         [Display(Name = "Status")]
         public string Status { get; set; }
 
@@ -118,6 +180,8 @@ namespace ERPIndia.TeacherManagement.Models
         public string Notes { get; set; }
 
         public string Photo { get; set; }
+
+        // Login Credentials
         public string LoginId { get; set; }
         public string Password { get; set; }
 
@@ -125,7 +189,7 @@ namespace ERPIndia.TeacherManagement.Models
         [Display(Name = "Route")]
         public string RouteId { get; set; }
 
-        [Display(Name = "Vehicle Number")]
+        [Display(Name = "Vehicle")]
         public string VehicleId { get; set; }
 
         [Display(Name = "Pickup Point")]
@@ -138,17 +202,27 @@ namespace ERPIndia.TeacherManagement.Models
         [Display(Name = "Room No")]
         public string RoomNo { get; set; }
 
-        // System fields
+        // System Fields
         public int SchoolCode { get; set; }
         public Guid TenantId { get; set; }
+        public int TenantCode { get; set; }
         public Guid SessionId { get; set; }
-        public Guid CreatedBy { get; set; }
         public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
+        public Guid CreatedBy { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public Guid? ModifiedBy { get; set; }
+        public DateTime? ModifiedDate { get; set; }
 
         // Dropdown Lists
         public IEnumerable<SelectListItem> ClassList { get; set; }
         public IEnumerable<SelectListItem> SectionList { get; set; }
         public IEnumerable<SelectListItem> SubjectList { get; set; }
+        public IEnumerable<SelectListItem> DesignationList { get; set; }
+        public IEnumerable<SelectListItem> DepartmentList { get; set; }
+        public IEnumerable<SelectListItem> EmployeeTypeList { get; set; }
+        public IEnumerable<SelectListItem> BranchList { get; set; }
+        public IEnumerable<SelectListItem> ManagerList { get; set; }
         public IEnumerable<SelectListItem> GenderList { get; set; }
         public IEnumerable<SelectListItem> BloodGroupList { get; set; }
         public IEnumerable<SelectListItem> MaritalStatusList { get; set; }
@@ -157,8 +231,6 @@ namespace ERPIndia.TeacherManagement.Models
         public IEnumerable<SelectListItem> VehicleList { get; set; }
         public IEnumerable<SelectListItem> PickupList { get; set; }
         public IEnumerable<SelectListItem> HostelList { get; set; }
-        public IEnumerable<SelectListItem> ContractTypeList { get; set; }
-        public IEnumerable<SelectListItem> WorkShiftList { get; set; }
     }
 
     public class TeacherPayroll
@@ -166,11 +238,13 @@ namespace ERPIndia.TeacherManagement.Models
         public Guid PayrollId { get; set; }
         public Guid TeacherId { get; set; }
 
-        [Display(Name = "EPF No")]
+        [Display(Name = "EPF Number")]
         public string EPFNo { get; set; }
 
+        [Required]
         [Display(Name = "Basic Salary")]
-        public decimal? BasicSalary { get; set; }
+        [Range(0, double.MaxValue, ErrorMessage = "Please enter a valid salary amount")]
+        public decimal BasicSalary { get; set; }
 
         [Display(Name = "Contract Type")]
         public string ContractType { get; set; }
@@ -184,24 +258,74 @@ namespace ERPIndia.TeacherManagement.Models
         [Display(Name = "Date of Leaving")]
         [DataType(DataType.Date)]
         public string DateOfLeaving { get; set; }
+
+        [Display(Name = "Late Fine Per Hour")]
+        public decimal LateFinePerHour { get; set; }
+
+        [Display(Name = "Payroll Note")]
+        public string PayrollNote { get; set; }
+
+        [Required]
+        [Display(Name = "Effective Date")]
+        [DataType(DataType.Date)]
+        public string EffectiveDate { get; set; }
+
+        [Display(Name = "End Date")]
+        [DataType(DataType.Date)]
+        public string EndDate { get; set; }
+
+        // System Fields
+        public int SchoolCode { get; set; }
+        public Guid TenantId { get; set; }
+        public int TenantCode { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
+        public Guid CreatedBy { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public Guid? ModifiedBy { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+
+        // Dropdown Lists
+        public IEnumerable<SelectListItem> ContractTypeList { get; set; }
+        public IEnumerable<SelectListItem> WorkShiftList { get; set; }
     }
 
     public class TeacherLeaves
     {
         public Guid LeaveId { get; set; }
         public Guid TeacherId { get; set; }
+        public Guid SessionId { get; set; }
 
         [Display(Name = "Medical Leaves")]
+        [Range(0, int.MaxValue, ErrorMessage = "Please enter a valid number")]
         public int MedicalLeaves { get; set; }
 
         [Display(Name = "Casual Leaves")]
+        [Range(0, int.MaxValue, ErrorMessage = "Please enter a valid number")]
         public int CasualLeaves { get; set; }
 
         [Display(Name = "Maternity Leaves")]
+        [Range(0, int.MaxValue, ErrorMessage = "Please enter a valid number")]
         public int MaternityLeaves { get; set; }
 
         [Display(Name = "Sick Leaves")]
+        [Range(0, int.MaxValue, ErrorMessage = "Please enter a valid number")]
         public int SickLeaves { get; set; }
+
+        [Display(Name = "Earned Leaves")]
+        [Range(0, int.MaxValue, ErrorMessage = "Please enter a valid number")]
+        public int EarnedLeaves { get; set; }
+
+        // System Fields
+        public int SchoolCode { get; set; }
+        public Guid TenantId { get; set; }
+        public int TenantCode { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
+        public Guid CreatedBy { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public Guid? ModifiedBy { get; set; }
+        public DateTime? ModifiedDate { get; set; }
     }
 
     public class TeacherBankDetails
@@ -209,20 +333,39 @@ namespace ERPIndia.TeacherManagement.Models
         public Guid BankId { get; set; }
         public Guid TeacherId { get; set; }
 
+        [Required]
         [Display(Name = "Account Name")]
         public string AccountName { get; set; }
 
+        [Required]
         [Display(Name = "Account Number")]
         public string AccountNumber { get; set; }
 
+        [Required]
         [Display(Name = "Bank Name")]
         public string BankName { get; set; }
 
+        [Required]
         [Display(Name = "IFSC Code")]
+        [RegularExpression(@"^[A-Z]{4}0[A-Z0-9]{6}$", ErrorMessage = "Invalid IFSC Code")]
         public string IFSCCode { get; set; }
 
         [Display(Name = "Branch Name")]
         public string BranchName { get; set; }
+
+        [Display(Name = "UPI ID")]
+        public string UPIID { get; set; }
+
+        // System Fields
+        public int SchoolCode { get; set; }
+        public Guid TenantId { get; set; }
+        public int TenantCode { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
+        public Guid CreatedBy { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public Guid? ModifiedBy { get; set; }
+        public DateTime? ModifiedDate { get; set; }
     }
 
     public class TeacherSocialMedia
@@ -231,27 +374,112 @@ namespace ERPIndia.TeacherManagement.Models
         public Guid TeacherId { get; set; }
 
         [Display(Name = "Facebook")]
+        [Url(ErrorMessage = "Please enter a valid URL")]
         public string Facebook { get; set; }
 
         [Display(Name = "Instagram")]
+        [Url(ErrorMessage = "Please enter a valid URL")]
         public string Instagram { get; set; }
 
         [Display(Name = "LinkedIn")]
+        [Url(ErrorMessage = "Please enter a valid URL")]
         public string LinkedIn { get; set; }
 
         [Display(Name = "YouTube")]
+        [Url(ErrorMessage = "Please enter a valid URL")]
         public string YouTube { get; set; }
 
         [Display(Name = "Twitter")]
+        [Url(ErrorMessage = "Please enter a valid URL")]
         public string Twitter { get; set; }
+
+        // System Fields
+        public int SchoolCode { get; set; }
+        public Guid TenantId { get; set; }
+        public int TenantCode { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
+        public Guid CreatedBy { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public Guid? ModifiedBy { get; set; }
+        public DateTime? ModifiedDate { get; set; }
     }
 
-    public class TeacherDocuments
+    public class TeacherDocument
     {
-        [Display(Name = "Resume")]
-        public string ResumePath { get; set; }
+        public Guid DocumentId { get; set; }
+        public Guid TeacherId { get; set; }
 
-        [Display(Name = "Joining Letter")]
-        public string JoiningLetterPath { get; set; }
+        [Required]
+        [Display(Name = "Document Type")]
+        public string DocumentType { get; set; }
+
+        [Required]
+        [Display(Name = "Document Title")]
+        public string DocumentTitle { get; set; }
+
+        [Required]
+        [Display(Name = "Document Path")]
+        public string DocumentPath { get; set; }
+
+        [Display(Name = "File Size")]
+        public long? FileSize { get; set; }
+
+        [Display(Name = "MIME Type")]
+        public string MimeType { get; set; }
+
+        [Display(Name = "Upload Date")]
+        public DateTime UploadDate { get; set; }
+
+        // System Fields
+        public int SchoolCode { get; set; }
+        public Guid TenantId { get; set; }
+        public int TenantCode { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
+        public Guid CreatedBy { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public Guid? ModifiedBy { get; set; }
+        public DateTime? ModifiedDate { get; set; }
+    }
+
+    // Supporting Enums
+    public static class TeacherConstants
+    {
+        public static class DocumentTypes
+        {
+            public const string Resume = "Resume";
+            public const string JoiningLetter = "JoiningLetter";
+            public const string ExperienceCertificate = "ExperienceCertificate";
+            public const string EducationCertificate = "EducationCertificate";
+            public const string IdentityProof = "IdentityProof";
+            public const string AddressProof = "AddressProof";
+            public const string Other = "Other";
+        }
+
+        public static class ContractTypes
+        {
+            public const string Permanent = "Permanent";
+            public const string Contract = "Contract";
+            public const string Temporary = "Temporary";
+            public const string Probation = "Probation";
+        }
+
+        public static class WorkShifts
+        {
+            public const string Morning = "Morning";
+            public const string Evening = "Evening";
+            public const string Night = "Night";
+            public const string Flexible = "Flexible";
+        }
+
+        public static class Status
+        {
+            public const string Active = "Active";
+            public const string OnLeave = "OnLeave";
+            public const string Resigned = "Resigned";
+            public const string Terminated = "Terminated";
+            public const string Retired = "Retired";
+        }
     }
 }

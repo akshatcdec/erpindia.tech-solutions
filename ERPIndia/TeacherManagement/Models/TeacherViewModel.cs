@@ -54,7 +54,7 @@ namespace ERPIndia.TeacherManagement.Models
         public Guid BranchId { get; set; }
 
         [Display(Name = "Manager")]
-        public Guid ManagerId { get; set; }
+        public Guid? ManagerId { get; set; }
 
         // Denormalized Name Fields (for display/reporting)
         public string DesignationName { get; set; }

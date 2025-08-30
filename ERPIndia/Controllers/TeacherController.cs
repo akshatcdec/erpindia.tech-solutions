@@ -134,10 +134,8 @@ namespace ERPIndia.Controllers
                 // Map HR Organization fields
                 model.Basic.DesignationId = Utils.ParseGuid(form["DesignationId"]);
                 model.Basic.DepartmentId = Utils.ParseGuid(form["DepartmentId"]);
-                model.Basic.EmployeeTypeId = Utils.ParseGuid(form["EmployeeTypeId"]);
                 model.Basic.BranchId = Utils.ParseGuid(form["BranchId"]);
-                model.Basic.ManagerId = Utils.ParseGuid(form["ManagerId"]);
-
+               
                 // Map denormalized name fields
                 if (!string.IsNullOrEmpty(model.Basic.DesignationId.ToString()))
                 {
@@ -268,6 +266,40 @@ namespace ERPIndia.Controllers
 
                 if (!ModelState.IsValid)
                 {
+
+                    var errorList = ModelState
+                   .Where(x => x.Value.Errors.Count > 0)
+                   .Select(x => new
+                   {
+                       Key = x.Key,
+                       Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList()
+                   })
+                   .ToList();
+                    var errorMessages = ModelState
+    .Where(x => x.Value.Errors.Count > 0)
+    .SelectMany(x => x.Value.Errors.Select(e =>
+        $"{x.Key}: {(string.IsNullOrWhiteSpace(e.ErrorMessage) ? $"Invalid value for {x.Key.Split('.').Last()}" : e.ErrorMessage)}"
+    ))
+    .ToList();
+                    string allErrors = string.Join(" | ", errorMessages);
+                    Logger.Error($"Validation Errors: {allErrors}");
+                    // Log to console or debug output
+                    foreach (var error in errorList)
+                    {
+                        Logger.Error($"Error in {error.Key}: {string.Join(", ", error.Errors)}");
+                        System.Diagnostics.Debug.WriteLine($"Error in {error.Key}: {string.Join(", ", error.Errors)}");
+
+                        // Ensure all errors have meaningful messages for users
+                        foreach (var errorMessage in error.Errors)
+                        {
+                            if (string.IsNullOrWhiteSpace(errorMessage))
+                            {
+                                // Add a user-friendly error message to ModelState
+                                ModelState.AddModelError(error.Key, $"Invalid value for {error.Key.Split('.').Last()}");
+                            }
+                            // If error already has a message, it will be displayed automatically
+                        }
+                    }
                     await PopulateDropdowns(model);
                     return View(model);
                 }

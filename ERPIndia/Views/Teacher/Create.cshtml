@@ -190,58 +190,6 @@
                     <ul id="validation-errors"></ul>
                 </div>
 
-                <!-- HR Organization Details -->
-                <div class="card" style="display:none">
-                    <div class="card-header bg-light">
-                        <div class="d-flex align-items-center">
-                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
-                                <i class="ti ti-building fs-16"></i>
-                            </span>
-                            <h4 class="text-dark">Organization Details</h4>
-                        </div>
-                    </div>
-                    <div class="card-body pb-1">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Department</label>
-                                    @Html.DropDownListFor(x => x.Basic.DepartmentId, Model.Basic.DepartmentList, new { @class = "form-select" })
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Employee Type</label>
-                                    @Html.DropDownListFor(m => m.Basic.EmployeeTypeId, Model.Basic.EmployeeTypeList ?? new List<SelectListItem>(), new { @class = "form-control" })
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Branch</label>
-                                    @Html.DropDownListFor(m => m.Basic.BranchId, Model.Basic.BranchList ?? new List<SelectListItem>(), new { @class = "form-control" })
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Manager</label>
-                                    @Html.DropDownListFor(m => m.Basic.ManagerId, Model.Basic.ManagerList ?? new List<SelectListItem>(), new { @class = "form-control" })
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    @Html.LabelFor(m => m.Payroll.ContractType, "Contract Type", new { @class = "form-label" })
-                                    @Html.DropDownListFor(m => m.Payroll.ContractType, (Model.Payroll != null && Model.Payroll.ContractTypeList != null) ? Model.Payroll.ContractTypeList : new List<SelectListItem>(), new { @class = "form-control" })
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    @Html.LabelFor(m => m.Payroll.WorkShift, "Work Shift", new { @class = "form-label" })
-                                    @Html.DropDownListFor(m => m.Payroll.WorkShift, (Model.Payroll != null && Model.Payroll.WorkShiftList != null) ? Model.Payroll.WorkShiftList : new List<SelectListItem>(), new { @class = "form-control" })
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Academic Details -->
                 <div class="card">
                     <div class="card-header bg-light">
@@ -319,7 +267,7 @@
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label class="form-label">Note</label>
-                                    @Html.TextAreaFor(m => m.Basic.Notes, new { @class = "form-control", placeholder = "Additional notes about academic background", rows = "3", maxlength = "500" })
+                                    @Html.TextBoxFor(m => m.Basic.Notes, new { @class = "form-control", placeholder = "Additional notes about academic background", rows = "3", maxlength = "500" })
                                 </div>
                             </div>
                         </div>

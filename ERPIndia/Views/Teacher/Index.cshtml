@@ -55,9 +55,7 @@
                                 <th width="100">Emp Code</th>
                                 <th width="200">Employee Name</th>
                                 <th width="150">Designation</th>
-                                <th width="150">Department</th>
                                 <th width="120">Contact</th>
-                                <th width="120">Email</th>
                                 <th width="100">Join Date</th>
                                 <th width="80">Status</th>
                                 <th width="100">Action</th>
@@ -106,40 +104,10 @@
                                         }
                                     </td>
                                     <td>
-                                        @if (!string.IsNullOrEmpty(item.DepartmentName))
-                                        {
-                                            <span>@item.DepartmentName</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">-</span>
-                                        }
-                                    </td>
-                                    <td>
                                         @if (!string.IsNullOrEmpty(item.PrimaryContactNumber))
                                         {
                                             <a href="tel:@item.PrimaryContactNumber" class="text-decoration-none">
                                                 <i class="fas fa-phone-alt me-1"></i>@item.PrimaryContactNumber
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">-</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(item.Email))
-                                        {
-                                            <a href="mailto:@item.Email" class="text-decoration-none" title="@item.Email">
-                                                <i class="fas fa-envelope me-1"></i>
-                                                @if (item.Email.Length > 20)
-                                                {
-                                                    @(item.Email.Substring(0, 17) + "...")
-                                                }
-                                                else
-                                                {
-                                                    @item.Email
-                                                }
                                             </a>
                                         }
                                         else

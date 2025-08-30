@@ -262,7 +262,10 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label required">Employee ID</label>
-                                    @Html.TextBoxFor(m => m.Basic.TeacherCode, new { @class = "form-control", @readonly = "readonly", placeholder = "Auto-generated" })
+                                    <input type="text" id="TeacherCodeDisplay" class="form-control" readonly="readonly"
+                                           value="@(Model.Basic.TeacherCode != null && Model.Basic.TeacherCode.Length > 3 ? Model.Basic.TeacherCode.Substring(Model.Basic.TeacherCode.Length - 4) : Model.Basic.TeacherCode)"
+                                           placeholder="Auto-generated" />
+                                    @Html.HiddenFor(m => m.Basic.TeacherCode)
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -793,8 +796,12 @@
                                 </div>
                             </div>
                             <div class="col-md-6 text-end">
-                                <button type="button" class="btn btn-light me-2" onclick="window.location.href='@Url.Action("Index", "Teacher")'">Cancel</button>
-                                <button type="button" class="btn btn-primary" onclick="validateAndSubmit()">Save Employee</button>
+                                <button type="button" class="btn btn-light me-2" onclick="window.location.href='@Url.Action("Index", "Teacher")'">
+                                    <i class="ti ti-x"></i> Cancel
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="validateAndSubmit()">
+                                    <i class="ti ti-device-floppy"></i> Save Employee
+                                </button>
                             </div>
                         </div>
                     </div>

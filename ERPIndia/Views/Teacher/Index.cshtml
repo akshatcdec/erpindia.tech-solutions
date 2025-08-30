@@ -51,14 +51,15 @@
                     <table class="table table-bordered table-striped" id="teacherlist">
                         <thead>
                             <tr>
-                                <th width="50">Sr.</th>
-                                <th width="100">Emp Code</th>
-                                <th width="200">Employee Name</th>
-                                <th width="150">Designation</th>
-                                <th width="120">Contact</th>
-                                <th width="100">Join Date</th>
-                                <th width="80">Status</th>
-                                <th width="100">Action</th>
+                                <th>Sr.</th>
+                                <th align="center" style="text-align:center">Id</th>
+                                <th align="center" style="text-align:center">Employee</th>
+                                <th align="center" style="text-align:center">Father</th>
+                                <th align="center" style="text-align:center">Designation</th>
+                                <th align="center" style="text-align:center">Phone</th>
+                                <th align="center" style="text-align:center">Date of Join</th>
+                                <th align="center" style="text-align:center">Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -70,7 +71,15 @@
                                 <tr>
                                     <td>@serialNo</td>
                                     <td>
-                                        <span class="badge bg-secondary">@Html.DisplayFor(modelItem => item.TeacherCode)</span>
+                                        <span class="badge bg-secondary">
+                                            <span class="badge bg-secondary">
+                                                @(string.IsNullOrEmpty(item.TeacherCode)
+        ? ""
+        : (item.TeacherCode.Length > 4
+            ? item.TeacherCode.Substring(item.TeacherCode.Length - 4)
+            : item.TeacherCode))
+                                            </span>
+                                        </span>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
@@ -86,12 +95,15 @@
                                             }
                                             <div>
                                                 <div class="fw-semibold">@item.FirstName @item.LastName</div>
-                                                @if (!string.IsNullOrEmpty(item.FatherName))
-                                                {
-                                                    <small class="text-muted">S/o @item.FatherName</small>
-                                                }
+                                               
                                             </div>
                                         </div>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.FatherName))
+                                        {
+                                            <small class="text-muted">S/o @item.FatherName</small>
+                                        }
                                     </td>
                                     <td>
                                         @if (!string.IsNullOrEmpty(item.DesignationName))

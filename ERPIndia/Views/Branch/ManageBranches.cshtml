@@ -1,0 +1,559 @@
+﻿@using ERPIndia
+@{
+    ViewBag.Title = "Branch Management";
+}
+<div class="card">
+    <div class="card-header bg-light">
+        <div class="d-flex align-items-center">
+            <h5 class="text-dark">Branch Management</h5>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-xxl-4 col-xl-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h5 class="text-dark">Manage Branch</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="branchForm" class="new-added-form">
+                            <div class="row">
+                                <input type="hidden" id="branchId">
+                                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                    <label>Branch Name *</label>
+                                    <input type="text" id="branchName" placeholder="" autocomplete="off" class="form-control required">
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                    <label>Branch Code</label>
+                                    <input type="text" id="branchCode" placeholder="" autocomplete="off" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Address</label>
+                                    <textarea id="address" placeholder="" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                    <label>City</label>
+                                    <input type="text" id="city" placeholder="" autocomplete="off" class="form-control">
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                    <label>State</label>
+                                    <input type="text" id="state" placeholder="" autocomplete="off" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                    <label>Country</label>
+                                    <input type="text" id="country" placeholder="" autocomplete="off" class="form-control">
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                    <label>Postal Code</label>
+                                    <input type="text" id="postalCode" placeholder="" autocomplete="off" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                    <label>Phone</label>
+                                    <input type="text" id="phone" placeholder="" autocomplete="off" class="form-control">
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                    <label>Email</label>
+                                    <input type="email" id="email" placeholder="" autocomplete="off" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                    <label>Sort Order</label>
+                                    <input type="number" id="sortOrder" placeholder="0" value="0" min="0" class="form-control">
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-12 form-group">
+                                    <br />
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isHeadOffice">
+                                        <label class="form-check-label" for="isHeadOffice">
+                                            Head Office
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isActive" checked>
+                                        <label class="form-check-label" for="isActive">
+                                            Active
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <br />
+                                    <div><div class="btn-group" role="group">
+                                        <button type="submit" id="submitBtn" class="btn btn-primary">Save</button>&nbsp;
+                                        <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                                    </div></div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-8 col-xl-8">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h5 class="text-dark">Branches List</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" id="branchDatatable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Branch Name</th>
+                                        <th>Branch Code</th>
+                                        <th>City</th>
+                                        <th>Phone</th>
+                                        <th>Head Office</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+
+<script>
+const BranchManager = (function() {
+    const apiEndpoints = {
+        getAll: '@Url.Action("GetAllBranches", "Branch")',
+        getById: '@Url.Action("GetBranchById", "Branch")',
+        create: '@Url.Action("InsertBranch", "Branch")',
+        update: '@Url.Action("UpdateBranch", "Branch")',
+        delete: '@Url.Action("DeleteBranch", "Branch")',
+        getNextSortOrder: '@Url.Action("GetNextSortOrder", "Branch")'
+    };
+
+    const elements = {
+        form: '#branchForm',
+        idField: '#branchId',
+        submitBtn: '#submitBtn',
+        cancelBtn: '#cancelBtn',
+        datatable: '#branchDatatable',
+        requiredFields: '.required'
+    };
+
+    let dataTable = null;
+
+    const initializeDataTable = function () {
+        dataTable = $(elements.datatable).DataTable({
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "ajax": {
+                "url": apiEndpoints.getAll,
+                "type": "POST",
+                "datatype": "json",
+                "error": function (xhr, error, thrown) {
+                    console.error("DataTable AJAX error:", error, thrown);
+                    Notification.show("Failed to load branch data.", "error");
+                }
+            },
+            "columnDefs": [{
+                "targets": [0],
+                "visible": false,
+                "searchable": false
+            }],
+            "columns": [
+                { data: 'BranchID', visible: false },
+                { "data": "BranchName", "name": "BranchName", "autoWidth": true },
+                { "data": "BranchCode", "name": "BranchCode", "autoWidth": true },
+                { "data": "City", "name": "City", "autoWidth": true },
+                { "data": "Phone", "name": "Phone", "autoWidth": true },
+                {
+                    "data": "IsHeadOffice",
+                    "name": "IsHeadOffice",
+                    "autoWidth": true,
+                    "render": function (data) {
+                        return data ? '<span class="badge bg-primary">Yes</span>' : '<span class="badge bg-secondary">No</span>';
+                    }
+                },
+                {
+                    "data": "IsActive",
+                    "name": "IsActive",
+                    "autoWidth": true,
+                    "render": function (data) {
+                        return data ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
+                    }
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    className: 'text-center',
+                    width: "100px",
+                    render: function (data, type, row) {
+                        return `
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary btn-sm edit-btn" data-id="${row.BranchID}" title="Edit">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" data-id="${row.BranchID}" title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                },
+            ],
+            "order": [[1, "asc"]],
+            responsive: true,
+            dom: "<'row'<'col-sm-6'B><'col-sm-3'l><'col-sm-3'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+        });
+    };
+
+    const checkForDuplicate = async function (branchName, branchCode, currentId = '') {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: apiEndpoints.getAll,
+                type: 'GET',
+                data: {
+                    checkDuplicate: true,
+                    branchName: branchName,
+                    branchCode: branchCode
+                },
+                success: function (result) {
+                    if (result.success) {
+                        const isDuplicate = result.data.some(item => {
+                            return (item.BranchName.toLowerCase() === branchName.toLowerCase() ||
+                                   (branchCode && item.BranchCode && item.BranchCode.toLowerCase() === branchCode.toLowerCase())) &&
+                                   item.BranchID.toString() !== currentId.toString();
+                        });
+                        resolve(isDuplicate);
+                    } else {
+                        reject(result.message || 'Error checking for duplicates');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    reject(error);
+                }
+            });
+        });
+    };
+
+    const getFormData = function () {
+        return {
+            BranchID: $('#branchId').val(),
+            BranchName: $('#branchName').val().trim(),
+            BranchCode: $('#branchCode').val().trim(),
+            Address: $('#address').val().trim(),
+            City: $('#city').val().trim(),
+            State: $('#state').val().trim(),
+            Country: $('#country').val().trim(),
+            PostalCode: $('#postalCode').val().trim(),
+            Phone: $('#phone').val().trim(),
+            Email: $('#email').val().trim(),
+            SortOrder: parseInt($('#sortOrder').val()) || 0,
+            IsHeadOffice: $('#isHeadOffice').is(':checked'),
+            IsActive: $('#isActive').is(':checked')
+        };
+    };
+
+    const bindEvents = function() {
+        $(elements.form).on('submit', async function(e) {
+            e.preventDefault();
+            $(elements.submitBtn).prop('disabled', true);
+
+            try {
+                const isValid = await validateForm();
+                if (isValid) {
+                    saveBranch();
+                } else {
+                    $(elements.submitBtn).prop('disabled', false);
+                }
+            } catch (error) {
+                console.error("Validation error:", error);
+                Notification.show("An error occurred during validation.", "error");
+                $(elements.submitBtn).prop('disabled', false);
+            }
+        });
+
+        $(elements.cancelBtn).on('click', resetForm);
+
+        $(elements.datatable).on('click', '.edit-btn', function() {
+            const branchId = $(this).data('id');
+            loadBranchForEdit(branchId);
+        });
+
+        $(elements.datatable).on('click', '.delete-btn', function() {
+            const branchId = $(this).data('id');
+            confirmDelete(branchId);
+        });
+    };
+
+    const validateForm = async function() {
+        let isValid = true;
+
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+
+        $(elements.requiredFields).each(function() {
+            if (!$(this).val().trim()) {
+                isValid = false;
+                $(this).addClass('is-invalid');
+                $(this).after(`<div class="invalid-feedback">This field is required</div>`);
+            }
+        });
+
+        // Validate email format if provided
+        const email = $('#email').val().trim();
+        if (email && !isValidEmail(email)) {
+            isValid = false;
+            $('#email').addClass('is-invalid');
+            $('#email').after(`<div class="invalid-feedback">Please enter a valid email address</div>`);
+        }
+
+        if (isValid) {
+            try {
+                const branchName = $('#branchName').val().trim();
+                const branchCode = $('#branchCode').val().trim();
+                const currentId = $(elements.idField).val();
+
+                const isDuplicate = await checkForDuplicate(branchName, branchCode, currentId);
+
+                if (isDuplicate) {
+                    isValid = false;
+                    $('#branchName, #branchCode').addClass('is-invalid');
+                    $('#branchName').after(`<div class="invalid-feedback">Branch name or code already exists</div>`);
+                }
+            } catch (error) {
+                console.error("Error checking for duplicates:", error);
+            }
+        }
+
+        return isValid;
+    };
+
+    const isValidEmail = function(email) {
+        const re = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+        return re.test(email);
+    };
+
+    const resetForm = function() {
+        $('#branchName, #branchCode, #address, #city, #state, #country, #postalCode, #phone, #email').val('');
+        $('#sortOrder').val('0');
+        $('#isActive').prop('checked', true);
+        $('#isHeadOffice').prop('checked', false);
+        $(elements.idField).val('');
+        $(elements.submitBtn).text('Save');
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+        getNextSortOrder();
+    };
+
+    const getNextSortOrder = function() {
+        $.ajax({
+            url: apiEndpoints.getNextSortOrder,
+            type: 'GET',
+            success: function(result) {
+                if (result.success) {
+                    $('#sortOrder').val(result.nextSortOrder);
+                }
+            }
+        });
+    };
+
+    const saveBranch = function() {
+        const branch = getFormData();
+        const isUpdate = branch.BranchID !== '';
+
+        if (isUpdate) {
+            performAjaxOperation(apiEndpoints.update, branch, 'updating');
+        } else {
+            performAjaxOperation(apiEndpoints.create, branch, 'creating');
+        }
+    };
+
+    const loadBranchForEdit = function(id) {
+        $.ajax({
+            url: apiEndpoints.getById,
+            type: 'GET',
+            data: { id: id },
+            success: function(result) {
+                if (result.success && result.data) {
+                    const branch = result.data;
+
+                    $(elements.idField).val(branch.BranchID);
+                    $('#branchName').val(branch.BranchName);
+                    $('#branchCode').val(branch.BranchCode || '');
+                    $('#address').val(branch.Address || '');
+                    $('#city').val(branch.City || '');
+                    $('#state').val(branch.State || '');
+                    $('#country').val(branch.Country || '');
+                    $('#postalCode').val(branch.PostalCode || '');
+                    $('#phone').val(branch.Phone || '');
+                    $('#email').val(branch.Email || '');
+                    $('#sortOrder').val(branch.SortOrder);
+                    $('#isHeadOffice').prop('checked', branch.IsHeadOffice);
+                    $('#isActive').prop('checked', branch.IsActive);
+
+                    $(elements.submitBtn).text('Update');
+
+                    $('html, body').animate({
+                        scrollTop: $(elements.form).offset().top - 100
+                    }, 500);
+                } else {
+                    Notification.show('Branch not found.', 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching branch data:', error);
+                Notification.show('An error occurred while fetching branch data.', 'error');
+            }
+        });
+    };
+
+    const confirmDelete = function(id) {
+        swal({
+            title: "Are you sure?",
+            text: "Once deleted, you will not be able to recover this branch!",
+            icon: "warning",
+            buttons: ["Cancel", "Delete"],
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                deleteBranch(id);
+            }
+        });
+    };
+
+    const deleteBranch = function(id) {
+        performAjaxOperation(apiEndpoints.delete, { id: id }, 'deleting');
+    };
+
+    const performAjaxOperation = function(url, data, operationType) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                $(elements.submitBtn).prop('disabled', true);
+                $(elements.cancelBtn).prop('disabled', true);
+            },
+            success: function(result) {
+                if (result.success) {
+                    if (operationType !== 'deleting') {
+                        resetForm();
+                    }
+                    refreshDataTable();
+                    Notification.show(result.message, 'success');
+                } else {
+                    Notification.show(result.message || `Failed while ${operationType} the branch.`, 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`${operationType} error:`, error);
+                Notification.show(`An error occurred while ${operationType} the branch.`, 'error');
+            },
+            complete: function() {
+                $(elements.submitBtn).prop('disabled', false);
+                $(elements.cancelBtn).prop('disabled', false);
+            }
+        });
+    };
+
+    const refreshDataTable = function() {
+        if (dataTable) {
+            dataTable.ajax.reload();
+            return;
+        }
+
+        if ($.fn.DataTable.isDataTable(elements.datatable)) {
+            $(elements.datatable).DataTable().ajax.reload();
+        }
+    };
+
+    return {
+        init: function() {
+            initializeDataTable();
+            bindEvents();
+            getNextSortOrder();
+        }
+    };
+})();
+
+const Notification = (function() {
+    return {
+        show: function(message, type) {
+            swal({
+                title: type === 'success' ? 'Success!' : 'Error!',
+                text: message,
+                icon: type,
+                button: "OK",
+            });
+        }
+    };
+})();
+
+$(document).ready(function() {
+    BranchManager.init();
+});
+</script>
+
+<style>
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 80%;
+        margin-top: 0.25rem;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    div.dataTables_wrapper div.dataTables_filter {
+        text-align: right;
+    }
+
+    div.dt-buttons {
+        margin-bottom: 10px;
+    }
+
+    .dataTables_length {
+        padding-top: 5px;
+    }
+
+    .dt-button {
+        padding: 5px 10px;
+        margin-right: 5px;
+        border: 1px solid #ddd;
+        background-color: #f8f8f8;
+        color: #333;
+        border-radius: 4px;
+    }
+
+        .dt-button:hover {
+            background-color: #e8e8e8;
+        }
+</style>

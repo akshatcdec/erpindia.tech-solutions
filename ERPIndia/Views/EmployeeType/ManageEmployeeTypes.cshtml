@@ -1,0 +1,480 @@
+﻿@using ERPIndia
+@{
+    ViewBag.Title = "Employee Type Management";
+}
+<div class="card">
+    <div class="card-header bg-light">
+        <div class="d-flex align-items-center">
+            <h5 class="text-dark">Employee Type Management</h5>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-xxl-3 col-xl-3">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h5 class="text-dark">Manage Employee Type</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="employeeTypeForm" class="new-added-form">
+                            <div class="row">
+                                <input type="hidden" id="employeeTypeId">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Employee Type Name *</label>
+                                    <input type="text" id="employeeTypeName" placeholder="" autocomplete="off" class="form-control required">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Description</label>
+                                    <textarea id="description" placeholder="" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Sort Order</label>
+                                    <input type="number" id="sortOrder" placeholder="0" value="0" min="0" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isActive" checked>
+                                        <label class="form-check-label" for="isActive">
+                                            Active
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <br />
+                                    <div class="btn-group" role="group">
+                                        <button type="submit" id="submitBtn" class="btn btn-primary">Save</button>&nbsp;
+                                        <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-9 col-xl-9">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h5 class="text-dark">Employee Types List</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" id="employeeTypeDatatable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Employee Type Name</th>
+                                        <th>Description</th>
+                                        <th>Sort Order</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+
+<script>
+const EmployeeTypeManager = (function() {
+    const apiEndpoints = {
+        getAll: '@Url.Action("GetAllEmployeeTypes", "EmployeeType")',
+        getById: '@Url.Action("GetEmployeeTypeById", "EmployeeType")',
+        create: '@Url.Action("InsertEmployeeType", "EmployeeType")',
+        update: '@Url.Action("UpdateEmployeeType", "EmployeeType")',
+        delete: '@Url.Action("DeleteEmployeeType", "EmployeeType")',
+        getNextSortOrder: '@Url.Action("GetNextSortOrder", "EmployeeType")'
+    };
+
+    const elements = {
+        form: '#employeeTypeForm',
+        idField: '#employeeTypeId',
+        submitBtn: '#submitBtn',
+        cancelBtn: '#cancelBtn',
+        datatable: '#employeeTypeDatatable',
+        requiredFields: '.required'
+    };
+
+    let dataTable = null;
+
+    const initializeDataTable = function () {
+        dataTable = $(elements.datatable).DataTable({
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "ajax": {
+                "url": apiEndpoints.getAll,
+                "type": "POST",
+                "datatype": "json",
+                "error": function (xhr, error, thrown) {
+                    console.error("DataTable AJAX error:", error, thrown);
+                    Notification.show("Failed to load employee type data.", "error");
+                }
+            },
+            "columnDefs": [{
+                "targets": [0],
+                "visible": false,
+                "searchable": false
+            }],
+            "columns": [
+                { data: 'EmployeeTypeID', visible: false },
+                { "data": "EmployeeTypeName", "name": "EmployeeTypeName", "autoWidth": true },
+                {
+                    "data": "Description",
+                    "name": "Description",
+                    "autoWidth": true,
+                    "render": function (data) {
+                        if (!data) return '<span class="text-muted">-</span>';
+                        return data.length > 50 ? data.substring(0, 50) + '...' : data;
+                    }
+                },
+                { "data": "SortOrder", "name": "SortOrder", "autoWidth": true },
+                {
+                    "data": "IsActive",
+                    "name": "IsActive",
+                    "autoWidth": true,
+                    "render": function (data) {
+                        return data ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
+                    }
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    className: 'text-center',
+                    width: "100px",
+                    render: function (data, type, row) {
+                        return `
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary btn-sm edit-btn" data-id="${row.EmployeeTypeID}" title="Edit">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" data-id="${row.EmployeeTypeID}" title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                },
+            ],
+            "order": [[3, "asc"]],
+            responsive: true,
+            dom: "<'row'<'col-sm-6'B><'col-sm-3'l><'col-sm-3'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+        });
+    };
+
+    const checkForDuplicate = async function (employeeTypeName, currentId = '') {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: apiEndpoints.getAll,
+                type: 'GET',
+                data: {
+                    checkDuplicate: true,
+                    employeeTypeName: employeeTypeName
+                },
+                success: function (result) {
+                    if (result.success) {
+                        const isDuplicate = result.data.some(item => {
+                            return item.EmployeeTypeName.toLowerCase() === employeeTypeName.toLowerCase() &&
+                                   item.EmployeeTypeID.toString() !== currentId.toString();
+                        });
+                        resolve(isDuplicate);
+                    } else {
+                        reject(result.message || 'Error checking for duplicates');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    reject(error);
+                }
+            });
+        });
+    };
+
+    const getFormData = function () {
+        return {
+            EmployeeTypeID: $('#employeeTypeId').val(),
+            EmployeeTypeName: $('#employeeTypeName').val().trim(),
+            Description: $('#description').val().trim(),
+            SortOrder: parseInt($('#sortOrder').val()) || 0,
+            IsActive: $('#isActive').is(':checked')
+        };
+    };
+
+    const bindEvents = function() {
+        $(elements.form).on('submit', async function(e) {
+            e.preventDefault();
+            $(elements.submitBtn).prop('disabled', true);
+
+            try {
+                const isValid = await validateForm();
+                if (isValid) {
+                    saveEmployeeType();
+                } else {
+                    $(elements.submitBtn).prop('disabled', false);
+                }
+            } catch (error) {
+                console.error("Validation error:", error);
+                Notification.show("An error occurred during validation.", "error");
+                $(elements.submitBtn).prop('disabled', false);
+            }
+        });
+
+        $(elements.cancelBtn).on('click', resetForm);
+
+        $(elements.datatable).on('click', '.edit-btn', function() {
+            const employeeTypeId = $(this).data('id');
+            loadEmployeeTypeForEdit(employeeTypeId);
+        });
+
+        $(elements.datatable).on('click', '.delete-btn', function() {
+            const employeeTypeId = $(this).data('id');
+            confirmDelete(employeeTypeId);
+        });
+    };
+
+    const validateForm = async function() {
+        let isValid = true;
+
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+
+        $(elements.requiredFields).each(function() {
+            if (!$(this).val().trim()) {
+                isValid = false;
+                $(this).addClass('is-invalid');
+                $(this).after(`<div class="invalid-feedback">This field is required</div>`);
+            }
+        });
+
+        if (isValid) {
+            try {
+                const employeeTypeName = $('#employeeTypeName').val().trim();
+                const currentId = $(elements.idField).val();
+
+                const isDuplicate = await checkForDuplicate(employeeTypeName, currentId);
+
+                if (isDuplicate) {
+                    isValid = false;
+                    $('#employeeTypeName').addClass('is-invalid');
+                    $('#employeeTypeName').after(`<div class="invalid-feedback">This employee type name already exists</div>`);
+                }
+            } catch (error) {
+                console.error("Error checking for duplicates:", error);
+            }
+        }
+
+        return isValid;
+    };
+
+    const resetForm = function() {
+        $('#employeeTypeName, #description').val('');
+        $('#sortOrder').val('0');
+        $('#isActive').prop('checked', true);
+        $(elements.idField).val('');
+        $(elements.submitBtn).text('Save');
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+        getNextSortOrder();
+    };
+
+    const getNextSortOrder = function() {
+        $.ajax({
+            url: apiEndpoints.getNextSortOrder,
+            type: 'GET',
+            success: function(result) {
+                if (result.success) {
+                    $('#sortOrder').val(result.nextSortOrder);
+                }
+            }
+        });
+    };
+
+    const saveEmployeeType = function() {
+        const employeeType = getFormData();
+        const isUpdate = employeeType.EmployeeTypeID !== '';
+
+        if (isUpdate) {
+            performAjaxOperation(apiEndpoints.update, employeeType, 'updating');
+        } else {
+            performAjaxOperation(apiEndpoints.create, employeeType, 'creating');
+        }
+    };
+
+    const loadEmployeeTypeForEdit = function(id) {
+        $.ajax({
+            url: apiEndpoints.getById,
+            type: 'GET',
+            data: { id: id },
+            success: function(result) {
+                if (result.success && result.data) {
+                    const employeeType = result.data;
+
+                    $(elements.idField).val(employeeType.EmployeeTypeID);
+                    $('#employeeTypeName').val(employeeType.EmployeeTypeName);
+                    $('#description').val(employeeType.Description || '');
+                    $('#sortOrder').val(employeeType.SortOrder);
+                    $('#isActive').prop('checked', employeeType.IsActive);
+
+                    $(elements.submitBtn).text('Update');
+
+                    $('html, body').animate({
+                        scrollTop: $(elements.form).offset().top - 100
+                    }, 500);
+                } else {
+                    Notification.show('Employee type not found.', 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching employee type data:', error);
+                Notification.show('An error occurred while fetching employee type data.', 'error');
+            }
+        });
+    };
+
+    const confirmDelete = function(id) {
+        swal({
+            title: "Are you sure?",
+            text: "Once deleted, you will not be able to recover this employee type!",
+            icon: "warning",
+            buttons: ["Cancel", "Delete"],
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                deleteEmployeeType(id);
+            }
+        });
+    };
+
+    const deleteEmployeeType = function(id) {
+        performAjaxOperation(apiEndpoints.delete, { id: id }, 'deleting');
+    };
+
+    const performAjaxOperation = function(url, data, operationType) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                $(elements.submitBtn).prop('disabled', true);
+                $(elements.cancelBtn).prop('disabled', true);
+            },
+            success: function(result) {
+                if (result.success) {
+                    if (operationType !== 'deleting') {
+                        resetForm();
+                    }
+                    refreshDataTable();
+                    Notification.show(result.message, 'success');
+                } else {
+                    Notification.show(result.message || `Failed while ${operationType} the employee type.`, 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`${operationType} error:`, error);
+                Notification.show(`An error occurred while ${operationType} the employee type.`, 'error');
+            },
+            complete: function() {
+                $(elements.submitBtn).prop('disabled', false);
+                $(elements.cancelBtn).prop('disabled', false);
+            }
+        });
+    };
+
+    const refreshDataTable = function() {
+        if (dataTable) {
+            dataTable.ajax.reload();
+            return;
+        }
+
+        if ($.fn.DataTable.isDataTable(elements.datatable)) {
+            $(elements.datatable).DataTable().ajax.reload();
+        }
+    };
+
+    return {
+        init: function() {
+            initializeDataTable();
+            bindEvents();
+            getNextSortOrder();
+        }
+    };
+})();
+
+const Notification = (function() {
+    return {
+        show: function(message, type) {
+            swal({
+                title: type === 'success' ? 'Success!' : 'Error!',
+                text: message,
+                icon: type,
+                button: "OK",
+            });
+        }
+    };
+})();
+
+$(document).ready(function() {
+    EmployeeTypeManager.init();
+});
+</script>
+
+<style>
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 80%;
+        margin-top: 0.25rem;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    div.dataTables_wrapper div.dataTables_filter {
+        text-align: right;
+    }
+
+    div.dt-buttons {
+        margin-bottom: 10px;
+    }
+
+    .dataTables_length {
+        padding-top: 5px;
+    }
+
+    .dt-button {
+        padding: 5px 10px;
+        margin-right: 5px;
+        border: 1px solid #ddd;
+        background-color: #f8f8f8;
+        color: #333;
+        border-radius: 4px;
+    }
+
+        .dt-button:hover {
+            background-color: #e8e8e8;
+        }
+</style>

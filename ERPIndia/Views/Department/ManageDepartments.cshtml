@@ -1,0 +1,532 @@
+﻿@using ERPIndia
+@{
+    ViewBag.Title = "Department Management";
+}
+<div class="card">
+    <div class="card-header bg-light">
+        <div class="d-flex align-items-center">
+            <h5 class="text-dark">Department Management</h5>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-xxl-4 col-xl-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h5 class="text-dark">Manage Department</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="departmentForm" class="new-added-form">
+                            <div class="row">
+                                <input type="hidden" id="departmentId">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Department Name *</label>
+                                    <input type="text" id="departmentName" placeholder="" autocomplete="off" class="form-control required">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Department Code</label>
+                                    <input type="text" id="departmentCode" placeholder="" autocomplete="off" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Parent Department</label>
+                                    <select id="parentDeptId" class="form-control">
+                                        <option value="">-- None --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Description</label>
+                                    <textarea id="description" placeholder="" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <label>Sort Order</label>
+                                    <input type="number" id="sortOrder" placeholder="0" value="0" min="0" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isActive" checked>
+                                        <label class="form-check-label" for="isActive">
+                                            Active
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-12 form-group">
+                                    <br />
+                                    <div class="btn-group" role="group">
+                                        <button type="submit" id="submitBtn" class="btn btn-primary">Save</button>&nbsp;
+                                        <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-8 col-xl-8">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <h5 class="text-dark">Departments List</h5>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" id="departmentDatatable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Department Name</th>
+                                        <th>Department Code</th>
+                                        <th>Parent Department</th>
+                                        <th>Sort Order</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+
+<script>
+const DepartmentManager = (function() {
+    const apiEndpoints = {
+        getAll: '@Url.Action("GetAllDepartments", "Department")',
+        getById: '@Url.Action("GetDepartmentById", "Department")',
+        create: '@Url.Action("InsertDepartment", "Department")',
+        update: '@Url.Action("UpdateDepartment", "Department")',
+        delete: '@Url.Action("DeleteDepartment", "Department")',
+        getNextSortOrder: '@Url.Action("GetNextSortOrder", "Department")',
+        getParentDepartments: '@Url.Action("GetParentDepartments", "Department")'
+    };
+
+    const elements = {
+        form: '#departmentForm',
+        idField: '#departmentId',
+        submitBtn: '#submitBtn',
+        cancelBtn: '#cancelBtn',
+        datatable: '#departmentDatatable',
+        requiredFields: '.required'
+    };
+
+    let dataTable = null;
+
+    const initializeDataTable = function () {
+        dataTable = $(elements.datatable).DataTable({
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "ajax": {
+                "url": apiEndpoints.getAll,
+                "type": "POST",
+                "datatype": "json",
+                "error": function (xhr, error, thrown) {
+                    console.error("DataTable AJAX error:", error, thrown);
+                    Notification.show("Failed to load department data.", "error");
+                }
+            },
+            "columnDefs": [{
+                "targets": [0],
+                "visible": false,
+                "searchable": false
+            }],
+            "columns": [
+                { data: 'DepartmentID', visible: false },
+                { "data": "DepartmentName", "name": "DepartmentName", "autoWidth": true },
+                { "data": "DepartmentCode", "name": "DepartmentCode", "autoWidth": true },
+                {
+                    "data": "ParentDeptName",
+                    "name": "ParentDeptName",
+                    "autoWidth": true,
+                    "render": function (data) {
+                        return data || '<span class="text-muted">None</span>';
+                    }
+                },
+                { "data": "SortOrder", "name": "SortOrder", "autoWidth": true },
+                {
+                    "data": "IsActive",
+                    "name": "IsActive",
+                    "autoWidth": true,
+                    "render": function (data) {
+                        return data ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
+                    }
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    className: 'text-center',
+                    width: "100px",
+                    render: function (data, type, row) {
+                        return `
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary btn-sm edit-btn" data-id="${row.DepartmentID}" title="Edit">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm delete-btn" data-id="${row.DepartmentID}" title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                },
+            ],
+            "order": [[4, "asc"]],
+            responsive: true,
+            dom: "<'row'<'col-sm-6'B><'col-sm-3'l><'col-sm-3'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+        });
+    };
+
+    const loadParentDepartments = function(excludeId = null, selectedId = null) {
+        $.ajax({
+            url: apiEndpoints.getParentDepartments,
+            type: 'GET',
+            data: { excludeId: excludeId },
+            success: function(result) {
+                if (result.success) {
+                    const select = $('#parentDeptId');
+                    select.empty();
+                    select.append('<option value="">-- None --</option>');
+
+                    $.each(result.data, function(index, dept) {
+                        const selected = selectedId && dept.DepartmentID === selectedId ? 'selected' : '';
+                        select.append(`<option value="${dept.DepartmentID}" ${selected}>${dept.DepartmentName}</option>`);
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error loading parent departments:", error);
+            }
+        });
+    };
+
+    const checkForDuplicate = async function (departmentName, departmentCode, currentId = '') {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: apiEndpoints.getAll,
+                type: 'GET',
+                data: {
+                    checkDuplicate: true,
+                    departmentName: departmentName,
+                    departmentCode: departmentCode
+                },
+                success: function (result) {
+                    if (result.success) {
+                        const isDuplicate = result.data.some(item => {
+                            return (item.DepartmentName.toLowerCase() === departmentName.toLowerCase() ||
+                                   (departmentCode && item.DepartmentCode && item.DepartmentCode.toLowerCase() === departmentCode.toLowerCase())) &&
+                                   item.DepartmentID.toString() !== currentId.toString();
+                        });
+                        resolve(isDuplicate);
+                    } else {
+                        reject(result.message || 'Error checking for duplicates');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    reject(error);
+                }
+            });
+        });
+    };
+
+    const getFormData = function () {
+        const parentDeptId = $('#parentDeptId').val();
+        return {
+            DepartmentID: $('#departmentId').val(),
+            DepartmentName: $('#departmentName').val().trim(),
+            DepartmentCode: $('#departmentCode').val().trim(),
+            Description: $('#description').val().trim(),
+            ParentDeptID: parentDeptId ? parentDeptId : null,
+            SortOrder: parseInt($('#sortOrder').val()) || 0,
+            IsActive: $('#isActive').is(':checked')
+        };
+    };
+
+    const bindEvents = function() {
+        $(elements.form).on('submit', async function(e) {
+            e.preventDefault();
+            $(elements.submitBtn).prop('disabled', true);
+
+            try {
+                const isValid = await validateForm();
+                if (isValid) {
+                    saveDepartment();
+                } else {
+                    $(elements.submitBtn).prop('disabled', false);
+                }
+            } catch (error) {
+                console.error("Validation error:", error);
+                Notification.show("An error occurred during validation.", "error");
+                $(elements.submitBtn).prop('disabled', false);
+            }
+        });
+
+        $(elements.cancelBtn).on('click', resetForm);
+
+        $(elements.datatable).on('click', '.edit-btn', function() {
+            const departmentId = $(this).data('id');
+            loadDepartmentForEdit(departmentId);
+        });
+
+        $(elements.datatable).on('click', '.delete-btn', function() {
+            const departmentId = $(this).data('id');
+            confirmDelete(departmentId);
+        });
+    };
+
+    const validateForm = async function() {
+        let isValid = true;
+
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+
+        $(elements.requiredFields).each(function() {
+            if (!$(this).val().trim()) {
+                isValid = false;
+                $(this).addClass('is-invalid');
+                $(this).after(`<div class="invalid-feedback">This field is required</div>`);
+            }
+        });
+
+        if (isValid) {
+            try {
+                const departmentName = $('#departmentName').val().trim();
+                const departmentCode = $('#departmentCode').val().trim();
+                const currentId = $(elements.idField).val();
+
+                const isDuplicate = await checkForDuplicate(departmentName, departmentCode, currentId);
+
+                if (isDuplicate) {
+                    isValid = false;
+                    $('#departmentName, #departmentCode').addClass('is-invalid');
+                    $('#departmentName').after(`<div class="invalid-feedback">Department name or code already exists</div>`);
+                }
+            } catch (error) {
+                console.error("Error checking for duplicates:", error);
+            }
+        }
+
+        return isValid;
+    };
+
+    const resetForm = function() {
+        $('#departmentName, #departmentCode, #description').val('');
+        $('#sortOrder').val('0');
+        $('#parentDeptId').val('');
+        $('#isActive').prop('checked', true);
+        $(elements.idField).val('');
+        $(elements.submitBtn).text('Save');
+        $(elements.requiredFields).removeClass('is-invalid').next('.invalid-feedback').remove();
+        loadParentDepartments();
+        getNextSortOrder();
+    };
+
+    const getNextSortOrder = function() {
+        $.ajax({
+            url: apiEndpoints.getNextSortOrder,
+            type: 'GET',
+            success: function(result) {
+                if (result.success) {
+                    $('#sortOrder').val(result.nextSortOrder);
+                }
+            }
+        });
+    };
+
+    const saveDepartment = function() {
+        const department = getFormData();
+        const isUpdate = department.DepartmentID !== '';
+
+        if (isUpdate) {
+            performAjaxOperation(apiEndpoints.update, department, 'updating');
+        } else {
+            performAjaxOperation(apiEndpoints.create, department, 'creating');
+        }
+    };
+
+    const loadDepartmentForEdit = function(id) {
+        $.ajax({
+            url: apiEndpoints.getById,
+            type: 'GET',
+            data: { id: id },
+            success: function(result) {
+                if (result.success && result.data) {
+                    const department = result.data;
+
+                    $(elements.idField).val(department.DepartmentID);
+                    $('#departmentName').val(department.DepartmentName);
+                    $('#departmentCode').val(department.DepartmentCode || '');
+                    $('#description').val(department.Description || '');
+                    $('#sortOrder').val(department.SortOrder);
+                    $('#isActive').prop('checked', department.IsActive);
+
+                    // Load parent departments excluding current department
+                    loadParentDepartments(department.DepartmentID, department.ParentDeptID);
+
+                    $(elements.submitBtn).text('Update');
+
+                    $('html, body').animate({
+                        scrollTop: $(elements.form).offset().top - 100
+                    }, 500);
+                } else {
+                    Notification.show('Department not found.', 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching department data:', error);
+                Notification.show('An error occurred while fetching department data.', 'error');
+            }
+        });
+    };
+
+    const confirmDelete = function(id) {
+        swal({
+            title: "Are you sure?",
+            text: "Once deleted, you will not be able to recover this department!",
+            icon: "warning",
+            buttons: ["Cancel", "Delete"],
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                deleteDepartment(id);
+            }
+        });
+    };
+
+    const deleteDepartment = function(id) {
+        performAjaxOperation(apiEndpoints.delete, { id: id }, 'deleting');
+    };
+
+    const performAjaxOperation = function(url, data, operationType) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            cache: false,
+            beforeSend: function() {
+                $(elements.submitBtn).prop('disabled', true);
+                $(elements.cancelBtn).prop('disabled', true);
+            },
+            success: function(result) {
+                if (result.success) {
+                    if (operationType !== 'deleting') {
+                        resetForm();
+                    }
+                    refreshDataTable();
+                    Notification.show(result.message, 'success');
+                } else {
+                    Notification.show(result.message || `Failed while ${operationType} the department.`, 'error');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(`${operationType} error:`, error);
+                Notification.show(`An error occurred while ${operationType} the department.`, 'error');
+            },
+            complete: function() {
+                $(elements.submitBtn).prop('disabled', false);
+                $(elements.cancelBtn).prop('disabled', false);
+            }
+        });
+    };
+
+    const refreshDataTable = function() {
+        if (dataTable) {
+            dataTable.ajax.reload();
+            return;
+        }
+
+        if ($.fn.DataTable.isDataTable(elements.datatable)) {
+            $(elements.datatable).DataTable().ajax.reload();
+        }
+    };
+
+    return {
+        init: function() {
+            initializeDataTable();
+            bindEvents();
+            loadParentDepartments();
+            getNextSortOrder();
+        }
+    };
+})();
+
+const Notification = (function() {
+    return {
+        show: function(message, type) {
+            swal({
+                title: type === 'success' ? 'Success!' : 'Error!',
+                text: message,
+                icon: type,
+                button: "OK",
+            });
+        }
+    };
+})();
+
+$(document).ready(function() {
+    DepartmentManager.init();
+});
+</script>
+
+<style>
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 80%;
+        margin-top: 0.25rem;
+    }
+
+    .is-invalid {
+        border-color: #dc3545;
+    }
+
+    div.dataTables_wrapper div.dataTables_filter {
+        text-align: right;
+    }
+
+    div.dt-buttons {
+        margin-bottom: 10px;
+    }
+
+    .dataTables_length {
+        padding-top: 5px;
+    }
+
+    .dt-button {
+        padding: 5px 10px;
+        margin-right: 5px;
+        border: 1px solid #ddd;
+        background-color: #f8f8f8;
+        color: #333;
+        border-radius: 4px;
+    }
+
+        .dt-button:hover {
+            background-color: #e8e8e8;
+        }
+</style>

@@ -52,14 +52,15 @@
                         <thead>
                             <tr>
                                 <th width="50">Sr.</th>
-                                <th width="80">ID</th>
-                                <th width="200">Photo with Name</th>
-                                <th width="150">Father</th>
-                                <th width="120">Designation</th>
-                                <th width="100">Phone</th>
-                                <th width="100">Date of Join</th>
+                                <th width="100">Emp Code</th>
+                                <th width="200">Employee Name</th>
+                                <th width="150">Designation</th>
+                                <th width="150">Department</th>
+                                <th width="120">Contact</th>
+                                <th width="120">Email</th>
+                                <th width="100">Join Date</th>
                                 <th width="80">Status</th>
-                                <th width="120">Action</th>
+                                <th width="100">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -70,7 +71,9 @@
                             {
                                 <tr>
                                     <td>@serialNo</td>
-                                    <td>@Html.DisplayFor(modelItem => item.TeacherCode)</td>
+                                    <td>
+                                        <span class="badge bg-secondary">@Html.DisplayFor(modelItem => item.TeacherCode)</span>
+                                    </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if (!string.IsNullOrEmpty(item.Photo))
@@ -83,32 +86,101 @@
                                                     <i class="fas fa-user"></i>
                                                 </span>
                                             }
-                                            <span>@item.FirstName @item.LastName</span>
+                                            <div>
+                                                <div class="fw-semibold">@item.FirstName @item.LastName</div>
+                                                @if (!string.IsNullOrEmpty(item.FatherName))
+                                                {
+                                                    <small class="text-muted">S/o @item.FatherName</small>
+                                                }
+                                            </div>
                                         </div>
                                     </td>
-                                    <td>@Html.DisplayFor(modelItem => item.FatherName)</td>
                                     <td>
-                                        @if (!string.IsNullOrEmpty(item.Designation))
+                                        @if (!string.IsNullOrEmpty(item.DesignationName))
                                         {
-                                            <span class="badge bg-info">@item.Designation</span>
+                                            <span class="badge bg-info">@item.DesignationName</span>
                                         }
                                         else
                                         {
-                                            <span>-</span>
+                                            <span class="text-muted">-</span>
                                         }
                                     </td>
-                                    <td>@Html.DisplayFor(modelItem => item.PrimaryContactNumber)</td>
                                     <td>
-                                       
+                                        @if (!string.IsNullOrEmpty(item.DepartmentName))
+                                        {
+                                            <span>@item.DepartmentName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.PrimaryContactNumber))
+                                        {
+                                            <a href="tel:@item.PrimaryContactNumber" class="text-decoration-none">
+                                                <i class="fas fa-phone-alt me-1"></i>@item.PrimaryContactNumber
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.Email))
+                                        {
+                                            <a href="mailto:@item.Email" class="text-decoration-none" title="@item.Email">
+                                                <i class="fas fa-envelope me-1"></i>
+                                                @if (item.Email.Length > 20)
+                                                {
+                                                    @(item.Email.Substring(0, 17) + "...")
+                                                }
+                                                else
+                                                {
+                                                    @item.Email
+                                                }
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.DateOfJoining.HasValue)
+                                        {
+                                            @item.DateOfJoining.Value.ToString("dd/MM/yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
                                     </td>
                                     <td>
                                         @if (item.Status == "Active")
                                         {
                                             <span class="badge bg-success">Active</span>
                                         }
+                                        else if (item.Status == "OnLeave")
+                                        {
+                                            <span class="badge bg-warning">On Leave</span>
+                                        }
+                                        else if (item.Status == "Resigned")
+                                        {
+                                            <span class="badge bg-secondary">Resigned</span>
+                                        }
+                                        else if (item.Status == "Terminated")
+                                        {
+                                            <span class="badge bg-danger">Terminated</span>
+                                        }
+                                        else if (item.Status == "Retired")
+                                        {
+                                            <span class="badge bg-info">Retired</span>
+                                        }
                                         else
                                         {
-                                            <span class="badge bg-danger">Inactive</span>
+                                            <span class="badge bg-secondary">@item.Status</span>
                                         }
                                     </td>
                                     <td>
@@ -120,7 +192,7 @@
                                                 <li>
                                                     <a class="dropdown-item" href="@Url.Action("Details", "Teacher", new { id = item.TeacherId })">
                                                         <i class="fa fa-eye me-2" style="color: #6c757d;"></i>
-                                                        View Teacher
+                                                        View Details
                                                     </a>
                                                 </li>
                                                 <li>
@@ -134,7 +206,7 @@
                                                     <li><hr class="dropdown-divider"></li>
                                                     <li>
                                                         <a class="dropdown-item text-danger" href="@Url.Action("Delete", "Teacher", new { id = item.TeacherId })"
-                                                           onclick="return confirm('Are you sure you want to delete this teacher?')">
+                                                           onclick="return confirm('Are you sure you want to delete this employee?')">
                                                             <i class="fa-solid fa-trash-can me-2"></i>
                                                             Delete
                                                         </a>
@@ -166,20 +238,43 @@
                 {
                     extend: 'excel',
                     className: 'btn btn-sm btn-success',
-                    text: '<i class="fas fa-file-excel"></i> Excel'
+                    text: '<i class="fas fa-file-excel"></i> Excel',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] // Exclude Action column
+                    }
                 },
                 {
                     extend: 'pdf',
                     className: 'btn btn-sm btn-danger',
                     text: '<i class="fas fa-file-pdf"></i> PDF',
-                    orientation: 'landscape'
+                    orientation: 'landscape',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] // Exclude Action column
+                    }
                 },
                 {
                     extend: 'print',
                     className: 'btn btn-sm btn-info',
-                    text: '<i class="fas fa-print"></i> Print'
+                    text: '<i class="fas fa-print"></i> Print',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] // Exclude Action column
+                    }
                 }
-            ]
+            ],
+            "columnDefs": [
+                { "orderable": false, "targets": 9 } // Disable sorting on Action column
+            ],
+            "language": {
+                "search": "Search employees:",
+                "lengthMenu": "Show _MENU_ employees",
+                "info": "Showing _START_ to _END_ of _TOTAL_ employees",
+                "paginate": {
+                    "first": "First",
+                    "last": "Last",
+                    "next": "Next",
+                    "previous": "Previous"
+                }
+            }
         });
     });
 </script>

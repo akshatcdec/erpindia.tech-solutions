@@ -139,10 +139,9 @@ namespace ERPIndia.TeacherManagement.Repository
             using (var connection = new SqlConnection(_connectionString))
             {
                 var query = @"
-                    SELECT ISNULL(MAX(CAST(TeacherCode AS INT)), 0) + 1 
+                    SELECT ISNULL(MAX(CAST(SUBSTRING(TeacherCode, 4, LEN(TeacherCode)) AS INT)), 0) + 1 
                     FROM HR_MST_Teacher 
-                    WHERE TenantCode = @TenantCode 
-                    AND ISNUMERIC(TeacherCode) = 1";
+                    WHERE TenantCode = @TenantCode";
 
                 var nextId = await connection.QueryFirstOrDefaultAsync<int>(query,
                     new { TenantCode = tenantCode });

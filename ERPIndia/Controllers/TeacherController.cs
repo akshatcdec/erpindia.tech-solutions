@@ -83,13 +83,13 @@ namespace ERPIndia.Controllers
             model.Basic.TenantCode = Utils.ParseInt(CurrentTenantCode);
             model.Basic.TenantId = CurrentTenantID;
             model.Basic.SessionId = CurrentSessionID;
-            model.Basic.DateOfJoining = DateTime.Now.ToString("dd/MM/yyyy");
+            model.Basic.DateOfJoining = DateTime.Now;  // Set as DateTime
             model.Basic.IsActive = true;
             model.Basic.Status = "Active";
             model.Basic.CreatedBy = CurrentTenantUserID;
 
             // Initialize sub-objects
-            model.Payroll = model.Payroll ?? new TeacherPayroll { EffectiveDate = DateTime.Now.ToString("dd/MM/yyyy") };
+            model.Payroll = model.Payroll ?? new TeacherPayroll { EffectiveDate = DateTime.Now };  // Set as DateTime
             model.Leaves = model.Leaves ?? new TeacherLeaves();
             model.BankDetails = model.BankDetails ?? new TeacherBankDetails();
             model.SocialMedia = model.SocialMedia ?? new TeacherSocialMedia();
@@ -132,50 +132,50 @@ namespace ERPIndia.Controllers
                 }
 
                 // Map HR Organization fields
-                model.Basic.DesignationId = form["DesignationId"];
-                model.Basic.DepartmentId = form["DepartmentId"];
-                model.Basic.EmployeeTypeId = form["EmployeeTypeId"];
-                model.Basic.BranchId = form["BranchId"];
-                model.Basic.ManagerId = form["ManagerId"];
+                model.Basic.DesignationId = Utils.ParseGuid(form["DesignationId"]);
+                model.Basic.DepartmentId = Utils.ParseGuid(form["DepartmentId"]);
+                model.Basic.EmployeeTypeId = Utils.ParseGuid(form["EmployeeTypeId"]);
+                model.Basic.BranchId = Utils.ParseGuid(form["BranchId"]);
+                model.Basic.ManagerId = Utils.ParseGuid(form["ManagerId"]);
 
                 // Map denormalized name fields
-                if (!string.IsNullOrEmpty(model.Basic.DesignationId))
+                if (!string.IsNullOrEmpty(model.Basic.DesignationId.ToString()))
                 {
                     model.Basic.DesignationName = form["DesignationId.Text"] ??
-                        await GetNameFromId("HR_MST_Designation", "DesignationID", "DesignationName", model.Basic.DesignationId);
+                        await GetNameFromId("HR_MST_Designation", "DesignationID", "DesignationName", model.Basic.DesignationId.ToString());
                 }
-                if (!string.IsNullOrEmpty(model.Basic.DepartmentId))
+                if (!string.IsNullOrEmpty(model.Basic.DepartmentId.ToString()))
                 {
                     model.Basic.DepartmentName = form["DepartmentId.Text"] ??
-                        await GetNameFromId("HR_MST_Department", "DepartmentID", "DepartmentName", model.Basic.DepartmentId);
+                        await GetNameFromId("HR_MST_Department", "DepartmentID", "DepartmentName", model.Basic.DepartmentId.ToString());
                 }
-                if (!string.IsNullOrEmpty(model.Basic.EmployeeTypeId))
+                if (!string.IsNullOrEmpty(model.Basic.EmployeeTypeId.ToString()))
                 {
                     model.Basic.EmployeeTypeName = form["EmployeeTypeId.Text"] ??
-                        await GetNameFromId("HR_MST_EmployeeType", "EmployeeTypeID", "EmployeeTypeName", model.Basic.EmployeeTypeId);
+                        await GetNameFromId("HR_MST_EmployeeType", "EmployeeTypeID", "EmployeeTypeName", model.Basic.EmployeeTypeId.ToString());
                 }
-                if (!string.IsNullOrEmpty(model.Basic.BranchId))
+                if (!string.IsNullOrEmpty(model.Basic.BranchId.ToString()))
                 {
                     model.Basic.BranchName = form["BranchId.Text"] ??
-                        await GetNameFromId("HR_MST_Branch", "BranchID", "BranchName", model.Basic.BranchId);
+                        await GetNameFromId("HR_MST_Branch", "BranchID", "BranchName", model.Basic.BranchId.ToString());
                 }
-                if (!string.IsNullOrEmpty(model.Basic.ManagerId))
+                if (!string.IsNullOrEmpty(model.Basic.ManagerId.ToString()))
                 {
-                    model.Basic.ManagerName = await GetManagerName(model.Basic.ManagerId);
+                    model.Basic.ManagerName = await GetManagerName(model.Basic.ManagerId.ToString());
                 }
 
                 // Map existing class/section/subject names
-                if (!string.IsNullOrEmpty(model.Basic.ClassId))
+                if (!string.IsNullOrEmpty(model.Basic.ClassId.ToString()))
                 {
-                    model.Basic.ClassName = await GetNameFromId("AcademicClassMaster", "ClassId", "ClassName", model.Basic.ClassId);
+                    model.Basic.ClassName = await GetNameFromId("AcademicClassMaster", "ClassId", "ClassName", model.Basic.ClassId.ToString());
                 }
-                if (!string.IsNullOrEmpty(model.Basic.SectionId))
+                if (!string.IsNullOrEmpty(model.Basic.SectionId.ToString()))
                 {
-                    model.Basic.SectionName = await GetNameFromId("AcademicSectionMaster", "SectionId", "SectionName", model.Basic.SectionId);
+                    model.Basic.SectionName = await GetNameFromId("AcademicSectionMaster", "SectionId", "SectionName", model.Basic.SectionId.ToString());
                 }
-                if (!string.IsNullOrEmpty(model.Basic.SubjectId))
+                if (!string.IsNullOrEmpty(model.Basic.SubjectId.ToString()))
                 {
-                    model.Basic.SubjectName = await GetNameFromId("AcademicSubjectMaster", "SubjectId", "SubjectName", model.Basic.SubjectId);
+                    model.Basic.SubjectName = await GetNameFromId("AcademicSubjectMaster", "SubjectId", "SubjectName", model.Basic.SubjectId.ToString());
                 }
 
                 // Map other fields
@@ -227,7 +227,16 @@ namespace ERPIndia.Controllers
                 model.Payroll.WorkShift = form["WorkShift"];
                 model.Payroll.WorkLocation = form["WorkLocation"];
                 model.Payroll.EPFNo = form["EPFNo"];
-                model.Payroll.EffectiveDate = form["EffectiveDate"] ?? DateTime.Now.ToString("dd/MM/yyyy");
+
+                // Parse EffectiveDate for Payroll
+                if (!string.IsNullOrEmpty(form["EffectiveDate"]))
+                {
+                    model.Payroll.EffectiveDate = ParseDate(form["EffectiveDate"]);
+                }
+                else
+                {
+                    model.Payroll.EffectiveDate = DateTime.Now;
+                }
 
                 // Map leaves
                 if (!string.IsNullOrEmpty(form["MedicalLeaves"]))
@@ -303,43 +312,38 @@ namespace ERPIndia.Controllers
                 model.Basic.IsActive = true;
 
                 // Convert string IDs to GUIDs (handle null/empty values)
-                model.Basic.ClassId = ConvertToGuidString(model.Basic.ClassId);
-                model.Basic.SectionId = ConvertToGuidString(model.Basic.SectionId);
-                model.Basic.SubjectId = ConvertToGuidString(model.Basic.SubjectId);
-                model.Basic.RouteId = ConvertToGuidString(model.Basic.RouteId);
-                model.Basic.VehicleId = ConvertToGuidString(model.Basic.VehicleId);
-                model.Basic.PickupId = ConvertToGuidString(model.Basic.PickupId);
-                model.Basic.HostelId = ConvertToGuidString(model.Basic.HostelId);
-                model.Basic.DesignationId = ConvertToGuidString(model.Basic.DesignationId);
-                model.Basic.DepartmentId = ConvertToGuidString(model.Basic.DepartmentId);
-                model.Basic.EmployeeTypeId = ConvertToGuidString(model.Basic.EmployeeTypeId);
-                model.Basic.BranchId = ConvertToGuidString(model.Basic.BranchId);
-                model.Basic.ManagerId = ConvertToGuidString(model.Basic.ManagerId);
+                model.Basic.ClassId = Utils.ParseGuid(model.Basic.ClassId);
+                model.Basic.SectionId = Utils.ParseGuid(model.Basic.SectionId);
+                model.Basic.SubjectId = Utils.ParseGuid(model.Basic.SubjectId);
+                model.Basic.RouteId = Utils.ParseGuid(model.Basic.RouteId);
+                model.Basic.VehicleId = Utils.ParseGuid(model.Basic.VehicleId);
+                model.Basic.PickupId = Utils.ParseGuid(model.Basic.PickupId);
+                model.Basic.HostelId = Utils.ParseGuid(model.Basic.HostelId);
+                model.Basic.DesignationId = Utils.ParseGuid(model.Basic.DesignationId);
+                model.Basic.DepartmentId = Utils.ParseGuid(model.Basic.DepartmentId);
+                model.Basic.EmployeeTypeId = Utils.ParseGuid(model.Basic.EmployeeTypeId);
+                model.Basic.BranchId = Utils.ParseGuid(model.Basic.BranchId);
+                model.Basic.ManagerId = Utils.ParseGuid(model.Basic.ManagerId);
 
-                // Parse and format dates
-                if (!string.IsNullOrEmpty(model.Basic.DateOfJoining))
+                // Parse and set dates from form
+                if (!string.IsNullOrEmpty(form["DateOfJoining"]))
                 {
-                    model.Basic.DateOfJoining = ParseAndFormatDate(model.Basic.DateOfJoining);
+                    model.Basic.DateOfJoining = ParseDate(form["DateOfJoining"]);
                 }
 
-                if (!string.IsNullOrEmpty(model.Basic.DateOfBirth))
+                if (!string.IsNullOrEmpty(form["DateOfBirth"]))
                 {
-                    model.Basic.DateOfBirth = ParseAndFormatDate(model.Basic.DateOfBirth);
+                    model.Basic.DateOfBirth = ParseDate(form["DateOfBirth"]);
                 }
 
-                if (!string.IsNullOrEmpty(model.Payroll.DateOfLeaving))
+                if (!string.IsNullOrEmpty(form["DateOfLeaving"]))
                 {
-                    model.Payroll.DateOfLeaving = ParseAndFormatDate(model.Payroll.DateOfLeaving);
+                    model.Payroll.DateOfLeaving = ParseDate(form["DateOfLeaving"]);
                 }
 
-                if (!string.IsNullOrEmpty(model.Payroll.EffectiveDate))
+                if (!string.IsNullOrEmpty(form["EndDate"]))
                 {
-                    model.Payroll.EffectiveDate = ParseAndFormatDate(model.Payroll.EffectiveDate);
-                }
-
-                if (!string.IsNullOrEmpty(model.Payroll.EndDate))
-                {
-                    model.Payroll.EndDate = ParseAndFormatDate(model.Payroll.EndDate);
+                    model.Payroll.EndDate = ParseDate(form["EndDate"]);
                 }
 
                 // Save teacher
@@ -368,32 +372,8 @@ namespace ERPIndia.Controllers
 
             await PopulateDropdowns(teacher);
 
-            // Format dates for display
-            if (!string.IsNullOrEmpty(teacher.Basic.DateOfJoining))
-            {
-                teacher.Basic.DateOfJoining = FormatDateForDisplay(teacher.Basic.DateOfJoining);
-            }
-
-            if (!string.IsNullOrEmpty(teacher.Basic.DateOfBirth))
-            {
-                teacher.Basic.DateOfBirth = FormatDateForDisplay(teacher.Basic.DateOfBirth);
-            }
-
-            if (teacher.Payroll != null)
-            {
-                if (!string.IsNullOrEmpty(teacher.Payroll.DateOfLeaving))
-                {
-                    teacher.Payroll.DateOfLeaving = FormatDateForDisplay(teacher.Payroll.DateOfLeaving);
-                }
-                if (!string.IsNullOrEmpty(teacher.Payroll.EffectiveDate))
-                {
-                    teacher.Payroll.EffectiveDate = FormatDateForDisplay(teacher.Payroll.EffectiveDate);
-                }
-                if (!string.IsNullOrEmpty(teacher.Payroll.EndDate))
-                {
-                    teacher.Payroll.EndDate = FormatDateForDisplay(teacher.Payroll.EndDate);
-                }
-            }
+            // Dates are already DateTime? in the model, no conversion needed for display
+            // The view should handle date formatting
 
             return View(teacher);
         }
@@ -408,15 +388,175 @@ namespace ERPIndia.Controllers
         {
             try
             {
-                // Similar to Create but with Update logic
                 // Initialize sub-objects if null
                 model.Payroll = model.Payroll ?? new TeacherPayroll();
                 model.Leaves = model.Leaves ?? new TeacherLeaves();
                 model.BankDetails = model.BankDetails ?? new TeacherBankDetails();
                 model.SocialMedia = model.SocialMedia ?? new TeacherSocialMedia();
 
-                // Map all fields (similar to Create)
-                // ... (same mapping logic as Create)
+                var documents = new List<TeacherDocument>();
+
+                // Map Employee Name to FirstName and LastName
+                string employeeName = form["EmployeeName"];
+                if (!string.IsNullOrWhiteSpace(employeeName))
+                {
+                    var nameParts = employeeName.Trim().Split(' ');
+                    if (nameParts.Length > 0)
+                    {
+                        model.Basic.FirstName = nameParts[0];
+                        if (nameParts.Length > 1)
+                        {
+                            model.Basic.LastName = string.Join(" ", nameParts.Skip(1));
+                        }
+                    }
+                }
+
+                // Map HR Organization fields
+                model.Basic.DesignationId = Utils.ParseGuid(form["DesignationId"]);
+                model.Basic.DepartmentId = Utils.ParseGuid(form["DepartmentId"]);
+                model.Basic.EmployeeTypeId = Utils.ParseGuid(form["EmployeeTypeId"]);
+                model.Basic.BranchId = Utils.ParseGuid(form["BranchId"]);
+                model.Basic.ManagerId = Utils.ParseGuid(form["ManagerId"]);
+
+                // Map denormalized name fields (same as Create)
+                if (!string.IsNullOrEmpty(model.Basic.DesignationId.ToString()))
+                {
+                    model.Basic.DesignationName = form["DesignationId.Text"] ??
+                        await GetNameFromId("HR_MST_Designation", "DesignationID", "DesignationName", model.Basic.DesignationId.ToString());
+                }
+                if (!string.IsNullOrEmpty(model.Basic.DepartmentId.ToString()))
+                {
+                    model.Basic.DepartmentName = form["DepartmentId.Text"] ??
+                        await GetNameFromId("HR_MST_Department", "DepartmentID", "DepartmentName", model.Basic.DepartmentId.ToString());
+                }
+                if (!string.IsNullOrEmpty(model.Basic.EmployeeTypeId.ToString()))
+                {
+                    model.Basic.EmployeeTypeName = form["EmployeeTypeId.Text"] ??
+                        await GetNameFromId("HR_MST_EmployeeType", "EmployeeTypeID", "EmployeeTypeName", model.Basic.EmployeeTypeId.ToString());
+                }
+                if (!string.IsNullOrEmpty(model.Basic.BranchId.ToString()))
+                {
+                    model.Basic.BranchName = form["BranchId.Text"] ??
+                        await GetNameFromId("HR_MST_Branch", "BranchID", "BranchName", model.Basic.BranchId.ToString());
+                }
+                if (!string.IsNullOrEmpty(model.Basic.ManagerId.ToString()))
+                {
+                    model.Basic.ManagerName = await GetManagerName(model.Basic.ManagerId.ToString());
+                }
+
+                // Map other fields
+                model.Basic.Religion = form["Religion"];
+                model.Basic.ExperienceDetails = form["ExperienceDetails"];
+                model.Basic.OtherSubject = form["OtherSubject"];
+                model.Basic.Status = form["Status"] ?? "Active";
+
+                // Map government IDs
+                model.Basic.AadharNumber = form["AadharNumber"];
+                model.Basic.PANNumber = form["PANNumber"];
+                model.Basic.UANNo = form["UANNo"];
+                model.Basic.NPSNo = form["NPSNo"];
+                model.Basic.PFNO = form["PFNO"];
+
+                // Parse time fields
+                if (!string.IsNullOrEmpty(form["TimeIn"]))
+                {
+                    if (TimeSpan.TryParse(form["TimeIn"], out TimeSpan timeIn))
+                    {
+                        model.Basic.TimeIn = timeIn.ToString(@"hh\:mm");
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(form["TimeOut"]))
+                {
+                    if (TimeSpan.TryParse(form["TimeOut"], out TimeSpan timeOut))
+                    {
+                        model.Basic.TimeOut = timeOut.ToString(@"hh\:mm");
+                    }
+                }
+
+                // Map payroll fields
+                if (!string.IsNullOrEmpty(form["BasicSalary"]))
+                {
+                    if (decimal.TryParse(form["BasicSalary"], out decimal salary))
+                    {
+                        model.Payroll.BasicSalary = salary;
+                    }
+                }
+                if (!string.IsNullOrEmpty(form["LateFinePerHour"]))
+                {
+                    if (decimal.TryParse(form["LateFinePerHour"], out decimal lateFine))
+                    {
+                        model.Payroll.LateFinePerHour = lateFine;
+                    }
+                }
+                model.Payroll.PayrollNote = form["PayrollNote"];
+                model.Payroll.ContractType = form["ContractType"];
+                model.Payroll.WorkShift = form["WorkShift"];
+                model.Payroll.WorkLocation = form["WorkLocation"];
+                model.Payroll.EPFNo = form["EPFNo"];
+
+                // Map bank fields
+                model.BankDetails.UPIID = form["UPIID"];
+
+                // Handle photo upload
+                if (photoFile != null && photoFile.ContentLength > 0)
+                {
+                    string fileName = SaveFile(photoFile, model.Basic.TeacherCode,
+                        model.Basic.SchoolCode.ToString(), "photo");
+                    model.Basic.Photo = fileName;
+                }
+
+                // Handle multiple document uploads
+                if (documentFiles != null && documentFiles.Length > 0)
+                {
+                    foreach (var file in documentFiles.Where(f => f != null && f.ContentLength > 0))
+                    {
+                        string documentType = DetermineDocumentType(file.FileName, form);
+                        string fileName = SaveDocument(file, model.Basic.TeacherCode,
+                            model.Basic.SchoolCode.ToString(), documentType);
+
+                        documents.Add(new TeacherDocument
+                        {
+                            DocumentType = documentType,
+                            DocumentTitle = Path.GetFileNameWithoutExtension(file.FileName),
+                            DocumentPath = fileName,
+                            FileSize = file.ContentLength,
+                            MimeType = file.ContentType,
+                            UploadDate = DateTime.Now
+                        });
+                    }
+                }
+
+                if (documents.Any())
+                {
+                    model.Documents = documents;
+                }
+
+                // Parse and set dates from form
+                if (!string.IsNullOrEmpty(form["DateOfJoining"]))
+                {
+                    model.Basic.DateOfJoining = ParseDate(form["DateOfJoining"]);
+                }
+
+                if (!string.IsNullOrEmpty(form["DateOfBirth"]))
+                {
+                    model.Basic.DateOfBirth = ParseDate(form["DateOfBirth"]);
+                }
+
+                if (!string.IsNullOrEmpty(form["DateOfLeaving"]))
+                {
+                    model.Payroll.DateOfLeaving = ParseDate(form["DateOfLeaving"]);
+                }
+
+                if (!string.IsNullOrEmpty(form["EffectiveDate"]))
+                {
+                    model.Payroll.EffectiveDate = ParseDate(form["EffectiveDate"]);
+                }
+
+                if (!string.IsNullOrEmpty(form["EndDate"]))
+                {
+                    model.Payroll.EndDate = ParseDate(form["EndDate"]);
+                }
 
                 // Set modified fields
                 model.Basic.ModifiedBy = CurrentTenantUserID;
@@ -592,10 +732,7 @@ namespace ERPIndia.Controllers
 
                 if (dropdownResponse?.Success == true && dropdownResponse.Data != null)
                 {
-                    var list = new List<SelectListItem>
-                    {
-                        new SelectListItem { Value = "", Text = "Select" }
-                    };
+                    var list = new List<SelectListItem>();
 
                     list.AddRange(dropdownResponse.Data.Select(item => new SelectListItem
                     {
@@ -605,8 +742,10 @@ namespace ERPIndia.Controllers
 
                     return list;
                 }
-
-                return new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select" } };
+                else
+                {
+                    return new List<SelectListItem> { new SelectListItem { Value = "", Text = "Select" } };
+                }
             }
             catch
             {
@@ -733,13 +872,21 @@ namespace ERPIndia.Controllers
             return null;
         }
 
-        private string ParseAndFormatDate(string dateString)
+        // New method to parse dates properly
+        private DateTime? ParseDate(string dateString)
         {
             if (string.IsNullOrWhiteSpace(dateString))
                 return null;
 
             // Try different date formats
-            string[] formats = { "dd/MM/yyyy", "yyyy-MM-dd", "MM/dd/yyyy", "dd-MM-yyyy" };
+            string[] formats = {
+                "dd/MM/yyyy",
+                "yyyy-MM-dd",
+                "MM/dd/yyyy",
+                "dd-MM-yyyy",
+                "dd/MM/yyyy HH:mm:ss",
+                "yyyy-MM-dd HH:mm:ss"
+            };
 
             foreach (var format in formats)
             {
@@ -747,26 +894,26 @@ namespace ERPIndia.Controllers
                     System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.None, out DateTime result))
                 {
-                    return result.ToString("yyyy-MM-dd");
+                    return result;
                 }
             }
 
             // Try default parse as last resort
             if (DateTime.TryParse(dateString, out DateTime defaultResult))
-                return defaultResult.ToString("yyyy-MM-dd");
+            {
+                return defaultResult;
+            }
 
-            return dateString;
+            return null;
         }
 
-        private string FormatDateForDisplay(string dateString)
+        // Method to format DateTime? to string for display (if needed in views)
+        private string FormatDateForDisplay(DateTime? date)
         {
-            if (string.IsNullOrWhiteSpace(dateString))
-                return null;
+            if (date.HasValue)
+                return date.Value.ToString("dd/MM/yyyy");
 
-            if (DateTime.TryParse(dateString, out DateTime result))
-                return result.ToString("dd/MM/yyyy");
-
-            return dateString;
+            return string.Empty;
         }
 
         #endregion

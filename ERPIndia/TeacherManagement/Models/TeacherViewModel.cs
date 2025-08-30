@@ -34,7 +34,6 @@ namespace ERPIndia.TeacherManagement.Models
         [Display(Name = "Teacher Code")]
         public string TeacherCode { get; set; }
 
-        [Required]
         [Display(Name = "First Name")]
         public string FirstName { get; set; }
 
@@ -43,19 +42,19 @@ namespace ERPIndia.TeacherManagement.Models
 
         // HR Organization Fields
         [Display(Name = "Designation")]
-        public string DesignationId { get; set; }
+        public Guid DesignationId { get; set; }
 
         [Display(Name = "Department")]
-        public string DepartmentId { get; set; }
+        public Guid DepartmentId { get; set; }
 
         [Display(Name = "Employee Type")]
-        public string EmployeeTypeId { get; set; }
+        public Guid EmployeeTypeId { get; set; }
 
         [Display(Name = "Branch")]
-        public string BranchId { get; set; }
+        public Guid BranchId { get; set; }
 
         [Display(Name = "Manager")]
-        public string ManagerId { get; set; }
+        public Guid ManagerId { get; set; }
 
         // Denormalized Name Fields (for display/reporting)
         public string DesignationName { get; set; }
@@ -73,13 +72,13 @@ namespace ERPIndia.TeacherManagement.Models
 
         // Academic Information
         [Display(Name = "Class")]
-        public string ClassId { get; set; }
+        public Guid ClassId { get; set; }
 
         [Display(Name = "Section")]
-        public string SectionId { get; set; }
+        public Guid SectionId { get; set; }
 
         [Display(Name = "Subject")]
-        public string SubjectId { get; set; }
+        public Guid SubjectId { get; set; }
 
         [Display(Name = "Other Subject")]
         public string OtherSubject { get; set; }
@@ -104,7 +103,7 @@ namespace ERPIndia.TeacherManagement.Models
 
         [Display(Name = "Date of Joining")]
         [DataType(DataType.Date)]
-        public string DateOfJoining { get; set; }
+        public DateTime? DateOfJoining { get; set; }
 
         [Display(Name = "Father's Name")]
         public string FatherName { get; set; }
@@ -114,7 +113,7 @@ namespace ERPIndia.TeacherManagement.Models
 
         [Display(Name = "Date of Birth")]
         [DataType(DataType.Date)]
-        public string DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
         [Display(Name = "Marital Status")]
         public string MaritalStatus { get; set; }
@@ -187,17 +186,17 @@ namespace ERPIndia.TeacherManagement.Models
 
         // Transport Information
         [Display(Name = "Route")]
-        public string RouteId { get; set; }
+        public Guid RouteId { get; set; }
 
         [Display(Name = "Vehicle")]
-        public string VehicleId { get; set; }
+        public Guid VehicleId { get; set; }
 
         [Display(Name = "Pickup Point")]
-        public string PickupId { get; set; }
+        public Guid PickupId { get; set; }
 
         // Hostel Information
         [Display(Name = "Hostel")]
-        public string HostelId { get; set; }
+        public Guid HostelId { get; set; }
 
         [Display(Name = "Room No")]
         public string RoomNo { get; set; }
@@ -257,7 +256,7 @@ namespace ERPIndia.TeacherManagement.Models
 
         [Display(Name = "Date of Leaving")]
         [DataType(DataType.Date)]
-        public string DateOfLeaving { get; set; }
+        public DateTime? DateOfLeaving { get; set; }
 
         [Display(Name = "Late Fine Per Hour")]
         public decimal LateFinePerHour { get; set; }
@@ -265,14 +264,13 @@ namespace ERPIndia.TeacherManagement.Models
         [Display(Name = "Payroll Note")]
         public string PayrollNote { get; set; }
 
-        [Required]
         [Display(Name = "Effective Date")]
         [DataType(DataType.Date)]
-        public string EffectiveDate { get; set; }
+        public DateTime? EffectiveDate { get; set; }
 
         [Display(Name = "End Date")]
         [DataType(DataType.Date)]
-        public string EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
         // System Fields
         public int SchoolCode { get; set; }
@@ -333,20 +331,16 @@ namespace ERPIndia.TeacherManagement.Models
         public Guid BankId { get; set; }
         public Guid TeacherId { get; set; }
 
-        [Required]
         [Display(Name = "Account Name")]
         public string AccountName { get; set; }
 
-        [Required]
-        [Display(Name = "Account Number")]
+       [Display(Name = "Account Number")]
         public string AccountNumber { get; set; }
 
-        [Required]
-        [Display(Name = "Bank Name")]
+       [Display(Name = "Bank Name")]
         public string BankName { get; set; }
 
-        [Required]
-        [Display(Name = "IFSC Code")]
+       [Display(Name = "IFSC Code")]
         [RegularExpression(@"^[A-Z]{4}0[A-Z0-9]{6}$", ErrorMessage = "Invalid IFSC Code")]
         public string IFSCCode { get; set; }
 
@@ -413,7 +407,7 @@ namespace ERPIndia.TeacherManagement.Models
         [Required]
         [Display(Name = "Document Type")]
         public string DocumentType { get; set; }
-
+        public string DocumentName { get; set; }
         [Required]
         [Display(Name = "Document Title")]
         public string DocumentTitle { get; set; }

@@ -9,20 +9,12 @@ using System.Web.Mvc;
 
 namespace ERPIndia.Controllers
 {
-    public class Branch
+    public class Shift
     {
-        public Guid BranchID { get; set; }
+        public Guid ShiftID { get; set; }
         public int SortOrder { get; set; }
-        public string BranchName { get; set; }
-        public string BranchCode { get; set; }
-        public string Address { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Country { get; set; }
-        public string PostalCode { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
-        public bool IsHeadOffice { get; set; }
+        public string ShiftName { get; set; }
+        public string Description { get; set; }
         public Guid TenantID { get; set; }
         public int TenantCode { get; set; }
         public bool IsActive { get; set; }
@@ -33,15 +25,15 @@ namespace ERPIndia.Controllers
         public DateTime? ModifiedDate { get; set; }
     }
 
-    public class BranchController : BaseController
+    public class ShiftController : BaseController
     {
-        public ActionResult ManageBranches()
+        public ActionResult ManageShifts()
         {
             return View();
         }
 
         [HttpPost]
-        public JsonResult GetAllBranches(bool checkDuplicate = false, string branchName = null, string branchCode = null)
+        public JsonResult GetAllShifts(bool checkDuplicate = false, string shiftName = null)
         {
             try
             {
@@ -50,29 +42,23 @@ namespace ERPIndia.Controllers
                 using (var connection = new SqlConnection(connectionString))
                 {
                     // If we're just checking for duplicates
-                    if (checkDuplicate && (!string.IsNullOrEmpty(branchName) || !string.IsNullOrEmpty(branchCode)))
+                    if (checkDuplicate && !string.IsNullOrEmpty(shiftName))
                     {
-                        string sql1 = @"SELECT * FROM HR_MST_Branch 
+                        string sql1 = @"SELECT * FROM HR_MST_Shift 
                                       WHERE TenantID = @TenantID 
+                                      AND ShiftName = @ShiftName
                                       AND IsDeleted = 0";
-                        
-                        if (!string.IsNullOrEmpty(branchName))
-                            sql1 += " AND BranchName = @BranchName";
-                        
-                        if (!string.IsNullOrEmpty(branchCode))
-                            sql1 += " AND BranchCode = @BranchCode";
 
                         var parameters1 = new
                         {
                             TenantID = CurrentTenantID,
-                            BranchName = branchName,
-                            BranchCode = branchCode
+                            ShiftName = shiftName
                         };
 
                         connection.Open();
-                        var branches = connection.Query<Branch>(sql1, parameters1).ToList();
+                        var shifts = connection.Query<Shift>(sql1, parameters1).ToList();
 
-                        return Json(new { success = true, data = branches });
+                        return Json(new { success = true, data = shifts });
                     }
 
                     // For DataTables server-side processing
@@ -87,7 +73,7 @@ namespace ERPIndia.Controllers
 
                     // Base query
                     var sql = new StringBuilder();
-                    sql.Append("WITH BranchData AS ( ");
+                    sql.Append("WITH ShiftData AS ( ");
                     sql.Append("SELECT *, ROW_NUMBER() OVER (");
 
                     // Handle sorting
@@ -101,21 +87,21 @@ namespace ERPIndia.Controllers
                     }
 
                     sql.Append(") AS RowNum ");
-                    sql.Append("FROM HR_MST_Branch WHERE TenantID = @TenantID ");
+                    sql.Append("FROM HR_MST_Shift WHERE TenantID = @TenantID ");
                     sql.Append("AND IsDeleted = 0 ");
 
                     // Handle search
                     if (!string.IsNullOrEmpty(searchValue))
                     {
-                        sql.Append("AND (BranchName LIKE @Search OR BranchCode LIKE @Search OR City LIKE @Search) ");
+                        sql.Append("AND (ShiftName LIKE @Search OR Description LIKE @Search) ");
                     }
 
                     sql.Append(") ");
-                    sql.Append("SELECT * FROM BranchData ");
+                    sql.Append("SELECT * FROM ShiftData ");
                     sql.Append("WHERE RowNum BETWEEN @Start + 1 AND @Start + @Length");
 
                     // Count total records
-                    var countSql = @"SELECT COUNT(*) FROM HR_MST_Branch 
+                    var countSql = @"SELECT COUNT(*) FROM HR_MST_Shift 
                                     WHERE TenantID = @TenantID 
                                     AND IsDeleted = 0";
 
@@ -123,7 +109,7 @@ namespace ERPIndia.Controllers
                     var countFilteredSql = new StringBuilder(countSql);
                     if (!string.IsNullOrEmpty(searchValue))
                     {
-                        countFilteredSql.Append(" AND (BranchName LIKE @Search OR BranchCode LIKE @Search OR City LIKE @Search)");
+                        countFilteredSql.Append(" AND (ShiftName LIKE @Search OR Description LIKE @Search)");
                     }
 
                     var parameters = new DynamicParameters();
@@ -136,7 +122,7 @@ namespace ERPIndia.Controllers
                     connection.Open();
 
                     // Execute queries
-                    var data = connection.Query<Branch>(sql.ToString(), parameters).ToList();
+                    var data = connection.Query<Shift>(sql.ToString(), parameters).ToList();
                     var recordsTotal = connection.ExecuteScalar<int>(countSql, parameters);
                     var recordsFiltered = connection.ExecuteScalar<int>(countFilteredSql.ToString(), parameters);
 
@@ -160,47 +146,47 @@ namespace ERPIndia.Controllers
                     draw = "0",
                     recordsFiltered = 0,
                     recordsTotal = 0,
-                    data = new List<Branch>()
+                    data = new List<Shift>()
                 });
             }
         }
 
         [HttpGet]
-        public JsonResult GetBranchById(string id)
+        public JsonResult GetShiftById(string id)
         {
             try
             {
-                Guid branchId;
+                Guid shiftId;
 
-                if (!Guid.TryParse(id, out branchId))
+                if (!Guid.TryParse(id, out shiftId))
                 {
-                    return Json(new { success = false, message = "Invalid branch ID" }, JsonRequestBehavior.AllowGet);
+                    return Json(new { success = false, message = "Invalid shift ID" }, JsonRequestBehavior.AllowGet);
                 }
 
                 string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
                 using (var connection = new SqlConnection(connectionString))
                 {
-                    string sql = @"SELECT * FROM HR_MST_Branch 
-                                  WHERE BranchID = @BranchID 
+                    string sql = @"SELECT * FROM HR_MST_Shift 
+                                  WHERE ShiftID = @ShiftID 
                                   AND TenantID = @TenantID 
                                   AND IsDeleted = 0";
 
                     var parameters = new
                     {
-                        BranchID = branchId,
+                        ShiftID = shiftId,
                         TenantID = CurrentTenantID
                     };
 
                     connection.Open();
-                    var branch = connection.QueryFirstOrDefault<Branch>(sql, parameters);
+                    var shift = connection.QueryFirstOrDefault<Shift>(sql, parameters);
 
-                    if (branch != null)
+                    if (shift != null)
                     {
-                        return Json(new { success = true, data = branch }, JsonRequestBehavior.AllowGet);
+                        return Json(new { success = true, data = shift }, JsonRequestBehavior.AllowGet);
                     }
                     else
                     {
-                        return Json(new { success = false, message = "Branch not found" }, JsonRequestBehavior.AllowGet);
+                        return Json(new { success = false, message = "Shift not found" }, JsonRequestBehavior.AllowGet);
                     }
                 }
             }
@@ -219,7 +205,7 @@ namespace ERPIndia.Controllers
                 using (var connection = new SqlConnection(connectionString))
                 {
                     string sql = @"SELECT ISNULL(MAX(SortOrder), 0) + 1 
-                                  FROM HR_MST_Branch 
+                                  FROM HR_MST_Shift 
                                   WHERE TenantID = @TenantID 
                                   AND IsDeleted = 0";
 
@@ -240,20 +226,19 @@ namespace ERPIndia.Controllers
             }
         }
 
-        private bool IsBranchDuplicate(SqlConnection connection, Branch branch)
+        private bool IsShiftDuplicate(SqlConnection connection, Shift shift)
         {
-            string sql = @"SELECT COUNT(*) FROM HR_MST_Branch 
+            string sql = @"SELECT COUNT(*) FROM HR_MST_Shift 
                           WHERE TenantID = @TenantID 
+                          AND ShiftName = @ShiftName 
                           AND IsDeleted = 0
-                          AND BranchID != @BranchID
-                          AND (BranchName = @BranchName OR BranchCode = @BranchCode)";
+                          AND ShiftID != @ShiftID";
 
             var parameters = new
             {
-                branch.TenantID,
-                branch.BranchName,
-                branch.BranchCode,
-                BranchID = branch.BranchID
+                shift.TenantID,
+                shift.ShiftName,
+                ShiftID = shift.ShiftID
             };
 
             int count = connection.ExecuteScalar<int>(sql, parameters);
@@ -261,23 +246,23 @@ namespace ERPIndia.Controllers
         }
 
         [HttpPost]
-        public JsonResult InsertBranch(Branch branch)
+        public JsonResult InsertShift(Shift shift)
         {
             try
             {
                 // Validate required data
-                if (string.IsNullOrEmpty(branch.BranchName))
+                if (string.IsNullOrEmpty(shift.ShiftName))
                 {
-                    return Json(new { success = false, message = "Branch name is required" });
+                    return Json(new { success = false, message = "Shift name is required" });
                 }
 
                 // Set tenant and user information
-                branch.BranchID = Guid.NewGuid();
-                branch.TenantID = CurrentTenantID;
-                branch.TenantCode = Utils.ParseInt(CurrentTenantCode);
-                branch.CreatedBy = CurrentTenantUserID;
-                branch.CreatedDate = DateTime.Now;
-                branch.IsDeleted = false;
+                shift.ShiftID = Guid.NewGuid();
+                shift.TenantID = CurrentTenantID;
+                shift.TenantCode = Utils.ParseInt(CurrentTenantCode);
+                shift.CreatedBy = CurrentTenantUserID;
+                shift.CreatedDate = DateTime.Now;
+                shift.IsDeleted = false;
 
                 string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
                 using (var connection = new SqlConnection(connectionString))
@@ -285,29 +270,27 @@ namespace ERPIndia.Controllers
                     connection.Open();
 
                     // Check for duplicate
-                    if (IsBranchDuplicate(connection, branch))
+                    if (IsShiftDuplicate(connection, shift))
                     {
-                        return Json(new { success = false, message = "A branch with this name or code already exists" });
+                        return Json(new { success = false, message = "A shift with this name already exists" });
                     }
 
-                    string sql = @"INSERT INTO HR_MST_Branch 
-                                  (BranchID, SortOrder, BranchName, BranchCode, Address, City, State, Country, 
-                                   PostalCode, Phone, Email, IsHeadOffice, TenantID, TenantCode, 
+                    string sql = @"INSERT INTO HR_MST_Shift 
+                                  (ShiftID, SortOrder, ShiftName, Description, TenantID, TenantCode, 
                                    IsActive, IsDeleted, CreatedBy, CreatedDate) 
                                   VALUES 
-                                  (@BranchID, @SortOrder, @BranchName, @BranchCode, @Address, @City, @State, @Country, 
-                                   @PostalCode, @Phone, @Email, @IsHeadOffice, @TenantID, @TenantCode, 
+                                  (@ShiftID, @SortOrder, @ShiftName, @Description, @TenantID, @TenantCode, 
                                    @IsActive, @IsDeleted, @CreatedBy, @CreatedDate)";
 
-                    int rowsAffected = connection.Execute(sql, branch);
+                    int rowsAffected = connection.Execute(sql, shift);
 
                     if (rowsAffected > 0)
                     {
-                        return Json(new { success = true, message = "Branch created successfully!" });
+                        return Json(new { success = true, message = "Shift created successfully!" });
                     }
                     else
                     {
-                        return Json(new { success = false, message = "Failed to create branch" });
+                        return Json(new { success = false, message = "Failed to create shift" });
                     }
                 }
             }
@@ -318,25 +301,25 @@ namespace ERPIndia.Controllers
         }
 
         [HttpPost]
-        public JsonResult UpdateBranch(Branch branch)
+        public JsonResult UpdateShift(Shift shift)
         {
             try
             {
                 // Validate required data
-                if (branch.BranchID == Guid.Empty)
+                if (shift.ShiftID == Guid.Empty)
                 {
-                    return Json(new { success = false, message = "Branch ID is required" });
+                    return Json(new { success = false, message = "Shift ID is required" });
                 }
 
-                if (string.IsNullOrEmpty(branch.BranchName))
+                if (string.IsNullOrEmpty(shift.ShiftName))
                 {
-                    return Json(new { success = false, message = "Branch name is required" });
+                    return Json(new { success = false, message = "Shift name is required" });
                 }
 
                 // Set update information
-                branch.TenantID = CurrentTenantID;
-                branch.ModifiedBy = CurrentTenantUserID;
-                branch.ModifiedDate = DateTime.Now;
+                shift.TenantID = CurrentTenantID;
+                shift.ModifiedBy = CurrentTenantUserID;
+                shift.ModifiedDate = DateTime.Now;
 
                 string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
                 using (var connection = new SqlConnection(connectionString))
@@ -344,39 +327,31 @@ namespace ERPIndia.Controllers
                     connection.Open();
 
                     // Check for duplicate
-                    if (IsBranchDuplicate(connection, branch))
+                    if (IsShiftDuplicate(connection, shift))
                     {
-                        return Json(new { success = false, message = "A branch with this name or code already exists" });
+                        return Json(new { success = false, message = "A shift with this name already exists" });
                     }
 
-                    string sql = @"UPDATE HR_MST_Branch 
-                                  SET BranchName = @BranchName, 
-                                      BranchCode = @BranchCode,
-                                      SortOrder = @SortOrder,
-                                      Address = @Address,
-                                      City = @City,
-                                      State = @State,
-                                      Country = @Country,
-                                      PostalCode = @PostalCode,
-                                      Phone = @Phone,
-                                      Email = @Email,
-                                      IsHeadOffice = @IsHeadOffice,
+                    string sql = @"UPDATE HR_MST_Shift 
+                                  SET ShiftName = @ShiftName, 
+                                      Description = @Description,
+                                      SortOrder = @SortOrder, 
                                       IsActive = @IsActive, 
                                       ModifiedBy = @ModifiedBy, 
                                       ModifiedDate = @ModifiedDate 
-                                  WHERE BranchID = @BranchID 
+                                  WHERE ShiftID = @ShiftID 
                                   AND TenantID = @TenantID 
                                   AND IsDeleted = 0";
 
-                    int rowsAffected = connection.Execute(sql, branch);
+                    int rowsAffected = connection.Execute(sql, shift);
 
                     if (rowsAffected > 0)
                     {
-                        return Json(new { success = true, message = "Branch updated successfully!" });
+                        return Json(new { success = true, message = "Shift updated successfully!" });
                     }
                     else
                     {
-                        return Json(new { success = false, message = "Failed to update branch. Branch not found or access denied." });
+                        return Json(new { success = false, message = "Failed to update shift. Shift not found or access denied." });
                     }
                 }
             }
@@ -387,32 +362,32 @@ namespace ERPIndia.Controllers
         }
 
         [HttpPost]
-        public JsonResult DeleteBranch(string id)
+        public JsonResult DeleteShift(string id)
         {
             try
             {
-                Guid branchId;
+                Guid shiftId;
 
-                if (!Guid.TryParse(id, out branchId))
+                if (!Guid.TryParse(id, out shiftId))
                 {
-                    return Json(new { success = false, message = "Invalid branch ID" });
+                    return Json(new { success = false, message = "Invalid shift ID" });
                 }
 
                 string connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
                 using (var connection = new SqlConnection(connectionString))
                 {
                     // Soft delete
-                    string sql = @"UPDATE HR_MST_Branch 
+                    string sql = @"UPDATE HR_MST_Shift 
                                   SET IsDeleted = 1, 
                                       ModifiedBy = @ModifiedBy, 
                                       ModifiedDate = @ModifiedDate 
-                                  WHERE BranchID = @BranchID 
+                                  WHERE ShiftID = @ShiftID 
                                   AND TenantID = @TenantID 
                                   AND IsDeleted = 0";
 
                     var parameters = new
                     {
-                        BranchID = branchId,
+                        ShiftID = shiftId,
                         TenantID = CurrentTenantID,
                         ModifiedBy = CurrentTenantUserID,
                         ModifiedDate = DateTime.Now
@@ -423,11 +398,11 @@ namespace ERPIndia.Controllers
 
                     if (rowsAffected > 0)
                     {
-                        return Json(new { success = true, message = "Branch deleted successfully!" });
+                        return Json(new { success = true, message = "Shift deleted successfully!" });
                     }
                     else
                     {
-                        return Json(new { success = false, message = "Failed to delete branch. Branch not found or access denied." });
+                        return Json(new { success = false, message = "Failed to delete shift. Shift not found or access denied." });
                     }
                 }
             }

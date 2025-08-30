@@ -426,6 +426,7 @@
     <Compile Include="Controllers\AdminDashboardController.cs" />
     <Compile Include="Controllers\APIController.cs" />
     <Compile Include="Controllers\AttendanceController.cs" />
+    <Compile Include="Controllers\BranchController.cs" />
     <Compile Include="Controllers\BulkPhotoUploadController.cs" />
     <Compile Include="Controllers\BulkUpdateController.cs" />
     <Compile Include="Controllers\CashbookController.cs" />
@@ -438,7 +439,10 @@
     <Compile Include="Controllers\CharacterCertificateController.cs" />
     <Compile Include="Controllers\BirthCertificateController.cs" />
     <Compile Include="Controllers\DayBookController.cs" />
+    <Compile Include="Controllers\DepartmentController.cs" />
+    <Compile Include="Controllers\DesignationController.cs" />
     <Compile Include="Controllers\DocumentStatusController.cs" />
+    <Compile Include="Controllers\EmployeeTypeController.cs" />
     <Compile Include="Controllers\EnquiryController.cs" />
     <Compile Include="Controllers\EnquiryFormController.cs" />
     <Compile Include="Controllers\ExamController.cs" />
@@ -477,9 +481,9 @@
     <Compile Include="Controllers\LoginHistoryController.cs" />
     <Compile Include="Controllers\ResellerController.cs" />
     <Compile Include="Controllers\RoleController.cs" />
-    <Compile Include="Controllers\BranchController.cs" />
     <Compile Include="Controllers\SchoolController.cs" />
     <Compile Include="Controllers\ServicesController.cs" />
+    <Compile Include="Controllers\ShiftController.cs" />
     <Compile Include="Controllers\SiteFeatureController.cs" />
     <Compile Include="Controllers\SiteMapController.cs" />
     <Compile Include="Class\ImportDataUtils\Model\FamilyData.cs" />
@@ -7872,6 +7876,21 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\HolidayCalendar\ManageHolidays.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Branch\ManageBranches.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Department\ManageDepartments.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Designation\ManageDesignations.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shift\ManageShifts.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\EmployeeType\ManageEmployeeTypes.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

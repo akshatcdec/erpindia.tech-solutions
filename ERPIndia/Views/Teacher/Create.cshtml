@@ -123,9 +123,61 @@
     .fs-12 {
         font-size: 12px;
     }
+
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    .invalid-feedback {
+        display: block;
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+    }
 </style>
 
+<!-- Webcam Modal -->
+<div class="modal fade" id="webcamModal" tabindex="-1" aria-labelledby="webcamModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="webcamModalLabel">Capture Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="camera-selection mb-3 text-center" style="display: none;">
+                    <div class="btn-group" role="group" aria-label="Camera Selection">
+                        <button type="button" class="btn btn-outline-primary" id="frontCameraBtn">Front Camera</button>
+                        <button type="button" class="btn btn-outline-primary" id="backCameraBtn">Back Camera</button>
+                    </div>
+                </div>
+                <div class="webcam-container">
+                    <video id="webcam" autoplay playsinline width="100%" height="auto"></video>
+                    <canvas id="webcamCanvas" style="display: none;"></canvas>
+                    <img id="capturedImage" style="display: none; width: 100%;" alt="Captured photo" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="captureBtn" class="btn btn-primary">Capture</button>
+                <button type="button" id="recaptureBtn" class="btn btn-outline-primary" style="display: none;">Recapture</button>
+                <button type="button" id="saveImageBtn" class="btn btn-success" style="display: none;">Use Photo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="content content-two">
+    <div class="d-md-flex d-block align-items-center justify-content-between mb-3">
+        <div class="my-auto mb-2">
+            <h3 class="mb-1">Add Employee</h3>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="@Url.Action("Index", "Teacher")" class="btn btn-secondary">
+                <i class="ti ti-list"></i> View List
+            </a>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-12">
             @using (Html.BeginForm("Create", "Teacher", FormMethod.Post, new { enctype = "multipart/form-data", id = "employeeForm" }))
@@ -133,12 +185,62 @@
                 @Html.AntiForgeryToken()
 
                 <!-- Validation Summary -->
-                if (!ViewData.ModelState.IsValid)
-                {
-                    <div class="alert alert-danger mb-4">
-                        @Html.ValidationSummary(false, "Please fix the following errors:", new { @class = "mb-0" })
+                <div id="validation-summary" class="alert alert-danger mb-4" style="display: none;">
+                    <strong>Please fix the following errors:</strong>
+                    <ul id="validation-errors"></ul>
+                </div>
+
+                <!-- HR Organization Details -->
+                <div class="card" style="display:none">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-building fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Organization Details</h4>
+                        </div>
                     </div>
-                }
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Department</label>
+                                    @Html.DropDownListFor(x => x.Basic.DepartmentId, Model.Basic.DepartmentList, new { @class = "form-select" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Employee Type</label>
+                                    @Html.DropDownListFor(m => m.Basic.EmployeeTypeId, Model.Basic.EmployeeTypeList ?? new List<SelectListItem>(), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Branch</label>
+                                    @Html.DropDownListFor(m => m.Basic.BranchId, Model.Basic.BranchList ?? new List<SelectListItem>(), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Manager</label>
+                                    @Html.DropDownListFor(m => m.Basic.ManagerId, Model.Basic.ManagerList ?? new List<SelectListItem>(), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Payroll.ContractType, "Contract Type", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Payroll.ContractType, (Model.Payroll != null && Model.Payroll.ContractTypeList != null) ? Model.Payroll.ContractTypeList : new List<SelectListItem>(), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Payroll.WorkShift, "Work Shift", new { @class = "form-label" })
+                                    @Html.DropDownListFor(m => m.Payroll.WorkShift, (Model.Payroll != null && Model.Payroll.WorkShiftList != null) ? Model.Payroll.WorkShiftList : new List<SelectListItem>(), new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Academic Details -->
                 <div class="card">
@@ -154,33 +256,22 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label class="form-label">Employee ID</label>
+                                    <label class="form-label required">Employee ID</label>
                                     @Html.TextBoxFor(m => m.Basic.TeacherCode, new { @class = "form-control", @readonly = "readonly", placeholder = "Auto-generated" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label required">Designation</label>
-                                    @Html.DropDownListFor(m => m.Basic.Designation, new List<SelectListItem> {
-                                        new SelectListItem { Value = "", Text = "Select Designation" },
-                                        new SelectListItem { Value = "Principal", Text = "Principal" },
-                                        new SelectListItem { Value = "Vice Principal", Text = "Vice Principal" },
-                                        new SelectListItem { Value = "Teacher", Text = "Teacher" },
-                                        new SelectListItem { Value = "Assistant Teacher", Text = "Assistant Teacher" },
-                                        new SelectListItem { Value = "Lab Assistant", Text = "Lab Assistant" },
-                                        new SelectListItem { Value = "Librarian", Text = "Librarian" }
-                                    }, new { @class = "form-select select2", required = "required" })
-                                    @Html.ValidationMessageFor(m => m.Basic.Designation, "", new { @class = "text-danger" })
+                                    @Html.DropDownListFor(x => x.Basic.DesignationId, Model.Basic.DesignationList, new { @class = "form-select", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.DesignationId, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.DateOfJoining, "Joining Date", new { @class = "form-label required" })
                                     <div class="input-icon position-relative">
-                                        <span class="input-icon-addon">
-                                            <i class="ti ti-calendar"></i>
-                                        </span>
-                                        @Html.TextBoxFor(m => m.Basic.DateOfJoining, new { @class = "form-control datetimepicker", placeholder = "DD/MM/YYYY", required = "required" })
+                                        @Html.TextBoxFor(m => m.Basic.DateOfJoining, new { @class = "form-control", @type = "date", placeholder = "DD/MM/YYYY", required = "required" })
                                     </div>
                                     @Html.ValidationMessageFor(m => m.Basic.DateOfJoining, "", new { @class = "text-danger" })
                                 </div>
@@ -205,38 +296,35 @@
                                     @Html.TextBoxFor(m => m.Basic.ExperienceDetails, new { @class = "form-control", maxlength = "200", placeholder = "Previous experience details" })
                                 </div>
                             </div>
-
-                            <!-- Teacher-specific fields (conditional) -->
                             <div class="col-md-4 teacher-fields" style="display:none;">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.Basic.ClassId, "Class", new { @class = "form-label" })
-                                    @Html.DropDownListFor(m => m.Basic.ClassId, Model.Basic.ClassList, "Select Class", new { @class = "form-select select2" })
+                                    @Html.LabelFor(m => m.Basic.ClassId, "Class", new { @class = "form-label required" })
+                                    @Html.DropDownListFor(m => m.Basic.ClassId, Model.Basic.ClassList ?? new List<SelectListItem>(), "Select Class", new { @class = "form-control" })
                                     @Html.ValidationMessageFor(m => m.Basic.ClassId, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4 teacher-fields" style="display:none;">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.Basic.SubjectId, "Subject", new { @class = "form-label" })
-                                    @Html.DropDownListFor(m => m.Basic.SubjectId, Model.Basic.SubjectList, "Select Subject", new { @class = "form-select select2" })
+                                    @Html.LabelFor(m => m.Basic.SubjectId, "Subject", new { @class = "form-label required" })
+                                    @Html.DropDownListFor(m => m.Basic.SubjectId, Model.Basic.SubjectList ?? new List<SelectListItem>(), "Select Subject", new { @class = "form-control" })
                                     @Html.ValidationMessageFor(m => m.Basic.SubjectId, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4 teacher-fields" style="display:none;">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.Basic.OtherSubject, "OtherSubject", new { @class = "form-label" })
-                                    @Html.TextBoxFor(m => m.Basic.OtherSubject, new { @class = "form-control", placeholder = "Additional notes about academic background", rows = "3", maxlength = "500" })
+                                    @Html.LabelFor(m => m.Basic.OtherSubject, "Other Subject", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.OtherSubject, new { @class = "form-control", placeholder = "Additional subjects", maxlength = "500" })
                                 </div>
                             </div>
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label class="form-label">Note</label>
-                                    @Html.TextBoxFor(m => m.Basic.Notes, new { @class = "form-control", placeholder = "Additional notes about academic background", rows = "3", maxlength = "500" })
+                                    @Html.TextAreaFor(m => m.Basic.Notes, new { @class = "form-control", placeholder = "Additional notes about academic background", rows = "3", maxlength = "500" })
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- /Academic Details -->
 
                 <!-- Employee Details -->
                 <div class="card">
@@ -264,6 +352,9 @@
                                                     Upload
                                                     <input type="file" name="photoFile" id="photoFile" class="form-control image-sign" accept="image/*">
                                                 </div>
+                                                <button type="button" class="btn btn-secondary mb-3 ms-2" data-bs-toggle="modal" data-bs-target="#webcamModal">
+                                                    <i class="ti ti-camera"></i> Use Camera
+                                                </button>
                                                 <a href="javascript:void(0);" class="btn btn-primary mb-3 ms-2" id="removePhotoBtn">Remove</a>
                                             </div>
                                             <p class="fs-12">Upload image size less than 100KB Format JPG or use camera</p>
@@ -277,9 +368,11 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label required">Employee Name</label>
-                                    <input type="text" class="form-control" name="EmployeeName" maxlength="100" placeholder="Enter full name" required />
+                                    @Html.TextBoxFor(m => m.Basic.FirstName, new { @class = "form-control", maxlength = "100", placeholder = "Enter full name", required = "required" })
+                                    @Html.ValidationMessageFor(m => m.Basic.FirstName, "", new { @class = "text-danger" })
                                 </div>
-                            </div><div class="col-md-4">
+                            </div>
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.FatherName, "Father's Name", new { @class = "form-label required" })
                                     @Html.TextBoxFor(m => m.Basic.FatherName, new { @class = "form-control", maxlength = "50", placeholder = "Enter father's name", required = "required" })
@@ -296,7 +389,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.Gender, "Gender", new { @class = "form-label required" })
-                                    @Html.DropDownListFor(m => m.Basic.Gender, Model.Basic.GenderList, "Select", new { @class = "form-select select2", required = "required" })
+                                    @Html.DropDownListFor(m => m.Basic.Gender, Model.Basic.GenderList ?? new List<SelectListItem>(), new { @class = "form-control", required = "required" })
                                     @Html.ValidationMessageFor(m => m.Basic.Gender, "", new { @class = "text-danger" })
                                 </div>
                             </div>
@@ -312,31 +405,29 @@
                                         new SelectListItem { Value = "Buddhist", Text = "Buddhist" },
                                         new SelectListItem { Value = "Jain", Text = "Jain" },
                                         new SelectListItem { Value = "Other", Text = "Other" }
-                                    }, new { @class = "form-select select2", required = "required" })
+                                    }, new { @class = "form-control", required = "required" })
                                     @Html.ValidationMessageFor(m => m.Basic.Religion, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.BloodGroup, "Blood Group", new { @class = "form-label" })
-                                    @Html.DropDownListFor(m => m.Basic.BloodGroup, Model.Basic.BloodGroupList, "Select", new { @class = "form-select select2" })
+                                    @Html.DropDownListFor(m => m.Basic.BloodGroup, Model.Basic.BloodGroupList ?? new List<SelectListItem>(), new { @class = "form-control" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.Basic.DateOfBirth, "Date of Birth", new { @class = "form-label" })
+                                    @Html.LabelFor(m => m.Basic.DateOfBirth, "Date of Birth", new { @class = "form-label required" })
                                     <div class="input-icon position-relative">
-                                        <span class="input-icon-addon">
-                                            <i class="ti ti-calendar"></i>
-                                        </span>
-                                        @Html.TextBoxFor(m => m.Basic.DateOfBirth, new { @class = "form-control datetimepicker", placeholder = "DD/MM/YYYY" })
+                                        @Html.TextBoxFor(m => m.Basic.DateOfBirth, new { @class = "form-control", @type = "date", placeholder = "DD/MM/YYYY", required = "required" })
                                     </div>
+                                    @Html.ValidationMessageFor(m => m.Basic.DateOfBirth, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.MaritalStatus, "Marital Status", new { @class = "form-label required" })
-                                    @Html.DropDownListFor(m => m.Basic.MaritalStatus, Model.Basic.MaritalStatusList, "Select", new { @class = "form-select select2", required = "required" })
+                                    @Html.DropDownListFor(m => m.Basic.MaritalStatus, Model.Basic.MaritalStatusList ?? new List<SelectListItem>(), new { @class = "form-control", required = "required" })
                                     @Html.ValidationMessageFor(m => m.Basic.MaritalStatus, "", new { @class = "text-danger" })
                                 </div>
                             </div>
@@ -349,33 +440,72 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.Basic.PANNumber, "PAN No. / Other ID", new { @class = "form-label" })
-                                    @Html.TextBoxFor(m => m.Basic.PANNumber, new { @class = "form-control", maxlength = "20", placeholder = "PAN or ID number" })
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label class="form-label">Aadhar No.</label>
-                                    @Html.TextBoxFor(m => m.Basic.AadharNumber, new { @class = "form-control numeric-only", maxlength = "12", placeholder = "12-digit Aadhar" })
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.Email, "Email", new { @class = "form-label" })
                                     @Html.TextBoxFor(m => m.Basic.Email, new { @class = "form-control", type = "email", maxlength = "100", placeholder = "employee@example.com" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.PANNumber, "PAN Number", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.PANNumber, new { @class = "form-control", maxlength = "20", placeholder = "PAN number" })
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.AadharNumber, "Aadhar Number", new { @class = "form-label required" })
+                                    @Html.TextBoxFor(m => m.Basic.AadharNumber, new { @class = "form-control numeric-only", maxlength = "12", placeholder = "12-digit Aadhar" , required = "required" })
                                 </div>
                             </div>
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Basic.CurrentAddress, "Address", new { @class = "form-label required" })
-                                    @Html.TextAreaFor(m => m.Basic.CurrentAddress, new { @class = "form-control", rows = "2", maxlength = "200", placeholder = "Complete address", required = "required" })
+                                    @Html.TextBoxFor(m => m.Basic.CurrentAddress, new { @class = "form-control",  maxlength = "100", placeholder = "Complete address", required = "required" })
                                     @Html.ValidationMessageFor(m => m.Basic.CurrentAddress, "", new { @class = "text-danger" })
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- /Employee Details -->
+
+                <!-- Government IDs -->
+                <div class="card" style="display:none">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-id fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Government IDs</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.UANNo, "UAN Number", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.UANNo, new { @class = "form-control", maxlength = "50", placeholder = "UAN number" })
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.PFNO, "PF Number", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.PFNO, new { @class = "form-control", maxlength = "50", placeholder = "PF number" })
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Basic.NPSNo, "NPS Number", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Basic.NPSNo, new { @class = "form-control", maxlength = "50", placeholder = "NPS number" })
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Payroll.EPFNo, "EPF Number", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Payroll.EPFNo, new { @class = "form-control", maxlength = "30", placeholder = "EPF number" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Payroll -->
                 <div class="card">
@@ -391,15 +521,21 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.Payroll.BasicSalary, "Salary", new { @class = "form-label required" })
-                                    @Html.TextBoxFor(m => m.Payroll.BasicSalary, new { @class = "form-control", type = "number", step = "0.01", placeholder = "0.00", required = "required" })
+                                    @Html.LabelFor(m => m.Payroll.BasicSalary, "Basic Salary", new { @class = "form-label required" })
+                                    @Html.TextBoxFor(m => m.Payroll.BasicSalary, new { @class = "form-control numeric-only", maxlength = "6", required = "required" })
                                     @Html.ValidationMessageFor(m => m.Payroll.BasicSalary, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-4" style="display:none">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.Payroll.WorkLocation, "Work Location", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Payroll.WorkLocation, new { @class = "form-control", maxlength = "100", placeholder = "Work location" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Late Fine (Per Hour)</label>
-                                    @Html.TextBoxFor(m => m.Payroll.LateFinePerHour, new { @class = "form-control", type = "number", step = "0.01", placeholder = "0.00" })
+                                    @Html.TextBoxFor(m => m.Payroll.LateFinePerHour, new { @class = "form-control numeric-only", maxlength = "3" })
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -418,26 +554,24 @@
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Payroll.DateOfLeaving, "Date of Leaving", new { @class = "form-label" })
                                     <div class="input-icon position-relative">
-                                        <span class="input-icon-addon">
-                                            <i class="ti ti-calendar"></i>
-                                        </span>
-                                        @Html.TextBoxFor(m => m.Payroll.DateOfLeaving, new { @class = "form-control datetimepicker", placeholder = "DD/MM/YYYY" })
+                                        @Html.TextBoxFor(m => m.Payroll.DateOfLeaving, new { @class = "form-control", @type = "date", placeholder = "DD/MM/YYYY" })
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Note</label>
-                                    @Html.TextAreaFor(m => m.Payroll.PayrollNote, new { @class = "form-control", rows = "3", maxlength = "500", placeholder = "Additional payroll notes" })
+                                    <div class="input-icon position-relative">
+                                        @Html.TextBoxFor(m => m.Payroll.PayrollNote, new { @class = "form-control", maxlength = "100", placeholder = "Additional payroll notes" })
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- /Payroll -->
 
                 <!-- Leaves -->
-                <div class="card">
+                <div class="card" style="display:none">
                     <div class="card-header bg-light">
                         <div class="d-flex align-items-center">
                             <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
@@ -448,75 +582,39 @@
                     </div>
                     <div class="card-body pb-1">
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.Leaves.MedicalLeaves, "Medical Leaves", new { @class = "form-label" })
+                                    @Html.LabelFor(m => m.Leaves.MedicalLeaves, "Medical", new { @class = "form-label" })
                                     @Html.TextBoxFor(m => m.Leaves.MedicalLeaves, new { @class = "form-control numeric-only", placeholder = "0", Value = "0" })
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.Leaves.CasualLeaves, "Casual Leaves", new { @class = "form-label" })
+                                    @Html.LabelFor(m => m.Leaves.CasualLeaves, "Casual", new { @class = "form-label" })
                                     @Html.TextBoxFor(m => m.Leaves.CasualLeaves, new { @class = "form-control numeric-only", placeholder = "0", Value = "0" })
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.Leaves.MaternityLeaves, "Maternity Leaves", new { @class = "form-label" })
+                                    @Html.LabelFor(m => m.Leaves.MaternityLeaves, "Maternity", new { @class = "form-label" })
                                     @Html.TextBoxFor(m => m.Leaves.MaternityLeaves, new { @class = "form-control numeric-only", placeholder = "0", Value = "0" })
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.Leaves.SickLeaves, "Sick Leaves", new { @class = "form-label" })
+                                    @Html.LabelFor(m => m.Leaves.SickLeaves, "Sick", new { @class = "form-label" })
                                     @Html.TextBoxFor(m => m.Leaves.SickLeaves, new { @class = "form-control numeric-only", placeholder = "0", Value = "0" })
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- /Leaves -->
-
-                <!-- Social Links -->
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <div class="d-flex align-items-center">
-                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
-                                <i class="ti ti-brand-facebook fs-16"></i>
-                            </span>
-                            <h4 class="text-dark">Social Links</h4>
-                        </div>
-                    </div>
-                    <div class="card-body pb-1">
-                        <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-2">
                                 <div class="mb-3">
-                                    @Html.LabelFor(m => m.SocialMedia.Facebook, "Facebook", new { @class = "form-label" })
-                                    @Html.TextBoxFor(m => m.SocialMedia.Facebook, new { @class = "form-control", maxlength = "200", placeholder = "https://facebook.com/username" })
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    @Html.LabelFor(m => m.SocialMedia.Twitter, "Twitter", new { @class = "form-label" })
-                                    @Html.TextBoxFor(m => m.SocialMedia.Twitter, new { @class = "form-control", maxlength = "200", placeholder = "https://twitter.com/username" })
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    @Html.LabelFor(m => m.SocialMedia.Instagram, "Instagram", new { @class = "form-label" })
-                                    @Html.TextBoxFor(m => m.SocialMedia.Instagram, new { @class = "form-control", maxlength = "200", placeholder = "https://instagram.com/username" })
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    @Html.LabelFor(m => m.SocialMedia.YouTube, "Youtube", new { @class = "form-label" })
-                                    @Html.TextBoxFor(m => m.SocialMedia.YouTube, new { @class = "form-control", maxlength = "200", placeholder = "https://youtube.com/@username" })
+                                    @Html.LabelFor(m => m.Leaves.EarnedLeaves, "Earned", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.Leaves.EarnedLeaves, new { @class = "form-control numeric-only", placeholder = "0", Value = "0" })
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- /Social Links -->
 
                 <!-- Bank Details -->
                 <div class="card">
@@ -533,13 +631,13 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.BankDetails.BankName, "Bank Name", new { @class = "form-label" })
-                                    @Html.TextBoxFor(m => m.BankDetails.BankName, new { @class = "form-control", maxlength = "100", placeholder = "Bank name" })
+                                    @Html.TextBoxFor(m => m.BankDetails.BankName, new { @class = "form-control", maxlength = "50", placeholder = "Bank name" })
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.BankDetails.AccountName, "Holder Name", new { @class = "form-label" })
-                                    @Html.TextBoxFor(m => m.BankDetails.AccountName, new { @class = "form-control", maxlength = "100", placeholder = "Account holder name" })
+                                    @Html.TextBoxFor(m => m.BankDetails.AccountName, new { @class = "form-control", maxlength = "50", placeholder = "Account holder name" })
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -557,7 +655,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.BankDetails.BranchName, "Bank Branch", new { @class = "form-label" })
-                                    @Html.TextBoxFor(m => m.BankDetails.BranchName, new { @class = "form-control", maxlength = "100", placeholder = "Branch name" })
+                                    @Html.TextBoxFor(m => m.BankDetails.BranchName, new { @class = "form-control", maxlength = "30", placeholder = "Branch name" })
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -569,7 +667,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- /Bank Details -->
 
                 <!-- Documents -->
                 <div class="card">
@@ -583,36 +680,68 @@
                     </div>
                     <div class="card-body pb-1">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="mb-3">
-                                    <label class="form-label">Upload Resume</label>
-                                    <p class="text-muted">Upload image size of 10MB, Accepted Format PDF</p>
+                                    <p class="text-muted">Upload PDF document only – Max. Size 10MB</p>
                                     <div class="d-flex align-items-center flex-wrap">
                                         <div class="btn btn-primary drag-upload-btn mb-2 me-2">
-                                            <i class="ti ti-file-upload me-1"></i>Upload Resume
-                                            <input type="file" name="resumeFile" id="resumeFile" class="form-control image_sign" accept=".pdf">
+                                            <i class="ti ti-file-upload me-1"></i>Upload Documents
+                                            <input type="file" name="documentFiles" id="documentFiles" class="form-control" multiple accept=".pdf,.doc,.docx,.jpg,.png">
                                         </div>
-                                        <p class="mb-2" id="resumeFileName">No file selected</p>
+                                        <p class="mb-2" id="documentFileNames">No files selected</p>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Upload Document</label>
-                                    <p class="text-muted">Upload image size of 10MB, Accepted Format PDF</p>
-                                    <div class="d-flex align-items-center flex-wrap">
-                                        <div class="btn btn-primary drag-upload-btn mb-2 me-2">
-                                            <i class="ti ti-file-upload me-1"></i>Upload Document
-                                            <input type="file" name="documentFile" id="documentFile" class="form-control image_sign" accept=".pdf">
-                                        </div>
-                                        <p class="mb-2" id="documentFileName">No file selected</p>
-                                    </div>
+                                    <div id="selectedFilesList" class="mt-2"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- /Documents -->
+
+                <!-- Social Links -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <div class="d-flex align-items-center">
+                            <span class="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
+                                <i class="ti ti-social fs-16"></i>
+                            </span>
+                            <h4 class="text-dark">Social Links</h4>
+                        </div>
+                    </div>
+                    <div class="card-body pb-1">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.SocialMedia.Facebook, "Facebook", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.SocialMedia.Facebook, new { @class = "form-control", maxlength = "150", placeholder = "https://facebook.com/username" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.SocialMedia.Twitter, "Twitter", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.SocialMedia.Twitter, new { @class = "form-control", maxlength = "150", placeholder = "https://twitter.com/username" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.SocialMedia.Instagram, "Instagram", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.SocialMedia.Instagram, new { @class = "form-control", maxlength = "150", placeholder = "https://instagram.com/username" })
+                                </div>
+                            </div>
+                            <div class="col-md-6" style="display:none">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.SocialMedia.LinkedIn, "LinkedIn", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.SocialMedia.LinkedIn, new { @class = "form-control", maxlength = "150", placeholder = "https://linkedin.com/in/username" })
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    @Html.LabelFor(m => m.SocialMedia.YouTube, "Youtube", new { @class = "form-label" })
+                                    @Html.TextBoxFor(m => m.SocialMedia.YouTube, new { @class = "form-control", maxlength = "150", placeholder = "https://youtube.com/@username" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Status and Submit -->
                 <div class="card">
@@ -621,9 +750,12 @@
                             <div class="col-md-6">
                                 <div class="mb-3 mb-md-0">
                                     @Html.LabelFor(m => m.Basic.Status, "Status", new { @class = "form-label" })
-                                    @Html.DropDownListFor(m => m.Basic.Status, new List<SelectListItem> {
+                                    @Html.DropDownListFor(m => m.Basic.Status, Model.Basic.StatusList ?? new List<SelectListItem> {
                                         new SelectListItem { Value = "Active", Text = "Active", Selected = true },
-                                        new SelectListItem { Value = "Inactive", Text = "Inactive" }
+                                        new SelectListItem { Value = "OnLeave", Text = "On Leave" },
+                                        new SelectListItem { Value = "Resigned", Text = "Resigned" },
+                                        new SelectListItem { Value = "Terminated", Text = "Terminated" },
+                                        new SelectListItem { Value = "Retired", Text = "Retired" }
                                     }, new { @class = "form-select" })
                                 </div>
                             </div>
@@ -634,79 +766,337 @@
                         </div>
                     </div>
                 </div>
-                <!-- /Status and Submit -->
             }
         </div>
     </div>
 </div>
 
-<script src="~/Scripts/jquery.validate.min.js"></script>
-<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
-<script src="~/Scripts/bootstrap-tagsinput.min.js"></script>
-<script src="~/Scripts/select2.min.js"></script>
-<script src="~/Scripts/bootstrap-datepicker.min.js"></script>
-
 <script>
-    $(document).ready(function () {
-        // Initialize Select2
-        $('.select2').select2({
-            placeholder: "Select an option",
-            allowClear: true,
-            width: '100%'
+    // Webcam functionality with compression
+    let stream = null;
+
+    // Function to compress image to under 100KB
+    function compressImage(canvas, maxSizeKB = 100) {
+        return new Promise((resolve) => {
+            let quality = 0.9;
+            let blob;
+
+            function attemptCompression() {
+                canvas.toBlob((result) => {
+                    blob = result;
+                    const sizeKB = blob.size / 1024;
+
+                    if (sizeKB <= maxSizeKB || quality <= 0.1) {
+                        resolve(blob);
+                    } else {
+                        quality -= 0.1;
+                        attemptCompression();
+                    }
+                }, 'image/jpeg', quality);
+            }
+
+            attemptCompression();
+        });
+    }
+
+    // Webcam modal handlers
+    $('#webcamModal').on('shown.bs.modal', async function () {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            });
+            document.getElementById('webcam').srcObject = stream;
+        } catch (err) {
+            console.error('Error accessing webcam:', err);
+            alert('Unable to access camera. Please ensure camera permissions are granted.');
+        }
+    });
+
+    $('#webcamModal').on('hidden.bs.modal', function () {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        $('#capturedImage').hide();
+        $('#webcam').show();
+        $('#captureBtn').show();
+        $('#recaptureBtn').hide();
+        $('#saveImageBtn').hide();
+    });
+
+    // Capture photo
+    $('#captureBtn').on('click', function() {
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('webcamCanvas');
+        const context = canvas.getContext('2d');
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+
+        const imageUrl = canvas.toDataURL('image/jpeg');
+        $('#capturedImage').attr('src', imageUrl).show();
+        $('#webcam').hide();
+        $('#captureBtn').hide();
+        $('#recaptureBtn').show();
+        $('#saveImageBtn').show();
+    });
+
+    // Recapture
+    $('#recaptureBtn').on('click', function() {
+        $('#capturedImage').hide();
+        $('#webcam').show();
+        $('#captureBtn').show();
+        $('#recaptureBtn').hide();
+        $('#saveImageBtn').hide();
+    });
+
+    // Save compressed image
+    $('#saveImageBtn').on('click', async function() {
+        const canvas = document.getElementById('webcamCanvas');
+
+        // Compress the image
+        const compressedBlob = await compressImage(canvas, 100);
+
+        // Convert blob to file
+        const compressedFile = new File([compressedBlob], 'employee_photo.jpg', {
+            type: 'image/jpeg',
+            lastModified: Date.now()
         });
 
-        // Show/Hide Teacher-specific fields based on Designation
-        $('#Basic_Designation').change(function () {
-            var designation = $(this).val();
-            if (designation === 'Teacher' || designation === 'Assistant Teacher') {
+        // Create a DataTransfer to update the file input
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(compressedFile);
+
+        // Update the file input
+        const fileInput = document.getElementById('photoFile');
+        fileInput.files = dataTransfer.files;
+
+        // Update preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            $('#photoPreview').html(`<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius: 4px;" />`);
+        };
+        reader.readAsDataURL(compressedFile);
+
+        // Close modal
+        $('#webcamModal').modal('hide');
+    });
+
+    $(document).ready(function () {
+        // Form validation
+        $('#employeeForm').on('submit', function(e) {
+            let isValid = true;
+            let errors = [];
+
+            // Clear previous errors
+            $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').remove();
+
+            // Required field validation
+            const requiredFields = [
+                { field: '#Basic_FirstName', name: 'Employee Name' },
+                { field: '#Basic_DesignationId', name: 'Designation' },
+                { field: '#Basic_DateOfJoining', name: 'Joining Date' },
+                { field: '#Basic_Qualification', name: 'Qualification' },
+                { field: '#Basic_WorkExperience', name: 'Work Experience' },
+                { field: '#Basic_FatherName', name: "Father's Name" },
+                { field: '#Basic_MotherName', name: "Mother's Name" },
+                { field: '#Basic_Gender', name: 'Gender' },
+                { field: '#Basic_Religion', name: 'Religion' },
+                { field: '#Basic_DateOfBirth', name: 'Date of Birth' },
+                { field: '#Basic_MaritalStatus', name: 'Marital Status' },
+                { field: '#Basic_PrimaryContactNumber', name: 'Mobile Number' },
+                { field: '#Basic_CurrentAddress', name: 'Address' },
+                { field: '#Payroll_BasicSalary', name: 'Basic Salary' },
+                { field: '#Basic_TimeIn', name: 'Time-in' },
+                { field: '#Basic_TimeOut', name: 'Time-out' }
+            ];
+
+            requiredFields.forEach(item => {
+                const element = $(item.field);
+                if (!element.val() || element.val().trim() === '' || element.val() === 'Select') {
+                    element.addClass('is-invalid');
+                    element.after(`<span class="invalid-feedback">${item.name} is required</span>`);
+                    errors.push(`${item.name} is required`);
+                    isValid = false;
+                }
+            });
+
+            // Teacher-specific validation
+            const designationText = $('#Basic_DesignationId option:selected').text().toLowerCase();
+            if (designationText.includes('teacher')) {
+                if (!$('#Basic_ClassId').val() || $('#Basic_ClassId').val() === 'Select Class') {
+                    $('#Basic_ClassId').addClass('is-invalid');
+                    $('#Basic_ClassId').after('<span class="invalid-feedback">Class is required for teachers</span>');
+                    errors.push('Class is required for teachers');
+                    isValid = false;
+                }
+                if (!$('#Basic_SubjectId').val() || $('#Basic_SubjectId').val() === 'Select Subject') {
+                    $('#Basic_SubjectId').addClass('is-invalid');
+                    $('#Basic_SubjectId').after('<span class="invalid-feedback">Subject is required for teachers</span>');
+                    errors.push('Subject is required for teachers');
+                    isValid = false;
+                }
+            }
+
+            // Mobile number validation
+            const mobile = $('#Basic_PrimaryContactNumber').val();
+            if (mobile && mobile.length !== 10) {
+                $('#Basic_PrimaryContactNumber').addClass('is-invalid');
+                $('#Basic_PrimaryContactNumber').after('<span class="invalid-feedback">Mobile number must be exactly 10 digits</span>');
+                errors.push('Mobile number must be exactly 10 digits');
+                isValid = false;
+            }
+
+            // Aadhar validation
+            const aadhar = $('#Basic_AadharNumber').val();
+            if (aadhar && aadhar.length !== 12) {
+                $('#Basic_AadharNumber').addClass('is-invalid');
+                $('#Basic_AadharNumber').after('<span class="invalid-feedback">Aadhar number must be exactly 12 digits</span>');
+                errors.push('Aadhar number must be exactly 12 digits');
+                isValid = false;
+            }
+
+            // Email validation
+            const email = $('#Basic_Email').val();
+            if (email) {
+                const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+                if (!emailRegex.test(email)) {
+                    $('#Basic_Email').addClass('is-invalid');
+                    $('#Basic_Email').after('<span class="invalid-feedback">Please enter a valid email address</span>');
+                    errors.push('Invalid email format');
+                    isValid = false;
+                }
+            }
+
+            // PAN validation
+            const pan = $('#Basic_PANNumber').val();
+            if (pan) {
+                const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+                if (!panRegex.test(pan.toUpperCase())) {
+                    $('#Basic_PANNumber').addClass('is-invalid');
+                    $('#Basic_PANNumber').after('<span class="invalid-feedback">Invalid PAN format (e.g., ABCDE1234F)</span>');
+                    errors.push('Invalid PAN format');
+                    isValid = false;
+                }
+            }
+
+            // IFSC validation
+            const ifsc = $('#BankDetails_IFSCCode').val();
+            if (ifsc) {
+                const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+                if (!ifscRegex.test(ifsc.toUpperCase())) {
+                    $('#BankDetails_IFSCCode').addClass('is-invalid');
+                    $('#BankDetails_IFSCCode').after('<span class="invalid-feedback">Invalid IFSC code format</span>');
+                    errors.push('Invalid IFSC format');
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+
+                // Show validation summary
+                const errorList = errors.map(err => `<li>${err}</li>`).join('');
+                $('#validation-errors').html(errorList);
+                $('#validation-summary').show();
+
+                // Scroll to first error
+                const firstError = $('.is-invalid:first');
+                if (firstError.length) {
+                    $('html, body').animate({
+                        scrollTop: firstError.offset().top - 100
+                    }, 500);
+                }
+
+                return false;
+            }
+        });
+
+        // Show/Hide Teacher fields
+        $('#Basic_DesignationId').change(function () {
+            var selectedText = $(this).find('option:selected').text().toLowerCase();
+            if (selectedText.includes('teacher')) {
                 $('.teacher-fields').fadeIn();
             } else {
                 $('.teacher-fields').fadeOut();
-                $('#Basic_ClassId').val('').trigger('change.select2');
-                $('#Basic_SubjectId').val('').trigger('change.select2');
+                $('#Basic_ClassId').val('');
+                $('#Basic_SubjectId').val('');
             }
         });
 
-        // Check on page load if Teacher is already selected
-        var initialDesignation = $('#Basic_Designation').val();
-        if (initialDesignation === 'Teacher' || initialDesignation === 'Assistant Teacher') {
+        // Check on page load
+        var initialDesignationText = $('#Basic_DesignationId').find('option:selected').text().toLowerCase();
+        if (initialDesignationText.includes('teacher')) {
             $('.teacher-fields').show();
         }
 
-        // Initialize Date Pickers
-        $('.datetimepicker').datepicker({
-            format: 'dd/mm/yyyy',
-            autoclose: true,
-            todayHighlight: true,
-            clearBtn: true,
-            orientation: "bottom auto"
-        });
+        // File upload preview with compression
+        $('#photoFile').change(function() {
+            const file = this.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                const input = this;
+                const maxSizeKB = 100;
+                const sizeKB = file.size / 1024;
 
-        // Set today's date for Date of Joining by default
-        var today = new Date();
-        var dd = String(today.getDate()).padStart(2, '0');
-        var mm = String(today.getMonth() + 1).padStart(2, '0');
-        var yyyy = today.getFullYear();
-        var todayString = dd + '/' + mm + '/' + yyyy;
+                if (sizeKB > maxSizeKB) {
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
 
-        if (!$('#Basic_DateOfJoining').val()) {
-            $('#Basic_DateOfJoining').val(todayString);
-        }
+                            let width = img.width;
+                            let height = img.height;
+                            const maxDimension = 800;
 
-        // Photo Upload and Preview
-        $('#photoFile').change(function () {
-            readURL(this);
-        });
+                            if (width > maxDimension || height > maxDimension) {
+                                if (width > height) {
+                                    height = (maxDimension / width) * height;
+                                    width = maxDimension;
+                                } else {
+                                    width = (maxDimension / height) * width;
+                                    height = maxDimension;
+                                }
+                            }
 
-        function readURL(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    $('#photoPreview').html('<img src="' + e.target.result + '" style="width:100%; height:100%; object-fit:cover; border-radius: 4px;" />');
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            canvas.toBlob(function(blob) {
+                                const compressedFile = new File([blob], file.name, {
+                                    type: 'image/jpeg',
+                                    lastModified: Date.now()
+                                });
+
+                                const dataTransfer = new DataTransfer();
+                                dataTransfer.items.add(compressedFile);
+                                input.files = dataTransfer.files;
+
+                                const compressedReader = new FileReader();
+                                compressedReader.onload = function(e) {
+                                    $('#photoPreview').html('<img src="' + e.target.result + '" style="width:100%; height:100%; object-fit:cover; border-radius: 4px;" />');
+                                };
+                                compressedReader.readAsDataURL(compressedFile);
+                            }, 'image/jpeg', 0.7);
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    reader.onload = function(e) {
+                        $('#photoPreview').html('<img src="' + e.target.result + '" style="width:100%; height:100%; object-fit:cover; border-radius: 4px;" />');
+                    };
+                    reader.readAsDataURL(file);
                 }
-                reader.readAsDataURL(input.files[0]);
             }
-        }
+        });
 
         // Remove Photo
         $('#removePhotoBtn').click(function () {
@@ -714,111 +1104,41 @@
             $('#photoPreview').html('<i class="ti ti-photo-plus fs-16"></i>');
         });
 
-        // Document file name display
-        $('#resumeFile').change(function () {
-            var fileName = $(this).val().split('\\').pop();
-            $('#resumeFileName').text(fileName || 'No file selected');
+        // Document file handling
+        $('#documentFiles').change(function () {
+            var files = $(this)[0].files;
+            var fileList = $('#selectedFilesList');
+            fileList.empty();
+
+            if (files.length > 0) {
+                $('#documentFileNames').text(files.length + ' file(s) selected');
+                for (var i = 0; i < files.length; i++) {
+                    var fileSize = (files[i].size / 1024 / 1024).toFixed(2);
+                    fileList.append('<div class="badge bg-light text-dark me-2 mb-1">' +
+                        files[i].name + ' (' + fileSize + ' MB)</div>');
+                }
+            } else {
+                $('#documentFileNames').text('No files selected');
+            }
         });
 
-        $('#documentFile').change(function () {
-            var fileName = $(this).val().split('\\').pop();
-            $('#documentFileName').text(fileName || 'No file selected');
-        });
-
-        // Numeric only input fields
+        // Numeric only
         $('.numeric-only').on('input', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        // Email validation
-        $('#Basic_Email').on('blur', function () {
-            var email = $(this).val();
-            var regex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
-
-            if (email && !regex.test(email)) {
-                $(this).addClass('is-invalid');
-                if (!$(this).next('.invalid-feedback').length) {
-                    $(this).after('<span class="invalid-feedback d-block">Please enter a valid email address</span>');
-                }
-            } else {
+        // Clear validation on input
+        $(document).on('input change', 'input.is-invalid, select.is-invalid, textarea.is-invalid', function() {
+            if ($(this).val() && $(this).val().trim() !== '' && $(this).val() !== 'Select') {
                 $(this).removeClass('is-invalid');
                 $(this).next('.invalid-feedback').remove();
             }
         });
 
-        // Phone number validation (10 digits)
-        $('#Basic_PrimaryContactNumber').on('blur', function () {
-            var phone = $(this).val();
-
-            if (phone && phone.length !== 10) {
-                $(this).addClass('is-invalid');
-                if (!$(this).next('.invalid-feedback').length) {
-                    $(this).after('<span class="invalid-feedback d-block">Phone number must be exactly 10 digits</span>');
-                }
-            } else {
-                $(this).removeClass('is-invalid');
-                $(this).next('.invalid-feedback').remove();
-            }
-        });
-
-        // Aadhar validation (12 digits)
-        $('#Basic_AadharNumber').on('blur', function () {
-            var aadhar = $(this).val();
-
-            if (aadhar && aadhar.length !== 12) {
-                $(this).addClass('is-invalid');
-                if (!$(this).next('.invalid-feedback').length) {
-                    $(this).after('<span class="invalid-feedback d-block">Aadhar number must be exactly 12 digits</span>');
-                }
-            } else {
-                $(this).removeClass('is-invalid');
-                $(this).next('.invalid-feedback').remove();
-            }
-        });
-
-        // PAN Number validation
-        $('#Basic_PANNumber').on('blur', function () {
-            var pan = $(this).val();
-            var panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-
-            if (pan && pan.length > 0 && !panRegex.test(pan.toUpperCase())) {
-                $(this).addClass('is-invalid');
-                if (!$(this).next('.invalid-feedback').length) {
-                    $(this).after('<span class="invalid-feedback d-block">Invalid PAN format (e.g., ABCDE1234F)</span>');
-                }
-            } else {
-                $(this).removeClass('is-invalid');
-                $(this).next('.invalid-feedback').remove();
-                if (pan) {
-                    $(this).val(pan.toUpperCase());
-                }
-            }
-        });
-
-        // IFSC Code validation
-        $('#BankDetails_IFSCCode').on('blur', function () {
-            var ifsc = $(this).val();
-            var ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-
-            if (ifsc && !ifscRegex.test(ifsc.toUpperCase())) {
-                $(this).addClass('is-invalid');
-                if (!$(this).next('.invalid-feedback').length) {
-                    $(this).after('<span class="invalid-feedback d-block">Invalid IFSC code format</span>');
-                }
-            } else {
-                $(this).removeClass('is-invalid');
-                $(this).next('.invalid-feedback').remove();
-                if (ifsc) {
-                    $(this).val(ifsc.toUpperCase());
-                }
-            }
-        });
-
-        // Remove invalid class on input
-        $('input, select, textarea').on('input change', function () {
-            if ($(this).hasClass('is-invalid') && $(this).val()) {
-                $(this).removeClass('is-invalid');
-                $(this).next('.invalid-feedback').remove();
+        // Convert PAN and IFSC to uppercase
+        $('#Basic_PANNumber, #BankDetails_IFSCCode').on('blur', function() {
+            if ($(this).val()) {
+                $(this).val($(this).val().toUpperCase());
             }
         });
     });

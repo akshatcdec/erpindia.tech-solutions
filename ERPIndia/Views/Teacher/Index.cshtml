@@ -208,7 +208,7 @@
                     className: 'btn btn-sm btn-success',
                     text: '<i class="fas fa-file-excel"></i> Excel',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] // Exclude Action column
+                        columns: [0, 1, 2, 3, 4, 5, 6]  // Exclude Action column
                     }
                 },
                 {
@@ -217,7 +217,7 @@
                     text: '<i class="fas fa-file-pdf"></i> PDF',
                     orientation: 'landscape',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] // Exclude Action column
+                        columns: [0, 1, 2, 3, 4, 5, 6]  // Exclude Action column
                     }
                 },
                 {
@@ -225,12 +225,12 @@
                     className: 'btn btn-sm btn-info',
                     text: '<i class="fas fa-print"></i> Print',
                     exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8] // Exclude Action column
+                        columns: [0, 1, 2, 3, 4, 5, 6]  // Exclude Action column
                     }
                 }
             ],
             "columnDefs": [
-                { "orderable": false, "targets": 9 } // Disable sorting on Action column
+                { "orderable": false, "targets": 7 } // Disable sorting on Action column
             ],
             "language": {
                 "search": "Search employees:",

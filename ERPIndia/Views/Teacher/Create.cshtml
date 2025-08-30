@@ -162,6 +162,29 @@
         background-position: right calc(0.375em + 0.1875rem) center;
         background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
     }
+
+    /* Salary Breakdown Styles */
+    #salaryBreakdown {
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+        #salaryBreakdown:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        #salaryBreakdown strong {
+            font-size: 14px;
+        }
+
+    #Payroll_BasicSalary:focus + .text-danger + #salaryBreakdown {
+        border-color: #4a86e8 !important;
+    }
+
+    /* Animation for the breakdown values */
+    #perDayAmount, #perHourAmount {
+        transition: all 0.3s ease;
+    }
 </style>
 
 <!-- Webcam Modal -->
@@ -504,8 +527,36 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     @Html.LabelFor(m => m.Payroll.BasicSalary, "Basic Salary", new { @class = "form-label required" })
-                                    @Html.TextBoxFor(m => m.Payroll.BasicSalary, new { @class = "form-control numeric-only", maxlength = "6", required = "required" })
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        @Html.TextBoxFor(m => m.Payroll.BasicSalary, new { @class = "form-control numeric-only", maxlength = "6", required = "required", placeholder = "Enter monthly salary" })
+                                    </div>
                                     @Html.ValidationMessageFor(m => m.Payroll.BasicSalary, "", new { @class = "text-danger" })
+
+                                    <!-- Salary Breakdown Display -->
+                                    <div id="salaryBreakdown" class="mt-2 p-2 bg-light rounded" style="display: none; border: 1px solid #dee2e6;">
+                                        <small class="text-muted d-block">
+                                            <i class="ti ti-calculator me-1"></i>
+                                            <strong>Salary Breakdown:</strong>
+                                        </small>
+                                        <div class="row mt-1">
+                                            <div class="col-6">
+                                                <small class="text-primary">
+                                                    <i class="ti ti-calendar-due me-1"></i>
+                                                    Per Day: <strong>₹<span id="perDayAmount">0</span></strong>
+                                                </small>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-info">
+                                                    <i class="ti ti-clock me-1"></i>
+                                                    Per Hour: <strong>₹<span id="perHourAmount">0</span></strong>
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted mt-1 d-block" style="font-size: 11px;">
+                                            <em>Based on 30 days/month & 8 hours/day</em>
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-4" style="display:none">
@@ -517,7 +568,10 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label class="form-label">Late Fine (Per Hour)</label>
-                                    @Html.TextBoxFor(m => m.Payroll.LateFinePerHour, new { @class = "form-control numeric-only", maxlength = "3" })
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        @Html.TextBoxFor(m => m.Payroll.LateFinePerHour, new { @class = "form-control numeric-only", maxlength = "3" })
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -734,10 +788,7 @@
                                     @Html.LabelFor(m => m.Basic.Status, "Status", new { @class = "form-label" })
                                     @Html.DropDownListFor(m => m.Basic.Status, Model.Basic.StatusList ?? new List<SelectListItem> {
                                         new SelectListItem { Value = "Active", Text = "Active", Selected = true },
-                                        new SelectListItem { Value = "OnLeave", Text = "On Leave" },
-                                        new SelectListItem { Value = "Resigned", Text = "Resigned" },
-                                        new SelectListItem { Value = "Terminated", Text = "Terminated" },
-                                        new SelectListItem { Value = "Retired", Text = "Retired" }
+                                         new SelectListItem { Value = "Inactive", Text = "Inactive" },
                                     }, new { @class = "form-select" })
                                 </div>
                             </div>
@@ -841,7 +892,7 @@
     });
 
     // Capture photo
-    $('#captureBtn').on('click', function() {
+    $('#captureBtn').on('click', function () {
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('webcamCanvas');
         const context = canvas.getContext('2d');
@@ -859,7 +910,7 @@
     });
 
     // Recapture
-    $('#recaptureBtn').on('click', function() {
+    $('#recaptureBtn').on('click', function () {
         $('#capturedImage').hide();
         $('#webcam').show();
         $('#captureBtn').show();
@@ -868,7 +919,7 @@
     });
 
     // Save compressed image
-    $('#saveImageBtn').on('click', async function() {
+    $('#saveImageBtn').on('click', async function () {
         const canvas = document.getElementById('webcamCanvas');
 
         // Compress the image to under 100KB
@@ -894,7 +945,7 @@
 
         // Update preview
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             $('#photoPreview').html(`<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover; border-radius: 4px;" />`);
         };
         reader.readAsDataURL(compressedFile);
@@ -904,8 +955,79 @@
     });
 
     $(document).ready(function () {
+        // Salary breakdown calculation
+        function calculateSalaryBreakdown() {
+            const salaryInput = $('#Payroll_BasicSalary');
+            const salary = parseFloat(salaryInput.val()) || 0;
+
+            if (salary > 0) {
+                // Calculate per day (salary / 30 days)
+                const perDay = salary / 30;
+
+                // Calculate per hour (per day / 8 hours)
+                const perHour = perDay / 8;
+
+                // Update the display
+                $('#perDayAmount').text(perDay.toFixed(2));
+                $('#perHourAmount').text(perHour.toFixed(2));
+
+                // Automatically populate the Late Fine Per Hour field
+                $('#Payroll_LateFinePerHour').val(Math.round(perHour));
+
+                // Add visual feedback to Late Fine field
+                $('#Payroll_LateFinePerHour').css({
+                    'background-color': '#f0f8ff',
+                    'border-color': '#4a86e8'
+                });
+
+                setTimeout(function () {
+                    $('#Payroll_LateFinePerHour').css({
+                        'background-color': '',
+                        'border-color': ''
+                    });
+                }, 500);
+
+                // Show the breakdown div with animation
+               // $('#salaryBreakdown').slideDown(300);
+
+                // Add some visual feedback
+                $('#salaryBreakdown').css({
+                    'background-color': '#f0f8ff',
+                    'border-color': '#4a86e8'
+                });
+
+                // Reset colors after animation
+                setTimeout(function () {
+                    $('#salaryBreakdown').css({
+                        'background-color': '#f8f9fa',
+                        'border-color': '#dee2e6'
+                    });
+                }, 500);
+            } else {
+                // Hide the breakdown if salary is 0 or empty
+                //$('#salaryBreakdown').slideUp(300);
+                // Clear the Late Fine Per Hour field
+                $('#Payroll_LateFinePerHour').val('');
+            }
+        }
+
+        // Trigger calculation on input
+        $('#Payroll_BasicSalary').on('input', function () {
+            calculateSalaryBreakdown();
+        });
+
+        // Also trigger on blur for better UX
+        $('#Payroll_BasicSalary').on('blur', function () {
+            calculateSalaryBreakdown();
+        });
+
+        // Check on page load if there's already a value
+        if ($('#Payroll_BasicSalary').val()) {
+            calculateSalaryBreakdown();
+        }
+
         // Form validation with enhanced visual feedback
-        $('#employeeForm').on('submit', function(e) {
+        $('#employeeForm').on('submit', function (e) {
             console.log('Form submit triggered'); // Debug log
 
             let isValid = true;
@@ -915,7 +1037,7 @@
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').remove();
             // Clear inline styles from previous validation
-            $('input, select, textarea').each(function() {
+            $('input, select, textarea').each(function () {
                 $(this).removeAttr('style');
             });
 
@@ -1074,7 +1196,21 @@
                     isValid = false;
                 }
             }
-
+            const basicSalary = $('#Payroll_BasicSalary').val();
+            if (basicSalary !== '' && (parseFloat(basicSalary) === 0 || parseInt(basicSalary) === 0)) {
+                const salaryElement = $('#Payroll_BasicSalary')[0];
+                $('#Payroll_BasicSalary').addClass('is-invalid');
+                if (salaryElement) {
+                    salaryElement.setAttribute('style',
+                        'border: 2px solid #dc3545 !important;' +
+                        'box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;' +
+                        'background-color: #fff5f5 !important;'
+                    );
+                }
+                $('#Payroll_BasicSalary').after('<div class="invalid-feedback" style="display: block !important; color: #dc3545; font-size: 12px;">Basic Salary cannot be zero</div>');
+                errors.push('Basic Salary cannot be zero');
+                isValid = false;
+            }
             // IFSC validation
             const ifsc = $('#BankDetails_IFSCCode').val();
             if (ifsc) {
@@ -1123,6 +1259,42 @@
             // If validation passes, form will submit normally
         });
 
+        // Status change handler for Date of Leaving requirement
+        $('#Basic_Status').change(function () {
+            const status = $(this).val();
+            const dateOfLeavingLabel = $('label[for="Payroll_DateOfLeaving"]');
+
+            if (status === 'Inactive') {
+                // Make Date of Leaving required
+                dateOfLeavingLabel.addClass('required');
+                $('#Payroll_DateOfLeaving').attr('required', 'required');
+
+                // Add visual indicator
+                $('#Payroll_DateOfLeaving').css({
+                    'border': '1px solid #ffc107',
+                    'background-color': '#fff8e1'
+                });
+
+                // Show a tooltip message
+                if (!$('#dateOfLeavingNote').length) {
+                    $('#Payroll_DateOfLeaving').after('<small id="dateOfLeavingNote" class="text-warning">Required when status is Inactive</small>');
+                }
+            } else {
+                // Remove required status
+                dateOfLeavingLabel.removeClass('required');
+                $('#Payroll_DateOfLeaving').removeAttr('required');
+
+                // Remove visual indicator
+                $('#Payroll_DateOfLeaving').css({
+                    'border': '',
+                    'background-color': ''
+                });
+
+                // Remove tooltip
+                $('#dateOfLeavingNote').remove();
+            }
+        });
+
         // Show/Hide Teacher fields
         $('#Basic_DesignationId').change(function () {
             var selectedText = $(this).find('option:selected').text().toLowerCase();
@@ -1142,7 +1314,7 @@
         }
 
         // Enhanced photo file upload with better compression
-        $('#photoFile').change(function() {
+        $('#photoFile').change(function () {
             const file = this.files[0];
             if (file && file.type.startsWith('image/')) {
                 const reader = new FileReader();
@@ -1150,9 +1322,9 @@
                 const maxSizeKB = 100;
                 const sizeKB = file.size / 1024;
 
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     const img = new Image();
-                    img.onload = function() {
+                    img.onload = function () {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
 
@@ -1162,7 +1334,7 @@
                         ctx.drawImage(img, 0, 0);
 
                         // Compress the image
-                        compressImage(canvas, 100).then(function(compressedBlob) {
+                        compressImage(canvas, 100).then(function (compressedBlob) {
                             const compressedFile = new File([compressedBlob], file.name, {
                                 type: 'image/jpeg',
                                 lastModified: Date.now()
@@ -1173,7 +1345,7 @@
                             input.files = dataTransfer.files;
 
                             const compressedReader = new FileReader();
-                            compressedReader.onload = function(e) {
+                            compressedReader.onload = function (e) {
                                 $('#photoPreview').html('<img src="' + e.target.result + '" style="width:100%; height:100%; object-fit:cover; border-radius: 4px;" />');
                             };
                             compressedReader.readAsDataURL(compressedFile);
@@ -1222,7 +1394,7 @@
             // Show invalid files alert
             if (invalidFiles.length > 0) {
                 var alertMsg = 'The following files exceed 5MB limit and will not be uploaded:\n';
-                invalidFiles.forEach(function(file) {
+                invalidFiles.forEach(function (file) {
                     alertMsg += '\n• ' + file.name + ' (' + file.size + ' MB)';
                 });
                 alert(alertMsg);
@@ -1240,7 +1412,7 @@
             // Update display
             if (validFiles.length > 0) {
                 $('#documentFileNames').text(validFiles.length + ' file(s) selected');
-                validFiles.forEach(function(file) {
+                validFiles.forEach(function (file) {
                     var fileSize = (file.size / 1024 / 1024).toFixed(2);
                     fileList.append('<div class="badge bg-light text-dark me-2 mb-1">' +
                         file.name + ' (' + fileSize + ' MB)</div>');
@@ -1256,22 +1428,34 @@
         });
 
         // Clear validation on input
-        $(document).on('input change', 'input.is-invalid, select.is-invalid, textarea.is-invalid', function() {
-            if ($(this).val() && $(this).val().trim() !== '' && $(this).val() !== 'Select') {
-                $(this).removeClass('is-invalid');
-                // Remove ALL inline styles
-                this.removeAttribute('style');
-                $(this).next('.invalid-feedback').remove();
+        $(document).on('input change', 'input.is-invalid, select.is-invalid, textarea.is-invalid', function () {
+            const $this = $(this);
+            const val = $this.val();
 
-                // Update validation summary if all errors are cleared
-                if ($('.is-invalid').length === 0) {
-                    $('#validation-summary').hide();
+            // Special handling for Basic Salary
+            if ($this.attr('id') === 'Payroll_BasicSalary') {
+                if (val && val.trim() !== '' && parseFloat(val) > 0) {
+                    $this.removeClass('is-invalid');
+                    this.removeAttribute('style');
+                    $this.next('.invalid-feedback').remove();
                 }
+            } else {
+                // Standard validation clearing for other fields
+                if (val && val.trim() !== '' && val !== 'Select') {
+                    $this.removeClass('is-invalid');
+                    this.removeAttribute('style');
+                    $this.next('.invalid-feedback').remove();
+                }
+            }
+
+            // Update validation summary if all errors are cleared
+            if ($('.is-invalid').length === 0) {
+                $('#validation-summary').hide();
             }
         });
 
         // Convert PAN and IFSC to uppercase
-        $('#Basic_PANNumber, #BankDetails_IFSCCode').on('blur', function() {
+        $('#Basic_PANNumber, #BankDetails_IFSCCode').on('blur', function () {
             if ($(this).val()) {
                 $(this).val($(this).val().toUpperCase());
             }
@@ -1283,7 +1467,7 @@
         // Test on first 3 text inputs
         const testFields = ['#Basic_FirstName', '#Basic_FatherName', '#Basic_MotherName'];
 
-        testFields.forEach(function(fieldId) {
+        testFields.forEach(function (fieldId) {
             const element = $(fieldId)[0];
             if (element) {
                 // Apply the exact same styles as validation
@@ -1301,8 +1485,8 @@
         alert('Red borders applied to first 3 fields. If you see red borders, validation styling is working. If not, there may be a browser or CSS issue.');
 
         // Remove test styles after 5 seconds
-        setTimeout(function() {
-            testFields.forEach(function(fieldId) {
+        setTimeout(function () {
+            testFields.forEach(function (fieldId) {
                 const element = $(fieldId)[0];
                 if (element) {
                     element.removeAttribute('style');
@@ -1322,7 +1506,7 @@
         // Clear previous errors
         $('.is-invalid').removeClass('is-invalid');
         $('.invalid-feedback').remove();
-        $('input, select, textarea').each(function() {
+        $('input, select, textarea').each(function () {
             $(this).removeAttr('style');
         });
 
@@ -1375,6 +1559,28 @@
                 isValid = false;
             }
         });
+
+        // Status-based validation for Date of Leaving
+        const status = $('#Basic_Status').val();
+        if (status === 'Inactive') {
+            const dateOfLeaving = $('#Payroll_DateOfLeaving').val();
+            if (!dateOfLeaving || dateOfLeaving.trim() === '') {
+                const leavingElement = $('#Payroll_DateOfLeaving')[0];
+                $('#Payroll_DateOfLeaving').addClass('is-invalid');
+                if (leavingElement) {
+                    leavingElement.setAttribute('style',
+                        'border: 1px solid #dc3545 !important;' +
+                        'background-color: #ffebee !important;' +
+                        'box-shadow: 0 0 8px rgba(220, 53, 69, 0.5) !important;' +
+                        'outline: 2px solid #dc3545 !important;' +
+                        'outline-offset: -1px !important;'
+                    );
+                }
+                $('#Payroll_DateOfLeaving').after('<div class="invalid-feedback" style="display: block !important; color: #dc3545; font-size: 14px;">Date of Leaving is required when status is Inactive</div>');
+                errors.push('Date of Leaving is required when status is Inactive');
+                isValid = false;
+            }
+        }
 
         // Teacher-specific validation
         const designationText = $('#Basic_DesignationId option:selected').text().toLowerCase();
@@ -1481,6 +1687,23 @@
                 errors.push('Invalid PAN format');
                 isValid = false;
             }
+        }
+        const basicSalary = $('#Payroll_BasicSalary').val();
+        if (basicSalary !== '' && (parseFloat(basicSalary) === 0 || parseInt(basicSalary) === 0)) {
+            const salaryElement = $('#Payroll_BasicSalary')[0];
+            $('#Payroll_BasicSalary').addClass('is-invalid');
+            if (salaryElement) {
+                salaryElement.setAttribute('style',
+                    'border: 1px solid #dc3545 !important;' +
+                    'background-color: #ffebee !important;' +
+                    'box-shadow: 0 0 8px rgba(220, 53, 69, 0.5) !important;' +
+                    'outline: 2px solid #dc3545 !important;' +
+                    'outline-offset: -1px !important;'
+                );
+            }
+            $('#Payroll_BasicSalary').after('<div class="invalid-feedback" style="display: block !important; color: #dc3545; font-size: 14px;">Basic Salary cannot be zero</div>');
+            errors.push('Basic Salary cannot be zero');
+            isValid = false;
         }
 
         // IFSC validation

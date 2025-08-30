@@ -72,13 +72,13 @@ namespace ERPIndia.TeacherManagement.Models
 
         // Academic Information
         [Display(Name = "Class")]
-        public Guid ClassId { get; set; }
+        public Guid? ClassId { get; set; }
 
         [Display(Name = "Section")]
-        public Guid SectionId { get; set; }
+        public Guid? SectionId { get; set; }
 
         [Display(Name = "Subject")]
-        public Guid SubjectId { get; set; }
+        public Guid? SubjectId { get; set; }
 
         [Display(Name = "Other Subject")]
         public string OtherSubject { get; set; }
